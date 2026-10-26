@@ -5084,7 +5084,7 @@ async function wallMode(){if(!party.length)return;try{murPreload();}catch(e){}aw
   if(!flags.wallCatSeen){flags.wallCatSeen=true;await say('Novidade: CATAPULTA no meio da muralha! Quando ela brilhar, toque em qualquer lugar do campo pra lançar uma pedra gigante que esmaga e atordoa os inimigos.');}
   if(!flags.wallBarrel){flags.wallBarrel=true;await say('Novidade: BARRIS EXPLOSIVOS caem no campo! Quando os inimigos passarem perto e o barril brilhar, TOQUE nele pra explodir tudo em volta.');}
   if(!flags.wallSeen3){flags.wallSeen3=true;await say('Novidade: agora cada monstrinho tem o próprio ESPECIAL e um NÍVEL na muralha. Cartas dele ou do tipo dele sobem o nível!');}
-  const res=await new Promise(r=>{WL.done=r;WL.running=true;});WL.running=false;WL.banner=null;WL.bossIntro=null;
+  try{__fotoAplicar('wall',WL);}catch(e){}const res=await new Promise(r=>{WL.done=r;WL.running=true;});WL.running=false;WL.banner=null;WL.bossIntro=null;
   const waves=res==='win'?10:WL.wave-1,coins=Math.round((WL.kills*.3+(res==='win'?15:0))*WL.coinMul*(1+.1*UP('coinMul')))+Math.round((WL.bonus||0)*.3);flags.coins=(flags.coins||0)+coins;
   if(res==='win'){WL.flash=1;await say('A muralha resistiu às 10 ondas! Você salvou o Vale!');}else if(res==='lose')await say(`A muralha caiu na onda ${WL.wave}...`);
   const xp=Math.max(5,Math.round((waves*WL.avg*5+WL.kills*3)*XPMG));const ups=[];
@@ -6493,7 +6493,7 @@ async function towerMode(){if(!party.length)return;tdSetLayout(STG&&STG.mode==='
   if(!flags.tdHeroSeen){flags.tdHeroSeen=true;await say('Novidade: VOCÊ é o HERÓI das Torres! Toque na trilha pra correr até lá. O herói segura os inimigos com a espada, sobe de nível e no nível 3 aprende o GIRO HEROICO.');}
   if(!flags.tdRollSeen){flags.tdRollSeen=true;await say('Novidade: ao lado do portão tem uma PEDRA ROLANTE! Se um inimigo chegar pertinho do portão, ela desce a trilha sozinha esmagando todos os inimigos no caminho. Só funciona 1 vez por partida!');}
   if(!flags.tdAbSeen){flags.tdAbSeen=true;await say('Novidade: lá em cima tem 2 PODERES DO PORTÃO! O METEORO cai onde você tocar e os GUARDAS seguram os inimigos na trilha (os que voam passam por cima).');}
-  const res=await new Promise(r=>{TD.done=r;});
+  try{__fotoAplicar('td',TD);}catch(e){}const res=await new Promise(r=>{TD.done=r;});
   const waves=res==='win'?15:TD.wave-1,coins=Math.round((TD.kills*.3+waves*.6+(res==='win'?18:0))*(1+.1*UP('coinMul')));flags.coins=(flags.coins||0)+coins;
   if(res==='win')await say('O portão resistiu às 15 ondas! O Vale está a salvo!');else if(res==='lose')await say(`Os monstrinhos selvagens passaram na onda ${TD.wave}...`);
   const xp=Math.max(5,Math.round((waves*avg*4+TD.kills*2)*XPMG)),ups=[];
@@ -6826,7 +6826,7 @@ function svUnit(m,x,y){const st=stats(m),ms=m.moves.filter(id=>!MOVES[id].status
   return{m,sp:m.sp,st,mv,type:MOVES[mv].type,x,y,cd:30,cdMax:Math.max(22,Math.round(120/(1+st.spd/20))),fire:0,flip:false,stun:0,ch:0};}
 function svDmg(u){const mv=MOVES[u.mv],stab=mv.type===SP[u.sp].type?1.5:1;return (Math.floor((2*u.m.lv/5+2)*mv.pow*u.st.atk/28)/50+3)*stab*svUD(u)*(u.sp==='trovim'?1.15:1);}
 function svUD(u){return u===SV.pl?SV.mDmg:(u.mDmg||1)*(1+Math.max(0,SV.mDmg/(SV.mDmg0||1)-1)*.7);}/* parceiros também ganham 70% do bônus de força das cartas */function svUS(u){return u===SV.pl?SV.mSpd:(u.mSpd||1);}
-async function survMode(){if(!party.length)return;let lead=party[0];if(party.length>1){const k=await monPick(party,'HORDA: quem vai lutar?');if(k<0)return;lead=party[k];}
+async function survMode(){if(!party.length)return;let lead=party[0];if(party.length>1){const k=(window.__RESTORE&&window.__RESTORE.mode==='surv'&&window.__RESTORE.lead!=null)?window.__RESTORE.lead:await monPick(party,'HORDA: quem vai lutar?');if(k<0)return;lead=party[k];}
   await fadeTo(1);portraitScreen();document.body.classList.add('nopad');
   const st=stats(lead),avg=teamAvg();
   SV={t:0,time:0,foes:[],gems:[],pops:[],parts:[],fx:[],kills:0,xp:0,lv:1,need:4,avg,mDmg:1,mSpd:1,multi:0,pierce:0,mMove:1,mag:26,cMul:1,regen:0,owned:{},cards:null,paused:false,banner:{t:90,text:'SOBREVIVA 5 MINUTOS!'},shake:0,flash:0,mv:null,stick:null,cam:[0,0],spawnT:60,boss:0,
@@ -6845,7 +6845,7 @@ async function survMode(){if(!party.length)return;let lead=party[0];if(party.len
   G.mode='surv';await fadeTo(0);
   if(!flags.survSeen){flags.survSeen=true;await say('HORDA! Monstrinhos selvagens vêm de todos os lados.');await say('Arraste o dedo na tela pra andar. Seu monstrinho ataca sozinho!');
     await say('Pegue as gemas azuis pra subir de nível e escolher melhorias. Sobreviva 5 minutos!');}
-  let res=await new Promise(r=>{SV.done=r;});if(res!=='win'&&SV.obj&&SV.obj.done)res='win';
+  try{__fotoAplicar('surv',SV);}catch(e){}let res=await new Promise(r=>{SV.done=r;});if(res!=='win'&&SV.obj&&SV.obj.done)res='win';
   const secs=Math.floor(SV.time/60),EX=SV.extra,eK=Math.min(400,EX?EX.k0+.25*Math.min(150,SV.kills-EX.k0):SV.kills),eS=Math.min(480,EX?EX.t0/60+.25*Math.min(240,secs-EX.t0/60):secs),coins=Math.min(130,Math.round(eK*.18+eS*.07+(res==='win'?25:0)));flags.coins=(flags.coins||0)+coins;
   const team=[SV.pl.m,...SV.allies.map(a=>a.m)],xp=Math.max(5,Math.round((eS*SV.avg*.6+eK*3)*XPMG));const ups=[];
   mgAward(SV.ctx,team,xp,ups,team.map(()=>SV.lv||1));
@@ -7478,7 +7478,7 @@ async function stageMap(key){const st={key,sel:null,t:0};
     if(j===98){const ch={wall:wallMode,td:towerMode,surv:survMode,exp:async()=>{await fadeTo(1);await expedition();await wait(1);}}[key];await chapterMenu(key,ch);continue;}
     if(j===97){if(key==='surv')await svMetaShop();else if(key==='wall')await wallCardShop();else await shopMenu(MODEUPS[key]);continue;}
     if(j===100){await stgLaunch(key,st.world*STGN+st.sel);const S3=stgPage(key,st.world);if(S3.next>st.sel)st.sel=S3.next;for(let w=1;w<STGW;w++)if(st.world===w-1&&stgWOpen(key,w)&&st.sel===STGN-1&&!flags['w'+(w+1)+'ok_'+key]){flags['w'+(w+1)+'ok_'+key]=1;saveGame();await say(`MUNDO ${w+1} liberado! Toque em MUNDO ${w+1} lá em cima: cenários novos e inimigos bem mais fortes.`);}continue;}}}
-async function stgLaunch(key,i){flags.emJogo={k:'stg',key,i,t:Date.now()};saveGame();try{return await stgLaunch0(key,i);}finally{delete flags.emJogo;try{saveGame();}catch(e){}}}
+async function stgLaunch(key,i){flags.emJogo={k:'stg',key,i,t:Date.now()};saveGame();try{return await stgLaunch0(key,i);}finally{delete flags.emJogo;try{__fotoApagar();}catch(e){}try{saveGame();}catch(e){}}}
 async function stgLaunch0(key,i){const bio=BIOMES[Math.floor(i/3)%BIOMES.length];
   if(key==='exp'){const m0=flags.expMax||1;flags.expStage=Math.min(i+1,m0);await fadeTo(1);await expedition();await wait(1);const m1=flags.expMax||1;if(m1>m0){let g=0;for(let k=m0;k<m1;k++)g+=1+(k%5===0?1:0);if(g)addGems(g);saveGame();await say(`Fase nova liberada no mapa!${g?` +${g} ${g>1?'cristais':'cristal'} 💎`:''}`);}await rareCatchPending();return;}
   STG={mode:key,i,bio,mult:.85+Math.min(i,15)*.1+Math.max(0,i-15)*.06};STGRES=null;
@@ -8955,7 +8955,7 @@ async function main(){
     const _pr=choose(opts,{box:{x:W/2-55,y:H*.93-opts.length*15-14-14,w:110,h:opts.length*15+14},noCancel:true,title:true});let _tm=null;if(!has){const _it=ui[ui.length-1];_tm=setInterval(()=>{try{if(hasSave()&&ui[ui.length-1]===_it){ui.pop();clearInterval(_tm);_it.res(-1);}}catch(e){}},500);}const i=await _pr;if(_tm)clearInterval(_tm);if(i===-1)continue;
     if(opts[i]==='CONTINUAR'){if(loadGame())break;}else{if(!has&&!window.__CLOUDFIM){await say('Ainda estou procurando o seu jogo salvo na nuvem. Começar um NOVO JOGO agora pode apagar ele. Tem certeza?');const c=await choose(['Não, esperar','Sim, novo jogo'],{noCancel:true});if(c!==1)continue;}if(has){await say('Começar um NOVO JOGO apaga o seu jogo salvo. Tem certeza?');const c=await choose(['Não, voltar','Sim, apagar'],{noCancel:true});if(c!==1)continue;}window.__NOVOJOGO=1;try{if(CLOUD&&CLOUD.db){const sn=await CLOUD.ref.get();const d=sn&&sn.exists?sn.data():null;if(d)await CLOUD.db.doc('data/users/'+CLOUD.uid+'/save_antes_novo_jogo').set(d);}}catch(e){}await newGame();break;}}
   await fadeTo(1);worldScreen();document.body.classList.remove('nomenu');G.mode='world';await fadeTo(0);busy=true;await offlineGains();try{await dailyGift();}catch(e){console.error(e);}try{await emJogoVolta();}catch(e){console.error(e);}busy=false;}
-async function emJogoVolta(){const e=flags.emJogo;if(!e)return;delete flags.emJogo;saveGame();if(!e.t||Date.now()-e.t>12*3600e3)return;const M=e.k==='ms'?MISS.find(q=>q.id===e.id):null;if(e.k==='ms'&&!M)return;const md=e.k==='ms'?(String(M.run).match(/msGame\('(\w+)'/)||[])[1]:e.key;const nome={wall:'Muralha',surv:'Horda',td:'Torre',exp:'Expedição'}[md]||'partida';await say(`O jogo fechou no meio da ${nome}${M?' (missão '+M.t+')':''}. Quer voltar pra essa partida?`);const c=await choose(['Sim, voltar','Agora não'],{noCancel:true});if(c!==0)return;if(e.k==='stg'){await stgLaunch(e.key,e.i);}else{const ok2=await (async()=>{flags.emJogo={k:'ms',id:M.id,t:Date.now()};saveGame();try{return await M.run();}finally{delete flags.emJogo;}})();if(ok2)await msDone(M);else if(M.fail)await say(M.fail);}try{if(G.mode!=='world'){worldScreen();G.mode='world';}}catch(e){}saveGame();}
+async function emJogoVolta(){const e=flags.emJogo;if(!e)return;delete flags.emJogo;saveGame();if(!e.t||Date.now()-e.t>12*3600e3)return;const M=e.k==='ms'?MISS.find(q=>q.id===e.id):null;if(e.k==='ms'&&!M)return;const md=e.k==='ms'?(String(M.run).match(/msGame\('(\w+)'/)||[])[1]:e.key;const nome={wall:'Muralha',surv:'Horda',td:'Torre',exp:'Expedição'}[md]||'partida';await say(`O jogo fechou no meio da ${nome}${M?' (missão '+M.t+')':''}. Quer voltar pra essa partida?`);const c=await choose(['Sim, voltar','Agora não'],{noCancel:true});if(c!==0){try{__fotoApagar();}catch(e){}return;}try{const F=await __fotoLer(e);if(F){window.__RESTORE=F;await say('Voltando pro ponto em que a partida parou (uns '+F.seg+' segundos de jogo).');}}catch(er){}if(e.k==='stg'){await stgLaunch(e.key,e.i);}else{const ok2=await (async()=>{flags.emJogo={k:'ms',id:M.id,t:Date.now()};saveGame();try{return await M.run();}finally{delete flags.emJogo;try{__fotoApagar();}catch(e){}}})();if(ok2)await msDone(M);else if(M.fail)await say(M.fail);}try{if(G.mode!=='world'){worldScreen();G.mode='world';}}catch(e){}saveGame();}
 
 (function(){for(const [from,[to]] of Object.entries(EVO)){for(const T0 of [BEH,ULTDESC,SIGMOVES,FTR,SHINYHUE])if(T0[from]!==undefined&&T0[to]===undefined)T0[to]=T0[from];ULTNAME[to]=(ULTNAME[from]||'Especial')+' Máx';}})();
 let EVOA=null;
@@ -9376,7 +9376,7 @@ async function msDone(m){msSet(m.id,2);for(const l of m.done||[])await say(l);co
 async function msRun(m){const st=msSt(m.id);
   if(m.find&&st===1.5){const C0=CHARS[m.npc];await say(`Você entregou pra ${C0?C0.n:'ele'}!`);await msDone(m);return;}
   if(m.find){if(st===1){await say(`📜 ${m.t}: procure o brilho em ${(VMAP[m.find.map]||{n:'algum lugar'}).n}.`);return;}for(const l of m.pre||[])await say(l);msSet(m.id,1);saveGame();await say(`📜 Missão aceita: ${m.t}! Procure o brilho no mapa.`);return;}
-  for(const l of m.pre||[])await say(l);flags.emJogo={k:'ms',id:m.id,t:Date.now()};saveGame();let ok=false;try{ok=await m.run();}finally{delete flags.emJogo;}if(ok)await msDone(m);else if(m.fail)await say(m.fail);}
+  for(const l of m.pre||[])await say(l);flags.emJogo={k:'ms',id:m.id,t:Date.now()};saveGame();let ok=false;try{ok=await m.run();}finally{delete flags.emJogo;try{__fotoApagar();}catch(e){}}if(ok)await msDone(m);else if(m.fail)await say(m.fail);}
 async function charTalk(n){const cid=n.cid,C0=CHARS[cid]||{n:cid,lines:['...']};
   const av=MISS.filter(m=>m.npc===cid&&m.map===G.map&&msSt(m.id)<2&&msAvail(m));if(av.length)return msRun(av[0]);
   const locked=MISS.find(m=>m.npc===cid&&m.map===G.map&&msSt(m.id)<2);if(locked&&!C0.fr){await say(C0.lines[0]);return;}
@@ -9642,7 +9642,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793057575',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793057850',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}
@@ -9670,6 +9670,51 @@ window.__GM=function(){try{return G.mode;}catch(_){return '';}};
   let busy=false;setInterval(()=>{try{const s=snap();s.limpo=false;try{localStorage.setItem('cv_diag',JSON.stringify(s));}catch(_){}if(DB&&!busy){busy=true;DB.doc('diag/'+SID).set(s).catch(()=>0).then(()=>{busy=false;});}}catch(_){}},2000);
   window.__DIAG=snap;
 }catch(e){}})();
+
+
+/* 26/out 19h40 (Felipe: "quero que volte no mesmo momento que estava no jogo, pode ser alguns segundos antes"):
+   durante a Muralha, Horda e Torre o jogo tira uma "foto" da partida a cada 3 s (no aparelho) e a cada 15 s (na nuvem).
+   Se a página cair, ao voltar pra partida a foto é aplicada: mesma onda, mesmo tempo, mesmos inimigos, cartas e vida. */
+(function(){
+  const PLAIN=o=>{const p=Object.getPrototypeOf(o);return p===Object.prototype||p===null;};
+  function ser(root){const ids=new Map();let n=0;
+    const enc=v=>{if(v===null||v===undefined)return v;const t=typeof v;
+      if(t==='number')return Number.isFinite(v)?v:{$n:String(v)};if(t==='string'||t==='boolean')return v;if(t!=='object')return {$skip:1};
+      try{const pi=party.indexOf(v);if(pi>=0)return {$p:pi};const si=storage.indexOf(v);if(si>=0)return {$s:si};}catch(_){}
+      if(ids.has(v))return {$r:ids.get(v)};
+      if(Array.isArray(v)){const id=n++;ids.set(v,id);return {$a:id,v:v.map(enc)};}
+      if(v instanceof Map){const id=n++;ids.set(v,id);return {$m:id,v:[...v].map(([a,b])=>[enc(a),enc(b)])};}
+      if(v instanceof Set){const id=n++;ids.set(v,id);return {$st:id,v:[...v].map(enc)};}
+      if(!PLAIN(v))return {$skip:1};
+      const id=n++;ids.set(v,id);const o={};for(const k in v){if(!Object.prototype.hasOwnProperty.call(v,k))continue;const x=v[k];if(typeof x==='function')continue;o[k]=enc(x);}return {$o:id,v:o};};
+    return enc(root);}
+  function rev(s,live){const ids=new Map();
+    const dec=(x,old)=>{if(x===null||x===undefined||typeof x!=='object')return x;
+      if(x.$n!=null)return Number(x.$n);if(x.$skip)return old;if(x.$p!=null)return party[x.$p];if(x.$s!=null)return storage[x.$s];if(x.$r!=null)return ids.get(x.$r);
+      if(x.$a!=null){const a=[];ids.set(x.$a,a);x.v.forEach((y,i)=>a.push(dec(y,old&&old[i])));return a;}
+      if(x.$m!=null){const m=new Map();ids.set(x.$m,m);for(const [a,b] of x.v)m.set(dec(a),dec(b));return m;}
+      if(x.$st!=null){const st=new Set();ids.set(x.$st,st);for(const a of x.v)st.add(dec(a));return st;}
+      if(x.$o!=null){const o=(old&&typeof old==='object'&&!Array.isArray(old)&&PLAIN(old))?old:{};ids.set(x.$o,o);
+        for(const k in x.v)o[k]=dec(x.v[k],o[k]);return o;}
+      return old;};
+    return dec(s,live);}
+  const ST=()=>{try{const m=G.mode;return m==='wall'&&typeof WL!=='undefined'&&WL&&WL.running?['wall',WL]:m==='surv'&&typeof SV!=='undefined'&&SV&&SV.done?['surv',SV]:m==='td'&&typeof TD!=='undefined'&&TD&&TD.done?['td',TD]:null;}catch(e){return null;}};
+  let lastCloud=0;
+  window.__fotoPartida=function(force){try{const s=ST();if(!s)return;if(!force&&ui.length)return;const e=flags.emJogo;if(!e)return;
+      const lead=(s[0]==='surv'&&SV&&SV.lead)?party.indexOf(SV.lead):null;
+      const foto={mode:s[0],em:e,lead:lead>=0?lead:null,t:Date.now(),seg:Math.round((s[1].t||s[1].time||0)/60),st:ser(s[1])};const js=JSON.stringify(foto);
+      try{localStorage.setItem('cv_partida',js);}catch(_){}
+      if(Date.now()-lastCloud>15000&&typeof CLOUD!=='undefined'&&CLOUD&&CLOUD.db){lastCloud=Date.now();CLOUD.db.doc('data/users/'+CLOUD.uid+'/partida').set({json:js,t:foto.t}).catch(()=>{});}
+    }catch(err){try{__EV('foto erro '+String(err).slice(0,60));}catch(_){}}};
+  setInterval(()=>{try{if(!ui.length)__fotoPartida();}catch(_){}},3000);
+  window.__fotoLer=async function(e){let best=null;try{const l=JSON.parse(localStorage.getItem('cv_partida')||'null');if(l)best=l;}catch(_){}
+    try{if(typeof CLOUD!=='undefined'&&CLOUD&&CLOUD.db){const sn=await CLOUD.db.doc('data/users/'+CLOUD.uid+'/partida').get();const d=sn&&sn.exists?sn.data():null;if(d&&d.json){const c=JSON.parse(d.json);if(!best||c.t>best.t)best=c;}}}catch(_){}
+    if(!best||!best.em||!e)return null;const same=best.em.k===e.k&&(e.k==='ms'?best.em.id===e.id:(best.em.key===e.key&&best.em.i===e.i));if(!same||Date.now()-best.t>12*3600e3)return null;return best;};
+  window.__fotoApagar=function(){try{localStorage.removeItem('cv_partida');}catch(_){}try{if(typeof CLOUD!=='undefined'&&CLOUD&&CLOUD.db)CLOUD.db.doc('data/users/'+CLOUD.uid+'/partida').delete().catch(()=>{});}catch(_){}};
+  window.__fotoAplicar=function(mode,S){const F=window.__RESTORE;if(!F||F.mode!==mode)return false;window.__RESTORE=null;
+    try{rev(F.st,S);try{__EV('voltou pra partida '+mode+' aos '+F.seg+'s');}catch(_){}return true;}catch(err){try{__EV('foto falhou '+String(err).slice(0,60));}catch(_){}return false;}};
+  window.__fotoTeste={ser,rev};
+})();
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

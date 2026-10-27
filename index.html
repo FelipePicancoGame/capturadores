@@ -8692,7 +8692,7 @@ function drawPartyArt(u){const cf=u.cfg;if(!cf.reorder||!ukReady('equipe')){PTLA
 /* ---------- CAMPO DE TREINO — jardim (25/out). SEGURE o dedo no monstrinho: os pontos entram aos pouquinhos ---------- */
 const TRSLOT=[[280,875],[815,875],[280,1210],[815,1210],[280,1605],[815,1605]],TRLAB=[[160,970],[695,970],[160,1320],[695,1320],[160,1730],[695,1730]];
 function drawTrainArt(u){const st=u.cfg.train;if(!ukReady('treino'))return false;st.t++;const t=st.t,K='treino',Y0=100;u.rects=[];u.boxR=null;
-  ukBg(K);const V=ukBegin(2130,1080),R2=(x,y,w,h,i)=>V.R(x,y-Y0,w,h,i);b.translate(0,-Y0);ukF(K,0,0,1080,2340);
+  ukBg(K);const V=ukBegin(2130,1080),R2=(x,y,w,h,i)=>V.R(x,y-Y0,w,h,i);b.translate(0,-Y0);
   const pts=flags.xpPts||0,P=st.p?[(st.p[0]-V.ox)/V.k,(st.p[1]-V.oy)/V.k+Y0]:null;
   ukD(K,'cab',90,110,900,210);ukBrown('CAMPO DE TREINO',540,243,44,'#4a2a10','center',560);
   ukD(K,'pts',245,315,590,80);ukD(K,'estrela',262,322,66,66);ukArial2(`${pts.toLocaleString('pt-BR')} pontos de treino`,560,356,36,pts?'#fff':'#d8c8b0',440);
@@ -8816,7 +8816,7 @@ function mtTapArt(x,y){if(!MTV||!ukReady('matematica'))return false;const T2=MT,
 function tcMonCard(K,m,x,y,w,h,t,k,big){ukD(K,'cartao_equipe',x,y,w,h);if(!m)return;const sp=monKey(m),sc=(big?1.9:1.45)*w/190,o=monCtrOff(sp,sc);b.save();b.beginPath();b.rect(x+w*.1,y+h*.06,w*.8,h*.7);b.clip();drawMon(sp,x+w/2+o[0],y+h*.42+o[1]+Math.sin(t/12+k)*2,sc);b.restore();
   ukArial2('Nv'+m.lv,x+w/2,y+h*.89,Math.round(h*.105),'#fff',w*.6);}
 function drawTCardArt(u){const st=u.cfg.tcard;if(!ukReady('cartao'))return false;st.t++;const t=st.t,K='cartao',Y0=100;st.fl+=((st.flip?1:0)-st.fl)*.16;u.rects=[];u.boxR=null;
-  ukBg(K);const V=ukBegin(2160,1080),R2=(x,y,w,h,i)=>V.R(x,y-Y0,w,h,i);b.translate(0,-Y0);ukF(K,0,0,1080,2340);
+  ukBg(K);const V=ukBegin(2160,1080),R2=(x,y,w,h,i)=>V.R(x,y-Y0,w,h,i);b.translate(0,-Y0);
   const n=tcStars(),cn=TCCOL[n][2];
   ukD(K,'cabecalho',190,132,700,161);ukArial2('CARTÃO DO TREINADOR',540,218,48,'#fff8e0',560);
   ukD(K,'placa_subtitulo',215,345,650,80);ukArial2(`Cor ${cn} · ${n}/5 estrelas`,540,386,32,'#fff8e0',480);
@@ -9646,7 +9646,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793061851',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793062190',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}

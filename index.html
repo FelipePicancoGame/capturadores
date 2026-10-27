@@ -1335,6 +1335,28 @@ function cloudFlush(){clearTimeout(_cTimer);const js=_cPend;_cPend=null;if(!CLOU
 addEventListener('visibilitychange',()=>{try{if(document.hidden){if(party.length&&G.mode!=='title')saveGame();cloudFlush();}}catch(e){}});addEventListener('pagehide',()=>{try{if(party.length&&G.mode!=='title')saveGame();cloudFlush();}catch(e){}});
 setInterval(()=>{try{if(party.length&&G.mode==='world'&&!busy&&!ui.length)saveGame();}catch(e){}},20000);
 
+/* 27/out (Felipe: "cria no menu inicial um botão de load"): CARREGAR na tela inicial. Lista o jogo da nuvem, as cópias automáticas (uma por dia, guarda 3 dias) e as cópias de segurança.
+   Antes de carregar, o jogo de agora vira a cópia "Antes de carregar" (nada se perde). */
+const LDNAMES=[['save','Jogo salvo na nuvem'],['save_auto_0','Cópia automática'],['save_auto_1','Cópia automática'],['save_auto_2','Cópia automática'],['save_antes_carregar','Antes de carregar'],['save_antes_novo_jogo','Antes do novo jogo'],['save_recusado','Cópia recusada'],
+  ['save_backup_2026-10-23','Cópia 23/10'],['save_backup_marolo_26out','Cópia Marolo 26/10'],['save_backup_brotim_26out','Cópia Brotim 26/10'],['save_backup_brotim2_26out','Cópia Brotim 26/10 (2)'],['save_backup_brotim3_26out','Cópia Brotim 26/10 (3)']];
+function ldResumo(json,t){try{const s=JSON.parse(json);if(!s||!s.party||!s.party.length)return null;const f=s.flags||{},m=s.party[0],n=s.party.length+(s.storage||[]).length,pt=f.playT||0;
+    const d=new Date(+t||+f.lastSeen||0),dd=+d?`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`:'';
+    return `${(SP[m.sp]||{}).name||m.sp} Nv${m.lv} · ${n} monstrinhos · ${f.coins||0} moedas${dd?' · '+dd:''}`;}catch(e){return null;}}
+async function ldLista(){const out=[];if(!(typeof CLOUD!=='undefined'&&CLOUD&&CLOUD.db))return out;
+  await Promise.all(LDNAMES.map(async([k,lb],i)=>{try{const sn=await CLOUD.db.doc('data/users/'+CLOUD.uid+'/'+k).get();const d=sn&&sn.exists?sn.data():null;if(!d||typeof d.json!=='string')return;const r=ldResumo(d.json,d.t);if(r)out.push({i,k,lb,r,json:d.json,t:+d.t||0});}catch(e){}}));
+  out.sort((a,b)=>a.i-b.i);return out;}
+async function loadMenu(){if(!(typeof CLOUD!=='undefined'&&CLOUD&&CLOUD.db)){await say('Não consegui abrir a nuvem agora. Tente de novo em alguns segundos.');return false;}
+  await say('Procurando os jogos salvos...');const L=await ldLista();if(!L.length){await say('Não achei nenhum jogo salvo na nuvem.');return false;}
+  const j=await choose([...L.map(o=>`${o.lb}: ${o.r}`),'Voltar'],{noCancel:false});if(j<0||j>=L.length)return false;const o=L[j];
+  await say(`${o.lb}: ${o.r}.`);const c=await choose(['Carregar este','Não, voltar'],{noCancel:true});if(c!==0)return false;
+  try{const cur=localStorage.getItem(SAVE);if(cur&&cur!==o.json)await CLOUD.db.doc('data/users/'+CLOUD.uid+'/save_antes_carregar').set({json:cur,t:Date.now()});}catch(e){}
+  try{localStorage.setItem(SAVE,o.json);}catch(e){}try{window.__fotoApagar&&__fotoApagar();}catch(e){}
+  window.__NOVOJOGO=1;try{await CLOUD.ref.set({json:o.json,t:Date.now()});_cLast=o.json;}catch(e){}
+  try{__EV('carregou '+o.k);}catch(e){}await say('Pronto! Jogo carregado. Toque em CONTINUAR.');return true;}
+/* cópia automática: 1 por dia, guarda 3 dias */
+setInterval(()=>{try{if(!(typeof CLOUD!=='undefined'&&CLOUD&&CLOUD.db)||!party.length||G.mode==='title')return;const d=new Date(),k=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;if(localStorage.getItem('cv_autobk')===k)return;const js=localStorage.getItem(SAVE);if(!js)return;
+  localStorage.setItem('cv_autobk',k);CLOUD.db.doc('data/users/'+CLOUD.uid+'/save_auto_'+(Math.floor(Date.now()/864e5)%3)).set({json:js,t:Date.now()}).catch(()=>{});}catch(e){}},60000);
+
 function hasSave(){try{return !!localStorage.getItem(SAVE);}catch(e){return false;}}
 function loadGame(){try{const s=JSON.parse(localStorage.getItem(SAVE));if(!s||!s.party||!s.party.length)return false;G.map=s.map;placeAt(s.x,s.y,s.dir);const fix=m=>{const mm=mk(m.sp,m.lv);return{...m,moves:mm.moves,dhp:m.hp};};party=s.party.map(fix);storage=(s.storage||[]).map(fix);bag=s.bag;flags=s.flags||{};try{migDmg();}catch(e){}try{trovRet24();}catch(e){}try{trovLvFix();}catch(e){}return true;}catch(e){return false;}}
 function healAll(){party.forEach(m=>{m.hp=stats(m).hp;m.dhp=m.hp;});}
@@ -1587,7 +1609,7 @@ function drawTitleBtns(u){const bn=asImg('ui_btn_novo'),bc=asImg('ui_btn_cont');
   const bw=Math.min(W*.74,240),bh=bw*bn.naturalHeight/bn.naturalWidth,gap=bh*.18,n=u.opts.length,y0=H*.95-14-n*bh-(n-1)*gap;u.boxR={x:(W-bw)/2,y:y0,w:bw,h:n*bh+(n-1)*gap};
   u.opts.forEach((o,k)=>{const im=o==='CONTINUAR'?bc:o==='NOVO JOGO'?bn:null,y=y0+k*(bh+gap),x=(W-bw)/2,on=k===u.i,pl=on?1+Math.sin(frame/8)*.025:1;u.rects.push({x,y,w:bw,h:bh,i:k});
     b.save();b.imageSmoothingEnabled=true;b.translate(W/2,y+bh/2);b.scale(pl,pl);b.shadowColor='rgba(0,0,0,.4)';b.shadowBlur=5;b.shadowOffsetY=2;
-    if(im)b.drawImage(im,-bw/2,-bh/2,bw,bh);else{rrect(-bw/2,-bh/2,bw,bh,8,'#2f9f4c');T(o,0,-4,9,'center',C.white,bw-10,C.ink);}b.restore();});return true;}
+    if(im)b.drawImage(im,-bw/2,-bh/2,bw,bh);else{const _sw=o==='CARREGAR'?.62:1,_sh=o==='CARREGAR'?.62:1;rrect(-bw*_sw/2,-bh*_sh/2,bw*_sw,bh*_sh,8,o==='CARREGAR'?'#3a6ad0':'#2f9f4c');b.shadowColor='transparent';b.font=`bold ${Math.round(bh*_sh*.42)}px Fredoka, Arial, sans-serif`;b.textAlign='center';b.textBaseline='middle';b.lineWidth=3;b.strokeStyle='#1c2a5a';b.strokeText(o,0,1);b.fillStyle='#fff8e0';b.fillText(o,0,1);}b.restore();});return true;}
 function renderTitle(){const t=frame,pk=expPhase(),gy=H*.62,cx=W/2;G.titleT=(G.titleT||0)+1;const tt=G.titleT;if(asImg('ui_title_bg')&&asImg('ui_logo')){renderTitleArt(t,tt,gy,cx);return;}
   const SK={day:['5aa8f0','ffe9c8'],sunset:['ff7a5a','ffd890'],night:['0a1030','3a3a7a'],morning:['ff9ec0','ffe4c4']}[pk];sky(SK[0],SK[1],Math.ceil(gy));
   const sunX=W*.72,sunY=H*.2;
@@ -3834,7 +3856,7 @@ function bRange(sp,lv){const k=behOf(sp,lv).k;if(sp==='trovim'){const r=BRANGE[k
 function lvOf(s){const u=s&&s.src;return u?(u.m?u.m.lv:u.lv)||1:1;}
 try{if(typeof DRAW==='object'&&!DRAW.trovim)DRAW.trovim=function(){DRAW.marolo();};}catch(e){}
 function behOf(sp,lv){if(sp==='fagulho'&&(lv||0)>=12)return BEH_FAG2;return BEH[sp]||BEH[EVOPREV[sp]]||BEH[BEH_T[SP[sp].type]]||BEH.pipiu;}
-const ULTDESC={trovim:'Onda gigante de água eletrificada: empurra e dá choque',fagulho:'Rodas de fogo em todos os inimigos perto',lesmagma:'Cospe lava que vira poças ardentes',marolo:'Onda gigante que empurra todos',brotim:'Explosão de pólen: envenena quem está perto',florina:'Pétalas cortam tudo e curam a base',choquinho:'Raios saem dele e pulam em todos',pedrisco:'Arremessa uma chuva de pedras',rochedo:'Pisão que atordoa todos',zumbel:'Solta um enxame venenoso',pipiu:'Tornado que puxa e machuca',ratonga:'Golpe gigante no inimigo mais forte',corujito:'Ondas hipnóticas: todos dormem',assombro:'Lanternas fantasmas amaldiçoam todos',auroril:'Leque de auroras que congela'};
+const ULTDESC={trovim:'Onda gigante de água eletrificada: empurra e dá choque',fagulho:'Uma roda de fogo em cada inimigo mais perto',lesmagma:'Cospe lava que vira poças ardentes',marolo:'Onda gigante que empurra todos',brotim:'Explosão de pólen: envenena quem está perto',florina:'Pétalas cortam tudo e curam a base',choquinho:'Raios saem dele e pulam em todos',pedrisco:'Arremessa uma chuva de pedras',rochedo:'Pisão que atordoa todos',zumbel:'Solta um enxame venenoso',pipiu:'Tornado que puxa e machuca',ratonga:'Golpe gigante no inimigo mais forte',corujito:'Ondas hipnóticas: todos dormem',assombro:'Lanternas fantasmas amaldiçoam todos',auroril:'Leque de auroras que congela'};
 function bSt(e,k,v){e[k]=Math.max(e[k]||0,v);}
 function bCC(e,k,v){bSt(e,k,Math.round(e.boss?v*.4:v));}
 function bNear(C2,x,y,r,ex){return C2.foes().filter(e=>!e.dead&&e!==ex&&Math.hypot(e.x-x,e.y-y)<=r);}
@@ -3933,7 +3955,7 @@ function bCutin(C2){const f=C2.fx.find(q=>q.k==='cutin'&&q.t>=0);if(!f)return;co
   ln([[-20,cy-hh/2+sk],[W+20,cy-hh/2-sk*.4]],2,C.yellow);ln([[-20,cy+hh/2+sk],[W+20,cy+hh/2-sk*.4]],2,C.yellow);
   const z=1.05+Math.min(1,t/30)*.15;drawMon(f.sp,W*.26+t*.3,cy+4,z,false);b.restore();
   const tx=W*.62+off;T(f.name,tx,cy-11,W<200?10:12,'center',C.white,W*.6,C.ink);T(f.sub,tx,cy+5,W<200?6:7,'center',C.yellow,W*.62,C.ink);}
-/* 27/out: especial de fogo acerta TODOS os inimigos perto (raio FOGOR) */const FOGOR=130;function bFogoPerto(C2,x,y){return C2.foes().filter(e=>!e.dead&&Math.hypot(e.x-x,e.y-y)<=FOGOR).sort((a,c2)=>Math.hypot(a.x-x,a.y-y)-Math.hypot(c2.x-x,c2.y-y));}
+/* 27/out: especial de fogo: cada roda num inimigo diferente, dos mais perto pros mais longe */function bFogoPerto(C2,x,y){return C2.foes().filter(e=>!e.dead).sort((a,c2)=>Math.hypot(a.x-x,a.y-y)-Math.hypot(c2.x-x,c2.y-y));}
 function bEspPode(C2,sp,x,y){try{if(evoBase(sp)==='fagulho')return bFogoPerto(C2,x,y).length>0;}catch(e){}return C2.foes().some(e=>!e.dead);}
 function bUltGo(C2,s0,P){const s={...s0,sp:s0.sp==='trovim'?'marolo':evoBase(s0.sp)};const SC=s0.sp==='trovim'?1:s0.sp!==s.sp?1.3:1;P*=SC;/* 24/out: Tsunami do Trovim mais fraco */const L=()=>C2.foes().filter(e=>!e.dead),spot=()=>{const e=bRand(C2);return e?[e.x+(Math.random()*14-7),e.y]:[C2.rx(),C2.ry()];};
   switch(s.sp){
@@ -8971,9 +8993,9 @@ function drawDailyOld(u){const st=u.cfg.daily;st.t++;const t=st.t,day=st.day;u.r
 async function main(){
   worldScreen();document.body.classList.add('nomenu');G.mode='title';G.titleT=0;
   /* 26/out (Felipe: 'o oficial não tá salvando'): no iPhone o app do Claude esquece o salvo do aparelho quando fecha; o título (já aparecendo) espera a cópia da nuvem antes de mostrar os botões */try{CLOUDP.then(()=>{window.__CLOUDFIM=1;},()=>{window.__CLOUDFIM=1;});}catch(e){}try{await Promise.race([CLOUDP,new Promise(r=>setTimeout(r,12000))]);}catch(e){}
-  while(true){const has=hasSave();const opts=has?['CONTINUAR','NOVO JOGO']:['NOVO JOGO'];
+  while(true){const has=hasSave();const opts=has?['CONTINUAR','NOVO JOGO','CARREGAR']:['NOVO JOGO','CARREGAR'];
     const _pr=choose(opts,{box:{x:W/2-55,y:H*.93-opts.length*15-14-14,w:110,h:opts.length*15+14},noCancel:true,title:true});let _tm=null;if(!has){const _it=ui[ui.length-1];_tm=setInterval(()=>{try{if(hasSave()&&ui[ui.length-1]===_it){ui.pop();clearInterval(_tm);_it.res(-1);}}catch(e){}},500);}const i=await _pr;if(_tm)clearInterval(_tm);if(i===-1)continue;
-    if(opts[i]==='CONTINUAR'){if(loadGame())break;}else{if(!has&&!window.__CLOUDFIM){await say('Ainda estou procurando o seu jogo salvo na nuvem. Começar um NOVO JOGO agora pode apagar ele. Tem certeza?');const c=await choose(['Não, esperar','Sim, novo jogo'],{noCancel:true});if(c!==1)continue;}if(has){await say('Começar um NOVO JOGO apaga o seu jogo salvo. Tem certeza?');const c=await choose(['Não, voltar','Sim, apagar'],{noCancel:true});if(c!==1)continue;}window.__NOVOJOGO=1;try{if(CLOUD&&CLOUD.db){const sn=await CLOUD.ref.get();const d=sn&&sn.exists?sn.data():null;if(d)await CLOUD.db.doc('data/users/'+CLOUD.uid+'/save_antes_novo_jogo').set(d);}}catch(e){}await newGame();break;}}
+    if(opts[i]==='CARREGAR'){await loadMenu();continue;}if(opts[i]==='CONTINUAR'){if(loadGame())break;}else{if(!has&&!window.__CLOUDFIM){await say('Ainda estou procurando o seu jogo salvo na nuvem. Começar um NOVO JOGO agora pode apagar ele. Tem certeza?');const c=await choose(['Não, esperar','Sim, novo jogo'],{noCancel:true});if(c!==1)continue;}if(has){await say('Começar um NOVO JOGO apaga o seu jogo salvo. Tem certeza?');const c=await choose(['Não, voltar','Sim, apagar'],{noCancel:true});if(c!==1)continue;}window.__NOVOJOGO=1;try{if(CLOUD&&CLOUD.db){const sn=await CLOUD.ref.get();const d=sn&&sn.exists?sn.data():null;if(d)await CLOUD.db.doc('data/users/'+CLOUD.uid+'/save_antes_novo_jogo').set(d);}}catch(e){}await newGame();break;}}
   await fadeTo(1);worldScreen();document.body.classList.remove('nomenu');G.mode='world';await fadeTo(0);busy=true;await offlineGains();try{await dailyGift();}catch(e){console.error(e);}try{await emJogoVolta();}catch(e){console.error(e);}busy=false;}
 async function emJogoVolta(){const e=flags.emJogo;if(!e)return;delete flags.emJogo;saveGame();if(!e.t||Date.now()-e.t>12*3600e3)return;const M=e.k==='ms'?MISS.find(q=>q.id===e.id):null;if(e.k==='ms'&&!M)return;const md=e.k==='ms'?(String(M.run).match(/msGame\('(\w+)'/)||[])[1]:e.key;const nome={wall:'Muralha',surv:'Horda',td:'Torre',exp:'Expedição'}[md]||'partida';await say(`O jogo fechou no meio da ${nome}${M?' (missão '+M.t+')':''}. Quer voltar pra essa partida?`);const c=await choose(['Sim, voltar','Agora não'],{noCancel:true});if(c!==0){try{__fotoApagar();}catch(e){}return;}try{const F=await __fotoLer(e);if(F){window.__RESTORE=F;await say('Voltando pro ponto em que a partida parou (uns '+F.seg+' segundos de jogo).');}}catch(er){}if(e.k==='stg'){await stgLaunch(e.key,e.i);}else{const ok2=await (async()=>{flags.emJogo={k:'ms',id:M.id,t:Date.now()};saveGame();try{return await M.run();}finally{delete flags.emJogo;try{__fotoApagar();}catch(e){}}})();if(ok2)await msDone(M);else if(M.fail)await say(M.fail);}try{if(G.mode!=='world'){worldScreen();G.mode='world';}}catch(e){}saveGame();}
 
@@ -8994,9 +9016,9 @@ function drawEvo(){const A=EVOA;A.t++;const t=A.t,cx=W/2,cy=H*.42,k=Math.min(1,t
   if(t===175&&A.done){const d=A.done;A.done=null;d();}}
 /* REGIÕES: monstrinhos de cada cenário (a maioria é do tipo da região) */
 const RGN={campo:{maj:['pipiu','ratonga','corujito'],min:['zumbel','brotim','cacauzinho'],boss:'ratonga',cap:['pipiu','ratonga','corujito']},
-  chuva:{maj:['brotim','florina','cogumelim'],min:['zumbel','marolo','peixonete'],boss:'florina',cap:['cogumelim','florina','brotim']},
+  chuva:{maj:['brotim','florina','cogumelim'],min:['zumbel','marolo','cacauzinho'],boss:'florina',cap:['cogumelim','florina','brotim']},
   montanha:{maj:['pedrisco','rochedo','cabrito'],min:['pipiu','choquinho','cascopedra'],boss:'rochedo',cap:['cabrito','pedrisco']},
-  gelo:{maj:['flocolino','pinguinho'],min:['marolo','peixonete','auroril'],boss:'pinguinho',cap:['flocolino','pinguinho']},
+  gelo:{maj:['flocolino','pinguinho'],min:['marolo','auroril'],boss:'pinguinho',cap:['flocolino','pinguinho']},
   vulcao:{maj:['fagulho','lesmagma','brasinha'],min:['pedrisco','rochedo'],boss:'lesmagma',cap:['brasinha','lesmagma']}};
 Object.assign(RGN,{praia:{maj:['peixonete','caranguejo','marolo'],min:['choquinho','pipiu'],boss:'caranguerra',cap:['peixonete','caranguejo']},
   deserto:{maj:['cabrito','pedrisco','brasinha'],min:['fagulho','ratonga'],boss:'pedregao',cap:['cabrito','brasinha']},
@@ -9662,7 +9684,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793097312',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793097784',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}

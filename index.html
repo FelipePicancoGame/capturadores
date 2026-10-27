@@ -8993,7 +8993,7 @@ function drawDailyOld(u){const st=u.cfg.daily;st.t++;const t=st.t,day=st.day;u.r
 async function main(){
   worldScreen();document.body.classList.add('nomenu');G.mode='title';G.titleT=0;
   /* 26/out (Felipe: 'o oficial não tá salvando'): no iPhone o app do Claude esquece o salvo do aparelho quando fecha; o título (já aparecendo) espera a cópia da nuvem antes de mostrar os botões */try{CLOUDP.then(()=>{window.__CLOUDFIM=1;},()=>{window.__CLOUDFIM=1;});}catch(e){}try{await Promise.race([CLOUDP,new Promise(r=>setTimeout(r,12000))]);}catch(e){}
-  while(true){const has=hasSave();const opts=has?['CONTINUAR','NOVO JOGO','CARREGAR']:['NOVO JOGO','CARREGAR'];
+  while(true){const has=hasSave();const opts=has?['CONTINUAR','NOVO JOGO']:['NOVO JOGO'];
     const _pr=choose(opts,{box:{x:W/2-55,y:H*.93-opts.length*15-14-14,w:110,h:opts.length*15+14},noCancel:true,title:true});let _tm=null;if(!has){const _it=ui[ui.length-1];_tm=setInterval(()=>{try{if(hasSave()&&ui[ui.length-1]===_it){ui.pop();clearInterval(_tm);_it.res(-1);}}catch(e){}},500);}const i=await _pr;if(_tm)clearInterval(_tm);if(i===-1)continue;
     if(opts[i]==='CARREGAR'){await loadMenu();continue;}if(opts[i]==='CONTINUAR'){if(loadGame())break;}else{if(!has&&!window.__CLOUDFIM){await say('Ainda estou procurando o seu jogo salvo na nuvem. Começar um NOVO JOGO agora pode apagar ele. Tem certeza?');const c=await choose(['Não, esperar','Sim, novo jogo'],{noCancel:true});if(c!==1)continue;}if(has){await say('Começar um NOVO JOGO apaga o seu jogo salvo. Tem certeza?');const c=await choose(['Não, voltar','Sim, apagar'],{noCancel:true});if(c!==1)continue;}window.__NOVOJOGO=1;try{if(CLOUD&&CLOUD.db){const sn=await CLOUD.ref.get();const d=sn&&sn.exists?sn.data():null;if(d)await CLOUD.db.doc('data/users/'+CLOUD.uid+'/save_antes_novo_jogo').set(d);}}catch(e){}await newGame();break;}}
   await fadeTo(1);worldScreen();document.body.classList.remove('nomenu');G.mode='world';await fadeTo(0);busy=true;await offlineGains();try{await dailyGift();}catch(e){console.error(e);}try{await emJogoVolta();}catch(e){console.error(e);}busy=false;}
@@ -9684,7 +9684,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793097784',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793097909',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}

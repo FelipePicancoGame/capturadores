@@ -1367,7 +1367,7 @@ async function cfgMenu(){while(true){const sOn=!flags.sfxOff,fOn=!flags.fxOff;
   if(j===2){flags.fxOff=!flags.fxOff;saveGame();continue;}
   if(j===3){saveGame();try{cloudFlush();}catch(e){}await say('Jogo salvo!');continue;}
   if(j===4){const ok=await loadMenu();if(ok){try{_cPend=null;}catch(e){}party=[];G.mode='title';location.reload();return;}continue;}
-  if(j===5){await hqPlay(HQPAGES);continue;}
+  if(j===5){await hqPlay(hqAll());continue;}
   cfgMenu.open=0;return;}}
 
 /* 27/out (Felipe): pergunta no meio da tela, no estilo do Caderno (balão de destaque + tirinhas de papel com fita do kit de diálogos). Ex.: "voltar pra partida?" */
@@ -8106,7 +8106,7 @@ async function openMenu(){if(flags.migMsg){const t=flags.migMsg;delete flags.mig
     if(i===-8){await dexMenu();continue;}
     if(i===-4){await stageMap('td');continue;}
     if(i===-7){await stageMap('surv');continue;}
-    if(i===-5){flags.newsSeen=NOVIDADES.length;const list=NOVIDADES.slice().reverse();let pg=0;while(true){const j=await choose(['◀','▶','Voltar'],{news:{list,pg}});if(j===0)pg=Math.max(0,pg-1);else if(j===1)pg=Math.min(Math.ceil(list.length/4)-1,pg+1);else if(j>=10&&j<14){const n=list[pg*4+j-10];if(n){if(n.hq)await hqPlay(HQPAGES);else await say(n.t);}}else break;}continue;}
+    if(i===-5){flags.newsSeen=NOVIDADES.length;const list=NOVIDADES.slice().reverse();let pg=0;while(true){const j=await choose(['◀','▶','Voltar'],{news:{list,pg}});if(j===0)pg=Math.max(0,pg-1);else if(j===1)pg=Math.min(Math.ceil(list.length/4)-1,pg+1);else if(j>=10&&j<14){const n=list[pg*4+j-10];if(n){if(n.hq)await hqPlay(hqAll());else await say(n.t);}}else break;}continue;}
     if(i===-2){await stageMap('exp');continue;}
     if(i===-3){await stageMap('wall');continue;}
     if(i===0){let k=await partyPick(storage.length?`Equipe (${storage.length} no Sítio)`:'Sua equipe',false,true);if(k===-50){await cmpMenu();continue;}if(k===-51){await trainMenu();continue;}if(k>=0){let o,j;while(true){o=[];if(k>0)o.push('Pôr na frente');if(storage.length)o.push('Trocar com o Sítio');o.push('Comparar');o.push('Voltar');
@@ -8350,37 +8350,44 @@ document.querySelectorAll('[data-btn]').forEach(el=>{const k=el.dataset.btn;
   el.addEventListener('contextmenu',e=>e.preventDefault());});
 
 /* ---------- flow ---------- */
-/* 27/out HISTÓRIA EM QUADRINHOS NO CADERNO (Buchecha, etapa 1: capa, lenda, guardião). O texto é escrito pelo jogo. */
-const HQSRC={hq0:'blobs/7b15ae959a1640ef18c16a0a098c3df4.webp',hq1:'blobs/1c802cab6bc17767b17c3aef64848ae2.webp',hq2:'blobs/24a7d020990651a334c9d16625115030.webp'};const HQI={};
+/* 27/out HISTÓRIA EM QUADRINHOS NO CADERNO (Buchecha): capa, lenda, guardião, noite escura, vale agitado, hoje e chamado (menino/menina) e o diário. O texto é escrito pelo jogo. */
+const HQSRC={hq0:'blobs/621693c65c85e03efecb32a8a578d5ec.webp',hq1:'blobs/1c802cab6bc17767b17c3aef64848ae2.webp',hq2:'blobs/24a7d020990651a334c9d16625115030.webp',hq3:'blobs/08947b280b97a8cbf976d2bcfa34fd40.webp',hq4:'blobs/4d725a226ad8c4a0ab5dcd08c8e52ddf.webp',hq5m:'blobs/b0df012847e54ea77c1c569c31ab4713.webp',hq5f:'blobs/9c94d5c23cd86dcb3f088d0bd54dbc39.webp',hq6m:'blobs/989dac0017b4bf2aa9f6de7d27809430.webp',hq6f:'blobs/efcdf7eb18fb8fee3de525a5208b8ab4.webp',hq7:'blobs/ba07ff078e0558b27ba85d5bd3469eb7.webp'};const HQI={};
 function hqGet(k){let i=HQI[k];if(!i){i=new Image();i.src=HQSRC[k];HQI[k]=i;}return i;}
 function hqImg(k){const i=hqGet(k);return i.complete&&i.naturalWidth?i:null;}
 function hqLoad(ks){return Promise.race([Promise.all(ks.map(k=>new Promise(r=>{const i=hqGet(k);if(i.complete&&i.naturalWidth)return r();i.addEventListener('load',r,{once:true});i.addEventListener('error',r,{once:true});}))),new Promise(r=>setTimeout(r,8000))]);}
 const HQPAGES=[{k:'hq0',capa:1,t:'Este é o CADERNO DE AVENTURAS. Ele guarda uma história muito antiga...'},
   {k:'hq1',t:'Há muito tempo, o Vale Verde era protegido por um monstrinho de luz: o AURORION. Toda noite ele pintava o céu com uma aurora colorida.'},
-  {k:'hq2',t:'O Vô Tobias era o Guardião da Aurora. Ele cuidava dos monstrinhos e desenhava tudo neste caderno.'}];
+  {k:'hq2',t:'O Vô Tobias era o Guardião da Aurora. Ele cuidava dos monstrinhos e desenhava tudo neste caderno.'},
+  {k:'hq3',t:['Até que chegou o BANDO SOMBRA, do Chefe Corvo e da Comandante Garra. Eles queriam a luz da aurora só pra eles.','Num clarão, o Aurorion sumiu... e o céu do Vale ficou escuro.']},
+  {k:'hq4',t:['Sem a aurora, os monstrinhos selvagens ficaram agitados.','O Vô guardou o caderno e disse: um dia, alguém vai continuar esta história.']}];
+function hqHero(h){const f=h==='menina'?'f':'m';return [{k:'hq5'+f,t:['Hoje é o seu aniversário de 10 anos. A mamãe trouxe uma caixa de madeira com um laço...','Dentro estava o caderno do Vô! As últimas páginas estão em branco.']},
+  {k:'hq6'+f,t:['Nisso, o Téo chega correndo: — A Professora Ipê está procurando um novo treinador! Vem!','No laboratório, a Professora Ipê mostra quatro cápsulas: — Todo treinador começa com um parceiro. Escolha o seu!']}];}
+function hqDiario(sp,h){return {k:'hq7',diario:1,sp,hero:h,t:'Você e seu parceiro agora escrevem a próxima página. Traga a aurora de volta ao Vale!'};}
+function hqAll(){const h=(typeof flags!=='undefined'&&flags&&flags.hero)||'menino',sp=(typeof party!=='undefined'&&party[0]&&party[0].sp)||(flags&&flags.starter)||'fagulho';return [...HQPAGES,...hqHero(h),hqDiario(sp,h)];}
 let HQ=null;
+function hqMonFit(sp,x,y,w,h){try{const k=String(sp).replace('*',''),I=MONIMG[k];if(I&&I.complete&&I.naturalWidth){const s=Math.min(w/I.naturalWidth,h/I.naturalHeight),dw=I.naturalWidth*s,dh=I.naturalHeight*s;b.save();b.imageSmoothingEnabled=true;b.drawImage(I,x+(w-dw)/2,y+h-dh,dw,dh);b.restore();return;}drawMonFx(k,x+w/2,y+h-28*(h/60),h/60,false);}catch(e){}}
 function hqRender(){px(0,0,W,H,'#efe3c6');for(let y=0;y<H;y+=9)px(0,y,W,.6,'rgba(90,140,170,.18)');if(!HQ)return;const f=HQ.p;HQ.t=(HQ.t||0)+1;const i=hqImg(f.k);if(!i)return;
   const sc=Math.min(W/1080,H/1920),w=1080*sc,h=1920*sc,x=(W-w)/2;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.globalAlpha=Math.min(1,HQ.t/14);b.drawImage(i,x,0,w,h);b.restore();
-  if(f.capa)try{T('CADERNO DE',x+548*sc,182*sc,52*sc,'center','#5a3a1a',520*sc);T('AVENTURAS',x+548*sc,240*sc,52*sc,'center','#5a3a1a',520*sc);}catch(e){}}
+  if(f.capa)try{T('CADERNO DE',x+550*sc,206*sc,50*sc,'center','#5a3a1a',540*sc);T('AVENTURAS',x+550*sc,262*sc,50*sc,'center','#5a3a1a',540*sc);}catch(e){}
+  if(f.diario){const ax=x+275*sc,ay=380*sc,aw=500*sc,ah=650*sc,bob=Math.sin(HQ.t/14)*1.2;b.save();b.globalAlpha=Math.min(1,HQ.t/20);
+    if(f.hero==='menina'){hqMonFit(f.sp,ax+aw*.1,ay+ah*.18+bob,aw*.8,ah*.72);}
+    else{try{tcHeroDraw(ax,ay+ah*.08,aw*.52,ah*.86);}catch(e){}hqMonFit(f.sp,ax+aw*.46,ay+ah*.34+bob,aw*.54,ah*.58);}
+    b.restore();}}
 async function hqPlay(list){const pm=G.mode,pi=G.isc;await hqLoad(list.map(p=>p.k));G.mode='intro';G.isc='hq';
-  try{for(const p of list){HQ={p,t:0};try{tone([523,659],.04);}catch(e){}await say(p.t);}}finally{HQ=null;G.isc=pi;G.mode=pm;}}
-NOVIDADES.push({d:'27/10',t:'HISTÓRIA NOVA: o começo do jogo agora é contado no CADERNO DE AVENTURAS, em quadrinhos! Toque aqui pra ver as primeiras páginas.',hq:1});
+  try{for(const p of list){HQ={p,t:0};try{tone([523,659],.04);}catch(e){}for(const s of [].concat(p.t))await say(s);}}finally{HQ=null;G.isc=pi;G.mode=pm;}}
+async function hqAsk(){const pm=G.mode,pi=G.isc;G.mode='intro';G.isc='hq';HQ={p:HQPAGES[HQPAGES.length-1],t:30};try{const j=await choose(['MENINO','MENINA'],{noCancel:true,cadAsk:{q:'Quem vai continuar esta história? Você é...',cols:['#2f6fd8','#d84a8a']}});return j===1?'menina':'menino';}finally{HQ=null;G.isc=pi;G.mode=pm;}}
+NOVIDADES.push({d:'27/10',t:'HISTÓRIA NOVA: o começo do jogo agora é contado no CADERNO DE AVENTURAS, em quadrinhos! Toque aqui pra ver a história completa.',hq:1});
 
 async function newGame(){
   await fadeTo(1);worldScreen();await fadeTo(0);
-  G.mode='intro';await hqPlay(HQPAGES);G.mode='intro';
-  G.isc='bando';await say('Mas um dia apareceu o misterioso BANDO SOMBRA, liderado pelo Corvo. Eles queriam a luz da aurora só pra eles.');
-  await say('O Aurorion sumiu... e desde então os monstrinhos selvagens andam agitados pelo vale.');
-  G.isc=null;G.ipeMon=0;await say('Olá! Eu sou a Professora Ipê. Que bom que você chegou!');
-  await say('Preciso de alguém corajoso pra descobrir o que o Bando Sombra está tramando e trazer a paz de volta ao Vale.');
-  await say('Mas ninguém faz isso sozinho. Todo treinador começa com um parceiro. Escolha o seu!');
+  G.mode='intro';await hqPlay(HQPAGES);const _hero=await hqAsk();await hqPlay(hqHero(_hero));G.mode='intro';G.isc=null;G.ipeMon=0;
   G.mode='starter';const keys=['fagulho','marolo','brotim','pedrisco'];if(!SP.pedrisco.desc)SP.pedrisco.desc='Um dinossaurinho de pedra, teimoso e durão. Aguenta qualquer pancada.';let key;
   while(true){const i=await choose(keys.map(k=>SP[k].name),{cols:4,hidden:true,noCancel:true,starter:true,start:G.sel});G.sel=i;const s=SP[keys[i]];
     await say(`${s.name}, tipo ${TYPES[s.type]}. ${s.desc}`);
     if(await choose(['SIM','NÃO'],W<220?{box:{x:W-66,y:H-57,w:63,h:52},promptW:W-68,prompt:`Escolher ${s.name}?`}:{box:{x:168,y:H-58,w:72,h:58},promptW:170,prompt:`Escolher ${s.name}?`})===0){key=keys[i];break;}}
   party=[mk(key,5)];storage=[];bag={ball:5,potion:2};flags={};
   G.mode='intro';
-  flags.starter=key;await say(`Você e ${SP[key].name} agora são parceiros!`);
+  flags.starter=key;flags.hero=_hero;await hqPlay([hqDiario(key,_hero)]);G.mode='intro';await say(`Você e ${SP[key].name} agora são parceiros!`);
   await say('Meu outro aluno, o Davi, saiu cedo pra treinar longe daqui. Ele é bem competitivo... um dia vocês vão se esbarrar!');
   await say('Explore o Vale, faça amigos e siga a HISTÓRIA: o pergaminho 📜 no alto da tela mostra sua próxima missão.');
   await say('Treine no mato alto da Rota 1, ao norte da cidade. Quando estiver pronto, desafie a Líder Bruna na Arena de telhado azul.');
@@ -9741,7 +9748,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793131363',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793132981',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}

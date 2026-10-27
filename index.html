@@ -9210,12 +9210,15 @@ const MLOOP={'assets/musica/mus_trilha.mp3':42.857},MAVISO='assets/musica/mus_av
 const MSEC={wall:{bpm:480,b0:0,c:[0,117.16],h:[117.16,252.72]},surv:{bpm:480,b0:0,c:[0,97.6],h:[97.6,141.88]},td:{bpm:136.10,b0:.232,c:[7.286,120.144],h:[174.81,203.024]}};
 function mfPos(S,t){let p=S.o0+(t-S.t0);if(p>S.le&&S.le>S.ls)p=S.ls+((p-S.ls)%(S.le-S.ls));return p;}
 const MFSL={};function mfSlices(url,b,SE){try{if(MFSL[url]&&MFSL[url].src===b)return MFSL[url];const cut=(a0,a1)=>{const sr=b.sampleRate,i0=Math.max(0,Math.round(a0*sr)),i1=Math.min(b.length,Math.round(a1*sr)),n=i1-i0;const o=ACX.createBuffer(b.numberOfChannels,n,sr);for(let c=0;c<b.numberOfChannels;c++)o.getChannelData(c).set(b.getChannelData(c).subarray(i0,i1));return o;};const r={src:b,c:cut(SE.c[0],SE.c[1]),h:cut(SE.h[0],SE.h[1])};for(const k in MFSL)delete MFSL[k];MFSL[url]=r;return r;}catch(e){return null;}}
+const MBOSS={surv:['blobs/51dc4a349099f18b3eb9dc50461d3d61.mp4','blobs/abf50c089a212ee4e9389ab978fa6039.mp4','blobs/bdfbe99907ea9670d5d2db9a70828fbe.mp4','blobs/6a2c282a2b12c8dae8f6557679b73bdf.mp4'],wall:['blobs/79355394eccedfc5fd744070d3cf5bdd.mp4','blobs/be7bfe207edbdbb1c0ca80f5d1b46dc6.mp4','blobs/a0ea49361505b84edb20293d07a918b2.mp4'],td:['blobs/7385c20e8afe53295fc7891eb5e00827.mp4','blobs/783c448562c482eca1e2584395fab6c3.mp4','blobs/e6d8fb3d5af4ae3676fc061f20631172.mp4']};
+function mbNext(k){const L=MBOSS[k];if(!L||!L.length)return null;const fl=flags.mbi||(flags.mbi={});return L[(fl[k]||0)%L.length];}
+function mbLoad(k){const u=mbNext(k);if(!u||MFS.buf[u]||MFS.ldB===u)return;MFS.ldB=u;fetch(u).then(r=>r.arrayBuffer()).then(ab=>mfDec(ab)).then(b=>{MFS.buf[u]=b;MFS.ldB=null;}).catch(()=>{MFS.ldB=null;});}
 function mfSecTick(k,now){const S=MFS.sx,SE=MSEC[k];if(!S||!S.pc||!SE||!MFS.node||!MFS.fl)return;if(S.pend&&now<S.pend)return;S.pend=0;
   const boss=mfBoss();if(boss)S.lastB=now;const want=boss||(S.hot&&now-S.lastB<1.5);if(want===S.hot)return;
   const ahead=.3,p=mfPos(S,now+ahead),bar=240/SE.bpm,nb=SE.b0+Math.ceil((p-SE.b0)/bar-1e-3)*bar,ts=now+ahead+Math.max(0,nb-p);
-  const seg=want?SE.h:SE.c,up=want;try{__EV(want?'música: refrão':'música: calma');}catch(_){}if(!S.pc)return;try{const s2=ACX.createBufferSource();s2.buffer=want?S.pc.h:S.pc.c;s2.loop=true;const g2=ACX.createGain();g2.gain.setValueAtTime(0,now);g2.gain.setValueAtTime(0,ts);g2.gain.linearRampToValueAtTime(1,ts+(up?.06:.7));s2.connect(g2);g2.connect(MFS.fl);s2.start(ts);
+  let BB=null;if(want){const u=mbNext(k);BB=u&&MFS.buf[u]||null;}const seg=want?(BB?[0,BB.duration]:SE.h):SE.c,up=want;try{__EV(want?'música: refrão':'música: calma');}catch(_){}if(!S.pc)return;try{const s2=ACX.createBufferSource();s2.buffer=want?(BB||S.pc.h):S.pc.c;s2.loop=true;const g2=ACX.createGain();g2.gain.setValueAtTime(0,now);g2.gain.setValueAtTime(0,ts);g2.gain.linearRampToValueAtTime(1,ts+(up?.06:.7));s2.connect(g2);g2.connect(MFS.fl);s2.start(ts);
     const og=MFS.gs,on=MFS.node;if(og){og.gain.cancelScheduledValues(now);og.gain.setValueAtTime(1,ts);og.gain.linearRampToValueAtTime(0,ts+(up?.2:.9));}try{on.onended=()=>{try{on.disconnect();if(og)og.disconnect();}catch(_){}};on.stop(ts+(up?.4:1.1));}catch(e){}
-    MFS.node=s2;MFS.gs=g2;S.t0=ts;S.o0=seg[0];S.ls=seg[0];S.le=seg[1];S.hot=want;S.pend=ts+.5;if(up&&MFS.duck)MFS.duck=Math.min(MFS.duck,ts);}catch(e){}}
+    MFS.node=s2;MFS.gs=g2;S.t0=ts;S.o0=seg[0];S.ls=seg[0];S.le=seg[1];S.hot=want;S.pend=ts+.5;if(want&&BB){const fl=flags.mbi||(flags.mbi={});fl[k]=(fl[k]||0)+1;}if(up&&MFS.duck)MFS.duck=Math.min(MFS.duck,ts);}catch(e){}}
 
 function mfBoss(){try{const m=G.mode,L=m==='wall'?WL&&WL.foes:m==='td'?TD&&TD.foes:m==='surv'?SV&&SV.foes:null;return !!(L&&L.some(e=>e&&e.boss&&!e.dead));}catch(e){return false;}}
 function mfAviso(){const b=MFS.buf&&MFS.buf[MAVISO];if(!b)return;try{const s=ACX.createBufferSource(),g=ACX.createGain();s.buffer=b;g.gain.value=.85;s.connect(g);g.connect(ACX.destination);s.start();MFS.duck=ACX.currentTime+9;}catch(e){}}
@@ -9233,7 +9236,7 @@ function setT(p,v,now,tc){try{if(typeof v==='number'){const r=Math.abs(v)>=50?Ma
 function mfTick(){if(!ACX)return false;const k=mfFor(),on=musOn(),now=ACX.currentTime;
   if(!k||!on||REDUCED){if(MFS.cur){mfStop();MFS.cur=null;}return false;}
   const url=mfEl(k);
-  if(MFS.cur!==url){mfStop();if(MFS.cur&&MFS.buf)delete MFS.buf[MFS.cur];MFS.cur=url;MFS.bw=false;}
+  if(MFS.cur!==url){mfStop();if(MFS.cur&&MFS.buf)delete MFS.buf[MFS.cur];try{for(const kk in MBOSS)if(kk!==k)for(const u of MBOSS[kk])delete MFS.buf[u];}catch(e){}MFS.cur=url;MFS.bw=false;}if(MBOSS[k])mbLoad(k);
   if(k!=='world'&&!MSEC[k]){mfLoadAviso();const bn=mfBoss();if(bn&&!MFS.bw)mfAviso();MFS.bw=bn;}
   if(!MFS.node){const b=MFS.buf&&MFS.buf[url],lu=MLAYER[url],lb=lu&&MFS.buf[lu];if(!b||(lu&&!lb))return true;try{const s=ACX.createBufferSource(),f=ACX.createBiquadFilter(),g=ACX.createGain();s.buffer=(MSEC[k]&&mfSlices(url,b,MSEC[k])||{}).c||b;s.loop=true;f.type='lowpass';f.frequency.value=16000;f.Q.value=.7;g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(.55,now+.5);{const gs=ACX.createGain();s.connect(gs);gs.connect(f);MFS.gs=gs;}f.connect(g);g.connect(ACX.destination);{const SE=MSEC[k];const PC=SE&&mfSlices(url,b,SE);if(SE&&PC){s.start(now+.02);MFS.sx={t0:now+.02,o0:SE.c[0],ls:SE.c[0],le:SE.c[1],hot:false,lastB:0,pend:0,pc:PC};}else if(SE){s.start(now+.02);}else if(MLOOP[url]){s.loopStart=1;s.loopEnd=1+MLOOP[url];s.start(now+.02,1);}else s.start(now+.02);}MFS.node=s;MFS.gn=g;MFS.fl=f;if(lb){const s2=ACX.createBufferSource(),g2=ACX.createGain();s2.buffer=lb;s2.loop=true;g2.gain.value=0;s2.connect(g2);g2.connect(f);s2.start(now+.02);MFS.ln=s2;MFS.lg=g2;MFS.lw=0;}}catch(e){return false;}}
   mfSecTick(k,now);
@@ -9738,7 +9741,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793129347',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793131363',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}

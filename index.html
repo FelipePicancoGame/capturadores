@@ -9646,7 +9646,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793062190',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793062444',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}
@@ -9716,7 +9716,7 @@ window.__GM=function(){try{return G.mode;}catch(_){return '';}};
     if(!best||!best.em||!e)return null;const same=best.em.k===e.k&&(e.k==='ms'?best.em.id===e.id:(best.em.key===e.key&&best.em.i===e.i));if(!same||Date.now()-best.t>12*3600e3)return null;return best;};
   window.__fotoApagar=function(){try{localStorage.removeItem('cv_partida');}catch(_){}try{if(typeof CLOUD!=='undefined'&&CLOUD&&CLOUD.db)CLOUD.db.doc('data/users/'+CLOUD.uid+'/partida').delete().catch(()=>{});}catch(_){}};
   window.__fotoAplicar=function(mode,S){const F=window.__RESTORE;if(!F||F.mode!==mode)return false;window.__RESTORE=null;
-    try{rev(F.st,S);try{__EV('voltou pra partida '+mode+' aos '+F.seg+'s');}catch(_){}return true;}catch(err){try{__EV('foto falhou '+String(err).slice(0,60));}catch(_){}return false;}};
+    try{rev(F.st,S);/* 26/out: as cartas na tela perdem a ação ao salvar (travava em 'escolher carta'): sorteia cartas novas na volta */try{if(S.cards){const ch=S.cards.chest;S.cards=null;if(mode==='wall')wOffer();else if(mode==='surv')svOffer(!!ch);else if(mode==='td')tdOffer();}}catch(e2){S.cards=null;}try{__EV('voltou pra partida '+mode+' aos '+F.seg+'s');}catch(_){}return true;}catch(err){try{__EV('foto falhou '+String(err).slice(0,60));}catch(_){}return false;}};
   window.__fotoTeste={ser,rev};
 })();
 

@@ -9412,6 +9412,7 @@ const MBOSS={surv:['blobs/51dc4a349099f18b3eb9dc50461d3d61.mp4','blobs/abf50c089
 MBOSS.wall.push('blobs/b32f76629b2328fe7f69148ef305bdc7.mp4');const MBPT='blobs/b32f76629b2328fe7f69148ef305bdc7.mp4';
 function mbNext(k){const L=MBOSS[k];if(!L||!L.length)return null;if(k==='wall'&&!flags.mbPT)return MBPT;const fl=flags.mbi||(flags.mbi={});return L[(fl[k]||0)%L.length];}
 function mbLoad(k){const u=mbNext(k);if(!u||MFS.buf[u]||MFS.ldB===u)return;MFS.ldB=u;fetch(u).then(r=>r.arrayBuffer()).then(ab=>mfDec(ab)).then(b=>{MFS.buf[u]=b;MFS.ldB=null;}).catch(()=>{MFS.ldB=null;});}
+MFILE.wall='blobs/a481e9642ff09b14e48f3ec6edec5887.mp4';delete MSEC.wall;MBOSS.wall=[];
 function mfSecTick(k,now){const S=MFS.sx,SE=MSEC[k];if(!S||!S.pc||!SE||!MFS.node||!MFS.fl)return;if(S.pend&&now<S.pend)return;S.pend=0;
   const boss=mfBoss();if(boss)S.lastB=now;const want=boss||(S.hot&&now-S.lastB<1.5);if(want===S.hot)return;
   const ahead=.3,p=mfPos(S,now+ahead),bar=240/SE.bpm,nb=SE.b0+Math.ceil((p-SE.b0)/bar-1e-3)*bar,ts=now+ahead+Math.max(0,nb-p);
@@ -9436,7 +9437,7 @@ function mfTick(){if(!ACX)return false;const k=mfFor(),on=musOn(),now=ACX.curren
   if(!k||!on||REDUCED){if(MFS.cur){mfStop();MFS.cur=null;}return false;}
   const url=mfEl(k);
   if(MFS.cur!==url){mfStop();if(MFS.cur&&MFS.buf)delete MFS.buf[MFS.cur];try{for(const kk in MBOSS)if(kk!==k)for(const u of MBOSS[kk])delete MFS.buf[u];}catch(e){}MFS.cur=url;MFS.bw=false;}if(MBOSS[k])mbLoad(k);
-  if(k!=='world'&&!MSEC[k]){mfLoadAviso();const bn=mfBoss();if(bn&&!MFS.bw)mfAviso();MFS.bw=bn;}
+  if(k!=='world'&&k!=='wall'&&!MSEC[k]){mfLoadAviso();const bn=mfBoss();if(bn&&!MFS.bw)mfAviso();MFS.bw=bn;}
   if(!MFS.node){const b=MFS.buf&&MFS.buf[url],lu=MLAYER[url],lb=lu&&MFS.buf[lu];if(!b||(lu&&!lb))return true;try{const s=ACX.createBufferSource(),f=ACX.createBiquadFilter(),g=ACX.createGain();s.buffer=(MSEC[k]&&mfSlices(url,b,MSEC[k])||{}).c||b;s.loop=true;f.type='lowpass';f.frequency.value=16000;f.Q.value=.7;g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(.55,now+.5);{const gs=ACX.createGain();s.connect(gs);gs.connect(f);MFS.gs=gs;}f.connect(g);g.connect(ACX.destination);{const SE=MSEC[k];const PC=SE&&mfSlices(url,b,SE);if(SE&&PC){s.start(now+.02);MFS.sx={t0:now+.02,o0:SE.c[0],ls:SE.c[0],le:SE.c[1],hot:false,lastB:0,pend:0,pc:PC};}else if(SE){s.start(now+.02);}else if(MLOOP[url]){s.loopStart=1;s.loopEnd=1+MLOOP[url];s.start(now+.02,1);}else s.start(now+.02);}MFS.node=s;MFS.gn=g;MFS.fl=f;if(lb){const s2=ACX.createBufferSource(),g2=ACX.createGain();s2.buffer=lb;s2.loop=true;g2.gain.value=0;s2.connect(g2);g2.connect(f);s2.start(now+.02);MFS.ln=s2;MFS.lg=g2;MFS.lw=0;}}catch(e){return false;}}
   mfSecTick(k,now);
   const IN=k==='world'?.4:(MUS.int==null?.5:MUS.int),a=MFS.node,dk=(MFS.duck&&now<MFS.duck)?.2:1;try{const pr=MSEC[k]?1:1+.08*Math.max(0,(IN-.5)/.5);setT(a.playbackRate,pr,now,.8);if(MFS.ln)setT(MFS.ln.playbackRate,pr,now,.8);}catch(e){}if(MFS.lg){const want=mfBoss()?1:0;if(want!==MFS.lw){MFS.lw=want;MFS.lg.gain.cancelScheduledValues(now);setT(MFS.lg.gain,want,now,want?.6:1.2);}}
@@ -9976,7 +9977,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793183319',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793184746',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}

@@ -8377,7 +8377,7 @@ function hqRender(){px(0,0,W,H,'#efe3c6');for(let y=0;y<H;y+=9)px(0,y,W,.6,'rgba
     if(f.hero==='menina'){hqMonFit(f.sp,ax+aw*.1,ay+ah*.18+bob,aw*.8,ah*.72);}
     else{try{tcHeroDraw(ax,ay+ah*.08,aw*.52,ah*.86);}catch(e){}hqMonFit(f.sp,ax+aw*.46,ay+ah*.34+bob,aw*.54,ah*.58);}
     b.restore();}}
-async function hqPlay(list){const pm=G.mode,pi=G.isc;await hqLoad(list.map(p=>p.k));G.mode='intro';G.isc='hq';
+async function hqPlay(list){const pm=G.mode,pi=G.isc;HQ=null;G.mode='intro';G.isc='hq';/* 27/out: já mostra o papel do caderno enquanto as páginas carregam (antes aparecia a Vó Ipê por um instante) */await hqLoad(list.map(p=>p.k));
   try{for(const p of list){HQ={p,t:0};try{tone([523,659],.04);}catch(e){}for(const s of [].concat(p.t))await say(s);}}finally{HQ=null;G.isc=pi;G.mode=pm;}}
 async function hqAsk(){const pm=G.mode,pi=G.isc;G.mode='intro';G.isc='hq';HQ={p:HQPAGES[HQPAGES.length-1],t:30};try{const j=await choose(['MENINO','MENINA'],{noCancel:true,cadAsk:{q:'Quem vai continuar esta história? Você é...',cols:['#2f6fd8','#d84a8a']}});return j===1?'menina':'menino';}finally{HQ=null;G.isc=pi;G.mode=pm;}}
 NOVIDADES.push({d:'27/10',t:'HISTÓRIA NOVA: o começo do jogo agora é contado no CADERNO DE AVENTURAS, em quadrinhos! Toque aqui pra ver a história completa.',hq:1});
@@ -9787,7 +9787,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793146516',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793147600',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}

@@ -3165,7 +3165,7 @@ function expUINew(t){const X=EXP,L=expLay();
   {const R=relics(),A=L.amu,acx=A.x+A.w/2;rrect(A.x,A.y-1,A.w,A.h+4,6,'rgba(40,34,40,.88)',false);b.lineWidth=.8;b.strokeStyle='#c9922a';rpath(A.x,A.y-1,A.w,A.h+4,6);b.stroke();
     const lw=R.length?92:52;rrect(acx-lw/2,A.y-7,lw,9,4.5,'#2a2230',false);b.lineWidth=.7;b.strokeStyle='#c9922a';rpath(acx-lw/2,A.y-7,lw,9,4.5);b.stroke();T(R.length?'AMULETOS · toque = cubo':'AMULETOS',acx,A.y-6.4,5.6,'center','#f2d8a0',lw-4);
     L.slots.forEach((s,i)=>{const q=R[i],cx=s.x+s.w/2,cy=s.y+s.h/2;if(q)relGlow(cx,cy,q.r,1.6);euDraw('slot_amuleto',s.x,s.y,s.w,s.h);
-      if(q){b.lineWidth=1.3;b.strokeStyle=relCol(q.r);rpath(s.x+4.5,s.y+4.5,s.w-9,s.h-9,3);b.stroke();drawIcon(RELK[q.k].ic,cx,cy,.55);}
+      if(q){b.lineWidth=1.3;b.strokeStyle=relCol(q.r);rpath(s.x+4.5,s.y+4.5,s.w-9,s.h-9,3);b.stroke();drawIcon(RELK[q.k].ic,cx,cy,.72);}
       else{b.save();b.globalAlpha=.25;b.beginPath();b.arc(cx,cy+1,4,0,Math.PI*2);b.lineWidth=1;b.strokeStyle='#c8c0b0';b.stroke();b.restore();}});
     }
   /* TRILHA de fases (janela em volta da fase atual) */
@@ -4682,7 +4682,7 @@ async function wSwap(i){const w=WL,old=w.defs[i],list=party.filter(m=>!w.defs.so
   if(WL===w&&k>=0){const nd=wDef(list[k],i);nd.x=old.x;nd.y=old.y;for(const f of ['mDmg','mSpd','multi','pierce','charge','cMul','wl'])nd[f]=old[f];nd.cd=30;w.defs[i]=nd;part(nd.x,nd.y-10,C.yellow,14,{sp:2,up:1});part(nd.x,nd.y-10,C.yellow,1,{kind:'ring',sp:0,life:24,grav:0});wPop(nd.x,nd.y-36,`Vai, ${nm(nd.m)}!`,C.yellow,8);}
   if(WL===w&&!w.cards&&!w.paused)w.running=true;}
 const ICONSPR={k_bounce:'cw_bounce',k_burn:'cw_burn',k_chain:'cw_chain',k_coin:'cw_coin',k_critd:'cw_critd',k_crystal:'cw_crystal',k_curse:'cw_curse',k_energy:'cw_energy',k_exec:'cw_exec',k_fix:'cw_fix',k_hunt:'cw_hunt',k_luck:'cw_luck',k_multi:'cw_multi',k_phoenix:'cw_phoenix',k_pierce:'cw_pierce',k_regen:'cw_regen',k_roar:'cw_roar',k_root:'cw_root',k_slow:'cw_slow',k_spd:'cw_spd',k_spike:'cw_spike',k_starfall:'cw_starfall',k_stun:'cw_stun',k_swarm:'cw_swarm',k_vamp:'cw_vamp',k_dmg:'cw_dmg',k_crit:'cw_crit',k_hp:'cw_hp',k_splash:'cw_splash',k_titan:'cw_titan',k_meteor:'cw_meteor',sword:'ic_dmg',eye:'ic2_olho',heart:'ic_hp',shield:'ic_shield',coin:'ic2_moeda',skull:'ic2_golpe_fatal',star:'ic2_estrela',boom:'ic_aoe',fire:'ic2_fogo',drop:'ic2_agua',leaf:'ic2_planta',bolt:'ic2_eletrico',snow:'ic2_gelo',regen:'ic_regen',bug:'ic2_veneno',rock:'ic2_pedra',meteor:'ic2_fogo',energy:'ic_charge',spike:'ic_thorns',c_aura:'ic_aura',c_star:'ic_charge',c_meteor:'ic_aoe',c_frost:'ic_frz',c_bomb:'ic_boom',c_spd:'ic_spd',pierce:'ic_pierce',double:'ic_multi',bounce:'ic2_ricochete',potion:'ic2_pocao',exp:'ic2_xp',train:'ic2_treino'};
-function drawIcon(k,x,y,s=1){if(ICONSPR[k]&&fxSpr(ICONSPR[k],x,y,(ICONSPR[k][0]==='i'?22:24)*s))return;b.save();b.translate(x,y);b.scale(s,s);switch(k){
+function drawIcon(k,x,y,s=1){if(typeof k==='string'&&k.slice(0,3)==='am_'){try{if(amDraw(k,x,y,s))return;}catch(e){}}if(ICONSPR[k]&&fxSpr(ICONSPR[k],x,y,(ICONSPR[k][0]==='i'?22:24)*s))return;b.save();b.translate(x,y);b.scale(s,s);switch(k){
   case 'sword':poly([[-2,6],[-2,-12],[0,-15],[2,-12],[2,6]],'#dfe6f0');px(-1,-12,1,17,C.white);px(-7,6,14,3,'#c9a24a');px(-1.5,9,3,6,'#7a4a2a');E(0,15,2.2,2,'#c9a24a');break;
   case 'bolt':poly([[2,-15],[-7,1],[-1,1],[-4,15],[8,-3],[1,-3],[5,-15]],C.yellow);break;
   case 'snow':for(let k=0;k<6;k++){const a=k*Math.PI/3;ln([[0,0],[Math.cos(a)*13,Math.sin(a)*13]],2.4,'#bfe8ff');ln([[Math.cos(a)*8,Math.sin(a)*8],[Math.cos(a+.5)*11,Math.sin(a+.5)*11]],1.4,'#ffffff');}E(0,0,3,3,'#ffffff');break;
@@ -9976,7 +9976,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793153849',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793181185',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}

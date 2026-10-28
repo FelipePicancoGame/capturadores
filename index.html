@@ -2615,7 +2615,7 @@ async function shopMenu(UF){UPF=UF||null;flags.up=flags.up||{};const S={tab:UF?1
     else{const u=upsList()[j];if(UP(u.k)>=u.max){S.toast={t:0,txt:`${u.n} já está no máximo`,bad:1};continue;}const c2=upGem(u);
       if(gems()<c2){S.toast={t:0,txt:`Faltam ${c2-gems()} cristais (ganhe vencendo fases)`,bad:1};continue;}
       addGems(-c2);flags.up[u.k]=UP(u.k)+1;S.toast={t:0,txt:`${u.n} subiu pro nível ${UP(u.k)}!`,ic:UPICON[u.k],up:1};S.bump={k:j,t:0};S.coins.push({k:j,t:0});saveGame();}}}
-function drawStore(u){UKWAIT=null;if(drawStoreArt(u)||ukWaitDraw(u))return;const S=u.cfg.store,L=u.cfg.rows,n=L.length;S.t++;S.tt=(S.tt||0)+1;const t=S.t,tt=S.tt;S.shown+=((flags.coins||0)-S.shown)*.2;if(Math.abs(S.shown-(flags.coins||0))<.5)S.shown=flags.coins||0;
+function drawStore(u){UKWAIT=null;{const S0=u.cfg&&u.cfg.store;if(S0){const c0=flags.coins||0;S0.shown=(typeof S0.shown==='number'?S0.shown:c0);S0.shown+=(c0-S0.shown)*.3;if(Math.abs(S0.shown-c0)<.5)S0.shown=c0;}}if(drawStoreArt(u)||ukWaitDraw(u))return;const S=u.cfg.store,L=u.cfg.rows,n=L.length;S.t++;S.tt=(S.tt||0)+1;const t=S.t,tt=S.tt;S.shown+=((flags.coins||0)-S.shown)*.2;if(Math.abs(S.shown-(flags.coins||0))<.5)S.shown=flags.coins||0;
   const g=b.createLinearGradient(0,0,0,H);g.addColorStop(0,'#3a2a6a');g.addColorStop(1,'#16122c');b.fillStyle=g;b.fillRect(0,0,W,H);
   for(let i=0;i<14;i++){const x=(i*47+t*.2)%W,y=(i*29)%H;b.globalAlpha=.25;star(x,y,1.6,'#ffe9a8');b.globalAlpha=1;}
   px(0,0,W,24,'#7a2a3a');const sw=W/9;for(let i=0;i<9;i++){px(i*sw,0,sw,20,i%2?'#ffffff':'#e8485a');E(i*sw+sw/2,20,sw/2,4.5+Math.sin(t/12+i)*.6,i%2?'#ffffff':'#e8485a',0,false);}px(0,0,W,3,'#5a1f2a');
@@ -7219,9 +7219,7 @@ function svMapBake(M){const CH=512,S=1;M.chunks=new Map();const Tt=asImg('g_terr
 function svMapGround(M,cx,cy){if(svRoadDraw(M,cx,cy))return;if(!M.chunks){try{svMapBake(M);}catch(e){console.warn(e);M.chunks=new Map();}}const CH=512;b.save();b.imageSmoothingEnabled=true;
   for(let gx=Math.floor(cx/CH);gx<=Math.floor((cx+W)/CH);gx++)for(let gy=Math.floor(cy/CH);gy<=Math.floor((cy+H)/CH);gy++){const C2=M.chunks.get(gx+','+gy);if(C2)b.drawImage(C2.cv,C2.ox,C2.oy,CH,CH);}
   b.restore();}
-function svObjDraw(o,t){const k=o.k;if(k[0]==='@'){svProc(k.slice(1),o.x,o.y,o.s,t,(Math.abs(o.x*7+o.y*13))|0);return;}const I=svImg(k);if(!I)return;
-  E(o.x,o.y+1,o.w*(o.house?.44:.3),Math.max(2,o.w*.075),'rgba(0,0,0,.24)',0,false);
-  const BIG=/^(vh_caverna|vh_altar|vh_acamp|b_caverna|b_torre|b_farol)$/.test(k);if(BIG){E(o.x,o.y-1,o.w*.46,o.w*.09,'rgba(0,0,0,.26)',0,false);}
+function svObjDraw(o,t){const k=o.k;if(k[0]==='@'){svProc(k.slice(1),o.x,o.y,o.s,t,(Math.abs(o.x*7+o.y*13))|0);return;}const I=svImg(k);if(!I)return;   const BIG=/^(vh_caverna|vh_altar|vh_acamp|b_caverna|b_torre|b_farol)$/.test(k);if(!BIG)E(o.x,o.y+1,o.w*(o.house?.44:.3),Math.max(2,o.w*.075),'rgba(0,0,0,.24)',0,false);
   b.drawImage(I,o.x-o.w/2,o.y-o.hh+2+(BIG?6:0),o.w,o.hh);{const J=k==='d_chafariz'&&asImg('d_chafariz_a'+((t>>3)%3));if(J)b.drawImage(J,o.x-o.w/2,o.y-o.hh+2,o.w,o.w*(J.naturalHeight||J.height)/(J.naturalWidth||J.width));}
   if(k==='o_tocha'){b.save();b.globalCompositeOperation='lighter';glowAt(o.x,o.y-o.hh+3,9+Math.sin(t/5+o.x)*1.5,'255,150,60',.55);b.restore();}}
 function svMapEnts(M,cx,cy,ents,t){const gx0=Math.floor((cx-120)/200),gx1=Math.floor((cx+W+120)/200),gy0=Math.floor((cy-60)/200),gy1=Math.floor((cy+H+220)/200);
@@ -10061,7 +10059,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793206632',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793208287',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}

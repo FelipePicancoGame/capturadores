@@ -7464,7 +7464,7 @@ async function m3End(){const S=M3,st=m3Stars(),P=m3St(),win=S.won;let coins=0;
 function m3Intro(){const L=M3.L;M3.banner={t:0,txt:L.type==='collect'?'JUNTE OS MONSTRINHOS!':L.type==='ice'?'QUEBRE TODO O GELO!':'FAÇA OS PONTOS!'};}
 async function matchMode(){if(!party.length){await say('Você precisa de um monstrinho!');return;}const P=m3St();m3Swipe();
   await fadeTo(1);portraitScreen();document.body.classList.add('nopad');M3=null;m3New(P.lv);m3Intro();G.mode='match';await fadeTo(0);
-  if(!flags.m3Seen2){flags.m3Seen2=1;await say('COMBINA MONSTRINHOS! Deslize um monstrinho pro lado do vizinho pra trocar de lugar.');await say('3 iguais somem. 4 em fila soltam na hora o PODER daquele monstrinho, em L ou T viram BOMBA e 5 viram ESTRELA. Troque dois especiais um com o outro pra uma combinação gigante!');await say('Juntando peças, o seu monstrinho carrega o PODER (embaixo). Quando brilhar, toque nele!');}
+  if(!flags.m3Seen2){flags.m3Seen2=1;await say('COMBINA MONSTRINHOS! Deslize um monstrinho pro lado do vizinho pra trocar de lugar.');await say('3 iguais somem. 4 em fila viram um ESPECIAL com o poder do monstrinho, em L ou T viram BOMBA e 5 viram ESTRELA. TOQUE num especial e ele explode na hora! Troque dois especiais um com o outro pra uma combinação gigante!');await say('Juntando peças, o seu monstrinho carrega o PODER (embaixo). Quando brilhar, toque nele!');}
   await new Promise(r=>{M3.done=r;});
   await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';M3=null;saveGame();await fadeTo(0);}
 /* deslizar: encosta numa peça e arrasta pro lado */
@@ -7728,14 +7728,24 @@ m3End=async function(){const S=M3,st=m3Stars(),P=m3St(),win=S.won;let coins=0;
    4 em fila agora soltam o poder NA HORA: fila deitada -> a magia corre a coluna pra cima e pra baixo; fila em pé -> corre a linha pros dois lados.
    Fogo = rajada de fogo, Água = jato d'água, Planta = cipó, Pedra = pedra rolando, Raio = raio, Vento = ventania (folhas de efeito do kit). */
 const M3P4=['RAJADA DE FOGO!','JATO D’ÁGUA!','CHICOTE DE CIPÓ!','PEDRA ROLANDO!','DESCARGA DE RAIO!','VENTANIA!'];
-m3Clear=function(groups,swapAt){const S=M3,born=[],cells=[],shots=[];
-  for(const gp of groups){for(const p of gp.L)cells.push(p);
-    if(gp.bomb){born.push({r:gp.bomb[0],c:gp.bomb[1],k:gp.k,sp:4});continue;}if(gp.used)continue;
-    if(gp.L.length>=4){let at=gp.L[Math.floor(gp.L.length/2)];if(swapAt)for(const p of gp.L)if(p[0]===swapAt[0]&&p[1]===swapAt[1])at=p;
-      if(gp.L.length>=5){born.push({r:at[0],c:at[1],k:gp.k,sp:3});continue;}
-      const vert=gp.dir==='h';if(vert)for(let r=0;r<S.rows;r++)cells.push([r,at[1]]);else for(let c=0;c<S.cols;c++)cells.push([at[0],c]);shots.push({at,vert,k:gp.k});}}
-  m3Blast(cells,born,shots.length?M3P4[shots[0].k]:undefined);
-  for(const s of shots)m3Shot4(s.at,s.vert,s.k);};
+/* 28/out 18h22 (Felipe): 4 em fila voltam a virar uma PEÇA ESPECIAL que fica no tabuleiro (brilhando);
+   tocar em qualquer especial (raio/poder, bomba, estrela) faz ela explodir na hora, sem precisar combinar.
+   O especial de 4 solta a magia do monstrinho dele quando explode. E o jogo ficou mais fácil. */
+{const _b=m3Blast;m3Blast=function(cells,born,label){const S=M3;_b(cells,born,label);if(!S||!S.pend)return;const C=S.cols;
+  for(const id of S.pend.kill){const r=Math.floor(id/C),c=id%C,q=S.g[r][c];if(q&&(q.sp===1||q.sp===2))try{m3Shot4([r,c],q.sp===2,q.c);}catch(e){}}};}
+function m3TapSpecial(r,c){const S=M3,q=m3Cell(r,c);if(!S||S.phase!=='idle'||!q||!q.sp)return false;S.sel=null;S.idle=0;S.combo=0;
+  if(q.sp===3){const cnt=[0,0,0,0,0,0];for(const row of S.g)for(const p of row)if(p&&!p.sp)cnt[p.c]++;const k=cnt.indexOf(Math.max(...cnt)),L=[[r,c]];q.sp=0;for(let y=0;y<S.rows;y++)for(let x=0;x<S.cols;x++)if(S.g[y][x]&&S.g[y][x].c===k)L.push([y,x]);m3Blast(L,[],'ESTRELA!');}
+  else m3Blast([[r,c]],[],q.sp===4?'BOMBA!':M3P4[q.c]);
+  try{tone([523,784],.05);}catch(e){}return true;}
+{const _t=matchTap;matchTap=function(x,y){const S=M3;if(S&&S.phase==='idle'&&!(S.swT&&performance.now()-S.swT<450)){const G2=m3Geo(),c=Math.floor((x-G2.x0)/G2.ts),r=Math.floor((y-G2.y0)/G2.ts);if(r>=0&&c>=0&&r<S.rows&&c<S.cols&&m3TapSpecial(r,c))return;}return _t(x,y);};}
+/* mais fácil: mais jogadas, metas menores, poder enche mais rápido, gelo de 2 camadas só bem mais tarde */
+{const _l=m3Lv;m3Lv=function(lv){const L=_l(lv);L.moves+=6;L.goal=Math.round(L.goal*.7);if(L.collect)L.collect=L.collect.map(([k,n])=>[k,Math.max(8,Math.round(n*.65))]);if(L.ice&&lv<18)L.ice=1;return L;};}
+{const _n=m3New;m3New=function(lv){_n(lv);if(M3)M3.pwMax=15;};}
+/* especiais piscando pra mostrar que dá pra tocar */
+function m3SpGlow(){const S=M3;if(!S||S.phase!=='idle')return;const G2=m3Geo(),t=S.t;b.save();b.globalCompositeOperation='lighter';
+  for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const q=S.g[r][c];if(!q||!q.sp)continue;const [x,y]=m3Pt(r,c);glowAt(x,y,G2.ts*.75,q.sp===4?'255,170,60':q.sp===3?'255,240,150':hex2rgb(M3COL[q.c]).join(','),.35+.25*Math.sin(t/5));}
+  b.restore();for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const q=S.g[r][c];if(!q||!q.sp)continue;const [x,y]=m3Pt(r,c);if(Math.floor(t/20)%2)T('TOQUE',x,y+G2.ts*.28,Math.max(4,G2.ts*.16),'center','#ffffff',G2.ts,'rgba(0,0,0,.6)');}}
+{const _d=m3DrawSheets;m3DrawSheets=function(){_d();try{m3SpGlow();}catch(e){}};}
 function m3Shot4(at,vert,k){const S=M3,G2=m3Geo(),[x,y]=m3Pt(at[0],at[1]),ty=M3TYPE[k]||'fogo';S.shake=Math.max(S.shake,6);try{tone([392,523,659],.06);}catch(e){}
   (S.proj=S.proj||[]);for(const d of [-1,1])S.proj.push({x,y,dx:vert?0:d,dy:vert?d:0,ty,k,t:0});
   const n=vert?S.rows:S.cols;for(let i=0;i<n;i++){const r=vert?i:at[0],c=vert?at[1]:i,[px,py]=m3Pt(r,c),dd=Math.abs(vert?i-at[0]:i-at[1]);m3Sheet('poder_'+ty,px,py,G2.ts*1.7,dd*2);}}
@@ -10236,7 +10246,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793224826',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793226246',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}

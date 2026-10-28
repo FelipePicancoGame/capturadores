@@ -9729,7 +9729,7 @@ NPCS.route2.push({x:16,y:4,dir:'down',look:'ze',cid:'ze'},{x:8,y:3,dir:'down',lo
 NPCS.brisa.push({x:17,y:3,dir:'down',look:'capitao',cid:'capitao'},{x:3,y:19,dir:'up',look:'rival',cid:'davi',ms:'rival2'});
 NPCS.bosque.push({x:12,y:7,dir:'down',look:'celeste',cid:'celeste'},{x:14,y:11,dir:'left',look:'garra',cid:'garra',ms:'garra'});
 NPCS.cratera[0].ms='corvo';NPCS.pico[3].ms='rival3';
-for(const k in NPCS)for(const n of NPCS[k])if(n.cid&&!n.talk)n.talk=function(){return charTalk(this);};
+try{if(NPCS.town&&!NPCS.town.some(n=>n.cid==='juca'&&!n.gateTo))NPCS.town.push({x:30,y:13,dir:'down',look:'leo',cid:'juca',after:'bike_juca'});}catch(e){}for(const k in NPCS)for(const n of NPCS[k])if(n.cid&&!n.talk)n.talk=function(){return charTalk(this);};
 function npcVis(n){if(n.gateTo&&gateOpen(n.gateTo))return false;return !(n.ms&&msSt(n.ms)>=2)&&!(n.after&&msSt(n.after)<2);}
 function npcDir(n){if(n.tid||n.alert>0||REDUCED||busy)return n.dir;const ph=Math.floor((frame+hash(n.x,n.y)%500)/220)%5;return [n.dir,n.dir,'down',n.dir,n.dir==='left'?'right':n.dir==='right'?'left':'left'][ph];}
 let BLKI=0;function npcList(){if(!BLKI){BLKI=1;try{blockersInit();}catch(e){console.warn(e)}}return (NPCS[G.map]||[]).filter(npcVis);}
@@ -10246,7 +10246,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793226246',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793226837',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}

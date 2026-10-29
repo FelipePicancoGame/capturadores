@@ -8605,7 +8605,7 @@ function drawTCard(u){UKWAIT=null;if(drawTCardArt(u)||ukWaitDraw(u))return;const
   b.restore();
   if(ok){if(front){const tx=px0+pw+7,tr=cx+cw-10,pl=(s2)=>`${Math.floor(s2/3600)}h${String(Math.floor(s2%3600/60)).padStart(2,'0')}`,mdone=(()=>{try{return MISS.filter(m=>msSt(m.id)>=2).length;}catch(e){return 0;}})(),
       L=[['Nº',String(flags.tid||0)],['Coleção',`${dexCount().c}/${DEXLIST.length}`],['Medalhas',''],['Missões',`${mdone}/${MISS.length}`],['Troféus',`${medalSt().got.length}/${MEDALS.length}`],['Moedas',String(flags.coins||0)],['Essência ✨',String(flags.ess||0)],['Cristais 💎',String(gems())],['Tempo',pl(flags.playT||0)]];
-      T('TREINADOR DO VALE',tx,cy+9,7.5,'left',C.white,tr-tx,C.ink);L.forEach(([a,v],k)=>{const y=cy+21+k*9.6;T(a,tx,y,6.2,'left','#fff3c8',52,'rgba(0,0,0,.4)');if(a==='Medalhas'){const sg=selosGot();SELOS.forEach((e,q)=>seloDraw(e,tr-4.5-(5-q)*8.6,y+3.4,8.6,sg[q]));}else T(v,tr,y,6.4,'right',C.white,56,'rgba(0,0,0,.4)');});
+      T((flags.nome?String(flags.nome).toUpperCase():'TREINADOR DO VALE'),tx,cy+9,7.5,'left',C.white,tr-tx,C.ink);L.forEach(([a,v],k)=>{const y=cy+21+k*9.6;T(a,tx,y,6.2,'left','#fff3c8',52,'rgba(0,0,0,.4)');if(a==='Medalhas'){const sg=selosGot();SELOS.forEach((e,q)=>seloDraw(e,tr-4.5-(5-q)*8.6,y+3.4,8.6,sg[q]));}else T(v,tr,y,6.4,'right',C.white,56,'rgba(0,0,0,.4)');});
       const ry=cy+122,R=[['MURALHA',`onda ${flags.wallBest||0}`],['TORRES',`onda ${flags.tdBest||0}`],['HORDA',`${Math.floor((flags.survBest||0)/60)} min`],['EXPEDIÇÃO',`fase ${flags.expMax||1}`]];
       T('RECORDES',cx+cw/2,ry-11,6.4,'center','#fff3c8',cw,C.ink);R.forEach(([a,v],k)=>{const w4=(cw-16)/4,x=cx+8+w4*(k+.5);T(a,x,ry+2,5.2,'center','#fff3c8',w4-2,'rgba(0,0,0,.4)');T(v,x,ry+12,6.6,'center',C.white,w4-2,C.ink);});
       T('MINHA EQUIPE',cx+cw/2,cy+160-15,6.4,'center','#fff3c8',cw,C.ink);party.slice(0,6).forEach((m,k)=>{const sp6=(cw-16)/6,x=cx+8+sp6*(k+.5);T('Nv'+m.lv,x,cy+160+26,5.6,'center',C.white,sp6,C.ink);});}
@@ -8985,8 +8985,8 @@ const HQPAGES=[{k:'hq0',capa:1,t:'Este é o CADERNO DE AVENTURAS. Ele guarda uma
   {k:'hq2',t:'O Vô Tobias era o Guardião da Aurora. Ele cuidava dos monstrinhos e desenhava tudo neste caderno.'},
   {k:'hq3',t:['Até que chegou o BANDO SOMBRA, do Chefe Corvo e da Comandante Garra. Eles queriam a luz da aurora só pra eles.','Num clarão, o Aurorion sumiu... e o céu do Vale ficou escuro.']},
   {k:'hq4',t:['Sem a aurora, os monstrinhos selvagens ficaram agitados.','O Vô guardou o caderno e disse: um dia, alguém vai continuar esta história.']}];
-function hqHero(h){const f=h==='menina'?'f':'m';return [{k:'hq5'+f,t:['Hoje é o seu aniversário de 10 anos. A mamãe trouxe uma caixa de madeira com um laço...','Dentro estava o caderno do Vô! As últimas páginas estão em branco.']},
-  {k:'hq6'+f,t:['Nisso, o Téo chega correndo: — A sua avó, a Vó Ipê, tá te chamando! Ela tem mais um presente pra você!','Na casa dela, a Vó Ipê mostra quatro cápsulas: — O seu avô cuidava destes monstrinhos. Agora um deles é seu, de presente de aniversário. Escolha o seu parceiro!']}];}
+function hqHero(h){const f=h==='menina'?'f':'m';return [{k:'hq5'+f,t:[`Hoje é o seu aniversário de 10 anos${nomeH()?', '+nomeH():''}. A mamãe trouxe uma caixa de madeira com um laço...`,'Dentro estava o caderno do Vô! As últimas páginas estão em branco.']},
+  {k:'hq6'+f,t:[`Nisso, o Téo chega correndo: — ${nomeH()?nomeH()+'! ':''}A sua avó, a Vó Ipê, tá te chamando! Ela tem mais um presente pra você!`,'Na casa dela, a Vó Ipê mostra quatro cápsulas: — O seu avô cuidava destes monstrinhos. Agora um deles é seu, de presente de aniversário. Escolha o seu parceiro!']}];}
 function hqDiario(sp,h){return {k:'hq7',diario:1,sp,hero:h,t:'Você e seu parceiro agora escrevem a próxima página. Traga a aurora de volta ao Vale!'};}
 function hqAll(){const h=(typeof flags!=='undefined'&&flags&&flags.hero)||'menino',sp=(typeof party!=='undefined'&&party[0]&&party[0].sp)||(flags&&flags.starter)||'fagulho';return [...HQPAGES,...hqHero(h),hqDiario(sp,h)];}
 let HQ=null;
@@ -9005,12 +9005,12 @@ NOVIDADES.push({d:'27/10',t:'HISTÓRIA NOVA: o começo do jogo agora é contado 
 
 async function newGame(){
   await fadeTo(1);worldScreen();await fadeTo(0);
-  G.mode='intro';await hqPlay(HQPAGES);const _hero=await hqAsk();await hqPlay(hqHero(_hero));G.mode='intro';G.isc=null;G.ipeMon=0;
+  G.mode='intro';await hqPlay(HQPAGES);const _hero=await hqAsk();NOMEINTRO=await askNome(_hero,'');await hqPlay(hqHero(_hero));G.mode='intro';G.isc=null;G.ipeMon=0;
   G.mode='starter';const keys=['fagulho','marolo','brotim','pedrisco'];if(!SP.pedrisco.desc)SP.pedrisco.desc='Um dinossaurinho de pedra, teimoso e durão. Aguenta qualquer pancada.';let key;
   {const i=await choose(keys.map(k=>SP[k].name),{cols:4,hidden:true,noCancel:true,starter:true,start:G.sel||0});G.sel=i;key=keys[i];try{tone([523,659,784],.07);}catch(e){}}
   party=[mk(key,5)];storage=[];bag={ball:5,potion:2};flags={};
   G.mode='intro';
-  flags.starter=key;flags.hero=_hero;await hqPlay([hqDiario(key,_hero)]);G.mode='intro';await say(`Você e ${SP[key].name} agora são parceiros! Cuide bem dele, do jeito que o seu avô cuidava.`);
+  flags.starter=key;flags.hero=_hero;flags.nome=NOMEINTRO;await hqPlay([hqDiario(key,_hero)]);G.mode='intro';await say(`Você e ${SP[key].name} agora são parceiros! Cuide bem dele, do jeito que o seu avô cuidava.`);
   await say('O Davi, aquele menino da vila, também ganhou monstrinhos e saiu cedo pra treinar longe daqui. Ele é bem competitivo... um dia vocês vão se esbarrar!');
   await say('Explore o Vale, faça amigos e siga a HISTÓRIA: o pergaminho 📜 no alto da tela mostra sua próxima missão.');
   await say('Treine no mato alto da Rota 1, ao norte da cidade. Quando estiver pronto, desafie a Líder Bruna na Arena de telhado azul.');
@@ -9539,7 +9539,7 @@ function drawTCardArt(u){const st=u.cfg.tcard;if(!ukReady('cartao'))return false
   ukD(K,'livro',20,435,1040,1470);
   if(front){
     {b.save();rpath(112,575,366,470,20);const g=b.createLinearGradient(0,575,0,1045);g.addColorStop(0,'#cfeaff');g.addColorStop(1,'#a8dc8a');b.fillStyle=g;b.fill();b.restore();ukD(K,'treinador',130,570,330,460);ukD(K,'moldura_retrato',80,540,430,540);}
-    ukD(K,'placa_secao',70,1035,440,95);if(ok)ukArial2('TREINADOR DO VALE',290,1084,30,'#fff8e0',360);
+    ukD(K,'placa_secao',70,1035,440,95);if(ok)ukArial2((flags.nome?String(flags.nome).toUpperCase():'TREINADOR DO VALE'),290,1084,30,'#fff8e0',360);
     if(ok){const pl=s2=>`${Math.floor(s2/3600)}h${String(Math.floor(s2%3600/60)).padStart(2,'0')}`,md=(()=>{try{return MISS.filter(m=>msSt(m.id)>=2).length;}catch(e){return 0;}})(),
       L=[['id','Nº',String(flags.tid||0)],['colecao','Coleção',`${dexCount().c}/${DEXLIST.length}`],['med','Medalhas',''],['missoes','Missões',`${md}/${MISS.length}`],['trofeus','Troféus',`${medalSt().got.length}/${MEDALS.length}`],['moedas','Moedas',String(flags.coins||0)],['essencia','Essência',String(flags.ess||0)],['cristais','Cristais',String(gems())],['tempo','Tempo',pl(flags.playT||0)]];
       L.forEach(([ic,a,v],k)=>{const y=580+k*62;if(ic==='med')ukD(K,'medalha_inativa',556,y-26,52,52);else ukD(K,'icone_'+ic,558,y-26,52,52);ukBrown(a,625,y+2,30,'#4a2a10','left',200);
@@ -9672,7 +9672,7 @@ async function main(){
   while(true){const has=hasSave();const opts=has?['CONTINUAR','NOVO JOGO']:['NOVO JOGO'];
     const _pr=choose(opts,{box:{x:W/2-55,y:H*.93-opts.length*15-14-14,w:110,h:opts.length*15+14},noCancel:true,title:true});let _tm=null;if(!has){const _it=ui[ui.length-1];_tm=setInterval(()=>{try{if(hasSave()&&ui[ui.length-1]===_it){ui.pop();clearInterval(_tm);_it.res(-1);}}catch(e){}},500);}const i=await _pr;if(_tm)clearInterval(_tm);if(i===-1)continue;
     if(opts[i]==='CARREGAR'){await loadMenu();continue;}if(opts[i]==='CONTINUAR'){if(loadGame())break;}else{if(!has&&!window.__CLOUDFIM){await say('Ainda estou procurando o seu jogo salvo na nuvem. Começar um NOVO JOGO agora pode apagar ele. Tem certeza?');const c=await choose(['Não, esperar','Sim, novo jogo'],{noCancel:true});if(c!==1)continue;}if(has){await say('Começar um NOVO JOGO apaga o seu jogo salvo. Tem certeza?');const c=await choose(['Não, voltar','Sim, apagar'],{noCancel:true});if(c!==1)continue;}window.__NOVOJOGO=1;try{if(CLOUD&&CLOUD.db){const sn=await CLOUD.ref.get();const d=sn&&sn.exists?sn.data():null;if(d)await CLOUD.db.doc('data/users/'+CLOUD.uid+'/save_antes_novo_jogo').set(d);}}catch(e){}await newGame();break;}}
-  await fadeTo(1);worldScreen();document.body.classList.remove('nomenu');G.mode='world';await fadeTo(0);busy=true;await offlineGains();try{await dailyGift();}catch(e){console.error(e);}try{await emJogoVolta();}catch(e){console.error(e);}busy=false;}
+  await fadeTo(1);worldScreen();document.body.classList.remove('nomenu');G.mode='world';await fadeTo(0);busy=true;await offlineGains();try{await dailyGift();}catch(e){console.error(e);}try{await emJogoVolta();}catch(e){console.error(e);}try{await askNomeSeFalta();}catch(e){console.error(e);}try{await jogSync();if(JOGPEND.length)await jogEntrega();}catch(e){}busy=false;}
 async function emJogoVolta(){const e=flags.emJogo;if(!e)return;delete flags.emJogo;saveGame();if(!e.t||Date.now()-e.t>12*3600e3)return;const M=e.k==='ms'?MISS.find(q=>q.id===e.id):null;if(e.k==='ms'&&!M)return;const md=e.k==='ms'?(String(M.run).match(/msGame\('(\w+)'/)||[])[1]:e.key;const nome={wall:'Muralha',surv:'Horda',td:'Torre',exp:'Expedição'}[md]||'partida';const c=await choose(['SIM, VOLTAR','AGORA NÃO'],{noCancel:true,cadAsk:{q:`Você saiu no meio da ${nome}${M?' (missão '+M.t+')':''}. Quer voltar pra onde parou?`}});if(c!==0){try{__fotoApagar();}catch(e){}return;}try{const F=await __fotoLer(e);if(F){window.__RESTORE=F;await say('Voltando pro ponto em que a partida parou (uns '+F.seg+' segundos de jogo).');}}catch(er){}if(e.k==='stg'){await stgLaunch(e.key,e.i);}else{const ok2=await (async()=>{flags.emJogo={k:'ms',id:M.id,t:Date.now()};saveGame();try{return await M.run();}finally{delete flags.emJogo;try{__fotoApagar();}catch(e){}}})();if(ok2)await msDone(M);else if(M.fail)await say(M.fail);}try{if(G.mode!=='world'){worldScreen();G.mode='world';}}catch(e){}saveGame();}
 
 (function(){for(const [from,[to]] of Object.entries(EVO)){for(const T0 of [BEH,ULTDESC,SIGMOVES,FTR,SHINYHUE])if(T0[from]!==undefined&&T0[to]===undefined)T0[to]=T0[from];ULTNAME[to]=(ULTNAME[from]||'Especial')+' Máx';}})();
@@ -10506,6 +10506,53 @@ window.__GM=function(){try{return G.mode;}catch(_){return '';}};
   chk();setInterval(chk,60000);setInterval(()=>{if(pend&&safe())go();},2000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)chk();});
 }catch(e){}})();
+/* ===== 29/out (Felipe): NOME DO HERÓI + JOGADORES NA PLANILHA (prêmios) ===== */
+let NOMEINTRO='';
+function nomeH(){try{return (flags&&flags.nome)||NOMEINTRO||'';}catch(_){return NOMEINTRO||'';}}
+function nomeLimpo(t){return String(t||'').replace(/[<>{}\\]/g,'').replace(/\s+/g,' ').trim().slice(0,12);}
+/* pergunta o nome num papel do caderno por cima do jogo (campo de texto de verdade, pro teclado do celular abrir) */
+function askNome(hero,atual){return new Promise(res=>{try{const old=document.getElementById('nomeBox');if(old)old.remove();}catch(_){}
+  const cor=hero==='menina'?'#d84a8a':'#2f6fd8',ex=hero==='menina'?['Lia','Bia','Luna','Mel']:['Léo','Davi','Theo','Gui'];
+  const o=document.createElement('div');o.id='nomeBox';o.style.cssText='position:fixed;inset:0;z-index:10003;display:flex;align-items:center;justify-content:center;background:rgba(20,16,10,.45);touch-action:auto;-webkit-user-select:text;user-select:text';
+  o.innerHTML=`<div style="width:min(86vw,380px);padding:22px 20px 18px;border-radius:14px;background:#fbf3dc;background-image:repeating-linear-gradient(#fbf3dc 0 27px,#cfe0ea 27px 28px);border:3px solid #6b4a2a;box-shadow:0 8px 0 rgba(0,0,0,.3);font-family:Fredoka,'Trebuchet MS',sans-serif;color:#4a3420;position:relative">
+   <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%) rotate(-2deg);width:120px;height:26px;background:rgba(240,220,150,.85);border:1px solid rgba(160,130,60,.4)"></div>
+   <div style="font:700 21px Fredoka,sans-serif;text-align:center;margin:4px 0 12px">Qual é o seu nome?</div>
+   <input id="nomeIn" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" style="box-sizing:border-box;width:100%;font:700 24px Fredoka,sans-serif;padding:10px 12px;border-radius:10px;border:3px solid ${cor};background:#fff;color:#3a2a10;text-align:center;-webkit-user-select:text;user-select:text;outline:none">
+   <div id="nomeEx" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0 4px"></div>
+   <button id="nomeOk" style="display:block;width:100%;margin-top:12px;padding:12px;border:0;border-radius:12px;background:linear-gradient(#5fd06a,#2f9a44);color:#fff;font:700 21px Fredoka,sans-serif;box-shadow:0 4px 0 #1f6a2e">PRONTO!</button></div>`;
+  document.body.appendChild(o);const inp=o.querySelector('#nomeIn'),ok=o.querySelector('#nomeOk'),exb=o.querySelector('#nomeEx');inp.value=atual||'';
+  for(const n of ex){const bt=document.createElement('button');bt.textContent=n;bt.style.cssText='padding:6px 12px;border-radius:999px;border:2px solid '+cor+';background:#fff;color:'+cor+';font:600 15px Fredoka,sans-serif';bt.onclick=ev=>{ev.preventDefault();inp.value=n;inp.focus();};exb.appendChild(bt);}
+  for(const ev of ['pointerdown','pointerup','pointermove','touchstart','touchend','mousedown','mouseup','click','keydown','keyup'])o.addEventListener(ev,e=>{e.stopPropagation();},false);
+  const fim=()=>{const v=nomeLimpo(inp.value);if(!v){inp.style.borderColor='#e04a3a';inp.placeholder='escreva um nome';inp.focus();return;}try{tone([523,659,784],.07);}catch(_){}o.remove();res(v);};
+  ok.onclick=e=>{e.preventDefault();fim();};inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();fim();}});setTimeout(()=>{try{inp.focus();}catch(_){}},250);});}
+/* jogo antigo sem nome: pergunta uma vez ao entrar */
+async function askNomeSeFalta(){if(flags.nome)return;const n=await askNome(flags.hero||'menino','');flags.nome=n;saveGame();await say(`Prontinho, ${n}! Agora o Vale inteiro sabe o seu nome.`);}
+
+/* JOGADORES: cada aparelho manda nome, nível e progresso pra planilha do Felipe e recebe os prêmios que ele escreveu lá.
+   JOGURL = endereço do App da Web do Google (Apps Script). Vazio = desligado. */
+const JOGURL='';
+const JOGITEM={capsula:'ball',cápsula:'ball',ball:'ball',supercapsula:'sball',supercápsula:'sball',sball:'sball',pocao:'potion',poção:'potion',potion:'potion',superpocao:'super',superpoção:'super',super:'super',doce:'candy',docemagico:'candy',docemágico:'candy',candy:'candy',fruta:'fruta',frutadoce:'fruta',frutadourada:'frutao',frutao:'frutao',petisco:'petisco',cafe:'cafe',café:'cafe',vitc:'vitc',vitaminac:'vitc',proteina:'proteina',proteína:'proteina',sucoverde:'sucoverde',isotonico:'isotonico',isotônico:'isotonico'};
+function jogSp(t){const k=String(t||'').toLowerCase().replace(/\s+/g,'');if(!k)return null;if(SP[k])return k;for(const s in SP){if(String(SP[s].name||'').toLowerCase().replace(/\s+/g,'')===k)return s;}return null;}
+function jogDados(){if(!flags.tid)flags.tid=10000+Math.floor(Math.random()*89999);const all=[...party,...(storage||[])];
+  return {id:String(flags.tid),nome:flags.nome||'',heroi:flags.hero||'',nivel:all.reduce((a,m)=>Math.max(a,m.lv||0),0),mons:all.length,dex:Object.keys(flags.dex||{}).length,moedas:flags.coins||0,cristais:gems(),horas:Math.round((flags.playT||0)/360)/10,ver:(window.__APPVER||''),onde:location.host};}
+async function jogPost(o){if(!JOGURL)return null;const r=await fetch(JOGURL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)});return r.ok?r.json():null;}
+let JOGPEND=[],JOGT=0,JOGRUN=false;
+async function jogSync(){if(!JOGURL||JOGRUN||!party.length)return;JOGRUN=true;try{const d=await jogPost(Object.assign({acao:'oi'},jogDados()));JOGT=Date.now();
+  const got=flags.rwGot=flags.rwGot||[];if(d&&d.premios)for(const p of d.premios){if(p&&p.k&&!got.includes(p.k)&&!JOGPEND.some(q=>q.k===p.k))JOGPEND.push(p);}}catch(e){try{__EV('planilha falhou '+String(e).slice(0,40));}catch(_){}}finally{JOGRUN=false;}}
+/* entrega o prêmio no mapa, com a mensagem do Felipe */
+async function jogEntrega(){if(!JOGPEND.length)return;const got=flags.rwGot=flags.rwGot||[];const feitos=[];
+  while(JOGPEND.length){const p=JOGPEND.shift();if(got.includes(p.k))continue;const L=[];
+    if(p.moedas>0){flags.coins=(flags.coins||0)+Math.floor(p.moedas);L.push(`${Math.floor(p.moedas)} moedas`);}
+    if(p.cristais>0){addGems(Math.floor(p.cristais));L.push(`${Math.floor(p.cristais)} cristais`);}
+    for(const part of String(p.itens||'').split(/[,;]+/)){const m=part.trim().match(/^([^:=\d]+?)\s*[:=x]?\s*(\d+)?$/i);if(!m)continue;const key=JOGITEM[m[1].toLowerCase().replace(/\s+/g,'')];const n=Math.max(1,Math.min(99,+m[2]||1));if(!key)continue;bag[key]=(bag[key]||0)+n;L.push(`${n} ${itemName(key)}`);}
+    const sp=jogSp(p.mon);got.push(p.k);feitos.push(p.k);saveGame();
+    try{tone([523,659,784,1047],.09);}catch(_){}
+    await say(`🎁 Presente do Felipe!${p.msg?' '+p.msg:''}`);
+    if(L.length)await say(`Você recebeu: ${L.join(', ')}.`);
+    if(sp){const where=grantMon(sp,Math.max(5,Math.min(50,+p.monLv||5)));saveGame();await revealMon(sp,where);}}
+  if(feitos.length){saveGame();try{await jogPost({acao:'recebi',id:String(flags.tid),nome:flags.nome||'',ks:feitos});}catch(_){}}}
+setInterval(async()=>{try{if(!JOGURL||G.mode!=='world'||busy||!party.length)return;if(JOGPEND.length){busy=true;try{await jogEntrega();}finally{busy=false;}return;}if(Date.now()-JOGT>5*60000)jogSync();}catch(_){}},3000);
+document.addEventListener('visibilitychange',()=>{try{if(!document.hidden&&JOGURL&&party.length&&Date.now()-JOGT>60000)jogSync();}catch(_){}});
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

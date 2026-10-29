@@ -7885,6 +7885,14 @@ const M3LMAP={fundo:'fundo',tabuleiro:'tabuleiro',placa_objetivo:'placa_objetivo
 {const _a=m3cArt;m3cArt=function(k){const L=M3?m3cL():null;if(L&&L.a&&M3LMAP[k]&&M3ART[L.a+'_'+M3LMAP[k]]!==undefined)return m3Art(L.a+'_'+M3LMAP[k]);return _a(k==='placa_fase'?'placa_jogadas':k);};}
 {const _o=m3cOn;m3cOn=function(){if(!_o())return false;const L=m3cL();return !L.a||!!m3cArt('placa_fase');};}
 {const _p=m3cPreload;m3cPreload=function(){_p();for(const k in M3ART)if(/^l[1-5]_/.test(k))m3Art(k);};}
+
+const M3LBAN={3:1,4:1};{const _n=m3New;m3New=function(lv){_n(lv);try{if(M3&&M3LBAN[M3.lay]){const ok=M3LAY.map((_,i)=>i).filter(i=>!M3LBAN[i]),i=ok[Math.floor(Math.random()*ok.length)],P=m3St();M3.lay=i;P.lay={lv,i};}}catch(e){}};}
+const M3AURA={fogo:'fxs_aura_fogo_pulso_1',agua:'fxs_aura_agua_loop_1',planta:'fxs_aura_planta_loop_1',raio:'fxs_aura_eletrico_loop_1'};
+{const _p=m3cPoder;m3cPoder=function(S,R0,t){const full=S.pw/S.pwMax>=1;if(!full)return _p(S,R0,t);const pb=m3PwBtn(),R=m3R(R0),col=hex2rgb(M3COL[S.pwI]).join(','),ty=M3TYPE[S.pwI];
+  b.save();const ph=.5+.5*Math.sin(t/5);b.fillStyle=`rgba(${col},${.28+.22*ph})`;b.beginPath();b.arc(pb.x,pb.y,R.w*(.62+.08*ph),0,Math.PI*2);b.fill();const I=asImg(M3AURA[ty]);if(I){const n=Math.max(1,Math.round(I.naturalWidth/I.naturalHeight)),fw=I.naturalWidth/n,fr=Math.floor(t/4)%n,z=R.w*1.6;b.globalAlpha=1;b.drawImage(I,fr*fw,0,fw,I.naturalHeight,pb.x-z/2,pb.y-z/2,z,z);}b.restore();
+  const k=1+.06*Math.sin(t/4);b.save();b.translate(pb.x,pb.y);b.scale(k,k);b.translate(-pb.x,-pb.y);_p(S,R0,t);b.restore();
+  b.save();b.globalCompositeOperation='lighter';for(let i=0;i<6;i++){const a=t/14+i*Math.PI/3,rr=R.w*.52;star(pb.x+Math.cos(a)*rr,pb.y+Math.sin(a)*rr,2.2+Math.sin(t/3+i)*.8,'#fff3a0');}b.restore();
+  b.save();b.globalAlpha=.7+.3*Math.sin(t/4);b.lineWidth=Math.max(3,R.w*.05);b.strokeStyle=`rgb(${col})`;b.beginPath();b.arc(pb.x,pb.y,R.w*(.47+.03*Math.sin(t/4)),0,Math.PI*2);b.stroke();b.restore();};}
 async function mathMode(){if(!party.length){await say('Você precisa de um monstrinho!');return;}const M=mS();
   if(!M.started){const k=await choose(MGRADES.map(g=>g[0]),{box:{x:W/2-80,y:20,w:160,h:MGRADES.length*15+14},prompt:'Em que série a criança está? (dá pra mudar depois)'});if(k<0)return;M.lv=MGRADES[k][1];M.started=1;M.hist=[];}
   await fadeTo(1);portraitScreen();document.body.classList.add('nopad');
@@ -8762,28 +8770,32 @@ const FINEMASK={"lunaria":["0111111111111111111111111111111111101111111100000000
 const NPCOK={};function npcOffRoadMap(m){if(NPCOK[m])return;NPCOK[m]=1;const IN={home:1,centro:1,gym:1};if(IN[m])return;const M=MAPS[m],R=M&&M.rows,L=NPCS[m];if(!R||!L||!L.length)return;
  const TH=R.length,TW=R[0].length,ws=M.warps||[],FM=(typeof FINEMASK!=='undefined'&&FINEMASK[m])||null,FW=TW*4,FH=TH*4;
  const isW=(x,y)=>ws.some(w=>w[0]===x&&w[1]===y);
- const base=new Uint8Array(FW*FH);for(let fy=0;fy<FH;fy++)for(let fx=0;fx<FW;fx++){const tx=fx>>2,ty=fy>>2,c=R[ty][tx];let s;if(isW(tx,ty))s=0;else if(c==='D'||SOLID.includes(c))s=1;else s=FM?((FM[fy]||'')[fx]==='1'?1:0):0;base[fy*FW+fx]=s;}
+ const base=new Uint8Array(FW*FH);for(let fy=0;fy<FH;fy++)for(let fx=0;fx<FW;fx++){const tx=fx>>2,ty=fy>>2,c=R[ty][tx];let s;if(isW(tx,ty))s=0;else if(c==='D')s=1;else if(FM)s=(FM[fy]||'')[fx]==='1'?1:0;else s=SOLID.includes(c)?1:0;base[fy*FW+fx]=s;}
  const fixed=n=>n.gateTo||n.y===0||n.noMove;
  const grid=(occ)=>{const g=base.slice();for(const [x,y] of occ)for(let a=0;a<4;a++)for(let c=0;c<4;c++){const i=(y*4+a)*FW+x*4+c;if(i>=0&&i<g.length)g[i]=1;}return g;};
- const stand=(g)=>{const st=new Uint8Array(FW*FH);for(let y=3;y<FH-3;y++)for(let x=3;x<FW-3;x++){let ok=1;for(let a=-2;a<=2&&ok;a++)for(let c=-2;c<=2;c++)if(g[(y+a)*FW+x+c]){ok=0;break;}st[y*FW+x]=ok;}return st;};
+ const stand=(g)=>{const st=new Uint8Array(FW*FH);for(let y=2;y<FH-2;y++)for(let x=2;x<FW-2;x++){let ok=1;for(let a=-1;a<=0&&ok;a++)for(let c=-1;c<=1;c++)if(g[(y+a)*FW+x+c]){ok=0;break;}st[y*FW+x]=ok;}return st;};
  const comps=(st)=>{const lab=new Int32Array(FW*FH).fill(-1),sz=[];let n=0;const q=new Int32Array(FW*FH);for(let i=0;i<st.length;i++){if(!st[i]||lab[i]>=0)continue;let h=0,t=0;q[t++]=i;lab[i]=n;let c=0;while(h<t){const j=q[h++];c++;const x=j%FW;for(const k of [j-1,j+1,j-FW,j+FW]){if(k<0||k>=st.length)continue;if((k===j-1&&x===0)||(k===j+1&&x===FW-1))continue;if(st[k]&&lab[k]<0){lab[k]=n;q[t++]=k;}}}sz.push(c);n++;}return{lab,sz};};
  const st0=stand(base),C0=comps(st0);let main=0;for(let i=1;i<C0.sz.length;i++)if(C0.sz[i]>C0.sz[main])main=i;if(!C0.sz.length)return;
  /* pontos que precisam continuar ligados: saídas e portas */
  const keys=[];for(const w of ws){const i=(w[1]*4+2)*FW+w[0]*4+2;if(C0.lab[i]===main)keys.push(i);else{for(let a=-6;a<=6;a++)for(let c=-6;c<=6;c++){const j=(w[1]*4+2+a)*FW+w[0]*4+2+c;if(j>0&&j<st0.length&&C0.lab[j]===main){keys.push(j);a=c=99;}}}}
  const connected=(occ)=>{const C=comps(stand(grid(occ)));let tot=0,big=0;const cnt=new Map();for(let i=0;i<st0.length;i++){if(C0.lab[i]!==main||C.lab[i]<0)continue;tot++;cnt.set(C.lab[i],(cnt.get(C.lab[i])||0)+1);}for(const v of cnt.values())big=Math.max(big,v);
-   if(tot-big>24)return false;let kl=null;for(const k of keys){if(C.lab[k]<0)continue;if(kl===null)kl=C.lab[k];else if(C.lab[k]!==kl)return false;}return true;};
+   if(tot-big>24)return false;const ks=new Set();for(const k of keys)if(C.lab[k]>=0)ks.add(C.lab[k]);return ks.size<=K0;};const K0=Math.max(1,new Set(keys.map(k=>C0.lab[k]).filter(v=>v>=0)).size);
  const res=new Set();for(const w of ws)for(let a=-1;a<=1;a++)for(let c=-1;c<=1;c++)res.add((w[0]+c)+','+(w[1]+a));
  for(let y=0;y<TH;y++)for(let x=0;x<TW;x++)if(R[y][x]==='D')for(const [dx,dy] of [[0,1],[0,2],[1,1],[-1,1]])res.add((x+dx)+','+(y+dy));
  const tileFree=(x,y)=>{if(x<1||y<1||x>=TW-1||y>=TH-1||isW(x,y))return false;let f=0;for(let a=0;a<4;a++)for(let c=0;c<4;c++)if(!base[(y*4+a)*FW+x*4+c])f++;return f>=12;};
  const side=(x,y)=>{let s=0,t=0;for(let a=-4;a<8;a++)for(let c=-4;c<8;c++){if(a>=0&&a<4&&c>=0&&c<4)continue;const fy=y*4+a,fx=x*4+c;t++;if(fy<0||fx<0||fy>=FH||fx>=FW||base[fy*FW+fx])s++;}return s/t;};
  const occAll=()=>L.filter(npcVis).map(n=>[n.x,n.y,n]);
  const LOG=window.__NPCMOV=window.__NPCMOV||[];
- for(const n of L){if(fixed(n))continue;const others=occAll().filter(o=>o[2]!==n).map(o=>[o[0],o[1]]);
-  const good=(x,y)=>tileFree(x,y)&&!res.has(x+','+y)&&!others.some(o=>o[0]===x&&o[1]===y)&&side(x,y)>=.5&&connected(others.concat([[x,y]]));
-  if(good(n.x,n.y))continue;const cand=[];for(let y=1;y<TH-1;y++)for(let x=1;x<TW-1;x++){const d=Math.abs(x-n.x)+Math.abs(y-n.y);if(d>0&&d<=12&&tileFree(x,y))cand.push([d-side(x,y)*2,x,y]);}cand.sort((a,b)=>a[0]-b[0]);
+ const placed=L.filter(n=>fixed(n)&&npcVis(n)).map(n=>[n.x,n.y]);for(const n of L){if(fixed(n))continue;const others=placed.slice();
+  /* mapa pintado: o NPC fica na BEIRA, num quadrado que já é quase todo mato/canteiro, colado num quadrado de caminho */
+  const fc=(x,y)=>{let f=0;for(let a=0;a<4;a++)for(let c=0;c<4;c++)if(!base[(y*4+a)*FW+x*4+c])f++;return f;};
+  const near=(x,y)=>[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>!isW(x+dx,y+dy)&&fc(x+dx,y+dy)>=12&&!others.some(o=>o[0]===x+dx&&o[1]===y+dy));
+  const spot=FM?((x,y)=>x>=1&&y>=1&&x<TW-1&&y<TH-1&&!isW(x,y)&&R[y][x]!=='D'&&fc(x,y)>=1&&fc(x,y)<=9&&near(x,y)):tileFree;
+  const good=(x,y)=>spot(x,y)&&!res.has(x+','+y)&&!others.some(o=>Math.abs(o[0]-x)+Math.abs(o[1]-y)<(FM?2:1))&&(FM||side(x,y)>=.5)&&connected(others.concat([[x,y]]));
+  if(good(n.x,n.y)){placed.push([n.x,n.y]);continue;}const cand=[];for(let y=1;y<TH-1;y++)for(let x=1;x<TW-1;x++){const d=Math.abs(x-n.x)+Math.abs(y-n.y);if(d>0&&d<=12&&spot(x,y))cand.push([d-(FM?0:side(x,y)*2),x,y]);}cand.sort((a,b)=>a[0]-b[0]);
   let best=null,tries=0;for(const [,x,y] of cand){if(++tries>80)break;if(good(x,y)){best=[x,y];break;}}
   if(best){LOG.push(m+':'+(n.cid||n.look||'?')+' '+n.x+','+n.y+'>'+best[0]+','+best[1]);n.x=best[0];n.y=best[1];
-   let bd=null;for(const [dx,dy,dn] of [[0,1,'down'],[1,0,'right'],[-1,0,'left'],[0,-1,'up']])if(tileFree(n.x+dx,n.y+dy)){bd=dn;break;}if(bd)n.dir=bd;}}}
+   let bd=null;for(const [dx,dy,dn] of [[0,1,'down'],[1,0,'right'],[-1,0,'left'],[0,-1,'up']])if(fc(n.x+dx,n.y+dy)>=12){bd=dn;break;}if(bd)n.dir=bd;}placed.push([n.x,n.y]);}}
 function fineApply(){for(const m in FINEMASK){const M=MAPS[m];if(!M)continue;const F=FINEMASK[m],ws=M.warps||[];M.rows=M.rows.map((r,y)=>r.split('').map((c,x)=>{if(c==='D'||ws.some(w=>w[0]===x&&w[1]===y))return c;const fy=y*4+1,fx=x*4+1,b=(F[fy][fx]+F[fy][fx+1]+F[fy+1][fx]+F[fy+1][fx+1]).includes('1');if(b&&!SOLID.includes(c))return 'Z';if(!b&&SOLID.includes(c)&&!'qL~'.includes(c))return '.';return c;}).join(''));}}
 function solidAt(x,y){const tx=Math.floor(x/16),ty=Math.floor(y/16),ch=tileAt(tx,ty),FM=fineOf(G.map);if(!ch||(FM?(FM[y>>2]||'')[x>>2]==='1':SOLID.includes(ch))||doorLocked(tx,ty))return true;if(pushRockAt(tx,ty))return true;if(dunSolid(tx,ty))return true;return !!npcAt(tx,ty);}
 function blocked(x,y){return solidAt(x-5,y-4)||solidAt(x+5,y-4)||solidAt(x-5,y+1)||solidAt(x+5,y+1);}
@@ -10408,7 +10420,7 @@ function cadDrawDialog(u){u.t=(u.t||0)+1;pagesOf(u);const L=u.cadL,s=L.s,rise=Ma
    fechar a página, a próxima abertura registra a última anotação como QUEDA. Não muda nada do jogo. */
 window.__GM=function(){try{return G.mode;}catch(_){return '';}};
 (function(){try{
-  const BUILD='1793311593',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
+  const BUILD='1793313324',SID=Date.now().toString(36)+Math.random().toString(36).slice(2,6),T0=performance.now(),ERR=[];
   const EV=[];let lastMode='';window.__EV=function(m){try{EV.push(Math.round((performance.now()-T0)/100)/10+'s '+m);if(EV.length>40)EV.shift();localStorage.setItem('cv_diag_ev',JSON.stringify({sid:SID,ev:EV}));}catch(_){}};
   setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode!==lastMode){lastMode=G.mode;__EV('modo '+G.mode);}}catch(_){}},500);
   const CV=[];try{const ce=document.createElement.bind(document);document.createElement=function(t,o){const e=ce(t,o);try{if(String(t).toLowerCase()==='canvas')CV.push(new WeakRef(e));}catch(_){}return e;};}catch(_){}

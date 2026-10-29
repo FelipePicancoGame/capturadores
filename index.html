@@ -5258,8 +5258,8 @@ async function wallMode(){if(!party.length)return;try{murPreload();}catch(e){}aw
 {const st=document.getElementById('stage');if(st)st.addEventListener('pointermove',e=>{try{const w=WL;if(G.mode!=='wall'||!w||!w.hold||w.cards||w.paused)return;const [x,y0]=toCanvas(e),y=y0-Math.max(0,H-320)+wK(),d=w.defs[w.hold.i];if(!d)return;
   if(w.aimDrag||Math.hypot(x-d.x,y-(d.y-12))>18){w.aimDrag={i:w.hold.i,x,y:Math.min(y,d.y-16)};w.hold.t0=performance.now()+1e9;}}catch(_){}},true);}
 function wAimDraw(w,t){const L=[];if(w.aimDrag){const d=w.defs[w.aimDrag.i];if(d)L.push([d,w.aimDrag.x,w.aimDrag.y,1,1]);}
- for(const d of w.defs)if(d.aim&&d.aim.t>0)L.push([d,d.aim.x,d.aim.y,Math.min(1,d.aim.t/40),0]);
- for(const [d,x,y,a,live] of L){const col=spCol(d.sp)||'#ffe27a',rgb=hex2rgb(col).join(',');b.save();b.globalAlpha=a;b.setLineDash([6,5]);b.lineDashOffset=-t*.6;b.lineWidth=3.2;b.strokeStyle='rgba(10,8,24,.6)';b.beginPath();b.moveTo(d.x,d.y-14);b.lineTo(x,y);b.stroke();b.lineWidth=1.8;b.strokeStyle=col;b.stroke();b.setLineDash([]);
+ /* 29/out (Felipe): sem a linha e sem a marca depois de soltar; o ataque no lugar continua. Só a mira enquanto arrasta. */
+ for(const [d,x,y,a,live] of L){const col=spCol(d.sp)||'#ffe27a',rgb=hex2rgb(col).join(',');b.save();b.globalAlpha=a;
   const r=live?14:12+Math.sin(t/5)*1.5;b.beginPath();b.arc(x,y,r,0,Math.PI*2);b.lineWidth=2.6;b.strokeStyle='rgba(10,8,24,.6)';b.stroke();b.lineWidth=1.6;b.strokeStyle=col;b.stroke();
   for(let k=0;k<4;k++){const an=k*Math.PI/2;b.beginPath();b.moveTo(x+Math.cos(an)*(r-5),y+Math.sin(an)*(r-5));b.lineTo(x+Math.cos(an)*(r+5),y+Math.sin(an)*(r+5));b.stroke();}
   b.globalCompositeOperation='lighter';glowAt(x,y,r+6,rgb,.35);b.restore();}}

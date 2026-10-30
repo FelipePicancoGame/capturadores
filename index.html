@@ -9127,6 +9127,62 @@ function m3FinStep(){const S=M3,F=S.fin;if(!F){S.phase='idle';return;}F.t++;
   if(F.t%9===0){let L=[];for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const q=S.g[r][c];if(q&&q.sp)L.push([r,c]);}
     if(L.length){F.loops++;S.combo=0;m3Blast(L,[],'FINAL EXPLOSIVO!');}else{S.fin=null;S.phase='idle';m3Check();}}}
 /* /COMBINA AÇÃO */
+/* COMBINA MAIS VIVO (30/out noite, Felipe: "quero cores mais vivas e mais animações e mais ações").
+   CORES: as peças, o fundo, o tabuleiro e os efeitos do Buchecha são pintados com cor mais forte (saturação), sem trocar nem esticar a arte.
+          Placas, barra e botões ficam iguais (pra leitura dos números).
+   ANIMAÇÕES: luzes coloridas subindo no fundo; onda de brilho passando pelo tabuleiro de tempos em tempos;
+          peça escolhida pulsa e brilha; peças balançam enquanto caem; contador de combo grande (x2, x3...) que pula na tela.
+   AÇÕES: FEBRE (combo de 4 ou mais = as 2 próximas jogadas valem PONTOS EM DOBRO, tabuleiro brilha nas cores do arco-íris);
+          PRESENTE (a cada 5 jogadas o monstrinho do poder joga uma peça RAIO no tabuleiro);
+          tocar no monstrinho do poder antes de encher faz ele pular e mostra quanto falta. */
+const M3V={f:'saturate(1.5) contrast(1.06) brightness(1.04)',set:new WeakSet(),bg:new WeakSet(),n:-1,bok:[]};
+function m3vScan(){const n=Object.keys(M3ART).length;if(M3V.n===n&&M3.t%90)return;M3V.n=n;
+  for(const k in M3ART){const v=M3ART[k];if(!(v instanceof HTMLImageElement))continue;
+    if(/placa|barra|botao|selo|vitoria|derrota/.test(k))continue;M3V.set.add(v);if(/fundo$/.test(k))M3V.bg.add(v);}}
+function m3vBokeh(){const S=M3;if(!S)return;const B=M3V.bok;if(!B.length)for(let i=0;i<22;i++)B.push({x:Math.random(),y:Math.random(),r:.5+Math.random(),v:.0006+Math.random()*.0012,c:i%6,ph:Math.random()*6});
+  b.save();for(const p of B){p.y-=p.v;if(p.y<-.05){p.y=1.05;p.x=Math.random();}const x=p.x*W+Math.sin(S.t/60+p.ph)*6,y=p.y*H,a=.32+.14*Math.sin(S.t/25+p.ph);
+    glowAt(x,y,(4+p.r*6),hex2rgb(M3COL[p.c]).join(','),a);}b.restore();}
+/* pinta a arte com cor forte só durante o desenho do Combina (o resto do jogo não muda) */
+{const _r=renderMatch;renderMatch=function(){const S=M3;if(!S||/semfiltro|leve/.test(window.__TESTE||''))return _r();try{m3vScan();}catch(e){}
+  const P=CanvasRenderingContext2D.prototype.drawImage;
+  b.drawImage=function(im){if(im&&M3V.set.has(im)){const f0=b.filter;b.filter=M3V.f;try{P.apply(b,arguments);}finally{b.filter=f0;}if(M3V.bg.has(im))try{m3vBokeh();}catch(e){}return;}return P.apply(b,arguments);};
+  try{_r();}finally{delete b.drawImage;}
+  /* contador de combo grande */
+  if(S.cmb&&S.cmb.t<60){const G2=m3Geo(),k=S.cmb.t,sc=k<8?.4+k/8*.9:k<14?1.3-(k-8)/6*.3:1,a=Math.min(1,(60-k)/12),x=G2.x0+G2.bw-G2.ts*.7,y=G2.y0+G2.ts*.7;
+    b.save();b.globalCompositeOperation='lighter';glowAt(x,y,G2.ts*1.2*sc,hex2rgb(['#ff4a4a','#ffd23f','#3ae0ff','#ff6ad0','#7aff6a'][S.cmb.n%5]).join(','),.55*a);b.restore();
+    b.globalAlpha=a;T(`x${S.cmb.n}`,x,y-G2.ts*.42*sc,Math.min(16,G2.ts*.55*sc),'center',['#ffffff','#fff3a0','#c8f6ff','#ffd0f0','#d8ffd0'][S.cmb.n%5],G2.ts*2,'rgba(60,10,80,.9)');b.globalAlpha=1;}
+  /* FEBRE: tabuleiro com borda arco-íris + aviso */
+  if(S.fever>0){const G2=m3Geo(),hu=(S.t*4)%360;b.save();b.lineWidth=Math.max(2.5,G2.ts*.1);
+    for(let i=0;i<3;i++){b.strokeStyle=`hsla(${(hu+i*120)%360},95%,55%,${.95-i*.25})`;b.beginPath();const o=2+i*G2.ts*.07;if(b.roundRect)b.roundRect(G2.x0-o,G2.y0-o,G2.bw+o*2,G2.bh+o*2,G2.ts*.2);else b.rect(G2.x0-o,G2.y0-o,G2.bw+o*2,G2.bh+o*2);b.stroke();}b.restore();
+    T(`🔥 FEBRE! PONTOS x2 · ${S.fever-1>0?S.fever-1:1} jogada${S.fever-1>1?'s':''}`,W/2,G2.y0-Math.min(11,G2.ts*.4),Math.min(7,G2.ts*.24),'center',`hsl(${hu},100%,75%)`,W-12,'rgba(40,0,60,.9)');}
+  if(S.pwMsg&&S.pwMsg.t<50){const pb=m3PwBtn();b.globalAlpha=Math.min(1,(50-S.pwMsg.t)/10);const my=pb.y+pb.r*1.35<H-12?pb.y+pb.r*1.35:pb.y-pb.r*2.3;T(S.pwMsg.s,pb.x,my,6,'center','#ffffff',W*.6,'rgba(30,10,60,.85)');b.globalAlpha=1;}};}
+/* peças: onda de brilho, peça escolhida pulsando, balanço na queda */
+{const _p=m3PieceArt;m3PieceArt=function(q,x,y,ts,sel,hint){const S=M3;if(!S)return _p(q,x,y,ts,sel,hint);let sc=1,rot=0,gl=0;
+  if(S.wave){const G2=m3Geo(),d=(x-G2.x0)/ts+(y-G2.y0)/ts,k=1-Math.abs(d-S.wave.t*.3)/1.2;if(k>0){sc+=.14*k;gl=k;}}
+  if(sel){sc+=.08+.05*Math.sin(S.t/3);rot+=Math.sin(S.t/5)*.12;gl=Math.max(gl,.7);}
+  if(q.fy<0&&S.phase==='fall')rot+=Math.sin(S.t/3+x*.1)*.1;
+  if(gl>0){b.save();b.globalCompositeOperation='lighter';glowAt(x,y,ts*.62,sel?'255,246,160':hex2rgb(M3COL[q.c]||'#ffffff').join(','),.55*gl);b.restore();}
+  if(sc===1&&!rot)return _p(q,x,y,ts,sel,hint);
+  b.save();b.translate(x,y);if(rot)b.rotate(rot);b.scale(sc,sc);_p(q,0,0,ts,sel,hint);b.restore();};}
+/* FEBRE e contador de combo */
+{const _b=m3Blast;m3Blast=function(cells,born,label){const S=M3;const s0=S?S.score:0;_b(cells,born,label);if(!S||!S.pend)return;
+  if(S.combo>=2)S.cmb={n:S.combo,t:0};
+  if(S.fever>0&&S.phase!=='fin'&&!S.fin){const ex=S.score-s0;if(ex>0){S.score+=ex;const G2=m3Geo();m3Pop(G2.x0+G2.bw/2,G2.y0+G2.bh*.55,`x2  +${ex}`,'#ff9ae0',9);}}
+  if(S.combo>=4&&!S.fin&&!S.tutS&&!S.won&&!(S.fever>1)){S.fever=3;S.flash=Math.max(S.flash||0,10);try{tone([523,659,784,1047,1319],.06);}catch(e){}}};}
+/* jogadas: conta pra FEBRE e pro PRESENTE; onda de brilho; mensagem do poder */
+{const _u=matchUpdate;matchUpdate=function(){const S0=M3;const ph0=S0&&S0.phase;_u();const S=M3;if(!S||S!==S0)return;
+  if(S._mv==null)S._mv=S.moves;if(S.moves<S._mv&&!S.fin&&S.phase!=='fin'){if(S.fever>0)S.fever--;S.giftN=(S.giftN||0)+1;}S._mv=S.moves;
+  if(S.cmb)S.cmb.t++;if(S.pwMsg)S.pwMsg.t++;
+  if(S.wave){S.wave.t++;if(S.wave.t*.3>S.rows+S.cols+2)S.wave=null;}else if(S.phase==='idle'&&S.t%300===150)S.wave={t:0};
+  if(ph0!=='idle'&&S.phase==='idle'&&(S.giftN||0)>=5&&!S.tutS&&!S.ending&&!S.fin&&!S.won&&S.moves>0){S.giftN=0;
+    const free=[];for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const q=S.g[r][c];if(q&&!q.sp)free.push([r,c]);}
+    if(free.length){const [r,c]=free[Math.floor(Math.random()*free.length)],q=S.g[r][c];q.sp=Math.random()<.5?1:2;q.born=12;q.flash=14;S.mh=20;
+      const [x,y]=m3Pt(r,c),pb=m3PwBtn();(S.fly=S.fly||[]).push({k:'spark',c:S.pwI,x:pb.x,y:pb.y,tx:x,ty:y,t:0,d:18});m3Pop(x,y-10,'PRESENTE!','#ffe066',8);
+      try{m3cSheet('fx_brilho_especial',x,y,m3Geo().ts*1.8,10);}catch(e){}try{tone([784,988,1175],.05);}catch(e){}}}};}
+/* tocar no monstrinho antes do poder encher: ele pula e diz quanto falta */
+{const _t=matchTap;matchTap=function(x,y){const S=M3;if(S&&S.pw<S.pwMax){const pb=m3PwBtn();if(Math.hypot(x-pb.x,y-pb.y)<pb.r+4){S.mh=20;const f=Math.ceil(S.pwMax-S.pw);S.pwMsg={t:0,s:`Combine mais ${f} peça${f>1?'s':''} da cor dele!`};try{tone([440,554],.04);}catch(e){}return;}}return _t(x,y);};}
+/* /COMBINA MAIS VIVO */
+
 
 
 

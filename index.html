@@ -3830,6 +3830,33 @@ const WC=[
   {id:'lama',r:2,n:'Lama na Porta',d:'Inimigos perto da muralha andam 30% mais devagar',ic:'k_slow',f:w=>{w.nearSlow=Math.min(.6,(w.nearSlow||0)+.3);},max:2},
   {id:'luck',r:0,n:'Sorte',d:'+5% de chance de crítico e +10% de moedas no final',ic:'k_luck',f:w=>{w.crit+=.05;w.coinMul+=.1;},max:3},
 ];
+/* 30/out (Felipe): PODERES NOVOS da Muralha — cada vez que pega a mesma carta ela fica mais forte (Nv 1 · 2 · 3) */
+const WNV=[0,.10,.15,.20],WSPK=[[45,128],[135,128],[90,196]],WBARY=160;
+function wnPct(n){return Math.round(WNV[Math.min(3,n)]*100);}
+const WCNEW=[
+  {id:'nspike',r:1,n:'Armadilha de Espinhos',d:n=>`Nv ${n}/3: ${n} armadilha${n>1?'s':''} no campo · quem pisa perde ${wnPct(n)}% da vida`,ic:'k_spike',f:w=>{w.nSpike=(w.nSpike||0)+1;},max:3},
+  {id:'nbarr',r:1,n:'Barricada',d:n=>`Nv ${n}/3: cerca no meio do campo segura ${3+3*n} inimigos por onda, ${(1+.5*n).toFixed(1).replace('.',',')}s cada`,ic:'k_fix',f:w=>{w.nBarr=(w.nBarr||0)+1;w.barHP=3+3*w.nBarr;},max:3},
+  {id:'nraio',r:2,n:'Raio do Céu',d:n=>`Nv ${n}/3: a cada 5 derrotados cai um raio no mais forte · ${[0,25,35,45][n]}% da vida dele`,ic:'k_chain',f:w=>{w.nRaio=(w.nRaio||0)+1;},max:3},
+  {id:'nice',r:1,n:'Bomba de Gelo',d:n=>`Nv ${n}/3: quem é derrotado explode, deixa lento por ${(.5+.5*n).toFixed(1).replace('.',',')}s e tira ${wnPct(n)}% da vida de quem está perto`,ic:'k_slow',f:w=>{w.nIce=(w.nIce||0)+1;},max:3},
+  {id:'nmirror',r:0,n:'Tiro Espelhado',d:n=>`Nv ${n}/3: ${wnPct(n)}% de chance de cada tiro sair em dobro`,ic:'k_bounce',f:w=>{w.nMirror=(w.nMirror||0)+1;},max:3},
+];
+WC.push(...WCNEW);
+function wnHurt(w,e,pct,col,txt,type){if(e.dead)return;const p=e.boss?pct/3:pct,dm=Math.max(4,Math.round(e.max*p));e.hp-=dm;e.hit=8;wPop(e.x,e.y-22,(txt?txt+' ':'')+dm,col,8);if(e.hp<=0)wKill(e,type||'normal');}
+function wNewStep(w){
+  if(w.nBarr&&w._barWave!==w.wave){w._barWave=w.wave;w.barHP=3+3*w.nBarr;}
+  for(const e of w.foes){if(e.dead)continue;
+    if(w.nSpike){e._spk=e._spk||0;for(let k=0;k<Math.min(3,w.nSpike);k++){const [tx,ty]=WSPK[k];if(!(e._spk&(1<<k))&&Math.abs(e.x-tx)<15&&Math.abs(e.y-ty)<9){e._spk|=1<<k;w.spkT=(w.spkT||[]);w.spkT[k]=14;part(tx,ty,'#d8d8e0',6,{sp:1.4,up:1,life:16});wnHurt(w,e,WNV[w.nSpike],'#e8e8f0','ESPINHO','normal');if(e.dead)break;}}if(e.dead)continue;}
+    if(w.nBarr&&w.barHP>0&&!e.boss&&!e.archer&&!e._bar&&e.y>=WBARY-8&&e.y<=WBARY+2){e._bar=1;e.root=Math.max(e.root||0,Math.round((1+.5*w.nBarr)*60));w.barHP--;w.barHit=10;wPop(e.x,e.y-24,'SEGUROU!','#f2c27a',7);part(e.x,WBARY+4,'#a8743a',5,{kind:'debris',sp:1.2,up:1,life:24,grav:.12,size:2});if(w.barHP<=0){wPop(90,WBARY-14,'A BARRICADA QUEBROU!','#ffb36a',8);part(90,WBARY,'#a8743a',18,{kind:'debris',sp:2,up:1.4,life:34,grav:.12,size:2.4});}}}
+  if(w.spkT)for(let k=0;k<3;k++)if(w.spkT[k]>0)w.spkT[k]--;if(w.barHit>0)w.barHit--;}
+function wNewKill(w,e){
+  if(w.nIce&&(w._iceD||0)<3){w._iceD=(w._iceD||0)+1;try{part(e.x,e.y,'#bfe8ff',1,{kind:'ring',sp:0,life:22,grav:0});part(e.x,e.y,'#dff6ff',10,{sp:2,life:20});for(const o of w.foes){if(o.dead||o===e||Math.hypot(o.x-e.x,o.y-e.y)>34)continue;o.slow=Math.max(o.slow||0,Math.round((.5+.5*w.nIce)*60));wnHurt(w,o,WNV[w.nIce],'#9fdcff','GELO','agua');}}finally{w._iceD--;}}
+  if(w.nRaio&&w.kills%5===0){const L=w.foes.filter(o=>!o.dead&&o.y>30);if(L.length){const tg=L.sort((a,c)=>(c.hp)-(a.hp))[0];w.zaps.push({x1:tg.x+6,y1:0,x2:tg.x,y2:tg.y,life:14});w.zaps.push({x1:tg.x-5,y1:20,x2:tg.x,y2:tg.y,life:10});w.flash=Math.max(w.flash,.25);w.shake=Math.max(w.shake,5);part(tg.x,tg.y,'#ffe066',12,{sp:2.4,life:18});const p=[0,.25,.35,.45][w.nRaio];wnHurt(w,tg,p,'#ffe066','RAIO!','eletrico');}}}
+function wNewDraw(w,t){
+  if(w.nSpike)for(let k=0;k<Math.min(3,w.nSpike);k++){const [x,y]=WSPK[k],up=(w.spkT&&w.spkT[k]>0)?3:0;b.save();E(x,y+3,15,5,'rgba(60,40,30,.45)',0,false);E(x,y+2,13,4,'#6b5a4a',0,false);
+    for(let i=-4;i<=4;i++){const sx=x+i*3.2,sy=y+2-Math.abs(i%2)*1.5;b.beginPath();b.moveTo(sx-1.6,sy);b.lineTo(sx,sy-6-up);b.lineTo(sx+1.6,sy);b.closePath();b.fillStyle='#e6e6ee';b.fill();b.lineWidth=.6;b.strokeStyle='#4a4a58';b.stroke();}b.restore();}
+  if(w.nBarr&&w.barHP>0){const y=WBARY+6,sh=w.barHit>0?(w.barHit%2?1:-1):0;b.save();b.translate(sh,0);for(let x=8;x<=172;x+=11){b.fillStyle='#a8743a';b.fillRect(x-2,y-12,4,14);b.fillStyle='#7a4f24';b.fillRect(x-2,y-12,1,14);b.beginPath();b.moveTo(x-2,y-12);b.lineTo(x,y-15);b.lineTo(x+2,y-12);b.closePath();b.fillStyle='#c48b4c';b.fill();}
+    b.fillStyle='#8a5a2c';b.fillRect(4,y-9,172,3);b.fillRect(4,y-3,172,3);b.fillStyle='rgba(255,230,180,.35)';b.fillRect(4,y-9,172,1);
+    const L=3+3*w.nBarr;b.font='bold 6px sans-serif';b.textAlign='center';b.lineWidth=2;b.strokeStyle='rgba(0,0,0,.6)';b.strokeText(w.barHP+'/'+L,90,y-16);b.fillStyle='#ffe2b0';b.fillText(w.barHP+'/'+L,90,y-16);b.restore();}}
 /* CRISTAIS DE GELO da Muralha: armadilhas no campo que congelam e machucam quem passa (inspirado nos biomas gelados e armadilhas de jogos de defesa) */
 const WFROST_POS=[[48,178],[132,178],[90,128]];
 function wFrostPlace(w){w.traps=w.traps||[];const want=w.frost>=2?3:2;for(let i=w.traps.length;i<want;i++){const [x,y]=WFROST_POS[i];w.traps.push({x,y,t:0,cd:0,pulse:0});}
@@ -4410,7 +4437,7 @@ function wLobDraw(w,t){if(!w.lobs)return;for(const L of w.lobs){const p=L.t/L.du
 function wArcherMark(e,t,sc){const hy=e.y-(sc*36+10);if(e.acd<=34){const q=1-e.acd/34;b.save();b.globalCompositeOperation='lighter';glowAt(e.x,hy-4,4+q*7,'255,120,90',.4+q*.4);b.restore();E(e.x,hy-4,1+q*2.6,1+q*2.6,'#ffd0b0',0,false);}
   else{const cx=e.x+11*sc/.5,cy=e.y-sc*20;b.save();b.globalAlpha=.85;b.beginPath();b.arc(cx,cy,3,0,Math.PI*2);b.lineWidth=.8;b.strokeStyle='#ff6a5a';b.stroke();ln([[cx-4.5,cy],[cx-1.5,cy]],.7,'#ff6a5a');ln([[cx+1.5,cy],[cx+4.5,cy]],.7,'#ff6a5a');ln([[cx,cy-4.5],[cx,cy-1.5]],.7,'#ff6a5a');ln([[cx,cy+1.5],[cx,cy+4.5]],.7,'#ff6a5a');b.restore();}}
 function wDmg(d){const mv=MOVES[d.mv],stab=mv.type===SP[d.sp].type?1.5:1;return (d.mDmg||1)*(Math.floor((2*d.m.lv/5+2)*mv.pow*d.st.atk/Math.max(8,d.m.lv+5))/50+2)*stab*WL.mDmg*(TRV(d.sp)?1.12:1);}
-function wKill(e,type,src){const w=WL;e.dead=true;w.kills++;if(w.vamp)w.wall=Math.min(w.wallMax,w.wall+w.vamp);wCombo(e);w.dying.push({sp:e.sp,x:e.x,y:e.y,sc:eSc(e),flip:e.flip,t:0,col:TYPECOL[type]||C.white});
+function wKill(e,type,src){const w=WL;e.dead=true;w.kills++;try{wNewKill(w,e);}catch(er){}if(w.vamp)w.wall=Math.min(w.wallMax,w.wall+w.vamp);wCombo(e);w.dying.push({sp:e.sp,x:e.x,y:e.y,sc:eSc(e),flip:e.flip,t:0,col:TYPECOL[type]||C.white});
   for(const d of (w.tutS?[]:w.defs)){const was=d.charge<100;d.charge=Math.min(100,d.charge+(d===src?8:3)*.5*w.chargeMul*d.cMul*(e.boss?4:1));/* 24/out: especial enche na metade da velocidade */if(was&&d.charge>=100){wPop(d.x,d.y-30,'ESPECIAL PRONTO!',C.yellow,7);part(d.x,d.y-6,spCol(d.sp),1,{kind:'ring',sp:0,life:24,grav:0});}}
   part(e.x,e.y,'rgba(235,235,245,.9)',7,{kind:'smoke',sp:.7,life:26,grav:-.02,size:3});part(e.x,e.y,C.yellow,e.boss?10:3,{kind:'coin',sp:1.2,up:1.6,life:34,grav:.08});
   part(e.x,e.y,TYPECOL[type]||C.white,8,{sp:2});if(e.boss){w.shake=20;w.flash=.6;}}
@@ -4529,7 +4556,7 @@ function wUpdate(){const w=WL;w.t++;wDanger(w);if(flags.wallAuto&&!w.tutS&&!w.ul
   if(w.regen&&w.t%60===0&&w.wall<w.wallMax){const w0=w.wall;w.wall=Math.min(w.wallMax,w.wall+w.regen);w.regAcc=(w.regAcc||0)+(w.wall-w0);if(w.t%180===0&&w.regAcc>=1){wPop(90,262,`+${Math.round(w.regAcc)} conserto`,'#7fe88a',7);w.regAcc=0;}}
   let _sOk=true;if((w.wave===5||w.wave===10)&&w.bossW!==w.wave&&w.spawned===w.toSpawn-1){if(w._bwW!==w.wave){w._bwW=w.wave;w._bw=0;}if(!w.bossHold){w.bossHold=1;w.spawnT=240;w.banner={t:170,text:'PREPARE-SE!',sub:'O CHEFE ESTÁ CHEGANDO...'};}}
   if(_sOk&&!w.tutS&&w.spawned<w.toSpawn&&--w.spawnT<=0){wSpawn();w.spawnT=w.bossW===w.wave?(w.spawned%3===0?30:75):Math.max(12,40-w.wave*3);if(w.surge){const per=Math.ceil(w.toSpawn/w.surge),g=Math.floor(w.spawned/per);if(w.spawned%per===0&&w.spawned<w.toSpawn){w.spawnT=230;w.banner={t:80,text:'LÁ VEM MAIS!',sub:`Grupo ${g+1} de ${w.surge}`};}else w.spawnT=Math.max(8,Math.round(w.spawnT*.6));}}
-  wBossStep(w);wThiefStep(w);wCatStep(w);wFrostStep(w);wLobStep(w);
+  wBossStep(w);wThiefStep(w);wCatStep(w);wFrostStep(w);wLobStep(w);try{wNewStep(w);}catch(er){}
   for(const e of w.foes)if(e.boss&&!e.dead&&!e.sumd&&e.hp<e.max*.5&&(e.sumd=1)){for(let k=0;k<2;k++)wMinion(e.x+(k?14:-14),e.y+6);w.banner={t:60,text:'O CHEFE CHAMOU REFORÇOS!'};w.shake=10;}
   for(const z of w.zaps)z.life--;w.zaps=w.zaps.filter(z=>z.life>0);
   for(const q of w.dying)q.t++;w.dying=w.dying.filter(q=>q.t<22);
@@ -4547,7 +4574,7 @@ function wUpdate(){const w=WL;w.t++;wDanger(w);if(flags.wallAuto&&!w.tutS&&!w.ul
       if(w.thorns){const td=Math.round(w.thorns*6+e.max*.03);e.hp-=td;wPop(e.x,e.y-20,td,'#b8f0a0',7);part(e.x,e.y+8,'#c8c8d0',4,{sp:1.2});if(e.hp<=0){wKill(e,'normal');continue;}}}}
   for(const d of w.defs){if(d.fire>0)d.fire--;if(d.stun>0){d.stun--;continue;}if(--d.cd>0)continue;
     const RG=wRng(w,d);let live=w.foes.filter(e=>!e.dead&&e.y>30-(w.ext||0)&&Math.hypot(e.x-d.x,e.y-(d.y-12))<=RG).sort((a,c2)=>(c2.boss?40:0)+c2.y-a.y-(a.boss?40:0));/* 29/out (Felipe): carta lendária Olho do Caçador: primeiro quem leva mais dano do tipo do golpe; sem ninguém fraco, segue a ordem normal */if(w.typeFocus&&live.length>1){const ty=MOVES[d.mv].type,tv=TRV(String(d.sp||'').replace('*',''))&&ty==='agua',ef=e=>{const t2=SP[String(e.sp||'').replace('*','')];if(!t2)return 1;return tv?trovEff(t2.type):effOf(ty,t2.type);};live=live.map((e,i)=>[e,i,ef(e)]).sort((p2,q2)=>q2[2]-p2[2]||p2[1]-q2[1]).map(z=>z[0]);}if(d.aim&&d.aim.t>0){const A=w.foes.filter(e=>!e.dead&&e.y>30-(w.ext||0)&&Math.hypot(e.x-d.aim.x,e.y-d.aim.y)<40&&Math.hypot(e.x-d.x,e.y-(d.y-12))<=RG).sort((a,c2)=>Math.hypot(a.x-d.aim.x,a.y-d.aim.y)-Math.hypot(c2.x-d.aim.x,c2.y-d.aim.y));if(A.length)live=A;}if(!live.length){d.cd=0;continue;}
-    const type=MOVES[d.mv].type,shots=w.multi+(d.multi||0)+(w.swarm&&type==='inseto'?2*w.swarm:0),dmg=wDmg(d);
+    const type=MOVES[d.mv].type,shots=(w.nMirror&&Math.random()<WNV[w.nMirror]?1:0)+w.multi+(d.multi||0)+(w.swarm&&type==='inseto'?2*w.swarm:0),dmg=wDmg(d);
     for(let k=0;k<shots;k++){const tg=live[k%live.length];bFire(w.ctx,{x:d.x,y:d.y-8-(WART()?WDY+8:0),sp:d.sp,mv:d.mv,type,dmg,pierce:w.pierce+(d.pierce||0),bounce:w.bounce,src:d,ang:(k-(shots-1)/2)*.1,pw:Math.min(2,Math.sqrt((d.mDmg||1)*(w.mDmg||1))),spd:Math.sqrt((d.mSpd||1)*(w.mSpd||1)),tier:d.wl||1},tg);}
     part(d.x,d.y-10,TYPECOL[type],3,{sp:.9,life:10,grav:0});d.fire=8;d.cdMax=Math.max(12,Math.round(150/(1+d.st.spd/10)/(w.mSpd*(d.mSpd||1))));d.cd=d.cdMax;}
   for(const s of w.shots){s.x+=s.vx;s.y+=s.vy;s.rot+=.3;s.life--;if(!REDUCED&&w.t%2===0)w.parts.push({x:s.x,y:s.y,vx:0,vy:0,life:8,max:8,col:TYPECOL[s.type],size:1.5,grav:0,kind:'spark',rot:0});
@@ -4581,7 +4608,7 @@ function wNextTheme(w){const nw=w.wave+1;if(!(STG&&STG.mode==='wall')||nw<2||nw=
 function wOffer(){const w=WL;if(w.rr==null)w.rr=1;const cands=[];w.nextTheme=wNextTheme(w);
   w.defs.forEach((d,di)=>{for(const mc of MONCARDS){const key=mc.id+'#'+di;if(mc.max&&(w.lv[key]||0)>=mc.max)continue;if(mc.id==='mpierce'){let bk='';try{bk=behOf(d.sp,d.m&&d.m.lv).k;}catch(er){}if(['jet','aurora'].includes(bk))continue;}cands.push({id:mc.id,key,r:mc.r,ic:mc.ic,mon:di,n:nm(d.m),d:mc.d(d)+((w.lv[key]||0)>0?wMonTot(mc.id,d):''),f:w2=>mc.f(w2,d)});}});
   for(const c2 of WC){if(GLOBAL_SKIP.has(c2.id))continue;if(c2.max&&(w.lv[c2.id]||0)>=c2.max)continue;let mon=null;
-    if(c2.need){const di=w.defs.findIndex(d=>SP[d.sp].type===c2.need);if(di<0)continue;mon=di;}cands.push({...c2,d:typeof c2.d==='function'?c2.d((w.lv[c2.id]||0)+1,w):c2.d,key:c2.id,mon});}
+    if(c2.need){const di=w.defs.findIndex(d=>SP[d.sp].type===c2.need);if(di<0)continue;mon=di;}{const _n=(w.lv[c2.id]||0)+1,_d=typeof c2.d==='function'?c2.d(_n,w):c2.d;cands.push({...c2,d:(c2.max>1&&!/^Nv /.test(_d)?`Nv ${_n}/${c2.max}: `:'')+_d,key:c2.id,mon});}}
   const opts=[];let tries=0;while(opts.length<3&&tries++<300){const roll=Math.random();const r=roll<.10?2:roll<.38?1:0;const pool=cands.filter(c2=>c2.r===r&&!opts.some(o=>o.key===c2.key));if(!pool.length)continue;
     const monPool=pool.filter(c2=>c2.mon!=null);const pick=(monPool.length&&Math.random()<.65?monPool:pool);opts.push(pick[Math.floor(Math.random()*pick.length)]);}
   let leg=false;if((w.wave===5&&Math.random()<.35)||(w.wave===6&&!w.legSeen)||(w.wave===8&&Math.random()<.25)){w.legSeen=1;const L=WLEG.filter(c2=>!(w.lv[c2.id]));if(L.length&&opts.length){const c2=L[Math.floor(Math.random()*L.length)];opts[Math.min(1,opts.length-1)]={...c2,key:c2.id,mon:null};leg=true;tone([659,880,1175,1568,2093],.09);}}
@@ -5074,7 +5101,7 @@ function renderWall0(){const w=WL,t=w.t,sh=w.shake?((w.shake%4<2)?1:-1):0;
   wFlags(t);
   for(const p of w.parts)if(p.kind==='leaf'){b.save();b.translate(p.x,p.y);b.rotate(Math.sin(p.rot)*.8);E(0,0,2.6,1.2,p.col,0,false);b.restore();}
   const foes=[...w.foes].sort((a,c2)=>a.y-c2.y);
-  bfxDraw(w.ctx,t,'g');wRangeDraw(w,t);wHoldDraw(w,t);wBarrelDraw(t);wFrostDraw(w,t);const WEAK=new Set(w.defs.map(d=>MOVES[d.mv].type));
+  bfxDraw(w.ctx,t,'g');wRangeDraw(w,t);wHoldDraw(w,t);wBarrelDraw(t);wFrostDraw(w,t);try{wNewDraw(w,t);}catch(er){}const WEAK=new Set(w.defs.map(d=>MOVES[d.mv].type));
   for(const q of w.dying){const k=q.t/22;b.save();b.globalAlpha=1-k;drawMonFx(q.sp,q.x,q.y-k*10,q.sc,q.flip,{sx:1+k*.6,sy:Math.max(.05,1-k*1.1),white:Math.min(1,.4+k),rot:(q.flip?-1:1)*k*.6});b.restore();
     if(q.t<10){b.beginPath();b.arc(q.x,q.y,4+q.t*2.2,0,Math.PI*2);b.lineWidth=2*(1-q.t/10);b.strokeStyle=q.col;b.stroke();}}
   for(const e of foes){const sc=eSc(e),stop=e.boss?MSTOP()-16:MSTOP(),moving=e.y<stop&&!e.root&&!e.stun,ph=t/5+e.wob,grow=Math.min(1,(e.age??99)/14);

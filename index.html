@@ -10503,7 +10503,7 @@ window.__GM=function(){try{return G.mode;}catch(_){return '';}};
   const ver=()=>fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>j&&j.v).catch(()=>null);
   const safe=()=>{try{return ['world','title'].includes(G.mode)&&!busy;}catch(_){return false;}};
   const go=()=>{try{saveGame();}catch(_){}try{__EV&&__EV('versão nova: recarregando');}catch(_){}setTimeout(()=>location.reload(),300);};
-  const chk=async()=>{if(pend){if(safe())go();return;}const v=await ver();if(!v)return;if(cur===null){cur=v;return;}if(v!==cur){pend=true;if(safe())go();}};
+  const chk=async()=>{if(pend){if(safe())go();return;}const v=await ver();if(!v)return;if(cur===null){cur=v;window.__APPVER=v;return;}if(v!==cur){pend=true;if(safe())go();}};
   chk();setInterval(chk,60000);setInterval(()=>{if(pend&&safe())go();},2000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)chk();});
 }catch(e){}})();
@@ -10531,7 +10531,7 @@ async function askNomeSeFalta(){if(flags.nome)return;const n=await askNome(flags
 
 /* JOGADORES: cada aparelho manda nome, nível e progresso pra planilha do Felipe e recebe os prêmios que ele escreveu lá.
    JOGURL = endereço do App da Web do Google (Apps Script). Vazio = desligado. */
-const JOGURL='';
+const JOGURL='https://script.google.com/macros/s/AKfycbyjDnycYGzF8D8CEdf3Y-mwoqKzcO-2PECyvHao4H6M-gKEtTc7GsqjDgbDXfaHkAX2Bg/exec';
 const JOGITEM={capsula:'ball',cápsula:'ball',ball:'ball',supercapsula:'sball',supercápsula:'sball',sball:'sball',pocao:'potion',poção:'potion',potion:'potion',superpocao:'super',superpoção:'super',super:'super',doce:'candy',docemagico:'candy',docemágico:'candy',candy:'candy',fruta:'fruta',frutadoce:'fruta',frutadourada:'frutao',frutao:'frutao',petisco:'petisco',cafe:'cafe',café:'cafe',vitc:'vitc',vitaminac:'vitc',proteina:'proteina',proteína:'proteina',sucoverde:'sucoverde',isotonico:'isotonico',isotônico:'isotonico'};
 function jogSp(t){const k=String(t||'').toLowerCase().replace(/\s+/g,'');if(!k)return null;if(SP[k])return k;for(const s in SP){if(String(SP[s].name||'').toLowerCase().replace(/\s+/g,'')===k)return s;}return null;}
 function jogDados(){if(!flags.tid)flags.tid=10000+Math.floor(Math.random()*89999);const all=[...party,...(storage||[])];

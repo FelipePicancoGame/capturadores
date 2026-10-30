@@ -3857,6 +3857,47 @@ function wNewDraw(w,t){
   if(w.nBarr&&w.barHP>0){const y=WBARY+6,sh=w.barHit>0?(w.barHit%2?1:-1):0;b.save();b.translate(sh,0);for(let x=8;x<=172;x+=11){b.fillStyle='#a8743a';b.fillRect(x-2,y-12,4,14);b.fillStyle='#7a4f24';b.fillRect(x-2,y-12,1,14);b.beginPath();b.moveTo(x-2,y-12);b.lineTo(x,y-15);b.lineTo(x+2,y-12);b.closePath();b.fillStyle='#c48b4c';b.fill();}
     b.fillStyle='#8a5a2c';b.fillRect(4,y-9,172,3);b.fillRect(4,y-3,172,3);b.fillStyle='rgba(255,230,180,.35)';b.fillRect(4,y-9,172,1);
     const L=3+3*w.nBarr;b.font='bold 6px sans-serif';b.textAlign='center';b.lineWidth=2;b.strokeStyle='rgba(0,0,0,.6)';b.strokeText(w.barHP+'/'+L,90,y-16);b.fillStyle='#ffe2b0';b.fillText(w.barHP+'/'+L,90,y-16);b.restore();}}
+/* 30/out (Felipe): TODAS as cartas da Muralha com 3 níveis — pegar de novo deixa a carta mais forte (ex.: +10% → +15% → +20%) */
+const WCT=(()=>{const P=x=>Math.round(x)+'%',S=(a,n)=>a.slice(0,n).reduce((x,y)=>x+y,0),s1=x=>(x/60).toFixed(1).replace('.',',')+'s',I=a=>(n)=>a[n-1];
+  return {
+  rng:{t:[10,15,20],f:(w,v)=>{w.rngMul=(w.rngMul||1)*(1+v/100);w.rangeT=160;},d:(n,T)=>`+${T[n-1]}% de alcance pra todos os defensores (total +${S(T,n)}%)`},
+  dmg:{t:[10,15,20],f:(w,v)=>{w.mDmg*=1+v/100;},d:(n,T)=>`+${T[n-1]}% de dano em todos os tiros`},
+  spd:{t:[10,15,20],f:(w,v)=>{w.mSpd*=1+v/100;},d:(n,T)=>`+${T[n-1]}% de velocidade de ataque`},
+  crit:{t:[6,8,10],f:(w,v)=>{w.crit+=v/100;},d:(n,T,w)=>`+${T[n-1]}% de chance de crítico (${P(w.crit*100)} → ${P(w.crit*100+T[n-1])})`},
+  hp:{t:[15,20,25],f:(w,v)=>{w.wallMax+=v;w.wall+=v;},d:(n,T,w)=>`+${T[n-1]} de vida máxima da muralha (${w.wallMax} → ${w.wallMax+T[n-1]})`},
+  coin:{t:[15,20,25],f:(w,v)=>{w.coinMul+=v/100;},d:(n,T)=>`+${T[n-1]}% de moedas no final (total +${S(T,n)}%)`},
+  multi:{t:[1,1,1],f:(w,v)=>{w.multi+=v;},d:(n,T,w)=>`Cada defensor dispara +1 tiro (${1+w.multi} → ${2+w.multi})`},
+  pierce:{t:[1,1,1],f:(w,v)=>{w.pierce+=v;},d:n=>`Tiros atravessam ${n} inimigo${n>1?'s':''}`},
+  splash:{t:[1,1,1],f:(w,v)=>{w.splash+=v;},d:n=>`Tiros explodem e acertam quem está em volta com ${30+20*n}% do dano`},
+  bounce:{t:[1,1,1],f:(w,v)=>{w.bounce+=v;},d:n=>`Tiros quicam em ${n} inimigo${n>1?'s':''}`},
+  spike:{t:[1,1.5,2],f:(w,v)=>{w.thorns+=v;},d:(n,T)=>`Quem bate de perto na muralha leva ${Math.round(6*S(T,n))} de dano + 3% da vida dele (arqueiros não)`},
+  regen:{t:[1,1.5,2],f:(w,v)=>{w.regen+=v;},d:(n,T)=>`A muralha recupera ${String(S(T,n)).replace('.',',')} de vida por segundo`},
+  energy:{t:[10,15,20],f:(w,v)=>{w.chargeMul*=1+v/100;},d:(n,T)=>`Todos os especiais carregam +${T[n-1]}% mais rápido`},
+  critd:{t:[20,30,40],f:(w,v)=>{w.critMul+=v/100;},d:(n,T,w)=>`Críticos causam +${T[n-1]}% de dano (${Math.round(160*w.critMul)}% → ${Math.round(160*(w.critMul+T[n-1]/100))}%)`},
+  burn:{t:[1,1,1],f:(w,v)=>{w.burn+=v;},d:n=>`Fogo queima ${String(+(3.5*(1+.5*(n-1))).toFixed(1)).replace('.',',')}% da vida do inimigo a cada 0,5s por ${2+n}s`},
+  slow:{t:[1,1,1],f:(w,v)=>{w.slow+=v;},d:n=>`Água deixa os inimigos lentos por ${s1(90+40*n)}`},
+  root:{t:[1,1,1],f:(w,v)=>{w.root+=v;},d:n=>`Planta tem ${20+15*n}% de chance de prender o inimigo por ${s1(50+20*n)}`},
+  stun:{t:[1,1,1],f:(w,v)=>{w.stun+=v;},d:n=>`Rocha tem ${15+12*n}% de chance de deixar o inimigo tonto por 0,8s`},
+  swarm:{t:[1,1,1],f:(w,v)=>{w.swarm+=v;},d:n=>`Inseto dispara +${2*n} ferrões`},
+  roar:{t:[1,1,1],f:(w,v)=>{w.knock+=v;},d:n=>`Normal empurra o inimigo ${5*n} passos pra trás a cada acerto`},
+  chain:{t:[1,1,1],f:(w,v)=>{w.chain+=v;},d:n=>`Elétrico dá choque em ${n} inimigo${n>1?'s':''} perto`},
+  curse:{t:[1,1,1],f:(w,v)=>{w.curse+=v;},d:n=>`Fantasma amaldiçoa: o inimigo leva +${20*n}% de dano por 3s`},
+  meteor:{t:[1,1,1],f:(w,v)=>{w.meteor+=v;},d:n=>`Um meteoro cai a cada ${s1(Math.max(90,330-n*70))} com 240% de dano em área`},
+  exec:{t:[1,1,1],f:(w,v)=>{w.exec=(w.exec||0)+v;},d:n=>`Inimigos com menos de 30% de vida levam +${40*n}% de dano`},
+  vamp:{t:[1,1,2],f:(w,v)=>{w.vamp=(w.vamp||0)+v;},d:(n,T)=>`Cada inimigo derrotado conserta ${S(T,n)} de vida da muralha`},
+  hunt:{t:[20,30,40],f:(w,v)=>{w.hunt=(w.hunt||0)+v/35;},d:(n,T)=>`+${T[n-1]}% de dano em chefes e elites (total +${S(T,n)}%)`},
+  gold:{t:[30,40,50],f:(w,v)=>{w.coinMul+=v/100;},d:(n,T)=>`+${T[n-1]}% de moedas no final (total +${S(T,n)}%)`},
+  fury:{t:[[8,5],[12,8],[16,10]],f:(w,v)=>{w.mDmg*=1+v[0]/100;w.mSpd*=1+v[1]/100;},d:(n,T)=>`+${T[n-1][0]}% de dano e +${T[n-1][1]}% de velocidade`},
+  bulwark:{t:[25,35,45],f:(w,v)=>{w.wallMax+=v;w.wall=Math.min(w.wallMax,w.wall+v+15);},d:(n,T,w)=>`+${T[n-1]} de vida máxima e conserta ${T[n-1]+15} (${w.wallMax} → ${w.wallMax+T[n-1]})`},
+  sniper:{t:[[5,15],[8,20],[10,25]],f:(w,v)=>{w.crit+=v[0]/100;w.critMul+=v[1]/100;},d:(n,T)=>`+${T[n-1][0]}% de crítico e +${T[n-1][1]}% de dano crítico`},
+  overcharge:{t:[[30,5],[40,10],[50,15]],f:(w,v)=>{w.chargeMul*=1+v[0]/100;w.mDmg*=1+v[1]/100;},d:(n,T)=>`Especiais carregam +${T[n-1][0]}% mais rápido e +${T[n-1][1]}% de dano`},
+  thornwall:{t:[1,2,3],f:(w,v)=>{w.thorns+=v;w.regen+=v;},d:(n,T)=>`+${T[n-1]} de espinhos e a muralha se conserta +${T[n-1]} por segundo`},
+  lanche:{t:[5,10,15],f:(w,v)=>{w.waveHeal=(w.waveHeal||0)+v/100;},d:(n,T)=>`Ao vencer cada onda, a muralha conserta ${S(T,n)}% da vida`},
+  first:{t:[40,60,80],f:(w,v)=>{w.firstHit=(w.firstHit||0)+v/100;},d:(n,T)=>`+${T[n-1]}% de dano em inimigos com a vida cheia (total +${S(T,n)}%)`},
+  lama:{t:[15,20,25],f:(w,v)=>{w.nearSlow=Math.min(.6,(w.nearSlow||0)+v/100);},d:(n,T)=>`Inimigos perto da muralha andam ${S(T,n)}% mais devagar`},
+  luck:{t:[[3,5],[5,10],[7,15]],f:(w,v)=>{w.crit+=v[0]/100;w.coinMul+=v[1]/100;},d:(n,T)=>`+${T[n-1][0]}% de chance de crítico e +${T[n-1][1]}% de moedas no final`},
+};})();
+for(const c of WC){const T=WCT[c.id];if(!T)continue;c.max=3;c.f=w=>{const n=Math.min(3,((w.lv&&w.lv[c.id])||0)+1);T.f(w,T.t[n-1]);};c.d=(n,w)=>`Nv ${Math.min(3,n)}/3: `+T.d(Math.min(3,n),T.t,w||{crit:.05,critMul:1,wall:80,wallMax:80,multi:0});}
 /* CRISTAIS DE GELO da Muralha: armadilhas no campo que congelam e machucam quem passa (inspirado nos biomas gelados e armadilhas de jogos de defesa) */
 const WFROST_POS=[[48,178],[132,178],[90,128]];
 function wFrostPlace(w){w.traps=w.traps||[];const want=w.frost>=2?3:2;for(let i=w.traps.length;i<want;i++){const [x,y]=WFROST_POS[i];w.traps.push({x,y,t:0,cd:0,pulse:0});}
@@ -4605,6 +4646,17 @@ const WTHEME={enxame:{n:'ENXAME',d:'Muitos inimigos fracos de uma vez',tip:'Expl
   voador:{n:'VOADORES',d:'Desviam de 35% dos tiros',tip:'Ricochete, Explosão, Meteoros',counter:['bounce','splash','meteor','multi','chain']},
   cerco:{n:'CERCO',d:'Arqueiros atacam o muro de longe',tip:'Muralha forte, Regeneração, Reforma',counter:['hp','regen','fix','crystal','phoenix']}};
 function wNextTheme(w){const nw=w.wave+1;if(!(STG&&STG.mode==='wall')||nw<2||nw===5||nw===10)return null;const ks=Object.keys(WTHEME);return ks[(nw*7+STG.i*3+Math.floor(Math.random()*2))%ks.length];}
+/* 30/out (Felipe): cartas de MONSTRINHO também com 3 níveis (+10% → +15% → +20%) */
+(()=>{const lvOf=(w,mc,d)=>{const di=w&&w.defs?w.defs.indexOf(d):-1;return Math.min(3,((w&&w.lv&&w.lv[mc.id+'#'+di])||0)+1);},S=(a,n)=>a.slice(0,n).reduce((x,y)=>x+y,0);
+  const MT={mrng:{t:[10,15,20],f:(w,d,v)=>{d.rngMul=(d.rngMul||1)*(1+v/100);w.rangeT=160;},d:(d,n,T)=>`${MOVES[d.mv].name} alcança +${T[n-1]}% mais longe (total +${S(T,n)}%)`},
+    mdmg:{t:[10,15,20],f:(w,d,v)=>{d.mDmg*=1+v/100;},d:(d,n,T)=>`${MOVES[d.mv].name} causa +${T[n-1]}% de dano (total +${S(T,n)}%)`},
+    mspd:{t:[10,15,20],f:(w,d,v)=>{d.mSpd*=1+v/100;},d:(d,n,T)=>`Usa ${MOVES[d.mv].name} +${T[n-1]}% mais rápido (total +${S(T,n)}%)`},
+    mcharge:{t:[15,20,25],f:(w,d,v)=>{d.cMul*=1+v/100;},d:(d,n,T)=>`${ULTNAME[d.sp]||'Especial'} carrega +${T[n-1]}% mais rápido (total +${S(T,n)}%)`},
+    mpierce:{t:[1,1,1],f:(w,d,v)=>{d.pierce+=v;},d:null}};
+  for(const mc of MONCARDS){const T=MT[mc.id];if(!T)continue;const od=mc.d;mc.max=3;
+    mc.f=(w,d)=>{const n=lvOf(w,mc,d);T.f(w,d,T.t[n-1]);};
+    mc.d=(d)=>{const n=lvOf(WL,mc,d);return `Nv ${n}/3: `+(T.d?T.d(d,n,T.t):od(d));};}
+  const _mt=wMonTot;wMonTot=function(id,d){return MT[id]?'':_mt(id,d);};})();
 function wOffer(){const w=WL;if(w.rr==null)w.rr=1;const cands=[];w.nextTheme=wNextTheme(w);
   w.defs.forEach((d,di)=>{for(const mc of MONCARDS){const key=mc.id+'#'+di;if(mc.max&&(w.lv[key]||0)>=mc.max)continue;if(mc.id==='mpierce'){let bk='';try{bk=behOf(d.sp,d.m&&d.m.lv).k;}catch(er){}if(['jet','aurora'].includes(bk))continue;}cands.push({id:mc.id,key,r:mc.r,ic:mc.ic,mon:di,n:nm(d.m),d:mc.d(d)+((w.lv[key]||0)>0?wMonTot(mc.id,d):''),f:w2=>mc.f(w2,d)});}});
   for(const c2 of WC){if(GLOBAL_SKIP.has(c2.id))continue;if(c2.max&&(w.lv[c2.id]||0)>=c2.max)continue;let mon=null;

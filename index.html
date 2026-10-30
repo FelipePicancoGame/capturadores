@@ -1381,13 +1381,13 @@ function drawCfgArt(u){const ks=['cfg_fundo','cartao_opcao','seletor_personagem'
   {b.fillStyle='rgba(120,150,110,.5)';const q=p(150,990);b.fillRect(q[0],q[1],640*s,Math.max(1,3*s));}
   {const y=1018,h=130;card(I.botao_salvar,cx,y,cw,h,4);const is=104,q=p(cx+48,y+(h-is)/2);b.drawImage(I.cfg_icone_salvar,q[0],q[1],is*s,is*s);txt('SALVAR AGORA',cx+cw*.57,y+h/2+3,54,'center',TC,460);}
   {const w=740,h=w*177/951,y=1160;card(I.botao_carregar,cx+5,y,w,h,5);const is=104,q=p(cx+50,y+(h-is)/2);b.drawImage(I.cfg_icone_carregar,q[0],q[1],is*s,is*s);txt('CARREGAR JOGO',cx+cw*.57,y+h/2+3,54,'center',TC,460);}
-  {const y=1322,q=p(320,y),w=300,h=62;txt('📖 Ver a história',470,y+h/2,40,'center','#7a4a1a',400);u.rects.push({x:q[0],y:q[1],w:w*s,h:h*s,i:6});}
-  {const w=520,h=w*206/857,x=(941-w)/2,y=1415;card(I.botao_voltar,x,y,w,h,7);txt('VOLTAR',x+w*.58,y+h/2+4,52,'center',TC,260);}
+  {const y=1322,w=330,h=62,q=p(130,y),q2=p(480,y);txt('📖 Ver a história',295,y+h/2,38,'center','#7a4a1a',320);txt('🖐️ Ver tutoriais',645,y+h/2,38,'center','#6a3fa0',320);u.rects.push({x:q[0],y:q[1],w:w*s,h:h*s,i:6});u.rects.push({x:q2[0],y:q2[1],w:w*s,h:h*s,i:7});}
+  {const w=520,h=w*206/857,x=(941-w)/2,y=1415;card(I.botao_voltar,x,y,w,h,8);txt('VOLTAR',x+w*.58,y+h/2+4,52,'center',TC,260);}
   b.restore();return true;}
 async function cfgMenu(){while(true){const sOn=!flags.sfxOff,fOn=!flags.fxOff;
-  const mOn=musOn(),L=[`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${fOn?'LIGADO':'DESLIGADO'}`,`PERSONAGEM: ${flags.hero==='menina'?'MENINA':'MENINO'}`,'SALVAR AGORA','CARREGAR JOGO','VER A HISTÓRIA','VOLTAR'];
+  const mOn=musOn(),L=[`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${fOn?'LIGADO':'DESLIGADO'}`,`PERSONAGEM: ${flags.hero==='menina'?'MENINA':'MENINO'}`,'SALVAR AGORA','CARREGAR JOGO','VER A HISTÓRIA','VER TUTORIAIS','VOLTAR'];
   /* 27/out (Felipe): mesmo estilo do Caderno com adesivo (balão de destaque + tirinhas de papel com fita) */
-  const j=await choose(L,{cfgart:1,cadAsk:{q:'CONFIGURAÇÕES — toque pra ligar ou desligar',nf:cfgMenu.open?1:0,cols:[mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',fOn?'#1f7a3a':'#8a2f2f',flags.hero==='menina'?'#a8326e':'#2f5fa8','#154c5e','#154c5e','#154c5e','#6a4a2a']}});cfgMenu.open=1;
+  const j=await choose(L,{cfgart:1,cadAsk:{q:'CONFIGURAÇÕES — toque pra ligar ou desligar',nf:cfgMenu.open?1:0,cols:[mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',fOn?'#1f7a3a':'#8a2f2f',flags.hero==='menina'?'#a8326e':'#2f5fa8','#154c5e','#154c5e','#154c5e','#7a4fb0','#6a4a2a']}});cfgMenu.open=1;
   if(j===0){flags.music=!musOn();saveGame();try{tone([660,880],.06);}catch(e){}continue;}
   if(j===1){flags.sfxOff=!flags.sfxOff;saveGame();if(!flags.sfxOff)try{tone([660,880],.06);}catch(e){}continue;}
   if(j===2){flags.fxOff=!flags.fxOff;saveGame();continue;}
@@ -1395,6 +1395,7 @@ async function cfgMenu(){while(true){const sOn=!flags.sfxOff,fOn=!flags.fxOff;
   if(j===4){saveGame();try{cloudFlush();}catch(e){}await say('Jogo salvo!');continue;}
   if(j===5){const ok=await loadMenu();if(ok){try{_cPend=null;}catch(e){}party=[];G.mode='title';location.reload();return;}continue;}
   if(j===6){await hqPlay(hqAll());continue;}
+  if(j===7){flags.tut={};saveGame();await say('Pronto! Os tutoriais vão aparecer de novo, um em cada parte do jogo.');cfgMenu.open=0;return;}
   cfgMenu.open=0;return;}}
 
 /* 27/out (Felipe): pergunta no meio da tela, no estilo do Caderno (balão de destaque + tirinhas de papel com fita do kit de diálogos). Ex.: "voltar pra partida?" */
@@ -5237,8 +5238,7 @@ async function wallMode(){if(!party.length)return;try{murPreload();}catch(e){}aw
     rad:e=>e.boss?20:11,dot:(e,d,col)=>{e.hp-=d;wPop(e.x,e.y-14,d,col,7);if(e.hp<=0&&!e.dead)wKill(e,'inseto');},rx:()=>20+Math.random()*140,ry:()=>40-(WL.ext||0)+Math.random()*(190+(WL.ext||0)),fwd:-Math.PI/2,ultMul:3,bounds:[-10,-30-(Math.max(0,H-320)),190,300],
     waveD:270+Math.max(0,H-320),waveL:100,waveC:[90,120],t:()=>WL.t,flash:v=>{WL.flash=Math.max(WL.flash,v);},allies:()=>WL.defs,moveFwd:(e,a)=>{if(e.y<MSTOP())e.y=Math.min(MSTOP()-1,e.y+a);},quakeR:999,allyPop:(a,txt,col)=>wPop(a.x,a.y-30,txt,col,7)};
   wBarrelSpawn(1);G.mode='wall';await fadeTo(0);
-  if(!flags.wallSeen2){flags.wallSeen2=true;flags.wallCatSeen=true;flags.wallBarrel=true;flags.wallSeen3=true;await say('Monstrinhos selvagens estão atacando a muralha do Vale! Seus monstrinhos atacam sozinhos: aguente 10 ondas.');
-    await say('Dica: quando algo BRILHAR (o botão do seu monstrinho, a catapulta ou um barril), toque nele! A cada onda vencida você escolhe uma carta.');}
+  if(!flags.wallSeen2){flags.wallSeen2=true;flags.wallCatSeen=true;flags.wallBarrel=true;flags.wallSeen3=true;/* 29/out: o tutorial com mãozinha ensina */}
   if(!flags.wallCatSeen){flags.wallCatSeen=true;await say('Novidade: CATAPULTA no meio da muralha! Quando ela brilhar, toque em qualquer lugar do campo pra lançar uma pedra gigante que esmaga e atordoa os inimigos.');}
   if(!flags.wallBarrel){flags.wallBarrel=true;await say('Novidade: BARRIS EXPLOSIVOS caem no campo! Quando os inimigos passarem perto e o barril brilhar, TOQUE nele pra explodir tudo em volta.');}
   if(!flags.wallSeen3){flags.wallSeen3=true;await say('Novidade: agora cada monstrinho tem o próprio ESPECIAL e um NÍVEL na muralha. Cartas dele ou do tipo dele sobem o nível!');}
@@ -7098,8 +7098,7 @@ async function survMode(){if(!party.length)return;let lead=party[0];if(party.len
     rx:()=>SV.pl.x+(Math.random()-.5)*150,ry:()=>SV.pl.y+(Math.random()-.5)*200,fwd:-Math.PI/2,ultMul:3,bounds:[-1e4,-1e4,1e4,1e4],waveD:200,waveL:110,aimWave:true,
     t:()=>SV.t,allies:()=>[SV.pl,...SV.allies],moveFwd:(e,a)=>{const dx=SV.pl.x-e.x,dy=SV.pl.y-e.y,l=Math.hypot(dx,dy)||1;e.x+=dx/l*a;e.y+=dy/l*a;},quakeR:70,allyPop:(a,txt,col)=>svPop(a.x,a.y-30,txt,col,7)};
   G.mode='surv';await fadeTo(0);
-  if(!flags.survSeen){flags.survSeen=true;await say('HORDA! Monstrinhos selvagens vêm de todos os lados.');await say('Arraste o dedo na tela pra andar. Seu monstrinho ataca sozinho!');
-    await say('Pegue as gemas azuis pra subir de nível e escolher melhorias. Sobreviva 5 minutos!');}
+  if(!flags.survSeen){flags.survSeen=true;/* 29/out: o tutorial com mãozinha ensina */}
   try{__fotoAplicar('surv',SV);}catch(e){}let res=await new Promise(r=>{SV.done=r;});if(res!=='win'&&SV.obj&&SV.obj.done)res='win';
   const secs=Math.floor(SV.time/60),EX=SV.extra,eK=Math.min(400,EX?EX.k0+.25*Math.min(150,SV.kills-EX.k0):SV.kills),eS=Math.min(480,EX?EX.t0/60+.25*Math.min(240,secs-EX.t0/60):secs),coins=Math.min(130,Math.round(eK*.18+eS*.07+(res==='win'?25:0)));flags.coins=(flags.coins||0)+coins;
   const team=[SV.pl.m,...SV.allies.map(a=>a.m)],xp=Math.max(5,Math.round((eS*SV.avg*.6+eK*3)*XPMG));const ups=[];
@@ -7582,7 +7581,7 @@ async function m3End(){const S=M3,st=m3Stars(),P=m3St(),win=S.won;let coins=0;
 function m3Intro(){const L=M3.L;M3.banner={t:0,txt:L.type==='collect'?'JUNTE OS MONSTRINHOS!':L.type==='ice'?'QUEBRE TODO O GELO!':'FAÇA OS PONTOS!'};}
 async function matchMode(){if(!party.length){await say('Você precisa de um monstrinho!');return;}const P=m3St();m3Swipe();
   await fadeTo(1);portraitScreen();document.body.classList.add('nopad');M3=null;m3New(P.lv);m3Intro();G.mode='match';await fadeTo(0);
-  if(!flags.m3Seen2){flags.m3Seen2=1;await say('COMBINA MONSTRINHOS! Deslize um monstrinho pro lado do vizinho pra trocar de lugar.');await say('3 iguais somem. 4 em fila viram um ESPECIAL com o poder do monstrinho, em L ou T viram BOMBA e 5 viram ESTRELA. TOQUE num especial e ele explode na hora! Troque dois especiais um com o outro pra uma combinação gigante!');await say('Juntando peças, o seu monstrinho carrega o PODER (embaixo). Quando brilhar, toque nele!');}
+  if(!flags.m3Seen2){flags.m3Seen2=1;/* 29/out: o tutorial com mãozinha ensina */}
   await new Promise(r=>{M3.done=r;});
   await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';M3=null;saveGame();await fadeTo(0);}
 /* deslizar: encosta numa peça e arrasta pro lado */
@@ -8727,6 +8726,7 @@ function heldDir(){return held[held.length-1];}
 function update(){frame++;if(frame%60===0&&party.length&&G.mode!=='title')flags.playT=(flags.playT||0)+1;{const iw=G.mode==='world'&&!ui.length&&!REVEAL;if(document.body.classList.contains('inworld')!==iw)document.body.classList.toggle('inworld',iw);}if(REVEAL){REVEAL.t++;if(REVEAL.dur&&REVEAL.t>REVEAL.dur)REVEAL=null;}
   const u=ui[ui.length-1];if(u&&u.type==='dialog'){u.shown+=REDUCED?999:3.2*(B?BSPD():1);if(B&&G.mode==='battle'){const pg=pagesOf(u),len=pg[u.page].join('').length;if(u.shown>=len){u.idle=(u.idle||0)+BSPD();if(u.idle>46){u.idle=0;handleUI(u,'a');}}else u.idle=0;}}
   if(B){if(B.blinkE>0)B.blinkE--;if(B.blinkP>0)B.blinkP--;}
+  if(TUTP&&G.mode!=='world'&&G.mode!=='battle')return;
   if(G.mode==='exp'&&EXP&&!ui.length){expUpdate();if(EXP&&flags.expFast&&!EXP.fuse&&!EXP.petNew)expUpdate();return;}
   if(G.mode==='td'&&TD){if(!ui.length)tdUpdate();return;}
   if(G.mode==='surv'&&SV){if(!ui.length)svUpdate();return;}
@@ -10554,6 +10554,168 @@ async function jogEntrega(){if(!JOGPEND.length)return;const got=flags.rwGot=flag
   if(feitos.length){saveGame();try{await jogPost({acao:'recebi',id:String(flags.tid),nome:flags.nome||'',ks:feitos});}catch(_){}}}
 setInterval(async()=>{try{if(!JOGURL||G.mode!=='world'||busy||!party.length)return;if(JOGPEND.length){busy=true;try{await jogEntrega();}finally{busy=false;}return;}if(Date.now()-JOGT>5*60000)jogSync();}catch(_){}},3000);
 document.addEventListener('visibilitychange',()=>{try{if(!document.hidden&&JOGURL&&party.length&&Date.now()-JOGT>60000)jogSync();}catch(_){}});
+/* ===== TUTORIAL (29/out, Felipe): o parceiro ensina cada parte do jogo uma vez, com mãozinha, luz no alvo e balão de caderno.
+   Passo "info": toca pra continuar (o jogo pausa). Passo "faça": a mãozinha mostra o gesto e o jogo espera você fazer (ou OK).
+   Mãozinha/seta/brilho são provisórios em CSS/SVG até chegar a arte do Buchecha. Vê flags.tut[chave]. */
+var TUTP=0,TUTON=0;
+function tutPt(x,y){const r=cv.getBoundingClientRect(),bc=document.body.classList;
+  if(bc.contains('rotp'))return{x:r.left+y/H*r.width,y:r.top+(1-x/W)*r.height};
+  if(bc.contains('rot'))return{x:r.left+(1-y/H)*r.width,y:r.top+x/W*r.height};
+  return{x:r.left+x/W*r.width,y:r.top+y/H*r.height};}
+function tutCv(x,y,w,h){const a=tutPt(x,y),c=tutPt(x+w,y+h);return{x:Math.min(a.x,c.x),y:Math.min(a.y,c.y),w:Math.abs(c.x-a.x),h:Math.abs(c.y-a.y)};}
+function tutWy(y){return y+Math.max(0,H-320)-wK();}
+function tutWl(x,y,w,h){return tutCv(x,tutWy(y),w,h);}
+function tutEl(e){if(!e||!e.isConnected)return null;const st=getComputedStyle(e);if(st.display==='none'||st.visibility==='hidden'||+st.opacity===0)return null;const r=e.getBoundingClientRect();if(r.width<2||r.height<2)return null;return{x:r.left,y:r.top,w:r.width,h:r.height};}
+function tutMid(r){return r?{x:r.x+r.w/2,y:r.y+r.h/2}:null;}
+function tutNome(){const n=String(nomeH()||'').trim();return n||'treinador';}
+function tutMon(){const m=party[0];return m?(m.nick||SP[m.sp].name):'Parceiro';}
+const TUTHAND='<svg viewBox="0 0 64 72" width="100%" height="100%"><path d="M22 6c4 0 6 3 6 7v20l3-1c2-6 10-5 11 1 3-4 10-2 10 4 4-2 9 1 9 6v13c0 10-7 16-17 16H33c-6 0-10-3-13-8L9 46c-2-4 0-8 4-8 3 0 5 2 7 4V13c0-4 2-7 2-7z" fill="#fff8ea" stroke="#3a2614" stroke-width="3.4" stroke-linejoin="round"/><path d="M31 33v12M42 33v12M52 38v8" stroke="#3a2614" stroke-width="2.6" stroke-linecap="round"/><path d="M15 64h34" stroke="rgba(0,0,0,.18)" stroke-width="4" stroke-linecap="round"/></svg>';
+function tutCss(){if(document.getElementById('tutCss'))return;const st=document.createElement('style');st.id='tutCss';st.textContent=`
+#tutL{position:fixed;inset:0;z-index:10002;pointer-events:none;font-family:Fredoka,'Trebuchet MS',sans-serif;-webkit-user-select:none;user-select:none}
+#tutL .sh{position:fixed;inset:0;background:rgba(14,10,26,.62);transition:opacity .25s}
+#tutL .ho{position:fixed;border-radius:18px;box-shadow:0 0 0 200vmax rgba(14,10,26,.62);transition:all .28s cubic-bezier(.3,1.4,.5,1)}
+#tutL .ho:after{content:'';position:absolute;inset:-7px;border-radius:22px;border:4px solid #ffd84a;box-shadow:0 0 18px 4px rgba(255,216,74,.85),inset 0 0 12px rgba(255,216,74,.6);animation:tutPul 1s ease-in-out infinite}
+@keyframes tutPul{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:.65}}
+#tutL .ct{position:fixed;inset:0;pointer-events:auto}
+#tutL .hd{position:fixed;width:58px;height:66px;margin:-6px 0 0 -14px;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35));transform-origin:22% 8%}
+#tutL .rp{position:fixed;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:4px solid #fff;opacity:0}
+#tutL .bl{position:fixed;left:50%;transform:translateX(-50%);width:min(90vw,400px);pointer-events:auto;display:flex;gap:10px;align-items:flex-start;padding:14px 14px 12px 12px;border-radius:16px;background:#fbf3dc;background-image:repeating-linear-gradient(#fbf3dc 0 25px,#cfe0ea 25px 26px);border:3px solid #6b4a2a;box-shadow:0 7px 0 rgba(0,0,0,.32);color:#4a3420;animation:tutIn .35s cubic-bezier(.3,1.5,.5,1)}
+@keyframes tutIn{from{transform:translateX(-50%) scale(.6);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+#tutL .bl:before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;border-radius:13px 0 0 13px;background:#e05a5a;opacity:.55}
+#tutL .pf{flex:0 0 62px;height:62px;border-radius:50%;background:radial-gradient(#fff 55%,#ffe7a8);border:3px solid #6b4a2a;overflow:hidden;animation:tutBob 1.4s ease-in-out infinite}
+@keyframes tutBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+#tutL .pf canvas{width:100%;height:100%}
+#tutL .tx{flex:1;min-width:0}
+#tutL .nm{display:inline-block;padding:1px 10px;margin-bottom:4px;border-radius:9px;background:#6b4a2a;color:#fff3c8;font-weight:700;font-size:13px;letter-spacing:.5px}
+#tutL .ms{font-size:17px;line-height:24px;font-weight:600}
+#tutL .ms b{color:#c0392b}
+#tutL .ft{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px}
+#tutL .dt{display:flex;gap:4px}#tutL .dt i{width:7px;height:7px;border-radius:50%;background:#d6c39a}#tutL .dt i.on{background:#e0a020}
+#tutL .ok{font:700 15px Fredoka,'Trebuchet MS',sans-serif;padding:7px 16px;border-radius:12px;border:3px solid #6b4a2a;background:#ffd84a;color:#4a3420;box-shadow:0 4px 0 #6b4a2a;cursor:pointer}
+#tutL .ok:active{transform:translateY(3px);box-shadow:0 1px 0 #6b4a2a}
+#tutL .ok.fz{background:#fff3c8;font-size:13px}
+#tutL .sk{position:absolute;top:-15px;right:12px;pointer-events:auto;font:700 12px Fredoka,'Trebuchet MS',sans-serif;padding:3px 11px;border-radius:999px;border:2px solid #6b4a2a;background:#fff3c8;color:#6b4a2a;cursor:pointer}
+#tutL .hint{font-size:12px;color:#8a6a3a;font-weight:600}
+`;document.head.appendChild(st);}
+/* gesto da mãozinha: tap, hold, drag (from->to) */
+function tutHand(L,g,a,c){L.querySelectorAll('.hd,.rp').forEach(e=>{try{e.getAnimations().forEach(x=>x.cancel());}catch(_){}e.remove();});if(!g||!a)return;
+  const h=document.createElement('div');h.className='hd';h.innerHTML=TUTHAND;h.style.left=a.x+'px';h.style.top=a.y+'px';L.appendChild(h);h.dataset.g=g;if(c)h.dataset.b=Math.round(c.x)+','+Math.round(c.y);
+  const rp=document.createElement('div');rp.className='rp';rp.style.left=a.x+'px';rp.style.top=a.y+'px';L.appendChild(rp);
+  const R=(document.documentElement.classList.contains('red'));if(R)return;
+  if(g==='tap'){h.animate([{transform:'translate(14px,22px) scale(1)'},{transform:'translate(0,0) scale(.88)',offset:.35},{transform:'translate(0,0) scale(.88)',offset:.5},{transform:'translate(14px,22px) scale(1)'}],{duration:1100,iterations:Infinity});
+    rp.animate([{opacity:0,transform:'scale(.3)'},{opacity:0,transform:'scale(.3)',offset:.34},{opacity:.95,transform:'scale(.5)',offset:.4},{opacity:0,transform:'scale(1.5)'}],{duration:1100,iterations:Infinity});}
+  else if(g==='tap2'){h.animate([{transform:'translate(14px,22px)'},{transform:'translate(0,0) scale(.88)',offset:.18},{transform:'translate(4px,7px)',offset:.3},{transform:'translate(0,0) scale(.88)',offset:.42},{transform:'translate(14px,22px)',offset:.65},{transform:'translate(14px,22px)'}],{duration:1500,iterations:Infinity});
+    rp.animate([{opacity:0,transform:'scale(.3)'},{opacity:.95,transform:'scale(.5)',offset:.19},{opacity:0,transform:'scale(1.3)',offset:.3},{opacity:.95,transform:'scale(.5)',offset:.43},{opacity:0,transform:'scale(1.5)',offset:.6},{opacity:0}],{duration:1500,iterations:Infinity});}
+  else if(g==='hold'){h.animate([{transform:'translate(14px,22px)'},{transform:'translate(0,0) scale(.88)',offset:.2},{transform:'translate(0,0) scale(.88)',offset:.85},{transform:'translate(14px,22px)'}],{duration:2000,iterations:Infinity});
+    rp.animate([{opacity:0,transform:'scale(.3)'},{opacity:0,transform:'scale(.3)',offset:.2},{opacity:.9,transform:'scale(.6)',offset:.3},{opacity:.6,transform:'scale(1.9)',offset:.85},{opacity:0,transform:'scale(2)'}],{duration:2000,iterations:Infinity});}
+  else{c=c||a;const dx=c.x-a.x,dy=c.y-a.y;
+    h.animate([{transform:'translate(10px,18px)',opacity:0},{transform:'translate(0,0) scale(.88)',opacity:1,offset:.15},{transform:`translate(${dx}px,${dy}px) scale(.88)`,opacity:1,offset:.7},{transform:`translate(${dx+8}px,${dy+14}px)`,opacity:0,offset:.9},{transform:`translate(${dx+8}px,${dy+14}px)`,opacity:0}],{duration:1800,iterations:Infinity});
+    rp.animate([{opacity:0,transform:'translate(0,0) scale(.4)'},{opacity:.85,transform:'translate(0,0) scale(.55)',offset:.15},{opacity:.6,transform:`translate(${dx}px,${dy}px) scale(.55)`,offset:.7},{opacity:0,transform:`translate(${dx}px,${dy}px) scale(1.2)`,offset:.85},{opacity:0}],{duration:1800,iterations:Infinity});}}
+/* motor: steps = [{t:texto, r:()=>retângulo|null, g:'tap'|'hold'|'drag', a:()=>ponto, b:()=>ponto, act:()=>feito?, ok:texto, alive:()=>bool}] */
+async function tutRun(key,steps,alive){flags.tut=flags.tut||{};if(TUTON||flags.tut[key])return;TUTON=1;tutCss();const MON0=party[0];
+  const L=document.createElement('div');L.id='tutL';document.body.appendChild(L);
+  const sh=document.createElement('div');sh.className='sh';const ho=document.createElement('div');ho.className='ho';const ct=document.createElement('div');ct.className='ct';
+  const bl=document.createElement('div');bl.className='bl';const sk=document.createElement('button');sk.className='sk';sk.textContent='pular ✕';
+  L.append(sh,ho,ct,bl);let skip=false,fin=null;
+  const end=()=>{try{L.remove();}catch(_){}TUTP=0;TUTON=0;};
+  sk.addEventListener('click',e=>{e.stopPropagation();skip=true;if(fin)fin();});
+  const N=steps.length;let ok=true;
+  try{for(let i=0;i<N&&!skip;i++){const S=steps[i];if(S.when&&!S.when())continue;if(alive&&!alive()){ok=false;break;}
+    const act=!!S.act;TUTP=act?0:1;
+    const msg=typeof S.t==='function'?S.t():S.t;
+    bl.innerHTML=`<div class="pf"><canvas width="96" height="96"></canvas></div><div class="tx"><div class="nm">${(MON0.nick||SP[MON0.sp].name).toUpperCase()}</div><div class="ms">${msg}</div><div class="ft"><div class="dt">${steps.map((_,k)=>`<i class="${k<=i?'on':''}"></i>`).join('')}</div>${act?`<span class="hint">${S.hint||'faça você!'}</span>`:''}<button class="ok${act?' fz':''}">${act?(S.ok||'Depois'):(i===N-1?'Vamos lá! ▶':'OK ▶')}</button></div></div>`;
+    bl.appendChild(sk);
+    try{const pc=bl.querySelector('canvas').getContext('2d');pc.imageSmoothingEnabled=true;const im=spr(MON0.sp);pc.drawImage(im,0,0,im.width||80,im.height||80,4,6,88,88);}catch(_){}
+    bl.style.animation='none';void bl.offsetWidth;bl.style.animation='';
+    try{tone([784,988],.035);}catch(_){}
+    await new Promise(res=>{let done=false,t0=performance.now();const go=()=>{if(done)return;done=true;fin=null;clearInterval(iv);ct.onpointerdown=null;res();};fin=go;
+      bl.querySelector('.ok').onclick=e=>{e.stopPropagation();go();};
+      ct.style.display=act?'none':'';ct.onpointerdown=e=>{e.preventDefault();if(performance.now()-t0>350)go();};
+      const lay=()=>{let r=null;try{r=S.r?S.r():null;}catch(_){}
+        if(r){const p=8;ho.style.display='';sh.style.display='none';ho.style.left=(r.x-p)+'px';ho.style.top=(r.y-p)+'px';ho.style.width=(r.w+2*p)+'px';ho.style.height=(r.h+2*p)+'px';ho.style.borderRadius=(S.round?'50%':'18px');}
+        else{ho.style.display='none';sh.style.display='';}
+        if(act){sh.style.opacity='0';ho.style.boxShadow='0 0 0 200vmax rgba(14,10,26,.28)';}else{sh.style.opacity='1';ho.style.boxShadow='';}
+        const vh=innerHeight,cy=r?r.y+r.h/2:vh*.7,top=S.pos?S.pos==='top':cy>vh*.52;
+        bl.style.top=top?'calc(54px + env(safe-area-inset-top))':'';bl.style.bottom=top?'':'calc(18px + env(safe-area-inset-bottom))';
+        let a=null,b2=null;try{a=S.a?S.a():tutMid(r);b2=S.b?S.b():null;}catch(_){}
+        const key2=S.g+'|'+(a?Math.round(a.x)+','+Math.round(a.y):'')+'|'+(b2?Math.round(b2.x)+','+Math.round(b2.y):'');if(key2!==L.__hk){L.__hk=key2;tutHand(L,S.g,a,b2);}};
+      lay();const iv=setInterval(()=>{if(alive&&!alive()){ok=false;skip=true;go();return;}if(act){let d=false;try{d=S.act();}catch(_){}if(d){clearInterval(iv);try{tone([660,880,1175],.05);}catch(_){}setTimeout(go,S.after||250);return;}}lay();},120);
+      if(S.start)try{S.start();}catch(_){}});
+    L.__hk=null;}}
+  finally{end();}
+  if(ok){flags.tut[key]=1;try{saveGame();}catch(_){}}}
+/* --- cada parte do jogo --- */
+function tutWorld(){const E=CAD.E,w=()=>G.mode==='world'&&!busy;let p0=null;
+  return tutRun('world',[
+  {t:()=>`Oi, <b>${tutNome()}</b>! Eu sou o ${tutMon()}, seu parceiro de aventura! Vem que eu te mostro como tudo funciona. 😄`},
+  {t:'Arrasta o dedo aqui no <b>controle</b> pra gente andar pelo Vale. Tenta aí!',r:()=>tutEl(document.getElementById('stick')),round:1,g:'drag',a:()=>tutMid(tutEl(document.getElementById('stick'))),b:()=>{const m=tutMid(tutEl(document.getElementById('stick')));return m&&{x:m.x+60,y:m.y-20};},
+    start:()=>{p0=P.x+','+P.y;},act:()=>P.x+','+P.y!==p0,hint:'arraste o controle',ok:'Pular'},
+  {t:'Aqui fica a sua <b>MISSÃO</b>: o que fazer e onde fica. 📜',when:()=>!!tutEl(E.mis),r:()=>tutEl(E.mis)},
+  {t:'Tocou em <b>IR</b>, eu te levo até lá sozinho!',when:()=>!!tutEl(E.ir),r:()=>tutEl(E.ir),round:1,g:'tap'},
+  {t:'Todas as missões ficam guardadas nessa <b>lista</b>.',when:()=>!!tutEl(E.lst),r:()=>tutEl(E.lst),g:'tap'},
+  {t:'<b>MINIJOGOS</b>! Muralha, Torres, Horda, Expedição e Combina. Na primeira vez de cada um eu te ensino. 🎮',when:()=>!!tutEl(E.mini),r:()=>tutEl(E.mini),g:'tap'},
+  {t:'A <b>BICICLETA</b> faz a gente correr bem mais rápido! 🚲',when:()=>!!tutEl(E.bike),r:()=>tutEl(E.bike),g:'tap'},
+  {t:'No <b>MENU</b> ficam os monstrinhos, a mochila e a loja.',when:()=>!!tutEl(E.menu),r:()=>tutEl(E.menu),g:'tap'},
+  {t:'Moedas, cristais e essências: o nosso <b>tesouro</b>! 💰',when:()=>!!tutEl(E.saldo&&E.saldo[0]),r:()=>{const a=tutEl(E.saldo[0]),c=tutEl(E.saldo[2])||a;return a&&{x:a.x,y:a.y,w:c.x+c.w-a.x,h:a.h};}},
+  {t:'Em <b>AJUSTES</b> você muda o som e outras coisinhas. ⚙️',when:()=>!!tutEl(E.cfg),r:()=>tutEl(E.cfg),g:'tap'},
+  {t:'No mato aparecem monstrinhos selvagens. Aí a gente <b>batalha</b> e captura! Boa aventura! 🌿'}],w);}
+function tutBmenu(){const u=ui[ui.length-1];return u&&u.cfg&&u.cfg.bmenu&&u.rects&&u.rects.length?u:null;}
+function tutBR(f){const u=tutBmenu();if(!u)return null;const rs=u.rects.filter(f);if(!rs.length)return null;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;rs.forEach(q=>{x0=Math.min(x0,q.x);y0=Math.min(y0,q.y);x1=Math.max(x1,q.x+q.w);y1=Math.max(y1,q.y+q.h);});return tutCv(x0,y0,x1-x0,y1-y0);}
+function tutBattle(){const u0=tutBmenu(),nm2=(me&&me().moves||[]).length;
+  return tutRun('battle',[
+  {t:'Uma <b>BATALHA</b>! Eu luto e você escolhe o que eu faço. Bora!'},
+  {t:'Esses são os meus <b>GOLPES</b>. A cor mostra o tipo: alguns são super fortes contra certos monstrinhos! 💥',r:()=>tutBR(q=>q.i<nm2)},
+  {t:'A <b>CÁPSULA</b> captura monstrinhos selvagens. Funciona melhor quando ele está fraquinho!',when:()=>!B.tr&&!!tutBR(q=>q.i===13),r:()=>tutBR(q=>q.i===13),g:'tap'},
+  {t:'Na <b>MOCHILA</b> tem poções pra me curar. ❤️',when:()=>!!tutBR(q=>q.i===10),r:()=>tutBR(q=>q.i===10),g:'tap'},
+  {t:'Toca num golpe pra ver o que ele faz e toca <b>de novo</b> pra eu atacar!',r:()=>tutBR(q=>q.i===0),g:'tap2',act:()=>tutBmenu()!==u0,hint:'toque no golpe',ok:'OK'}],()=>G.mode==='battle'&&!!B);}
+function tutWall(){const w=WL,d=i=>w.defs[Math.min(i,w.defs.length-1)],dr=i=>{const q=d(i);return tutWl(q.x-17,q.y-40,34,48);},dc=i=>{const q=d(i);return tutPt(q.x,tutWy(q.y-14));};let a0=null,o0=null;
+  return tutRun('wall',[
+  {t:'Bichos bravos vão descer pra quebrar a nossa <b>MURALHA</b>! A gente ataca sozinho, mas você pode ajudar. 🛡️'},
+  {t:'Segura o dedo em cima de um monstrinho: aparece até onde ele <b>alcança</b>.',r:()=>dr(0),g:'hold',act:()=>!!wHoldOn(WL),after:700,hint:'segure o dedo',ok:'Pular'},
+  {t:'Agora <b>arrasta pra cima</b> e solta: ele ataca bem ali! 🎯',r:()=>dr(Math.min(1,w.defs.length-1)),g:'drag',a:()=>dc(Math.min(1,w.defs.length-1)),b:()=>{const q=d(1);return tutPt(q.x,tutWy(q.y-95));},
+    start:()=>{a0=w.defs.map(q=>q.aim);},act:()=>w.defs.some((q,k)=>q.aim&&q.aim!==a0[k]),after:500,hint:'arraste pra cima',ok:'Pular'},
+  {t:'Arrasta <b>pro lado</b>, em cima de outro monstrinho, pra trocar a ordem deles.',when:()=>w.defs.length>1,r:()=>{const a=dr(0),c=dr(1);return{x:Math.min(a.x,c.x),y:a.y,w:Math.abs(c.x-a.x)+a.w,h:a.h};},g:'drag',a:()=>dc(0),b:()=>dc(1),
+    start:()=>{o0=w.defs[0];},act:()=>w.defs[0]!==o0,after:500,hint:'arraste pro lado',ok:'Pular'},
+  {t:'Quando a carta do monstrinho <b>BRILHAR</b>, toca nela: é o ESPECIAL! ✨',when:()=>murUI()&&!!murLU('c'+(d(0)._mk??0)),r:()=>{const q=murLU('c'+(d(0)._mk??0));return tutWl(q.x,q.y,q.w,q.h);},g:'tap'},
+  {t:'Toca nos bichos pra dar um <b>soco</b>! Barril e catapulta: quando brilharem, toca neles também. 👊',r:()=>tutWl(10,60,160,170),g:'tap',a:()=>tutPt(90,tutWy(150))},
+  {t:'A cada onda vencida você ganha uma <b>carta</b> de poder. Segura 10 ondas! 💪'}],()=>G.mode==='wall'&&WL===w);}
+function tutSurv(){const S=SV;let p0=null;
+  return tutRun('surv',[
+  {t:'<b>HORDA</b>! Vem bicho de todo lado, mas eu ataco sozinho. 😤'},
+  {t:'<b>Arrasta o dedo</b> na tela pra me levar. Foge deles!',g:'drag',a:()=>tutPt(W/2,H*.62),b:()=>tutPt(W/2+50,H*.62-30),start:()=>{p0={x:S.pl.x,y:S.pl.y};},act:()=>Math.hypot(S.pl.x-p0.x,S.pl.y-p0.y)>24,hint:'arraste na tela',ok:'Pular'},
+  {t:'Quando encher, toca aqui pro meu <b>ESPECIAL</b>! 💥',r:()=>tutCv(W-46,H-46,44,44),round:1,g:'tap'},
+  {t:'Pega as <b>gemas azuis</b> pra subir de nível e escolher poderes. Aguenta 5 minutos!'}],()=>G.mode==='surv'&&SV===S);}
+function tutMatch(){const S=M3,tl=(r,c)=>{const g=m3Geo();return tutPt(g.x0+(c+.5)*g.ts,g.y0+(r+.5)*g.ts);};let m0=null;
+  return tutRun('match',[
+  {t:'<b>COMBINA</b>! Arrasta um monstrinho pro lado do vizinho pra trocar. Junta <b>3 iguais</b>!',r:()=>{const g=m3Geo();return tutCv(g.x0,g.y0,g.bw,g.bh);},g:'drag',a:()=>tl(S.rows-2,Math.floor(S.cols/2)-1),b:()=>tl(S.rows-2,Math.floor(S.cols/2)),
+    start:()=>{m0=S.phase;},act:()=>S.phase!=='idle',after:900,hint:'arraste uma peça',ok:'Pular'},
+  {t:'Juntando peças eu carrego o <b>PODER</b>. Quando brilhar, toca em mim! ⚡',r:()=>{const p=m3PwBtn();return tutCv(p.x-p.r,p.y-p.r,p.r*2,p.r*2);},round:1,g:'tap'},
+  {t:'4 em fila viram <b>ESPECIAL</b>, em L ou T viram <b>BOMBA</b> e 5 viram <b>ESTRELA</b>. Toca num especial pra explodir! 🌟'}],()=>G.mode==='match'&&M3===S);}
+function tutTd(){const T2=TD,P2=id=>{const L=TDL;if(!TDW||!L||!L.e[id])return null;const q=tdwP(L,id);return tutCv(q.x,q.y,q.w,q.h);};
+  return tutRun('td',[
+  {t:'Os bichos vão marchar pela <b>trilha</b> até o portão! Toca nos pedestais pra colocar os monstrinhos como <b>torres</b>. 🏰'},
+  {t:'Esses botões são os <b>ESPECIAIS</b> de cada torre. Quando acender, toca!',when:()=>!!P2('c1'),r:()=>{const a=P2('c1'),c=P2(T2.towers.length>1?'c'+Math.min(6,Math.max(2,T2.towers.length)):'c1')||a;return{x:Math.min(a.x,c.x),y:Math.min(a.y,c.y),w:Math.max(a.x+a.w,c.x+c.w)-Math.min(a.x,c.x),h:Math.max(a.y+a.h,c.y+c.h)-Math.min(a.y,c.y)};},g:'tap'},
+  {t:'O <b>METEORO</b> cai onde você tocar! ☄️',when:()=>!!P2('meteoro'),r:()=>P2('meteoro'),g:'tap'},
+  {t:'Os <b>GUARDAS</b> seguram os bichos na trilha. 🛡️',when:()=>!!P2('escudo'),r:()=>P2('escudo'),g:'tap'},
+  {t:'Quando estiver pronto, toca aqui pra chamar a <b>próxima onda</b>!',when:()=>!!P2('pilula'),r:()=>P2('pilula'),g:'tap'},
+  {t:'Você também é o <b>HERÓI</b>: toca na trilha pra correr até lá e segurar os bichos com a espada! ⚔️'}],()=>G.mode==='td'&&TD===T2);}
+function tutExp(){const X=EXP,R=k=>{const L=expLay(),q=k==='auto'||k==='fur'||k==='cura'?L.btn.find(b2=>b2.k===k):L[k];return q?tutCv(q.x,q.y,q.w,q.h):null;};
+  return tutRun('exp',[
+  {t:'<b>EXPEDIÇÃO</b>! O nosso time anda sozinho pela trilha e luta em cada onda. 🗺️'},
+  {t:'<b>FÚRIA</b> deixa todo mundo mais forte e <b>CURA</b> recupera a vida do time.',when:()=>!!R('fur'),r:()=>{const a=R('fur'),c=R('cura')||a;return{x:Math.min(a.x,c.x),y:Math.min(a.y,c.y),w:Math.max(a.x+a.w,c.x+c.w)-Math.min(a.x,c.x),h:Math.max(a.y+a.h,c.y+c.h)-Math.min(a.y,c.y)};},g:'tap'},
+  {t:'Com o <b>AUTO</b> ligado, ele usa os poderes e avança de fase sozinho.',when:()=>!!R('auto'),r:()=>R('auto'),g:'tap'},
+  {t:'Essas setas trocam de <b>fase</b>.',when:()=>!!R('left'),r:()=>{const a=R('left'),c=R('right')||a;return{x:a.x,y:a.y,w:c.x+c.w-a.x,h:Math.max(a.h,c.h)};}},
+  {t:'Dá pra deixar ligado e voltar depois: a expedição continua juntando prêmios! 🎁'}],()=>G.mode==='exp'&&EXP===X);}
+/* quem chama: um vigia leve, sem mexer no fluxo de cada modo */
+setInterval(()=>{try{if(TUTON||!party.length||document.getElementById('nomeBox'))return;const t=flags.tut||{};
+  if(G.mode==='world'&&!t.world&&!busy&&!ui.length&&CAD.ready&&CAD.vis&&!REVEAL)tutWorld();
+  else if(G.mode==='battle'&&!t.battle&&B&&tutBmenu())tutBattle();
+  else if(G.mode==='wall'&&!t.wall&&WL&&WL.running&&!WL.cards&&!WL.paused&&!ui.length&&WL.defs.length)tutWall();
+  else if(G.mode==='surv'&&!t.surv&&SV&&!SV.cards&&!SV.paused&&!SV.ask&&!ui.length&&SV.pl)tutSurv();
+  else if(G.mode==='match'&&!t.match&&M3&&M3.phase==='idle'&&!ui.length&&!M3.intro)tutMatch();
+  else if(G.mode==='td'&&!t.td&&TD&&!TD.intro&&!TD.cards&&!TD.paused&&!TD.pick&&!ui.length)tutTd();
+  else if(G.mode==='exp'&&!t.exp&&EXP&&!ui.length&&!EXP.fuse&&!EXP.petNew)tutExp();}catch(e){}},700);
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

@@ -10811,7 +10811,7 @@ function tutMatch(){const S=M3,tl=(r,c)=>{const g=m3Geo();return tutPt(g.x0+(c+.
   .finally(()=>{if(M3===S){S.tutS=0;const go=()=>{if(M3!==S)return;if(S.phase==='idle')m3Check();else setTimeout(go,300);};go();}});}
 function tutTd(){const T2=TD,P2=id=>{const L=TDL;if(!TDW||!L||!L.e[id])return null;const q=tdwP(L,id);return tutCv(q.x,q.y,q.w,q.h);},
   sp=(x,y)=>{const L=TDL;return TDW&&L?tutPt(x*L.f+L.ox,y*L.f+L.oy):tutPt(x,y+tdOY());},sr=(x,y,w,h)=>{const a=sp(x,y),c=sp(x+w,y+h);return{x:a.x,y:a.y,w:c.x-a.x,h:c.y-a.y};},
-  pad=()=>{let bi=0,bd=1e9;TDPADS.forEach((p,i)=>{if(T2.towers.some(t=>t.pad===i))return;const d=Math.abs(p[0]-90)+Math.abs(p[1]-140);if(d<bd){bd=d;bi=i;}});return TDPADS[bi];};let k0=0,P0=null,n0=0;
+  pad=()=>{let bi=0,bd=1e9;TDPADS.forEach((p,i)=>{if(T2.towers.some(t=>t.pad===i))return;const d=Math.abs(p[0]-90)+Math.abs(p[1]-140);if(d<bd){bd=d;bi=i;}});return TDPADS[bi];};let k0=0,P0=null,n0=0,uT=null,lv0=0;
   const mPt=()=>{const e=T2.foes.find(f=>!f.dead);const q=e?[e.x,e.y]:tdPos(TDSEG.total*.45);return sp(q[0],q[1]);};
   const hold=()=>{if(T2.phase==='build')T2.count=Math.max(T2.count||0,420);},U=()=>tutUlt((T2.towers[0]||{}).sp||party[0].sp),TN=()=>{const tw=T2.towers[0];return tw?SP[tw.sp].name:'torre';};
   const padStep=(t1)=>({t:t1,start:()=>{P0=pad();n0=T2.towers.length;T2.energy=Math.max(T2.energy,tdCost()+20);},tick:hold,r:()=>sr(P0[0]-13,P0[1]-13,26,26),round:1,g:'tap',a:()=>sp(P0[0],P0[1]),act:()=>!!T2.pick||T2.towers.length>n0,after:300,hint:'toque no pedestal',chip:'abrindo…'});
@@ -10830,6 +10830,13 @@ function tutTd(){const T2=TD,P2=id=>{const L=TDL;if(!TDW||!L||!L.e[id])return nu
   {t:'Onda vencida! 🎉 A <b>próxima vem mais forte</b>. Você ganhou energia ⚡: bora colocar <b>mais uma torre</b>!',tick:hold},
   padStep('<b>Toque em outro pedestal</b> pra colocar a segunda torre.'),
   pickStep('<b>Escolha</b> quem vai ser a segunda torre!'),
+  {t:'Agora vamos <b>MELHORAR</b> uma torre! <b>Toque na torre</b> pra abrir as opções dela.',when:()=>T2.phase==='build'&&T2.towers.length>0,start:()=>{uT=T2.towers[0];T2.sel=null;},tick:hold,
+    r:()=>uT?sr(uT.x-14,uT.y-26,28,32):null,g:'tap',a:()=>uT?sp(uT.x,uT.y-10):null,act:()=>T2.sel===uT,after:300,hint:'toque na torre',chip:'abrindo…'},
+  {t:()=>`Toque em <b>MELHORAR</b>: a torre fica <b>mais forte</b> e alcança <b>mais longe</b>. Custa energia ⚡ (${uT?tdUpCost(uT):''}).`,when:()=>T2.sel===uT&&uT.lvl<TDMAX,
+    start:()=>{lv0=uT.lvl;T2.energy=Math.max(T2.energy,tdUpCost(uT)+5);},tick:hold,
+    r:()=>{const bx=Math.min(Math.max(uT.x-40,4),96),by=uT.y>150?uT.y-118:uT.y+18;return sr(bx,by+28,80,16);},g:'tap',a:()=>{const bx=Math.min(Math.max(uT.x-40,4),96),by=uT.y>150?uT.y-118:uT.y+18;return sp(bx+40,by+36);},
+    act:()=>uT.lvl>lv0,after:900,hint:'toque em MELHORAR',chip:'⬆️ melhorou!'},
+  {t:'Subiu de nível! ⬆️ Cada melhoria deixa a torre mais forte. No nível máximo ela ganha um <b>poder extra</b>!',tick:hold,end:()=>{T2.sel=null;}},
   {t:'Duas torres! 💪 Entre as ondas tem uma <b>contagem</b>: quando ela acaba, a onda vem sozinha.',tick:hold,when:()=>T2.phase==='build'},
   {t:'Se já estiver pronto, <b>toque aqui</b> pra chamar a onda <b>mais cedo</b>: quanto mais cedo, mais <b>energia ⚡ extra</b> você ganha!',when:()=>!!P2('pilula')&&T2.phase==='build',tick:hold,r:()=>P2('pilula'),g:'tap',act:()=>T2.phase==='wave',after:900,hint:'toque pra chamar mais cedo',chip:'⚡ chamou cedo!'},
   {t:'Você também é o <b>HERÓI</b>: toque na trilha pra correr até lá e segurar os bichos com a espada! ⚔️'}],()=>G.mode==='td'&&TD===T2);}

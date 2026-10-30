@@ -2941,7 +2941,7 @@ async function chooseAction(){
   if(j===17){B.bagKey=null;return null;}
   if(j===18){const q=bQuickHeal();if(!q)return null;B.bagOpen=false;B.bagKey=null;return await bUseOn(q.key,q.k);}
   if(j>=40){const key=B.bagKey;B.bagKey=null;B.bagOpen=false;if(!key)return null;return await bUseOn(key,j-40);}
-  if(j===14){flags.bspd=BSPD()>=3?1:BSPD()+1;saveGame();return null;}if(j===15){B.sty=({n:'a',a:'f',f:'n'})[B.sty||'n'];return null;}
+  if(j===14){if(BSPD()===1&&!unlOk('fast')){await unlAsk('fast');return null;}flags.bspd=BSPD()>=3?1:BSPD()+1;saveGame();return null;}if(j===15){B.sty=({n:'a',a:'f',f:'n'})[B.sty||'n'];return null;}
   if(j===19){B.ballOpen=false;return null;}
   if(j===30||j===31){B.ballOpen=false;const key=j===30?'ball':'sball';if((bag[key]||0)<=0)return null;return {type:'ball',sup:key==='sball'};}
   if(j===13&&!B.tr&&((bag.ball||0)+(bag.sball||0))>0){B.ballOpen=true;B.bagOpen=false;B.bagKey=null;return null;}
@@ -3294,7 +3294,7 @@ function expUINew(t){const X=EXP,L=expLay();
   {const msg=X.log[0]||'';if(msg!==X.lastLog){X.lastLog=msg;X.logT=0;}X.logT=(X.logT||0)+1;const a=Math.max(0,Math.min(1,(240-X.logT)/30,X.logT/6));if(msg&&a>0){b.save();b.globalAlpha=a*.85;const Rc=L.recado;rrect(Rc.x,Rc.y,Rc.w,Rc.h,Math.min(Rc.h/2,7),'rgba(16,12,40,.9)',false);b.restore();if(a>.3){const Ls=Rc.h>=17?wrap(msg,Rc.w-10,6).slice(0,2):[msg];if(Ls.length>1)Ls.forEach((l,j)=>T(l,Rc.x+Rc.w/2,Rc.y+Rc.h/2-7.6+j*7.6,6,'center','#fff3c8',Rc.w-8,C.ink));else T(msg,Rc.x+Rc.w/2,Rc.y+Rc.h/2-3.9,6,'center','#fff3c8',Rc.w-6,C.ink);}}}}
 function expTapNew(x,y){const X=EXP,L=expLay(),inR=(r)=>x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h;
   if(inR(L.back)){expInput('b');return true;}
-  if(inR(L.fast)){flags.expFast=!flags.expFast;expLog(flags.expFast?'VELOCIDADE 2x LIGADA!':'Velocidade normal');tone(flags.expFast?[660,990]:[660,440],.05);saveGame();return true;}
+  if(inR(L.fast)){flags.expFast=!flags.expFast&&!unlNeed('fast');expLog(flags.expFast?'VELOCIDADE 2x LIGADA!':'Velocidade normal');tone(flags.expFast?[660,990]:[660,440],.05);saveGame();return true;}
   if(inR(L.left)){expInput('left');return true;}if(inR(L.right)){expInput('right');return true;}
   for(const B2 of L.btn)if(inR({x:B2.x-2,y:B2.y-3,w:B2.w+4,h:B2.h+6})){if(B2.k==='auto'){expInput('a');tone(X.auto?[660,880]:[660,440],.05);return true;}const S0=EXSK.find(s=>s.k===B2.k);if(S0){const Q=skP(S0);expSkTap(Q.x,Q.y);}return true;}
   for(let i=0;i<3;i++){const P=L.por[i];if(Math.hypot(x-P.cx,y-P.cy)<P.r+4&&X.units[i]){expSwap(i);return true;}}
@@ -3425,7 +3425,7 @@ function expUpdate(){const X=EXP;X.t++;expTick();expSkStep();expRunnerStep();exp
   flags.expStage=X.stage;expBuild();saveGame();}
 function expInput(btn){const X=EXP;
   if(btn==='b'){flags.expOn=false;saveGame();const r=X.res;EXP=null;(async()=>{await fadeTo(1);worldScreen();document.body.classList.remove('nomenu');G.mode='world';await fadeTo(0);r();})();return;}
-  if(btn==='a'){X.auto=!X.auto;flags.expAuto=X.auto;expLog(X.auto?'AUTO LIGADO: avança de fase e usa FÚRIA e CURA sozinho':'AUTO DESLIGADO: repete a fase e os poderes são no toque');return;}
+  if(btn==='a'){X.auto=!X.auto&&!unlNeed('auto');flags.expAuto=X.auto;expLog(X.auto?'AUTO LIGADO: avança de fase e usa FÚRIA e CURA sozinho':'AUTO DESLIGADO: repete a fase e os poderes são no toque');return;}
   if(btn==='left'||btn==='right'){const ns=Math.max(1,Math.min(flags.expMax,X.stage+(btn==='left'?-1:1)));if(ns!==X.stage){X.stage=ns;flags.expStage=ns;expBuild();expLog(`Indo pra fase ${ns}.`);}}}
 function expedition(){return new Promise(res=>{flags.expMax=flags.expMax||1;flags.coins=flags.coins||0;
   EXP={stage:Math.min(flags.expStage||1,flags.expMax),units:[],foes:[],pops:[],fx:[],parts:[],shots:[],shake:0,log:['A expedição começou!',...(party.length>3?['Toque num monstrinho seu pra trocá-lo.']:[])],kills:0,t:0,scroll:0,auto:flags.expAuto!==false,chest:null,res,bfx:[],seen:new Set()};EXP.ctx=expMkCtx();
@@ -4814,7 +4814,7 @@ function wTap(x,y){const w=WL;if(!w)return;
   if(w.cards){const i=Math.floor((x-4)/58);if(y>=56&&y<=209&&i>=0&&i<w.cards.opts.length){w.cards.i=i;return;}if(y>=210&&y<=237&&x>=128&&x<=176){if((w.rr||0)>0){w.rr--;w.cards=null;wOffer();tone([523,784],.06);}return;}if(y>=210&&y<=237&&x>18&&x<128)wPick(w.cards.i);return;}
   if(w.paused){if(x>40&&x<140){if(y>=134&&y<158){w.paused=null;w.running=true;}else if(y>=164&&y<188){w.paused=null;w.done('quit');}}return;}
   if(!w.running)return;
-  if(!murUI()&&x>=146&&x<=182&&y>214&&y<=238){flags.wallAuto=!flags.wallAuto;saveGame();tone(flags.wallAuto?[660,990]:[660,440],.05);wPop(165,212,flags.wallAuto?'ESPECIAL AUTOMÁTICO':'ESPECIAL MANUAL',C.yellow,7);return;}if(!murUI()&&x>=148&&x<=180&&y>=190&&y<=214){flags.wallFast=!flags.wallFast;tone(flags.wallFast?[660,990]:[660,440],.05);wPop(165,188,flags.wallFast?'RÁPIDO 2x':'NORMAL 1x',C.yellow,7);return;}
+  if(!murUI()&&x>=146&&x<=182&&y>214&&y<=238){flags.wallAuto=!flags.wallAuto&&!unlNeed('auto');saveGame();tone(flags.wallAuto?[660,990]:[660,440],.05);wPop(165,212,flags.wallAuto?'ESPECIAL AUTOMÁTICO':'ESPECIAL MANUAL',C.yellow,7);return;}if(!murUI()&&x>=148&&x<=180&&y>=190&&y<=214){flags.wallFast=!flags.wallFast&&!unlNeed('fast');tone(flags.wallFast?[660,990]:[660,440],.05);wPop(165,188,flags.wallFast?'RÁPIDO 2x':'NORMAL 1x',C.yellow,7);return;}
   if(murUI()&&(murSideTap(x,y)||murCardTap(x,y)))return;if(wThiefTap(x,y))return;
   if(wBarrelTap(x,y))return;
   if(wCatTap(x,y))return;
@@ -5083,8 +5083,8 @@ function murSide(w){const t=w.t;for(const [id,txt] of [['vel',flags.wallFast?'2x
    const rr=Math.min(6,r.h*.4);rrect(r.x,r.y+1.2,r.w,r.h,rr,'rgba(0,0,0,.4)',false);rrect(r.x,r.y,r.w,r.h,rr,C.ink,false);rrect(r.x+.8,r.y+.8,r.w-1.6,r.h-1.6,rr-.6,on?(id==='vel'?'#e0a020':'#2f9f4c'):'#33407a',false);rrect(r.x+1.6,r.y+1.6,r.w-3.2,r.h*.32,rr*.7,'rgba(255,255,255,.18)',false);
    T(txt,r.x+r.w/2,r.y+r.h/2-r.h*.27,Math.min(8,r.h*.5),'center',C.white,r.w-3,C.ink);});}}
 function murSideTap(x,y){const v=murLW('vel'),a=murLW('bauto');
-  if(v&&murIn(v,x,y,3)){flags.wallFast=!flags.wallFast;tone(flags.wallFast?[660,990]:[660,440],.05);wPop(v.x+v.w/2,v.y-4,flags.wallFast?'RÁPIDO 2x':'NORMAL 1x',C.yellow,7);return true;}
-  if(a&&murIn(a,x,y,3)){flags.wallAuto=!flags.wallAuto;saveGame();tone(flags.wallAuto?[660,990]:[660,440],.05);wPop(a.x+a.w/2,a.y-4,flags.wallAuto?'ESPECIAL AUTOMÁTICO':'ESPECIAL MANUAL',C.yellow,7);return true;}
+  if(v&&murIn(v,x,y,3)){flags.wallFast=!flags.wallFast&&!unlNeed('fast');tone(flags.wallFast?[660,990]:[660,440],.05);wPop(v.x+v.w/2,v.y-4,flags.wallFast?'RÁPIDO 2x':'NORMAL 1x',C.yellow,7);return true;}
+  if(a&&murIn(a,x,y,3)){flags.wallAuto=!flags.wallAuto&&!unlNeed('auto');saveGame();tone(flags.wallAuto?[660,990]:[660,440],.05);wPop(a.x+a.w/2,a.y-4,flags.wallAuto?'ESPECIAL AUTOMÁTICO':'ESPECIAL MANUAL',C.yellow,7);return true;}
   return false;}
 function murCardTap(x,y){const w=WL;for(let i=Math.min(3,w.defs.length-1);i>=0;i--){const d=w.defs[i],r=murLU('c'+(d&&d._mk!=null?d._mk:i));if(r&&murIn(r,x,y)){wSpecial(i);return true;}}return false;}
 /* moldura da vida da muralha */
@@ -6126,7 +6126,7 @@ function tdwTap(x,y,L){const T=TD,P=id=>tdwP(L,id);
   if(hit==='pausa'){T.paused=true;return true;}
   if(hit==='escudo'){tdwAb('rf');return true;}
   if(hit==='meteoro'){tdwAb('met');return true;}
-  if(hit==='veloc'){T.fast=!T.fast;tone(T.fast?[660,990]:[660,440],.04);return true;}
+  if(hit==='veloc'){T.fast=!T.fast&&!unlNeed('fast');tone(T.fast?[660,990]:[660,440],.04);return true;}
   if(hit==='pilula'){if(T.phase==='build')tdStartWave(true);return true;}
   const i=+hit.slice(1)-1;if(T.towers[i]){TDWP={i,t:8};tdSpecial(i);}return true;}
 function tdWNum(tw,t){if(!TD)return;const i=TD.towers.indexOf(tw);if(i<0)return;const x=tw.x+8.5,y=tw.y-21;if(tdwI('badge'))b.drawImage(tdwI('badge'),x-3.6,y-3.6,7.2,7.2);T(String(i+1),x,y-2.4,4.6,'center','#3a2a08');}
@@ -6424,7 +6424,7 @@ function tdTowerStats0(t){const st=stats(t.m),mv=MOVES[t.mv],stab=mv.type===SP[t
 function tdTap(x,y){const T=TD;if(!T||T.phase==='end')return;if(TDW){const L=TDL;if(!L)return;const ov=T.intro||T.cards||T.paused||T.spec||T.pick;if(!ov&&tdwTap(x,y,L))return;x=(x-L.ox)/L.f;y=(y-L.oy)/L.f;if(!ov&&(y<-8||y>274))return;}
   if(T.intro){if(T.intro.t>24)T.intro=null;return;}
   if(T.cards){tdCardsTap(x,y);return;}
-  if(T.paused){if(x>40&&x<140){if(y>=134&&y<158)T.paused=false;else if(y>=164&&y<188){T.paused=false;T.phase='end';T.done('quit');}else if(TDW&&y>=194&&y<218){flags.tdAuto=!flags.tdAuto;try{tone(flags.tdAuto?[660,990]:[660,440],.05);}catch(e){}saveGame();}}return;}
+  if(T.paused){if(x>40&&x<140){if(y>=134&&y<158)T.paused=false;else if(y>=164&&y<188){T.paused=false;T.phase='end';T.done('quit');}else if(TDW&&y>=194&&y<218){flags.tdAuto=!flags.tdAuto&&!unlNeed('auto');try{tone(flags.tdAuto?[660,990]:[660,440],.05);}catch(e){}saveGame();}}return;}
   if(T.spec){tdSpecTap(x,y);return;}
   if(T.pick){const P2=T.pick;const avail=P2.list;avail.forEach((m,k)=>{const cx=9+(k%3)*56,cy=118+Math.floor(k/3)*70;if(x>=cx&&x<=cx+52&&y>=cy&&y<=cy+64){const c2=tdCost();if(T.energy<c2){tdPop(90,100,'Energia insuficiente!','#ff6a5a',8);return;}
       T.energy-=c2;const tw=tdMakeTower(m,P2.pad);tw.spent=c2;T.towers.push(tw);T.fx.push({k:'pillar',x:tw.x,y:tw.y,t:0,dur:20,col:TYPECOL[tw.type]});tdBuildFx(tw);tdPart(tw.x,tw.y,C.yellow,14,{sp:2,up:1});tdPart(tw.x,tw.y,C.yellow,1,{kind:'ring',sp:0,life:24,grav:0});T.pick=null;}});if(T.pick&&(y<100||y>262))T.pick=null;return;}
@@ -6434,7 +6434,7 @@ function tdTap(x,y){const T=TD;if(!T||T.phase==='end')return;if(TDW){const L=TDL
   if(!TDW&&y<30&&!tdDock()&&tdAbTap(x,y))return;
   if(!TDW&&x>154&&y<28){T.paused=true;return;}
   if(!TDW&&y>=268&&y<299){const n=T.towers.length;for(let i=0;i<n;i++)if(Math.abs(x-tdBtnX(i,n))<14){tdSpecial(i);return;}return;}
-  if(!TDW&&y>=299){if(x<122){if(T.phase==='build')tdStartWave(true);}else if(x<150)T.fast=!T.fast;else{flags.tdAuto=!flags.tdAuto;try{tone(flags.tdAuto?[660,990]:[660,440],.05);}catch(e){}saveGame();}return;}
+  if(!TDW&&y>=299){if(x<122){if(T.phase==='build')tdStartWave(true);}else if(x<150)T.fast=!T.fast&&!unlNeed('fast');else{flags.tdAuto=!flags.tdAuto&&!unlNeed('auto');try{tone(flags.tdAuto?[660,990]:[660,440],.05);}catch(e){}saveGame();}return;}
   if(T.aim==='met'&&y>30&&y<266){T.meteors.push({x,y,t:0});T.cdMet=TDMET_CD;T.aim=null;tone([220,160],.12,'sawtooth',.04);return;}
   if(T.aim==='rf'&&y>30&&y<266){const d=tdNearPath(x,y);if(d==null){tdPop(x,y-10,'Toque na trilha!','#ffd0d0',7);return;}tdCallGuards(d);return;}
   for(const d of T.drops)if(Math.hypot(d.x-x,d.y-y)<14){d.t=999;T.energy+=d.v;tdPop(d.x,d.y-12,`+${d.v}⚡`,'#8ff0ff',8);tdPart(d.x,d.y,'#8ff0ff',10,{sp:1.8,life:18});return;}
@@ -8973,7 +8973,7 @@ function tapUI(u,x,y){if(u.type==='dialog'){press('a');return;}
   const R=u.rects||[];for(const r of R)if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h){if(r.fn){r.fn();return;}if(r.card&&u.sel!==r.i){u.sel=r.i;u.i=r.i;try{tone([660,880],.04);}catch(e){}return;}u.i=r.i;ui.pop();u.res(r.i);return;}
   const bx=u.boxR;if(!cf.noCancel&&bx&&!(x>=bx.x&&x<=bx.x+bx.w&&y>=bx.y&&y<=bx.y+bx.h)){ui.pop();u.res(-1);}}
 function expTap(x,y){if(expCubeTap(x,y))return;if(expNew()){if(expTapNew(x,y))return;const S2=expSceneTf();x=(x-S2.ox)/S2.sc;y=(y-S2.oy)/S2.sc;}const HL=expSide(),hit=(a,b2,c3,d)=>x>=a+HL&&x<=a+HL+c3&&y>=b2&&y<=b2+d;
-  if(hit(156,180,22,14))expInput('left');else if(hit(212,180,22,14))expInput('right');else if(hit(156,196,26,14))expInput('a');else if(hit(184,196,22,14)){flags.expFast=!flags.expFast;expLog(flags.expFast?'VELOCIDADE 2x LIGADA!':'Velocidade normal');tone(flags.expFast?[660,990]:[660,440],.05);saveGame();}else if(hit(208,196,26,14))expInput('b');
+  if(hit(156,180,22,14))expInput('left');else if(hit(212,180,22,14))expInput('right');else if(hit(156,196,26,14))expInput('a');else if(hit(184,196,22,14)){flags.expFast=!flags.expFast&&!unlNeed('fast');expLog(flags.expFast?'VELOCIDADE 2x LIGADA!':'Velocidade normal');tone(flags.expFast?[660,990]:[660,440],.05);saveGame();}else if(hit(208,196,26,14))expInput('b');
   else if(expTreeTap(x,y)||expRunnerTap(x,y)||expSkTap(x,y)||expFoeTap(x,y)){}
   else if(y<170){const i=EXP.units.findIndex(u=>Math.abs(x-u.x)<16&&y>u.y-36&&y<u.y+6);if(i>=0)expSwap(i);}}
 async function expSwap(i){const X=EXP,old=X.units[i],list=party.filter(m=>!X.units.some(u=>u.m===m));
@@ -8981,7 +8981,7 @@ async function expSwap(i){const X=EXP,old=X.units[i],list=party.filter(m=>!X.uni
   const k=await monPick(list,`Trocar ${nm(old.m)} por:`);if(EXP!==X||k<0)return;
   const nu=expUnit(list[k],'p',i);nu.max=nu.hp=Math.round(nu.st.hp*2.5*(1+relB('vida')));nu.x=old.x;nu.tx=old.tx;nu.y=old.y;nu.cd=40;X.units[i]=nu;expPart(nu.x,nu.y-12,C.yellow,12,{sp:1.8,up:1});expLog(`${nm(nu.m)} entrou no lugar de ${nm(old.m)}!`);}
 function handleTap(x,y){const u=ui[ui.length-1];
-  if(G.mode==='wall'&&WL&&!u){if(x>132&&x<=156&&y<30){flags.wallFast=!flags.wallFast;tone(flags.wallFast?[660,990]:[660,440],.05);return;}if(x>156&&y<30&&WL.running){WL.running=false;WL.paused={i:0};return;}wTap(x,y-Math.max(0,H-320)+wK());return;}
+  if(G.mode==='wall'&&WL&&!u){if(x>132&&x<=156&&y<30){flags.wallFast=!flags.wallFast&&!unlNeed('fast');tone(flags.wallFast?[660,990]:[660,440],.05);return;}if(x>156&&y<30&&WL.running){WL.running=false;WL.paused={i:0};return;}wTap(x,y-Math.max(0,H-320)+wK());return;}
   if(G.mode==='surv'&&SV&&!u){svTap(x,y);return;}
   if(G.mode==='math'&&MT&&!u){mtTap(x,y);return;}if(G.mode==='match'&&M3&&!u){matchTap(x,y);return;}
   if(G.mode==='td'&&TD&&!u){tdTap(x,y-tdOY());return;}
@@ -9019,7 +9019,7 @@ setInterval(()=>{try{const bt=document.querySelector('button[aria-label="Minijog
 /* PAINEL DE ENERGIA + LOJA (dinheiro de verdade) na tela do mapa (30/out, Felipe: "painel de energia no menu de jogo onde fica o menu e mini jogos" e "loja pra comprar coisas com dinheiro real").
    Pagamento ainda NÃO existe: os botões de compra avisam "em breve" (vai ser pela Apple quando o jogo estiver na App Store).
    Peças provisórias: usam a placa de saldo do kit Caderno + emoji; a arte própria (ícone ⚡ e botão LOJA) foi pedida ao Buchecha. */
-const LOJAREAL=[{n:'PUNHADO DE CRISTAIS',sub:'50 💎 · US$ 0,99'},{n:'SACO DE CRISTAIS',sub:'150 💎 · US$ 2,99'},{n:'BAÚ DE CRISTAIS',sub:'400 💎 · US$ 6,99'},{n:'ENERGIA CHEIA',sub:'⚡ cheia + 30 · US$ 0,99'},{n:'PASSE DO MÊS',sub:'10 💎/dia · US$ 4,99'},{n:'MONSTRINHO RARO',sub:'+100 💎 · US$ 9,99'}];
+const LOJAREAL=[{n:'PUNHADO DE CRISTAIS',sub:'50 💎 · US$ 0,99'},{n:'SACO DE CRISTAIS',sub:'150 💎 · US$ 2,99'},{n:'BAÚ DE CRISTAIS',sub:'400 💎 · US$ 6,99'},{n:'ENERGIA CHEIA',sub:'⚡ cheia + 30 · US$ 0,99'},{n:'PASSE DO MÊS',sub:'10 💎/dia · US$ 4,99'},{n:'MONSTRINHO RARO',sub:'+100 💎 · US$ 9,99'},{n:'2x PRA SEMPRE',sub:'todos os modos · US$ 1,99'},{n:'AUTOMÁTICO PRA SEMPRE',sub:'todos os modos · US$ 2,99'}];
 async function lojaReal(){while(true){const tiles=LOJAREAL.map(o=>({n:o.n,sub:o.sub,col:'#3a8ae0'})).concat([{n:'FECHAR',sub:'voltar',col:'#6a6488'}]);
   const j=await choose(tiles.map(t=>t.n),{tiles,title:'LOJA'});if(j==null||j<0||j>=LOJAREAL.length)return;
   try{rwToast('Em breve! As compras vão funcionar quando o jogo estiver na App Store.');}catch(_){}tone([523,659],.05);}}
@@ -9040,6 +9040,29 @@ async function enPainel(){while(true){const e=enSt(),day=qDay(),usd=flags.enGem&
   setInterval(()=>{try{const e=enSt(),low=e.v<EN.COST,s=low?`${e.v} · ${enFmt(enNext())}`:`${e.v}/${EN.MAX}`;if(E.en.tx.textContent!==s)E.en.tx.textContent=s;E.en.tx.style.color=low?'#c23b3b':'#154c5e';const bd=document.getElementById('enBadge');if(bd)bd.style.display='none';}catch(_){}},500);
   }catch(x){setTimeout(go,800);}};setTimeout(go,500);})();
 /* /PAINEL ENERGIA + LOJA */
+/* DESBLOQUEIO DO 2x E DO AUTOMÁTICO (30/out, Felipe: "crie o botão 2x um custo pra desbloquear ele" + "o automático também";
+   respostas: em todos os modos; paga com cristais OU dinheiro real na LOJA).
+   Vale pra Batalha (2x/3x), Expedição (2x e AUTO), Muralha (2x e AUTO) e Torres (2x e AUTO). Desbloqueia uma vez, fica pra sempre.
+   O tutorial da Expedição continua podendo usar o AUTO de graça. */
+const UNL={fast:{n:'VELOCIDADE 2x',gem:100},auto:{n:'AUTOMÁTICO',gem:150}};
+function unlOk(k){return !!(flags.unl&&flags.unl[k]);}
+function unlTut(){try{return G.mode==='exp'&&!(flags.tut&&flags.tut.exp);}catch(_){return false;}}
+let UNLASK=0;
+function unlNeed(k){if(unlOk(k)||(k==='auto'&&unlTut()))return false;if(!UNLASK){UNLASK=1;unlAsk(k).catch(()=>{}).finally(()=>{UNLASK=0;});}return true;}
+function unlGive(k){(flags.unl||(flags.unl={}))[k]=1;try{saveGame();}catch(_){}try{rwToast(`🔓 ${UNL[k].n} liberado pra sempre, em todos os modos!`);}catch(_){}try{tone([523,659,784],.06);}catch(_){}}
+async function unlAsk(k){const U=UNL[k],g=gems(),can=g>=U.gem;
+  const q=`🔒 ${U.n} está bloqueado. Desbloqueie uma vez e ele fica liberado pra sempre, em todos os modos.`+(can?'':` Custa ${U.gem} 💎 e você tem ${g} 💎.`);
+  const opts=[...(can?[`${U.gem} 💎 DESBLOQUEAR`]:[]),'LOJA','AGORA NÃO'];
+  const j=await choose(opts,{noCancel:true,cadAsk:{q,nf:1,cols:can?['#1f7a3a','#3a8ae0','#8a2f2f']:['#3a8ae0','#8a2f2f']}});
+  if(can&&j===0){flags.gems=gems()-U.gem;unlGive(k);return true;}
+  if(opts[j]==='LOJA')await lojaReal();return false;}
+/* save antigo com 2x/AUTO ligados: sem desbloqueio, ficam desligados */
+setInterval(()=>{try{if(typeof flags==='undefined'||!flags)return;
+  if(!unlOk('fast')){if(flags.expFast)flags.expFast=false;if(flags.wallFast)flags.wallFast=false;if(flags.bspd>1)flags.bspd=1;try{if(TD&&TD.fast)TD.fast=false;}catch(_){}}
+  if(!unlOk('auto')){if(flags.wallAuto)flags.wallAuto=false;if(flags.tdAuto)flags.tdAuto=false;if(!unlTut()){if(flags.expAuto!==false)flags.expAuto=false;try{if(EXP&&EXP.auto&&G.mode==='exp')EXP.auto=false;}catch(_){}}}
+}catch(_){}},700);
+/* /DESBLOQUEIO 2x E AUTO */
+
 
 /* atalhos dos mini games: bolinhas no canto esquerdo da tela do mapa */
 const MINIS=[{n:'EXPEDIÇÃO',k:'exp',go:()=>stageMap('exp')},{n:'MURALHA',k:'wall',go:()=>stageMap('wall')},{n:'TORRES',k:'td',go:()=>stageMap('td')},{n:'HORDA',k:'surv',go:()=>stageMap('surv')},{n:'COMBINA',k:'match',go:()=>matchMode()}];

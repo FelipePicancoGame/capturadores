@@ -7581,7 +7581,7 @@ async function m3End(){const S=M3,st=m3Stars(),P=m3St(),win=S.won;let coins=0;
   P.best[S.lv]=Math.max(P.best[S.lv]||0,S.score);saveGame();await new Promise(r=>setTimeout(r,500));
   const q=win?`Fase ${S.lv} completa! ${'⭐'.repeat(Math.max(1,st))}  ${S.score} pontos${S.bonus?` (bônus ${S.bonus} pelas jogadas que sobraram)`:''}  +${coins} moedas`:`Acabaram as jogadas! ${S.L.type==='collect'?'Faltou juntar os monstrinhos.':S.L.type==='ice'?(()=>{const n=S.ice.reduce((a,row)=>a+row.filter(v=>v).length,0);return `Ainda ${n===1?'ficou 1 pedra':'ficaram '+n+' pedras'} de gelo no tabuleiro (as que brilham em vermelho).`;})():`Você fez ${S.score} de ${S.goal} pontos.`}`;
   const j=await choose(win?['PRÓXIMA FASE','SAIR']:['TENTAR DE NOVO','SAIR'],{cadAsk:{q,nf:1,cols:['#1f7a3a','#8a2f2f']},noCancel:true});
-  if(j===0){m3New(win?S.lv+1:S.lv);m3Intro();return;}const d=S.done;S.done=null;if(d)d();}
+  if(j===0){if(!(await enPay())){const d=S.done;S.done=null;if(d)d();return;}m3New(win?S.lv+1:S.lv);m3Intro();return;}const d=S.done;S.done=null;if(d)d();}
 function m3Intro(){const L=M3.L;M3.banner={t:0,txt:L.type==='collect'?'JUNTE OS MONSTRINHOS!':L.type==='ice'?'QUEBRE TODO O GELO!':'FAÇA OS PONTOS!'};}
 async function matchMode(){if(!party.length){await say('Você precisa de um monstrinho!');return;}const P=m3St();m3Swipe();
   await fadeTo(1);portraitScreen();document.body.classList.add('nopad');M3=null;m3New(P.lv);m3Intro();G.mode='match';await fadeTo(0);
@@ -7844,7 +7844,7 @@ m3End=async function(){const S=M3,st=m3Stars(),P=m3St(),win=S.won;let coins=0;
   if(art){S.endP={win,st,t:0,lines:win?[`${S.score} pontos`+(S.bonus?` (bônus ${S.bonus})`:''),`+${coins} moedas`]:[why,'Tente de novo!']};if(win){const G2=m3Geo();for(let i=0;i<5;i++)m3cSheet('fx_confete',G2.x0+G2.bw*(.15+.175*i),G2.y0+G2.bh*(.2+(i%2)*.25),G2.ts*3,i*6);}await new Promise(r=>setTimeout(r,900));}
   const q=win?`Fase ${S.lv} completa! ${'⭐'.repeat(Math.max(1,st))}  ${S.score} pontos${S.bonus?` (bônus ${S.bonus} pelas jogadas que sobraram)`:''}  +${coins} moedas`:`Acabaram as jogadas! ${why}`;
   const j=await choose(win?['PRÓXIMA FASE','SAIR']:['TENTAR DE NOVO','SAIR'],art?{noCancel:true,cadAsk:{q:win?'Vamos pra próxima fase?':'Quer tentar de novo?',bot:1,row:1,nf:1,cols:['#1f7a3a','#8a2f2f']}}:{cadAsk:{q,nf:1,cols:['#1f7a3a','#8a2f2f']},noCancel:true});
-  if(j===0){m3New(win?S.lv+1:S.lv);m3Intro();return;}const d=S.done;S.done=null;if(d)d();};
+  if(j===0){if(!(await enPay())){const d=S.done;S.done=null;if(d)d();return;}m3New(win?S.lv+1:S.lv);m3Intro();return;}const d=S.done;S.done=null;if(d)d();};
 /* 28/out 17h43 (Felipe): "quando eu combino 4 ... já consigo usar aquele monstrinho como poder", com a magia do monstrinho.
    4 em fila agora soltam o poder NA HORA: fila deitada -> a magia corre a coluna pra cima e pra baixo; fila em pé -> corre a linha pros dois lados.
    Fogo = rajada de fogo, Água = jato d'água, Planta = cipó, Pedra = pedra rolando, Raio = raio, Vento = ventania (folhas de efeito do kit). */
@@ -8923,12 +8923,39 @@ function handleTap(x,y){const u=ui[ui.length-1];
   if(G.mode==='world'&&FISH){FISH.tap=true;return;}
   if(G.mode==='exp'&&EXP){expTap(x-Math.max(0,Math.floor((W-240)/2)),y);return;}
   if(G.mode==='world'&&!busy)worldTap(x,y);}
+/* ENERGIA (30/out, Felipe: "vamos criar um sistema de energia pro jogo"). Escolhas dele:
+   gasta só nos MINIGAMES (Expedição, Muralha, Torres, Horda e cada fase do Combina); máximo 30, cada partida 5, volta 1 a cada 12 min (cheia em 6 h);
+   recarga: 5 cristais = +15 (até 3x por dia), Presente do Dia +10, e enche quando algum monstrinho sobe de nível. Missões da história não gastam. */
+const EN={MAX:30,COST:5,REG:12*60e3,GEM:5,GEMQ:15,GEMDAY:3,DAILY:10};
+function enSt(){let e=flags.en;const now=Date.now();if(!e||typeof e!=='object'||!(e.v>=0))e=flags.en={v:EN.MAX,t:now};if(e.v>=EN.MAX)e.t=now;else{const n=Math.floor((now-e.t)/EN.REG);if(n>0){e.v=Math.min(EN.MAX,e.v+n);e.t=e.v>=EN.MAX?now:e.t+n*EN.REG;}}return e;}
+function enVal(){return enSt().v;}
+function enNext(){const e=enSt();return e.v>=EN.MAX?0:Math.max(0,EN.REG-(Date.now()-e.t));}
+function enFmt(ms){const s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');}
+function enAdd(n,why){const e=enSt();e.v+=n;try{saveGame();}catch(_){}try{rwToast(`⚡ +${n} de energia${why?' · '+why:''}`);}catch(_){}}
+async function enPay(){if(window.__ENFREE)return true;const e=enSt();
+  if(e.v>=EN.COST){e.v-=EN.COST;try{saveGame();}catch(_){}try{rwToast(`⚡ −${EN.COST} energia · sobram ${e.v}`);}catch(_){}return true;}
+  const day=qDay(),usd=flags.enGem&&flags.enGem.d===day?flags.enGem.n:0,can=usd<EN.GEMDAY&&gems()>=EN.GEM;
+  const why=usd>=EN.GEMDAY?' A troca por cristais já foi usada 3 vezes hoje.':gems()<EN.GEM?` Faltam cristais pra trocar (precisa de ${EN.GEM} 💎).`:'';
+  const q=`Sem energia! ⚡ ${e.v} de ${EN.MAX}. Cada partida usa ${EN.COST}. A próxima energia chega em ${enFmt(enNext())}.${why}`;
+  const opts=can?[`${EN.GEM} 💎 = +${EN.GEMQ} ⚡`,'ESPERAR']:['ESPERAR'];
+  const j=await choose(opts,{noCancel:true,cadAsk:{q,nf:1,cols:can?['#1f7a3a','#8a2f2f']:['#8a2f2f']}});
+  if(can&&j===0){flags.gems=gems()-EN.GEM;flags.enGem={d:day,n:usd+1};e.v+=EN.GEMQ-EN.COST;try{saveGame();}catch(_){}try{rwToast(`⚡ +${EN.GEMQ} de energia · −${EN.GEM} 💎`);}catch(_){}return true;}
+  return false;}
+{const _s=stgLaunch;stgLaunch=async function(key,i){if(!window.__ENRES&&!(await enPay()))return;return _s(key,i);};}
+{const _m=matchMode;matchMode=async function(){if(!party.length)return _m();if(!(await enPay()))return;return _m();};}
+{const _v=emJogoVolta;emJogoVolta=async function(){window.__ENRES=1;try{return await _v();}finally{window.__ENRES=0;}};}
+{const _d=dailyGift;dailyGift=async function(){await _d();try{if(dState().last===qDay()&&flags.enDay!==qDay()){flags.enDay=qDay();enAdd(EN.DAILY,'Presente do Dia');}}catch(_){}};}
+/* subiu de nível (em qualquer modo) = energia cheia */
+setInterval(()=>{try{if(typeof party==='undefined'||!party.length)return;const s=[...party,...(typeof storage!=='undefined'?storage:[])].reduce((a,m)=>a+(m.lv||0),0);if(flags.enLv==null){flags.enLv=s;return;}if(s>flags.enLv){flags.enLv=s;const e=enSt();if(e.v<EN.MAX){e.v=EN.MAX;e.t=Date.now();try{rwToast('⚡ Subiu de nível! Energia cheia');}catch(_){}}}else if(s<flags.enLv)flags.enLv=s;}catch(_){}},1500);
+/* contador no botão MINIJOGOS do mapa */
+setInterval(()=>{try{const bt=document.querySelector('button[aria-label="Minijogos"]');if(!bt)return;let s=document.getElementById('enBadge');if(!s){s=document.createElement('span');s.id='enBadge';s.style.cssText='position:absolute;right:-4px;bottom:-6px;padding:2px 7px;border-radius:10px;font:700 12px var(--pixel,sans-serif);color:#fff;background:#2a7ad8;border:2px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,.35);pointer-events:none;white-space:nowrap;z-index:2';if(getComputedStyle(bt).position==='static')bt.style.position='relative';bt.appendChild(s);}const e=enSt(),low=e.v<EN.COST;s.style.background=low?'#c23b3b':'#2a7ad8';s.textContent=low?`⚡${e.v} · ${enFmt(enNext())}`:`⚡${e.v}`;}catch(_){}},500);
+/* /ENERGIA */
 /* atalhos dos mini games: bolinhas no canto esquerdo da tela do mapa */
 const MINIS=[{n:'EXPEDIÇÃO',k:'exp',go:()=>stageMap('exp')},{n:'MURALHA',k:'wall',go:()=>stageMap('wall')},{n:'TORRES',k:'td',go:()=>stageMap('td')},{n:'HORDA',k:'surv',go:()=>stageMap('surv')},{n:'COMBINA',k:'match',go:()=>matchMode()}];
 const RAIL=[{n:'MINIGAMES',k:'mini',ic:'exp',col:'#e0a83a',go:()=>minigamesMenu()},{n:'BICICLETA',k:'bike',ic:'bike',col:'#2fb8d8',go:()=>bikeToggle()}];
 async function minigamesMenu(){const subs={'EXPEDIÇÃO':`fase ${flags.expMax||1}`,'MURALHA':'defenda o Vale','TORRES':'defenda o portão','HORDA':'sobreviva!','COMBINA':`fase ${m3St().lv}`};
   while(true){const tiles=MINIS.map(m=>({n:m.n,sub:subs[m.n],col:'#e0a83a',badge:(()=>{try{return chapInfo(m.k).out.some(o=>o.done&&!o.got);}catch(e){return false;}})()})).concat([{n:'FECHAR',sub:'voltar',col:'#6a6488'}]);
-    const j=await choose(tiles.map(t=>t.n),{tiles,title:'MINIGAMES'});if(j==null||j<0||j>=MINIS.length)return;await MINIS[j].go();return;}}
+    const j=await choose(tiles.map(t=>t.n),{tiles,title:`MINIGAMES · ⚡ ${enVal()}/${EN.MAX}`});if(j==null||j<0||j>=MINIS.length)return;await MINIS[j].go();return;}}
 function railPos(i){return H<300?{x:18+i*33,y:36,r:12}:{x:16,y:36+i*31,r:12};}
 function railOn(){return G.mode==='world'&&!ui.length&&!FISH&&!REVEAL&&!EVOA&&!EGGA&&party.length>0;}
 function railDraw(){if(!railOn()||CADON())return;const t=frame;RAIL.forEach((it,i)=>{const P2=railPos(i),pr=it.press>0?(it.press--,.88):1,bob=Math.sin(t/30+i*1.3)*.8,x=P2.x,y=P2.y+bob;

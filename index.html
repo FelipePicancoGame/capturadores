@@ -7570,7 +7570,7 @@ function matchUpdate(){const S=M3;if(!S)return;S.t++;if(S.shake>0)S.shake--;
   if(S.phase==='fall'){let moving=false;for(const row of S.g)for(const q of row){if(q.fy<0){q.fy=Math.min(0,q.fy+.24+Math.min(.3,-q.fy*.04));moving=true;}}
     if(!moving){const F=m3Find();if(F.groups.length){m3Clear(F.groups,null);return;}S.combo=0;S.phase='idle';S.idle=0;m3Check();}return;}
   if(S.phase==='idle')S.idle++;}
-function m3Check(){const S=M3;if(S.ending)return;if(m3GoalOk()&&!S.won){S.won=true;S.ending=1;S.bonus=S.moves*60;S.score+=S.bonus;run(m3End);return;}
+function m3Check(){const S=M3;if(S.ending||S.tutS)return;if(m3GoalOk()&&!S.won){S.won=true;S.ending=1;S.bonus=S.moves*60;S.score+=S.bonus;run(m3End);return;}
   if(S.moves<=0){S.ending=1;run(m3End);return;}if(!m3AnyMove()){m3Shuffle();m3Pop(W/2,112,'EMBARALHANDO!','#7fe0ff',9);S.phase='fall';for(const row of S.g)for(const q of row)q.fy=-.6-Math.random()*.6;}}
 function m3Stars(){const S=M3,g=S.goal;return !S.won?0:S.score>=g*1.8?3:S.score>=g*1.35?2:1;}
 async function m3End(){const S=M3,st=m3Stars(),P=m3St(),win=S.won;let coins=0;
@@ -10733,13 +10733,14 @@ function tutWallScript(){const w=WL;w.tutS=1;for(const d of w.defs)d.charge=0;w.
   const d0=()=>w.defs[0],card=i=>{const q=w.defs[i]||w.defs[0];if(!murUI())return null;const r=murLU('c'+(q._mk??i));return r?tutWl(r.x,r.y,r.w,r.h):null;},
     dr=i=>{const q=w.defs[Math.min(i,w.defs.length-1)];return tutWl(q.x-17,q.y-40,34,48);},dc=i=>{const q=w.defs[Math.min(i,w.defs.length-1)];return tutPt(q.x,tutWy(q.y-14));},
     eR=e=>e&&!e.dead?tutWl(e.x-16,e.y-30,32,40):null;
-  let e1=null,k0=0,spawnIv=null,sp8=0,a0=null,o0=null,eP=null,pc0=0;
+  let e1=null,k0=0,spawnIv=null,sp8=0,a0=null,o0=null,eP=null,pc0=0,catOK=0,cat0=0,brl=null;
+  const catHold=()=>{try{if(!catOK){const K=wCat(w);K.cd=Math.max(K.cd,60);}}catch(_){}return true;};
   const blink=()=>{const q=d0();if(!q)return;w.hold=(Math.floor(performance.now()/450)%2===0)?{i:0,x:q.x,y:q.y,t0:performance.now()-WHOLDMS-400,tut:1}:null;};
   return tutRun('wall',[
   {t:()=>`Bem-vindo à <b>MURALHA</b>, ${tutNome()}! Os bichos bravos descem por essa trilha pra quebrar o nosso muro. 🛡️`,r:()=>tutWl(10,40,160,190)},
   {t:'Olha, lá vem um bicho! 👀 Toque em OK e veja ele descer.',start:()=>{e1=tutWS({x:90,y:92,spd:.4,hp:2.2});},r:()=>eR(e1),
     act:()=>!e1||e1.dead||Math.hypot(e1.x-d0().x,e1.y-(d0().y-12))<=wRng(w,d0())+30,chip:'👀 olha ele descendo…'},
-  {t:()=>`Esse círculo piscando é o <b>ALCANCE</b> do ${SP[d0().sp].name}. Quando o bicho entra nele, a gente ataca <b>sozinho</b>!`,r:()=>dr(0),tick:blink,end:()=>{w.hold=null;}},
+  {t:()=>`Esse círculo piscando é o <b>ALCANCE</b> do ${SP[d0().sp].name}. Quando o bicho entra nele, a gente ataca <b>sozinho</b>!`,r:()=>{const q=d0(),Rr=wRng(w,q);return tutWl(q.x-Rr,q.y-12-Rr,Rr*2,Rr*2);},round:1,tick:blink,end:()=>{w.hold=null;}},
   {t:'Agora olha a gente atacar! Toque em OK. 💥',r:()=>eR(e1)||dr(0),act:()=>!e1||e1.dead,after:600,chip:'💥 atacando…'},
   {t:'Essa é a carta do <b>ESPECIAL</b>. Tá <b>vazia</b> (0%). Cada bicho derrotado enche um pedaço dela.',r:()=>card(0)||dr(0),start:()=>{d0().charge=0;}},
   {t:'Agora vêm <b>8 bichos</b>. Derrote todos pra encher o especial! Toque em OK.',live:1,
@@ -10753,58 +10754,96 @@ function tutWallScript(){const w=WL;w.tutS=1;for(const d of w.defs)d.charge=0;w.
   {t:'BUUUM! 💥 Viu a força? Agora a <b>MIRA</b>: toque nesse monstrinho e <b>arraste pra cima</b>, até o bicho, e solte. Ele ataca ali!',
     start:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});eP=tutWS({x:150,y:70,spd:.12,hp:6});a0=w.defs.map(q=>q.aim);},
     r:()=>dr(Math.min(1,w.defs.length-1)),g:'drag',a:()=>dc(Math.min(1,w.defs.length-1)),b:()=>eP&&!eP.dead?tutPt(eP.x,tutWy(eP.y)):tutPt(150,tutWy(90)),
-    act:()=>w.defs.some((q,k)=>q.aim&&q.aim!==a0[k]),after:900,hint:'arraste pra cima',chip:'🎯 arraste até o bicho e solte'},
+    act:()=>w.defs.some((q,k)=>q.aim&&q.aim!==a0[k])&&(!eP||eP.dead||eP.hp<eP.max*.6),after:900,hint:'arraste pra cima',chip:()=>w.defs.some((q,k)=>q.aim&&q.aim!==a0[k])?'🎯 olha ele atacando ali!':'🎯 arraste até o bicho e solte'},
+  {t:'Viu? Ele atacou <b>onde você mirou</b>! 🎯 Use isso pra pegar o bicho mais perigoso primeiro.',start:()=>{if(eP&&!eP.dead)eP.dead=true;}},
   {t:'Agora toque num monstrinho e arraste <b>pro lado</b>, em cima do vizinho, pra <b>trocar a ordem</b> deles.',when:()=>w.defs.length>1,
     r:()=>dr(0),g:'drag',a:()=>dc(0),b:()=>dc(1),
     start:()=>{o0=w.defs[0];},act:()=>w.defs[0]!==o0,after:600,hint:'arraste pro lado',chip:'↔️ arraste em cima do vizinho e solte'},
-  {t:'Bicho encostou no muro? <b>Toque nele</b> pra dar um SOCO! 👊',
-    start:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});eP=tutWS({x:112,y:MSTOP()-30+(w.ext||0),spd:.02,hp:14});pc0=w.punchCD||0;try{const K=wCat(w);K.cd=Math.max(K.cd,WCAT_CD);K.msgT=99999;}catch(_){}},end:()=>{try{wCat(w).msgT=0;}catch(_){}},
+  {t:'Quando o bicho <b>encosta no muro</b>, ele começa a quebrar o muro! <b>Toque nele</b> pra dar um <b>SOCO</b> 👊: tira vida dele e ajuda a proteger o muro.',
+    start:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});eP=tutWS({x:112,y:MSTOP()-30+(w.ext||0),spd:.02,hp:14});pc0=w.punchCD||0;try{wCat(w).msgT=99999;}catch(_){}},end:()=>{try{wCat(w).msgT=0;}catch(_){}},
     r:()=>eR(eP),g:'tap',a:()=>{const r=eR(eP);return r?tutMid(r):null;},act:()=>(w.punchCD||0)!==pc0||!eP||eP.dead,after:700,hint:'toque no bicho',chip:'👊 POW!'},
-  {t:'Boa! Barril e catapulta: quando <b>brilharem</b>, toque neles também. A cada onda vencida você escolhe uma <b>carta de poder</b>.'},
+  {t:'POW! 👊 Cada soco tira um pouco de vida. Se o muro quebrar, a gente perde!'},
+  {t:'Essa é a <b>CATAPULTA</b> 🪨. Quando ela fica <b>pronta</b>, é só tocar no campo onde estão os bichos que ela joga uma <b>pedra gigante</b>!',r:()=>tutWl(WCAT_X-20,WCAT_Y-44,40,50),
+    start:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});for(let k=0;k<5;k++)tutWS({x:70+(k%3)*20,y:96+Math.floor(k/3)*18,spd:.05,hp:3});catOK=1;try{const K=wCat(w);K.cd=0;K.msgT=0;}catch(_){}}},
+  {t:'A catapulta tá <b>PRONTA</b>! <b>Toque nos bichos</b> pra jogar a pedra! 🪨',r:()=>tutWl(54,74,72,60),g:'tap',a:()=>tutPt(90,tutWy(104)),
+    start:()=>{try{cat0=wCat(w).shots.length;wCat(w).cd=0;}catch(_){}},act:()=>{try{return wCat(w).cd>0;}catch(_){return true;}},after:1700,hint:'toque nos bichos',chip:'🪨 lá vai a pedra!',end:()=>{catOK=0;}},
+  {t:'Esse é um <b>BARRIL</b> de pólvora 🛢️. Quando os bichos chegam perto, <b>toque nele</b>: ele <b>EXPLODE</b> e machuca todos em volta!',
+    start:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});w.barrels=w.barrels||[];brl={x:90,y:150,t:40,seed:1};w.barrels.push(brl);for(let k=0;k<4;k++)tutWS({x:72+k*12,y:126+(k%2)*10,spd:.03,hp:3});},
+    r:()=>brl&&!brl.gone?tutWl(brl.x-16,brl.y-22,32,32):null,round:1,g:'tap',a:()=>brl?tutPt(brl.x,tutWy(brl.y-6)):null,act:()=>!brl||!!brl.gone,after:1400,hint:'toque no barril',chip:'💥 BUUM!'},
+  {t:'A cada onda vencida você escolhe uma <b>carta de poder</b>. 🃏'},
   {t:'Agora é pra valer: segura <b>10 ondas</b>! Vamos lá! 💪',end:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});}}],
-  ()=>G.mode==='wall'&&WL===w).finally(()=>{clearInterval(spawnIv);if(WL===w){w.tutS=0;w.hold=null;w.spawned=0;w.spawnT=90;for(const d of w.defs)d.charge=Math.min(d.charge,100);}});}
+  ()=>G.mode==='wall'&&WL===w&&catHold()).finally(()=>{clearInterval(spawnIv);if(WL===w){w.tutS=0;w.hold=null;w.spawned=0;w.spawnT=90;for(const d of w.defs)d.charge=Math.min(d.charge,100);}});}
 
 /* fases tutorial JOGÁVEIS — Horda, Combina, Torres, Expedição (mesmo ritmo: lê → toca no lugar → acontece). */
-function tutSurv(){const S=SV;let p0=null,k0=0,x0=0;const spB=()=>tutCv(W-46,H-46,44,44);
+function tutSurv(){const S=SV;let p0=null,k0=0,x0=0,lk=-1,lt=0;const spB=()=>tutCv(W-46,H-46,44,44);
+  /* põe bichos perto do herói (anel), pra ter o que acertar */
+  const near=(n,r0,r1)=>{for(let k=0;k<n;k++){try{const c=S.foes.length;svSpawn();const e=S.foes[S.foes.length-1];if(!e||S.foes.length===c)continue;const a=k/n*Math.PI*2+Math.random()*.4,R=r0+Math.random()*(r1-r0);e.x=S.pl.x+Math.cos(a)*R;e.y=S.pl.y+Math.sin(a)*R;}catch(_){}}};
   return tutRun('surv',[
   {t:'<b>HORDA</b>! Bichos vêm de todo lado, mas eu ataco sozinho. 😤'},
   {t:'<b>Toque aqui e arraste o dedo</b> pra me levar. Foge deles!',g:'drag',r:()=>{const a=tutPt(W/2,H*.62);return{x:a.x-60,y:a.y-60,w:120,h:120};},round:1,a:()=>tutPt(W/2,H*.62),b:()=>tutPt(W/2+50,H*.62-30),start:()=>{p0={x:S.pl.x,y:S.pl.y};},act:()=>Math.hypot(S.pl.x-p0.x,S.pl.y-p0.y)>24,hint:'toque e arraste',chip:'🏃 isso, foge!',after:600},
+  {t:'Cada bicho derrotado solta uma <b>gema azul</b> 💎. Passe por cima dela pra pegar! Toque em OK.',start:()=>{x0=S.xp;near(3,55,75);},tick:()=>{if(performance.now()-(lt||0)>4000&&S.xp<=x0){lt=performance.now();if(!S.foes.some(e=>!e.dead&&Math.hypot(e.x-S.pl.x,e.y-S.pl.y)<90))near(2,45,60);}},act:()=>S.xp>x0,after:500,cpY:66,chip:'💎 derrote um bicho e pegue a gema'},
+  {t:'Juntando gemas você <b>sobe de nível</b> e escolhe um <b>poder</b> novo! ⬆️'},
   {t:'Esse é o botão do meu <b>ESPECIAL</b>. Tá <b>vazio</b>. Cada bicho derrotado enche um pedaço.',r:spB,round:1,start:()=>{S.pl.charge=0;}},
   {t:'Derrote <b>6 bichos</b> pra encher! Toque em OK.',
-    start:()=>{k0=S.kills;},tick:()=>{S.pl.charge=Math.min(100,(S.kills-k0)/6*100);},cpY:66,chip:()=>`⚔️ <b>${Math.min(6,S.kills-k0)}/6</b> · especial <b>${Math.round(S.pl.charge)}%</b>`,act:()=>S.kills-k0>=6,after:500},
-  {t:'O especial tá <b>PRONTO</b>! <b>Toque aqui</b> pra soltar!',r:spB,round:1,g:'tap',start:()=>{S.pl.charge=100;},act:()=>S.pl.charge<100,after:1200,hint:'toque no botão',chip:'💥 ESPECIAL!'},
-  {t:'Os bichos derrotados soltam <b>gemas azuis</b> 💎. Passe por cima delas pra pegar! Toque em OK.',start:()=>{x0=S.xp;},act:()=>S.xp>x0,after:500,cpY:66,chip:'💎 pegue uma gema'},
-  {t:'Juntando gemas você <b>sobe de nível</b> e escolhe um <b>poder</b> novo. Aguenta <b>5 minutos</b>! 💪'}],()=>G.mode==='surv'&&SV===S);}
-function tutMatch(){const S=M3,tl=(r,c)=>{const g=m3Geo();return tutPt(g.x0+(c+.5)*g.ts,g.y0+(r+.5)*g.ts);},pb=()=>{const p=m3PwBtn();return tutCv(p.x-p.r,p.y-p.r,p.r*2,p.r*2);};
+    start:()=>{k0=S.kills;lk=-1;lt=performance.now();near(4,60,85);},tick:()=>{S.pl.charge=Math.min(100,(S.kills-k0)/6*100);const kk=S.kills-k0;if(kk!==lk){lk=kk;lt=performance.now();}if(kk<6&&performance.now()-lt>3500){lt=performance.now();near(2,40,60);}},cpY:66,chip:()=>`⚔️ <b>${Math.min(6,S.kills-k0)}/6</b> · especial <b>${Math.round(S.pl.charge)}%</b>`,act:()=>S.kills-k0>=6,after:500},
+  {t:'O especial tá <b>PRONTO</b>! Olha esse monte de bichos em volta… <b>toque aqui</b> pra soltar!',r:spB,round:1,g:'tap',start:()=>{S.pl.charge=100;near(7,45,70);},act:()=>S.pl.charge<100,after:1400,hint:'toque no botão',chip:'💥 ESPECIAL!'},
+  {t:'Aguenta <b>5 minutos</b>! 💪'}],()=>G.mode==='surv'&&SV===S);}
+/* nome e descrição do especial de um monstrinho (mesma busca do bUlt) */
+function tutUlt(sp){const n=ULTNAME[sp]||ULTNAME[EVOPREV[sp]]||ULTNAME[evoBase(sp)]||'ESPECIAL',d=ULTDESC[sp]||ULTDESC[EVOPREV[sp]]||ULTDESC[evoBase(sp)]||'acerta todos os bichos em volta';return{n,d};}
+/* Combina: acha uma troca que FAZ combinação e aponta a peça que vai completar a fila */
+function tutM3Move(){const S=M3,inG=(gs,r,c)=>gs.some(g=>g.L.some(q=>q[0]===r&&q[1]===c));
+  for(let r=S.rows-1;r>=0;r--)for(let c=0;c<S.cols;c++)for(const [r2,c2] of [[r,c+1],[r-1,c]]){if(r2<0||c2>=S.cols)continue;const a=S.g[r][c],b2=S.g[r2][c2];if(!a||!b2||a.sp||b2.sp)continue;
+    S.g[r][c]=b2;S.g[r2][c2]=a;const gs=m3Find().groups;S.g[r][c]=a;S.g[r2][c2]=b2;if(!gs.length)continue;
+    if(inG(gs,r2,c2))return{a:[r,c],b:[r2,c2]};if(inG(gs,r,c))return{a:[r2,c2],b:[r,c]};}
+  const m=m3AnyMove();return m?{a:[m[0],m[1]],b:[m[2],m[3]]}:null;}
+const TUTPWD=['3 bolas de fogo explodem um quadrado de 3x3 peças cada','uma onda limpa as 2 fileiras de baixo inteirinhas','cipós limpam 2 colunas inteiras de cima a baixo','12 pedras caem e quebram peças pelo tabuleiro','10 raios caem e quebram peças pelo tabuleiro','um tornado arranca 10 peças do tabuleiro'];
+function tutMatch(){const S=M3,tl=(r,c)=>{const g=m3Geo();return tutPt(g.x0+(c+.5)*g.ts,g.y0+(r+.5)*g.ts);},pb=()=>{const p=m3PwBtn();return tutCv(p.x-p.r,p.y-p.r,p.r*2,p.r*2);};let mv=null;S.tutS=1;
+  const pwN=()=>M3PW[S.pwI].n,pwD=()=>TUTPWD[S.pwI]||TUTPWD[5];
   return tutRun('match',[
-  {t:'<b>COMBINA</b>! Toque num monstrinho e <b>arraste</b> pro lado do vizinho pra trocar. Junte <b>3 iguais</b>!',r:()=>{const g=m3Geo();return tutCv(g.x0,g.y0,g.bw,g.bh);},g:'drag',a:()=>tl(S.rows-2,Math.floor(S.cols/2)-1),b:()=>tl(S.rows-2,Math.floor(S.cols/2)),
-    act:()=>S.phase!=='idle',after:1200,hint:'arraste uma peça',chip:'✨ combinando…'},
-  {t:'Juntando peças, eu encho a barra de <b>PODER</b>. Olha ela aqui!',r:pb,round:1},
-  {t:'Enchi pra você ver: o PODER tá <b>PRONTO</b>! <b>Toque em mim</b>! ⚡',r:pb,round:1,g:'tap',start:()=>{S.pw=S.pwMax;},act:()=>S.pw<S.pwMax,after:1400,hint:'toque no poder',chip:'⚡ PODER!'},
-  {t:'4 em fila viram <b>ESPECIAL</b>, em L ou T viram <b>BOMBA</b> e 5 viram <b>ESTRELA</b>. Toque num especial pra explodir! 🌟'}],()=>G.mode==='match'&&M3===S);}
+  {t:'<b>COMBINA</b>! Toque no monstrinho que brilha e <b>arraste</b> na direção da seta: ele troca com o vizinho e forma <b>3 iguais</b>!',start:()=>{mv=tutM3Move();},
+    r:()=>{if(!mv)return null;const a=tl(mv.a[0],mv.a[1]),c=tl(mv.b[0],mv.b[1]),g=m3Geo(),h=tutCv(0,0,g.ts,g.ts).w/2;return{x:Math.min(a.x,c.x)-h,y:Math.min(a.y,c.y)-h,w:Math.abs(c.x-a.x)+2*h,h:Math.abs(c.y-a.y)+2*h};},
+    g:'drag',a:()=>mv&&tl(mv.a[0],mv.a[1]),b:()=>mv&&tl(mv.b[0],mv.b[1]),act:()=>S.phase!=='idle',after:1500,hint:'arraste na direção da seta',chip:'✨ combinando…'},
+  {t:'',wait:1,act:()=>S.phase==='idle',after:400,chip:'✨ combinando…'},
+  {t:'Isso! 🎉 Toda vez que você junta peças, eu encho a minha barra de <b>PODER</b>. Olha ela aqui!',r:pb,round:1},
+  {t:()=>`Enchi pra você ver: o PODER tá <b>PRONTO</b>! O meu poder é <b>${pwN()}</b>: ${pwD()}. <b>Toque em mim</b> pra soltar! ⚡`,r:pb,round:1,g:'tap',start:()=>{S.pw=S.pwMax;},act:()=>S.pw<S.pwMax,after:1800,hint:'toque no poder',chip:()=>'⚡ '+pwN()+'!'},
+  {t:()=>`Viu? <b>${pwN()}</b> quebrou um monte de peças de uma vez, e cada peça quebrada conta pro objetivo da fase! 💥`},
+  {t:'4 em fila viram <b>ESPECIAL</b>, em L ou T viram <b>BOMBA</b> e 5 viram <b>ESTRELA</b>. Toque num especial pra explodir! 🌟'}],()=>G.mode==='match'&&M3===S)
+  .finally(()=>{if(M3===S){S.tutS=0;const go=()=>{if(M3!==S)return;if(S.phase==='idle')m3Check();else setTimeout(go,300);};go();}});}
 function tutTd(){const T2=TD,P2=id=>{const L=TDL;if(!TDW||!L||!L.e[id])return null;const q=tdwP(L,id);return tutCv(q.x,q.y,q.w,q.h);},
   sp=(x,y)=>{const L=TDL;return TDW&&L?tutPt(x*L.f+L.ox,y*L.f+L.oy):tutPt(x,y+tdOY());},sr=(x,y,w,h)=>{const a=sp(x,y),c=sp(x+w,y+h);return{x:a.x,y:a.y,w:c.x-a.x,h:c.y-a.y};},
-  pad=()=>{let bi=0,bd=1e9;TDPADS.forEach((p,i)=>{if(T2.towers.some(t=>t.pad===i))return;const d=Math.abs(p[0]-90)+Math.abs(p[1]-140);if(d<bd){bd=d;bi=i;}});return TDPADS[bi];};let k0=0,P0=null;
+  pad=()=>{let bi=0,bd=1e9;TDPADS.forEach((p,i)=>{if(T2.towers.some(t=>t.pad===i))return;const d=Math.abs(p[0]-90)+Math.abs(p[1]-140);if(d<bd){bd=d;bi=i;}});return TDPADS[bi];};let k0=0,P0=null,n0=0;
   const mPt=()=>{const e=T2.foes.find(f=>!f.dead);const q=e?[e.x,e.y]:tdPos(TDSEG.total*.45);return sp(q[0],q[1]);};
+  const hold=()=>{if(T2.phase==='build')T2.count=Math.max(T2.count||0,420);},U=()=>tutUlt((T2.towers[0]||{}).sp||party[0].sp),TN=()=>{const tw=T2.towers[0];return tw?SP[tw.sp].name:'torre';};
+  const padStep=(t1)=>({t:t1,start:()=>{P0=pad();n0=T2.towers.length;T2.energy=Math.max(T2.energy,tdCost()+20);},tick:hold,r:()=>sr(P0[0]-13,P0[1]-13,26,26),round:1,g:'tap',a:()=>sp(P0[0],P0[1]),act:()=>!!T2.pick||T2.towers.length>n0,after:300,hint:'toque no pedestal',chip:'abrindo…'});
+  const pickStep=(t1)=>({t:t1,when:()=>!!T2.pick,tick:hold,r:()=>sr(9,118,52,64),g:'tap',a:()=>sp(35,150),act:()=>T2.towers.length>n0,after:500,hint:'toque num monstrinho',chip:'🏰 montando…'});
   return tutRun('td',[
   {t:'Os bichos vão marchar pela <b>trilha</b> até o portão! Vamos montar a defesa. 🏰'},
-  {t:'<b>Toque num pedestal</b> pra colocar um monstrinho como torre.',start:()=>{P0=pad();T2.energy=Math.max(T2.energy,tdCost()+20);},r:()=>sr(P0[0]-13,P0[1]-13,26,26),round:1,g:'tap',a:()=>sp(P0[0],P0[1]),act:()=>!!T2.pick||T2.towers.length>0,after:300,hint:'toque no pedestal',chip:'abrindo…'},
-  {t:'Agora <b>escolha</b> quem vai ser a torre!',when:()=>!!T2.pick,r:()=>sr(9,118,52,64),g:'tap',a:()=>sp(35,150),act:()=>T2.towers.length>0,after:500,hint:'toque num monstrinho',chip:'🏰 montando…'},
+  padStep('<b>Toque num pedestal</b> pra colocar um monstrinho como torre.'),
+  pickStep('Agora <b>escolha</b> quem vai ser a torre!'),
   {t:'Torre pronta! <b>Toque aqui</b> pra chamar a <b>primeira onda</b>.',when:()=>!!P2('pilula')&&T2.phase==='build',r:()=>P2('pilula'),g:'tap',act:()=>T2.phase==='wave',after:500,hint:'toque em começar',chip:'⚔️ lá vêm eles!'},
   {t:'A torre ataca <b>sozinha</b>! Cada bicho derrotado enche o <b>ESPECIAL</b> dela, nesse botão. Toque em OK e veja!',when:()=>T2.towers.length>0,r:()=>P2('c1'),
     start:()=>{k0=T2.kills||0;},tick:()=>{const tw=T2.towers[0];if(tw)tw.ch=Math.min(100,((T2.kills||0)-k0)/4*100);},chip:()=>{const tw=T2.towers[0];return `⚔️ especial da torre <b>${tw?Math.round(tw.ch||0):0}%</b>`;},act:()=>T2.towers[0]&&(T2.towers[0].ch||0)>=100,after:300},
-  {t:'O especial <b>ACENDEU</b>! <b>Toque no botão</b> da torre pra soltar!',when:()=>!!P2('c1')&&T2.towers.length>0,r:()=>P2('c1'),g:'tap',act:()=>(T2.towers[0].ch||0)<100,after:1200,hint:'toque no botão',chip:'💥 ESPECIAL!'},
-  {t:'Agora o <b>METEORO</b> ☄️: toque nele…',when:()=>!!P2('meteoro')&&T2.phase==='wave',start:()=>{T2.cdMet=0;},r:()=>P2('meteoro'),g:'tap',act:()=>T2.aim==='met'||(T2.cdMet||0)>0,hint:'toque no meteoro',chip:'☄️ mirando…',after:300},
+  {t:()=>`O especial <b>ACENDEU</b>! O especial do ${TN()} é <b>${U().n}</b>: ${U().d}. <b>Toque no botão</b> pra soltar!`,when:()=>!!P2('c1')&&T2.towers.length>0,r:()=>P2('c1'),g:'tap',act:()=>(T2.towers[0].ch||0)<100,after:1600,hint:'toque no botão',chip:()=>'💥 '+U().n+'!'},
+  {t:'Agora o <b>METEORO</b> ☄️: ele é seu, não precisa de torre. Toque nele…',when:()=>!!P2('meteoro')&&T2.phase==='wave',start:()=>{T2.cdMet=0;},r:()=>P2('meteoro'),g:'tap',act:()=>T2.aim==='met'||(T2.cdMet||0)>0,hint:'toque no meteoro',chip:'☄️ mirando…',after:300},
   {t:'…e depois <b>toque na trilha</b>, onde estão os bichos!',when:()=>T2.aim==='met',g:'tap',r:()=>{const p=mPt();return{x:p.x-34,y:p.y-34,w:68,h:68};},round:1,a:mPt,act:()=>(T2.cdMet||0)>0,after:1200,hint:'toque na trilha',chip:'☄️ BUUM!'},
+  {t:'',wait:1,when:()=>T2.phase==='wave',act:()=>T2.phase==='build',chip:()=>`⚔️ segurando a onda ${T2.wave||1}…`},
+  {t:'Onda vencida! 🎉 A <b>próxima vem mais forte</b>. Você ganhou energia ⚡: bora colocar <b>mais uma torre</b>!',tick:hold},
+  padStep('<b>Toque em outro pedestal</b> pra colocar a segunda torre.'),
+  pickStep('<b>Escolha</b> quem vai ser a segunda torre!'),
+  {t:'Duas torres! 💪 Entre as ondas tem uma <b>contagem</b>: quando ela acaba, a onda vem sozinha.',tick:hold,when:()=>T2.phase==='build'},
+  {t:'Se já estiver pronto, <b>toque aqui</b> pra chamar a onda <b>mais cedo</b>: quanto mais cedo, mais <b>energia ⚡ extra</b> você ganha!',when:()=>!!P2('pilula')&&T2.phase==='build',tick:hold,r:()=>P2('pilula'),g:'tap',act:()=>T2.phase==='wave',after:900,hint:'toque pra chamar mais cedo',chip:'⚡ chamou cedo!'},
   {t:'Você também é o <b>HERÓI</b>: toque na trilha pra correr até lá e segurar os bichos com a espada! ⚔️'}],()=>G.mode==='td'&&TD===T2);}
-function tutExp(){const X=EXP,R=k=>{const L=expLay(),q=['auto','fur','cura'].includes(k)?L.btn.find(b2=>b2.k===k):L[k];return q?tutCv(q.x,q.y,q.w,q.h):null;};let a0=null;
+function tutExp(){const X=EXP,R=k=>{const L=expLay(),q=['auto','fur','cura'].includes(k)?L.btn.find(b2=>b2.k===k):L[k];return q?tutCv(q.x,q.y,q.w,q.h):null;};let a0=null,tw=0;
+  const foes=()=>X.foes.some(e=>!e.dead),hurt=()=>X.units.some(u=>!u.dead&&u.hp<u.max*.85);
   return tutRun('exp',[
-  {t:'<b>EXPEDIÇÃO</b>! O time anda sozinho pela trilha e luta em cada onda. 🗺️'},
-  {t:'<b>Toque na FÚRIA</b>: todo mundo ataca 2x mais rápido! 🔥',when:()=>!!R('fur'),start:()=>{X.sk=X.sk||{fur:0,cura:0,furT:0};X.sk.fur=0;},r:()=>R('fur'),g:'tap',act:()=>(X.sk.fur||0)>0,after:900,hint:'toque na fúria',chip:'🔥 FÚRIA!'},
-  {t:'Agora <b>toque na CURA</b>: recupera a vida do time! ❤️',when:()=>!!R('cura'),start:()=>{X.sk.cura=0;},r:()=>R('cura'),g:'tap',act:()=>(X.sk.cura||0)>0,after:900,hint:'toque na cura',chip:'❤️ curando…'},
-  {t:'O <b>AUTO</b> faz isso sozinho e avança de fase. <b>Toque nele</b> pra ligar ou desligar.',when:()=>!!R('auto'),start:()=>{a0=X.auto;},r:()=>R('auto'),g:'tap',act:()=>X.auto!==a0,after:500,hint:'toque no auto',chip:'🤖 auto!'},
+  {t:'<b>EXPEDIÇÃO</b>! O time anda sozinho pela trilha e luta em cada onda. 🗺️',start:()=>{a0=X.auto;X.auto=false;}},
+  {t:'',wait:1,when:()=>!foes(),act:foes,chip:'🚶 andando… esperando os inimigos'},
+  {t:'Inimigos! <b>Toque na FÚRIA</b>: todo mundo ataca 2x mais rápido! 🔥',when:()=>!!R('fur'),start:()=>{X.sk=X.sk||{fur:0,cura:0,furT:0};X.sk.fur=0;},r:()=>R('fur'),g:'tap',act:()=>(X.sk.fur||0)>0,after:900,hint:'toque na fúria',chip:'🔥 FÚRIA!'},
+  {t:'',wait:1,when:()=>!hurt(),start:()=>{tw=performance.now();},act:()=>hurt()||performance.now()-tw>15000,chip:'⚔️ lutando…'},
+  {t:'Opa, o time <b>perdeu vida</b>! <b>Toque na CURA</b> pra recuperar! ❤️',when:()=>!!R('cura'),start:()=>{X.sk.cura=0;},r:()=>R('cura'),g:'tap',act:()=>(X.sk.cura||0)>0,after:900,hint:'toque na cura',chip:'❤️ curando…'},
   {t:'Essas setas trocam de <b>fase</b>.',when:()=>!!R('left'),r:()=>{const a=R('left'),c=R('right')||a;return{x:a.x,y:a.y,w:c.x+c.w-a.x,h:Math.max(a.h,c.h)};}},
-  {t:'Dá pra deixar ligado e voltar depois: a expedição continua juntando prêmios! 🎁'}],()=>G.mode==='exp'&&EXP===X);}
+  {t:'Esse é o <b>AUTO</b> 🤖: ele usa a FÚRIA e a CURA sozinho e avança de fase. <b>Toque nele pra ligar!</b>',when:()=>!!R('auto'),start:()=>{X.auto=false;},r:()=>R('auto'),g:'tap',act:()=>!!X.auto,after:500,hint:'toque no AUTO',chip:'🤖 auto ligado!'},
+  {t:'Dá pra deixar ligado e voltar depois: a expedição continua juntando prêmios! 🎁'}],()=>G.mode==='exp'&&EXP===X).finally(()=>{try{if(EXP===X&&!flags.tut.exp&&a0!=null)X.auto=a0;flags.expAuto=X.auto;}catch(_){}});}
 
 /* quem chama: um vigia leve, sem mexer no fluxo de cada modo */
 setInterval(()=>{try{if(TUTON||!party.length||document.getElementById('nomeBox'))return;const t=flags.tut||{};

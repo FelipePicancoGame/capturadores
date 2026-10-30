@@ -8950,6 +8950,31 @@ setInterval(()=>{try{if(typeof party==='undefined'||!party.length)return;const s
 /* contador no botão MINIJOGOS do mapa */
 setInterval(()=>{try{const bt=document.querySelector('button[aria-label="Minijogos"]');if(!bt)return;let s=document.getElementById('enBadge');if(!s){s=document.createElement('span');s.id='enBadge';s.style.cssText='position:absolute;right:-4px;bottom:-6px;padding:2px 7px;border-radius:10px;font:700 12px var(--pixel,sans-serif);color:#fff;background:#2a7ad8;border:2px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,.35);pointer-events:none;white-space:nowrap;z-index:2';if(getComputedStyle(bt).position==='static')bt.style.position='relative';bt.appendChild(s);}const e=enSt(),low=e.v<EN.COST;s.style.background=low?'#c23b3b':'#2a7ad8';s.textContent=low?`⚡${e.v} · ${enFmt(enNext())}`:`⚡${e.v}`;}catch(_){}},500);
 /* /ENERGIA */
+/* PAINEL DE ENERGIA + LOJA (dinheiro de verdade) na tela do mapa (30/out, Felipe: "painel de energia no menu de jogo onde fica o menu e mini jogos" e "loja pra comprar coisas com dinheiro real").
+   Pagamento ainda NÃO existe: os botões de compra avisam "em breve" (vai ser pela Apple quando o jogo estiver na App Store).
+   Peças provisórias: usam a placa de saldo do kit Caderno + emoji; a arte própria (ícone ⚡ e botão LOJA) foi pedida ao Buchecha. */
+const LOJAREAL=[{n:'PUNHADO DE CRISTAIS',sub:'50 💎 · US$ 0,99'},{n:'SACO DE CRISTAIS',sub:'150 💎 · US$ 2,99'},{n:'BAÚ DE CRISTAIS',sub:'400 💎 · US$ 6,99'},{n:'ENERGIA CHEIA',sub:'⚡ cheia + 30 · US$ 0,99'},{n:'PASSE DO MÊS',sub:'10 💎/dia · US$ 4,99'},{n:'MONSTRINHO RARO',sub:'+100 💎 · US$ 9,99'}];
+async function lojaReal(){while(true){const tiles=LOJAREAL.map(o=>({n:o.n,sub:o.sub,col:'#3a8ae0'})).concat([{n:'FECHAR',sub:'voltar',col:'#6a6488'}]);
+  const j=await choose(tiles.map(t=>t.n),{tiles,title:'LOJA'});if(j==null||j<0||j>=LOJAREAL.length)return;
+  try{rwToast('Em breve! As compras vão funcionar quando o jogo estiver na App Store.');}catch(_){}tone([523,659],.05);}}
+async function enPainel(){while(true){const e=enSt(),day=qDay(),usd=flags.enGem&&flags.enGem.d===day?flags.enGem.n:0,can=usd<EN.GEMDAY&&gems()>=EN.GEM;
+  const cheia=e.v>=EN.MAX,falta=cheia?0:enNext()+(EN.MAX-e.v-1)*EN.REG,hh=Math.floor(falta/3600e3),mm=Math.ceil((falta%3600e3)/60e3);
+  const q=`⚡ Energia ${e.v} de ${EN.MAX}. Cada minigame usa ${EN.COST}.`+(cheia?' Está cheia!':` Próxima em ${enFmt(enNext())}, cheia em ${hh?hh+'h':''}${mm}min.`);
+  const opts=[...(can?[`${EN.GEM} 💎 = +${EN.GEMQ} ⚡`]:[]),'LOJA','FECHAR'];
+  const j=await choose(opts,{noCancel:true,cadAsk:{q,nf:1,cols:can?['#1f7a3a','#3a8ae0','#8a2f2f']:['#3a8ae0','#8a2f2f']}});
+  if(can&&j===0){flags.gems=gems()-EN.GEM;flags.enGem={d:day,n:usd+1};e.v+=EN.GEMQ;try{saveGame();}catch(_){}try{rwToast(`⚡ +${EN.GEMQ} de energia · −${EN.GEM} 💎`);}catch(_){}continue;}
+  if(opts[j]==='LOJA'){await lojaReal();continue;}return;}}
+(function enHud(){const go=()=>{try{if(!CAD.ready||!CAD.E||!CAD.el){setTimeout(go,500);return;}const E=CAD.E,el=CAD.el;if(E.en)return;
+  const mkb=(lbl,ico,fn)=>{const bt=document.createElement('button');bt.className='cb';bt.setAttribute('aria-label',lbl);bt.style.position='absolute';const im=document.createElement('img');im.src=CADU.saldo;im.alt='';im.draggable=false;im.style.cssText='position:absolute;inset:0;width:100%;height:100%';bt.appendChild(im);
+    const ic=document.createElement('span');ic.textContent=ico;ic.style.cssText='position:absolute;left:6%;top:50%;transform:translateY(-52%);pointer-events:none';bt.appendChild(ic);const tx=document.createElement('span');tx.style.cssText='position:absolute;left:34%;right:6%;top:50%;transform:translateY(-52%);text-align:center;font-family:CadBaloo,Fredoka,Arial,sans-serif;font-weight:800;color:#154c5e;white-space:nowrap;pointer-events:none';bt.appendChild(tx);
+    bt.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();});bt.addEventListener('pointerup',ev=>{ev.preventDefault();ev.stopPropagation();if(G.mode!=='world'||busy||ui.length)return;tone([660,880],.04);P.path=null;P.mark=null;run(fn);});el.appendChild(bt);return {bt,ic,tx};};
+  E.en=mkb('Energia','⚡',enPainel);E.loja=mkb('Loja','💎',lojaReal);E.loja.tx.textContent='LOJA';
+  const _l=cadLayout;cadLayout=function(){_l();try{const r=cadFrame(),k=CAD.k,cx=r.left+r.width/2,T=r.top;const pl=(o,x,y,w,h)=>{o.bt.style.left=(cx+(x-470.5)*k)+'px';o.bt.style.top=(T+y*k)+'px';o.bt.style.width=w*k+'px';o.bt.style.height=h*k+'px';o.ic.style.fontSize=46*k+'px';o.tx.style.fontSize=36*k+'px';};
+    pl(E.en,180,410,195,90);pl(E.loja,600,410,195,90);}catch(_){}};cadLayout();
+  setInterval(()=>{try{const e=enSt(),low=e.v<EN.COST,s=low?`${e.v} · ${enFmt(enNext())}`:`${e.v}/${EN.MAX}`;if(E.en.tx.textContent!==s)E.en.tx.textContent=s;E.en.tx.style.color=low?'#c23b3b':'#154c5e';const bd=document.getElementById('enBadge');if(bd)bd.style.display='none';}catch(_){}},500);
+  }catch(x){setTimeout(go,800);}};setTimeout(go,500);})();
+/* /PAINEL ENERGIA + LOJA */
+
 /* atalhos dos mini games: bolinhas no canto esquerdo da tela do mapa */
 const MINIS=[{n:'EXPEDIÇÃO',k:'exp',go:()=>stageMap('exp')},{n:'MURALHA',k:'wall',go:()=>stageMap('wall')},{n:'TORRES',k:'td',go:()=>stageMap('td')},{n:'HORDA',k:'surv',go:()=>stageMap('surv')},{n:'COMBINA',k:'match',go:()=>matchMode()}];
 const RAIL=[{n:'MINIGAMES',k:'mini',ic:'exp',col:'#e0a83a',go:()=>minigamesMenu()},{n:'BICICLETA',k:'bike',ic:'bike',col:'#2fb8d8',go:()=>bikeToggle()}];

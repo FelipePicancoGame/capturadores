@@ -4408,7 +4408,7 @@ function wArcherMark(e,t,sc){const hy=e.y-(sc*36+10);if(e.acd<=34){const q=1-e.a
   else{const cx=e.x+11*sc/.5,cy=e.y-sc*20;b.save();b.globalAlpha=.85;b.beginPath();b.arc(cx,cy,3,0,Math.PI*2);b.lineWidth=.8;b.strokeStyle='#ff6a5a';b.stroke();ln([[cx-4.5,cy],[cx-1.5,cy]],.7,'#ff6a5a');ln([[cx+1.5,cy],[cx+4.5,cy]],.7,'#ff6a5a');ln([[cx,cy-4.5],[cx,cy-1.5]],.7,'#ff6a5a');ln([[cx,cy+1.5],[cx,cy+4.5]],.7,'#ff6a5a');b.restore();}}
 function wDmg(d){const mv=MOVES[d.mv],stab=mv.type===SP[d.sp].type?1.5:1;return (d.mDmg||1)*(Math.floor((2*d.m.lv/5+2)*mv.pow*d.st.atk/Math.max(8,d.m.lv+5))/50+2)*stab*WL.mDmg*(TRV(d.sp)?1.12:1);}
 function wKill(e,type,src){const w=WL;e.dead=true;w.kills++;if(w.vamp)w.wall=Math.min(w.wallMax,w.wall+w.vamp);wCombo(e);w.dying.push({sp:e.sp,x:e.x,y:e.y,sc:eSc(e),flip:e.flip,t:0,col:TYPECOL[type]||C.white});
-  for(const d of w.defs){const was=d.charge<100;d.charge=Math.min(100,d.charge+(d===src?8:3)*.5*w.chargeMul*d.cMul*(e.boss?4:1));/* 24/out: especial enche na metade da velocidade */if(was&&d.charge>=100){wPop(d.x,d.y-30,'ESPECIAL PRONTO!',C.yellow,7);part(d.x,d.y-6,spCol(d.sp),1,{kind:'ring',sp:0,life:24,grav:0});}}
+  for(const d of (w.tutS?[]:w.defs)){const was=d.charge<100;d.charge=Math.min(100,d.charge+(d===src?8:3)*.5*w.chargeMul*d.cMul*(e.boss?4:1));/* 24/out: especial enche na metade da velocidade */if(was&&d.charge>=100){wPop(d.x,d.y-30,'ESPECIAL PRONTO!',C.yellow,7);part(d.x,d.y-6,spCol(d.sp),1,{kind:'ring',sp:0,life:24,grav:0});}}
   part(e.x,e.y,'rgba(235,235,245,.9)',7,{kind:'smoke',sp:.7,life:26,grav:-.02,size:3});part(e.x,e.y,C.yellow,e.boss?10:3,{kind:'coin',sp:1.2,up:1.6,life:34,grav:.08});
   part(e.x,e.y,TYPECOL[type]||C.white,8,{sp:2});if(e.boss){w.shake=20;w.flash=.6;}}
 
@@ -4516,7 +4516,7 @@ function wDanger(w){wMelee(w);if(w.rushAt&&w.t>=w.rushAt){w.rushAt=0;const n=3+M
   const r=w.wall/w.wallMax;if(r<.3&&w.wall>0&&w.t%48===0)try{tone([70,55],.12,'sine',.08);}catch(e){}
   if(r<.25&&w.wall>0&&!w.lastStand){w.lastStand=1;w.banner={t:110,text:'AGUENTA FIRME!',sub:'Especiais carregados pela metade!'};w.flash=Math.max(w.flash,.4);for(const d of w.defs)d.charge=Math.min(100,(d.charge||0)+50);try{tone([523,659,784,1047],.08);}catch(e){}}}
 function wDangerDraw(w,t){const r=w.wall/w.wallMax;if(r>=.3||w.wall<=0)return;const k=(1-r/.3)*(.55+.45*Math.abs(Math.sin(t/12)));b.save();b.translate(0,-WOY);const g=b.createRadialGradient(W/2,H/2,Math.min(W,H)*.32,W/2,H/2,Math.max(W,H)*.72);g.addColorStop(0,'rgba(255,0,0,0)');g.addColorStop(1,`rgba(210,10,20,${.5*k})`);b.fillStyle=g;b.fillRect(0,0,W,H);b.restore();}
-function wUpdate(){const w=WL;w.t++;wDanger(w);if(flags.wallAuto&&!w.ult&&!w.cards&&!w.paused&&w.t%20===0){const i=w.defs.findIndex(d=>d.charge>=100);if(i>=0)wSpecial(i);}
+function wUpdate(){const w=WL;w.t++;wDanger(w);if(flags.wallAuto&&!w.tutS&&!w.ult&&!w.cards&&!w.paused&&w.t%20===0){const i=w.defs.findIndex(d=>d.charge>=100);if(i>=0)wSpecial(i);}
   for(const p of w.pops){p.y+=p.vy;p.vy=Math.min(.25,p.vy+.07);p.life--;}w.pops=w.pops.filter(p=>p.life>0);
   for(const p of w.parts){p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.life--;p.rot+=.15;}w.parts=w.parts.filter(p=>p.life>0);
   if(w.shake>0)w.shake--;if(w.flash>0)w.flash=Math.max(0,w.flash-.04);if(w.banner&&--w.banner.t<=0)w.banner=null;
@@ -4525,7 +4525,7 @@ function wUpdate(){const w=WL;w.t++;wDanger(w);if(flags.wallAuto&&!w.ult&&!w.car
   if(w.shieldT>0)w.shieldT--;wStormStep(w);
   if(w.regen&&w.t%60===0&&w.wall<w.wallMax){const w0=w.wall;w.wall=Math.min(w.wallMax,w.wall+w.regen);w.regAcc=(w.regAcc||0)+(w.wall-w0);if(w.t%180===0&&w.regAcc>=1){wPop(90,262,`+${Math.round(w.regAcc)} conserto`,'#7fe88a',7);w.regAcc=0;}}
   let _sOk=true;if((w.wave===5||w.wave===10)&&w.bossW!==w.wave&&w.spawned===w.toSpawn-1){if(w._bwW!==w.wave){w._bwW=w.wave;w._bw=0;}if(!w.bossHold){w.bossHold=1;w.spawnT=240;w.banner={t:170,text:'PREPARE-SE!',sub:'O CHEFE ESTÁ CHEGANDO...'};}}
-  if(_sOk&&w.spawned<w.toSpawn&&--w.spawnT<=0){wSpawn();w.spawnT=w.bossW===w.wave?(w.spawned%3===0?30:75):Math.max(12,40-w.wave*3);if(w.surge){const per=Math.ceil(w.toSpawn/w.surge),g=Math.floor(w.spawned/per);if(w.spawned%per===0&&w.spawned<w.toSpawn){w.spawnT=230;w.banner={t:80,text:'LÁ VEM MAIS!',sub:`Grupo ${g+1} de ${w.surge}`};}else w.spawnT=Math.max(8,Math.round(w.spawnT*.6));}}
+  if(_sOk&&!w.tutS&&w.spawned<w.toSpawn&&--w.spawnT<=0){wSpawn();w.spawnT=w.bossW===w.wave?(w.spawned%3===0?30:75):Math.max(12,40-w.wave*3);if(w.surge){const per=Math.ceil(w.toSpawn/w.surge),g=Math.floor(w.spawned/per);if(w.spawned%per===0&&w.spawned<w.toSpawn){w.spawnT=230;w.banner={t:80,text:'LÁ VEM MAIS!',sub:`Grupo ${g+1} de ${w.surge}`};}else w.spawnT=Math.max(8,Math.round(w.spawnT*.6));}}
   wBossStep(w);wThiefStep(w);wCatStep(w);wFrostStep(w);wLobStep(w);
   for(const e of w.foes)if(e.boss&&!e.dead&&!e.sumd&&e.hp<e.max*.5&&(e.sumd=1)){for(let k=0;k<2;k++)wMinion(e.x+(k?14:-14),e.y+6);w.banner={t:60,text:'O CHEFE CHAMOU REFORÇOS!'};w.shake=10;}
   for(const z of w.zaps)z.life--;w.zaps=w.zaps.filter(z=>z.life>0);
@@ -4557,7 +4557,7 @@ function wUpdate(){const w=WL;w.t++;wDanger(w);if(flags.wallAuto&&!w.ult&&!w.car
   if(w.ult){w.ult.t++;if(w.ult.t>=w.ult.dur){w.ult=null;while(w.ultQ.length){const q=w.ultQ.shift();if(w.defs[q]&&w.defs[q].charge>=100){wSpecial(q);break;}}}}
   w.foes=w.foes.filter(e=>!e.dead);
   if(w.wall<=0){if(w.phoenix){w.phoenix=0;w.wall=Math.round(w.wallMax*.6);w.phx={t:0};w.banner={t:100,text:'A MURALHA RENASCEU!',sub:'Fênix da Muralha'};w.flash=.7;w.shake=20;tone([523,784,1047,1568],.1);for(let k=0;k<40;k++)part(Math.random()*180,250+Math.random()*16,Math.random()<.5?'#ff7a2a':'#ffd23f',1,{sp:2.5,up:2,life:40,grav:-.02});}else{w.running=false;w.done('lose');return;}}
-  if(w.spawned>=w.toSpawn&&!w.foes.length&&!w.meteors.length&&!w.fx.some(f=>f.k==='delay'||f.k==='lob')){w.running=false;if(w.wave>=10){w.done('win');return;}wOffer();}}
+  if(!w.tutS&&w.spawned>=w.toSpawn&&!w.foes.length&&!w.meteors.length&&!w.fx.some(f=>f.k==='delay'||f.k==='lob')){w.running=false;if(w.wave>=10){w.done('win');return;}wOffer();}}
 function wMonTot(id,d){const P=v=>Math.round((v-1)*100);if(id==='mdmg')return ` · TOTAL: +${P(d.mDmg)}% → +${P(d.mDmg*1.2*1.05)}%`;if(id==='mspd')return ` · TOTAL: +${P(d.mSpd)}% → +${P(d.mSpd*1.2)}%`;if(id==='mcharge')return ` · TOTAL: +${P(d.cMul)}% → +${P(d.cMul*1.25)}%`;if(id==='mpierce')return ` · TOTAL: ${d.pierce} → ${d.pierce+1}`;if(id==='mmulti')return ` · TOTAL: ${1+d.multi} → ${2+d.multi} tiros`;if(id==='mrng')return ` · TOTAL: +${P(d.rngMul||1)}% → +${P((d.rngMul||1)*1.15)}%`;return '';}
 const MONCARDS=[
   {id:'mrng',r:0,ic:'pierce',max:3,d:(d)=>`${MOVES[d.mv].name} alcança 15% mais longe`,f:(w,d)=>{d.rngMul=(d.rngMul||1)*1.15;w.rangeT=160;}},
@@ -10646,9 +10646,9 @@ async function tutRun(key,steps,alive){flags.tut=flags.tut||{};if(TUTON||flags.t
         bl.style.top=top?'calc(54px + env(safe-area-inset-top))':'';bl.style.bottom=top?'':'calc(18px + env(safe-area-inset-bottom))';
         let a=null,b2=null;try{a=S.a?S.a():tutMid(r);b2=S.b?S.b():null;}catch(_){}
         const key2=S.g+'|'+(a?Math.round(a.x)+','+Math.round(a.y):'')+'|'+(b2?Math.round(b2.x)+','+Math.round(b2.y):'');if(key2!==L.__hk){L.__hk=key2;tutHand(L,S.g,a,b2);}};
-      lay();const iv=setInterval(()=>{if(alive&&!alive()){ok=false;skip=true;go();return;}if(act){let d=false;try{d=S.act();}catch(_){}if(d){clearInterval(iv);try{tone([660,880,1175],.05);}catch(_){}setTimeout(go,S.after||250);return;}}lay();},120);
+      lay();const iv=setInterval(()=>{if(alive&&!alive()){ok=false;skip=true;go();return;}if(S.tick)try{S.tick();}catch(_){}if(S.live){try{const m2=typeof S.t==='function'?S.t():S.t,el=bl.querySelector('.ms');if(el&&el.innerHTML!==m2)el.innerHTML=m2;}catch(_){}}if(act){let d=false;try{d=S.act();}catch(_){}if(d){clearInterval(iv);try{tone([660,880,1175],.05);}catch(_){}setTimeout(go,S.after||250);return;}}lay();},120);
       if(S.start)try{S.start();}catch(_){}});
-    L.__hk=null;}}
+    if(S.end)try{S.end();}catch(_){}L.__hk=null;}}
   finally{end();}
   if(ok){flags.tut[key]=1;try{saveGame();}catch(_){}}}
 /* --- cada parte do jogo --- */
@@ -10658,14 +10658,14 @@ function tutWorld(){const E=CAD.E,w=()=>G.mode==='world'&&!busy;let p0=null;
   {t:'Arrasta o dedo aqui no <b>controle</b> pra gente andar pelo Vale. Tenta aí!',r:()=>tutEl(document.getElementById('stick')),round:1,g:'drag',a:()=>tutMid(tutEl(document.getElementById('stick'))),b:()=>{const m=tutMid(tutEl(document.getElementById('stick')));return m&&{x:m.x+60,y:m.y-20};},
     start:()=>{p0=P.x+','+P.y;},act:()=>P.x+','+P.y!==p0,hint:'arraste o controle',ok:'Pular'},
   {t:'Aqui fica a sua <b>MISSÃO</b>: o que fazer e onde fica. 📜',when:()=>!!tutEl(E.mis),r:()=>tutEl(E.mis)},
-  {t:'Tocou em <b>IR</b>, eu te levo até lá sozinho!',when:()=>!!tutEl(E.ir),r:()=>tutEl(E.ir),round:1,g:'tap'},
   {t:'Todas as missões ficam guardadas nessa <b>lista</b>.',when:()=>!!tutEl(E.lst),r:()=>tutEl(E.lst),g:'tap'},
   {t:'<b>MINIJOGOS</b>! Muralha, Torres, Horda, Expedição e Combina. Na primeira vez de cada um eu te ensino. 🎮',when:()=>!!tutEl(E.mini),r:()=>tutEl(E.mini),g:'tap'},
   {t:'A <b>BICICLETA</b> faz a gente correr bem mais rápido! 🚲',when:()=>!!tutEl(E.bike),r:()=>tutEl(E.bike),g:'tap'},
   {t:'No <b>MENU</b> ficam os monstrinhos, a mochila e a loja.',when:()=>!!tutEl(E.menu),r:()=>tutEl(E.menu),g:'tap'},
   {t:'Moedas, cristais e essências: o nosso <b>tesouro</b>! 💰',when:()=>!!tutEl(E.saldo&&E.saldo[0]),r:()=>{const a=tutEl(E.saldo[0]),c=tutEl(E.saldo[2])||a;return a&&{x:a.x,y:a.y,w:c.x+c.w-a.x,h:a.h};}},
   {t:'Em <b>AJUSTES</b> você muda o som e outras coisinhas. ⚙️',when:()=>!!tutEl(E.cfg),r:()=>tutEl(E.cfg),g:'tap'},
-  {t:'No mato aparecem monstrinhos selvagens. Aí a gente <b>batalha</b> e captura! Boa aventura! 🌿'}],w);}
+  {t:'No mato aparecem monstrinhos selvagens. Aí a gente <b>batalha</b> e captura! 🌿'},
+  {t:'Bora pra primeira missão? <b>Toque em IR</b> e eu te levo até lá!',when:()=>!!tutEl(E.ir),r:()=>tutEl(E.ir),round:1,g:'tap',act:()=>!!MSAUTO||!!P.path,after:300,hint:'toque em IR',ok:'Depois'}],w);}
 function tutBmenu(){const u=ui[ui.length-1];return u&&u.cfg&&u.cfg.bmenu&&u.rects&&u.rects.length?u:null;}
 function tutBR(f){const u=tutBmenu();if(!u)return null;const rs=u.rects.filter(f);if(!rs.length)return null;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;rs.forEach(q=>{x0=Math.min(x0,q.x);y0=Math.min(y0,q.y);x1=Math.max(x1,q.x+q.w);y1=Math.max(y1,q.y+q.h);});return tutCv(x0,y0,x1-x0,y1-y0);}
 function tutBattle(){const u0=tutBmenu(),nm2=(me&&me().moves||[]).length;
@@ -10674,50 +10674,94 @@ function tutBattle(){const u0=tutBmenu(),nm2=(me&&me().moves||[]).length;
   {t:'Esses são os meus <b>GOLPES</b>. A cor mostra o tipo: alguns são super fortes contra certos monstrinhos! 💥',r:()=>tutBR(q=>q.i<nm2)},
   {t:'A <b>CÁPSULA</b> captura monstrinhos selvagens. Funciona melhor quando ele está fraquinho!',when:()=>!B.tr&&!!tutBR(q=>q.i===13),r:()=>tutBR(q=>q.i===13),g:'tap'},
   {t:'Na <b>MOCHILA</b> tem poções pra me curar. ❤️',when:()=>!!tutBR(q=>q.i===10),r:()=>tutBR(q=>q.i===10),g:'tap'},
-  {t:'Toca num golpe pra ver o que ele faz e toca <b>de novo</b> pra eu atacar!',r:()=>tutBR(q=>q.i===0),g:'tap2',act:()=>tutBmenu()!==u0,hint:'toque no golpe',ok:'OK'}],()=>G.mode==='battle'&&!!B);}
-function tutWall(){const w=WL,d=i=>w.defs[Math.min(i,w.defs.length-1)],dr=i=>{const q=d(i);return tutWl(q.x-17,q.y-40,34,48);},dc=i=>{const q=d(i);return tutPt(q.x,tutWy(q.y-14));};let a0=null,o0=null;
+  {t:'Toca num golpe pra ver o que ele faz e toca <b>de novo</b> pra eu atacar!',r:()=>tutBR(q=>q.i===0),g:'tap2',act:()=>tutBmenu()!==u0,hint:'toque no golpe',ok:'OK'},
+  {t:'Isso! Agora espera a vez dele… 👀',when:()=>!B.tr,act:()=>!!tutBmenu()||!B||G.mode!=='battle',hint:'esperando…',ok:'OK'},
+  {t:'Quando ele estiver <b>fraquinho</b>, toque na <b>CÁPSULA</b> pra capturar! Ou ataque de novo pra enfraquecer mais.',when:()=>!B.tr&&!!tutBR(q=>q.i===13),r:()=>tutBR(q=>q.i===13),g:'tap'}],()=>G.mode==='battle'&&!!B);}
+/* 30/out (Felipe): FASE TUTORIAL da Muralha — tudo roteirizado e a pessoa FAZ cada coisa:
+   1 bicho desce → alcance pisca → ele entra e o monstrinho ataca sozinho; carta do especial vazia → derrotar 8 bichos enche a carta (12,5% cada) →
+   carta brilha → tocar na carta solta o especial; arrastar pra cima mira; arrastar pro lado troca; tocar no bicho dá soco. Depois começam as ondas de verdade. */
+function tutWS(o){const w=WL;wSpawn();const e=w.foes[w.foes.length-1];if(!e)return null;e.kind='norm';e.archer=0;e.shield=0;e.elite=false;e.boss=false;e.wdodge=0;e.armorW=0;
+  e.x=o.x??90;e.y=(o.y??20)-(w.ext||0);e.max=e.hp=Math.max(1,Math.round(wAvgDmg()*(o.hp||1.6)));e.spd=(o.spd||.32);e.tutE=1;return e;}
+function tutWallScript(){const w=WL;w.tutS=1;for(const d of w.defs)d.charge=0;w.foes.forEach(e=>e.dead=true);w.foes=[];
+  const d0=()=>w.defs[0],card=i=>{const q=w.defs[i]||w.defs[0];if(!murUI())return null;const r=murLU('c'+(q._mk??i));return r?tutWl(r.x,r.y,r.w,r.h):null;},
+    dr=i=>{const q=w.defs[Math.min(i,w.defs.length-1)];return tutWl(q.x-17,q.y-40,34,48);},dc=i=>{const q=w.defs[Math.min(i,w.defs.length-1)];return tutPt(q.x,tutWy(q.y-14));},
+    eR=e=>e&&!e.dead?tutWl(e.x-16,e.y-30,32,40):null;
+  let e1=null,k0=0,spawnIv=null,sp8=0,a0=null,o0=null,eP=null,pc0=0;
+  const blink=()=>{const q=d0();if(!q)return;w.hold=(Math.floor(performance.now()/450)%2===0)?{i:0,x:q.x,y:q.y,t0:performance.now()-WHOLDMS-400,tut:1}:null;};
   return tutRun('wall',[
-  {t:'Bichos bravos vão descer pra quebrar a nossa <b>MURALHA</b>! A gente ataca sozinho, mas você pode ajudar. 🛡️'},
-  {t:'Segura o dedo em cima de um monstrinho: aparece até onde ele <b>alcança</b>.',r:()=>dr(0),g:'hold',act:()=>!!wHoldOn(WL),after:700,hint:'segure o dedo',ok:'Pular'},
-  {t:'Agora <b>arrasta pra cima</b> e solta: ele ataca bem ali! 🎯',r:()=>dr(Math.min(1,w.defs.length-1)),g:'drag',a:()=>dc(Math.min(1,w.defs.length-1)),b:()=>{const q=d(1);return tutPt(q.x,tutWy(q.y-95));},
-    start:()=>{a0=w.defs.map(q=>q.aim);},act:()=>w.defs.some((q,k)=>q.aim&&q.aim!==a0[k]),after:500,hint:'arraste pra cima',ok:'Pular'},
-  {t:'Arrasta <b>pro lado</b>, em cima de outro monstrinho, pra trocar a ordem deles.',when:()=>w.defs.length>1,r:()=>{const a=dr(0),c=dr(1);return{x:Math.min(a.x,c.x),y:a.y,w:Math.abs(c.x-a.x)+a.w,h:a.h};},g:'drag',a:()=>dc(0),b:()=>dc(1),
-    start:()=>{o0=w.defs[0];},act:()=>w.defs[0]!==o0,after:500,hint:'arraste pro lado',ok:'Pular'},
-  {t:'Quando a carta do monstrinho <b>BRILHAR</b>, toca nela: é o ESPECIAL! ✨',when:()=>murUI()&&!!murLU('c'+(d(0)._mk??0)),r:()=>{const q=murLU('c'+(d(0)._mk??0));return tutWl(q.x,q.y,q.w,q.h);},g:'tap'},
-  {t:'Toca nos bichos pra dar um <b>soco</b>! Barril e catapulta: quando brilharem, toca neles também. 👊',r:()=>tutWl(10,60,160,170),g:'tap',a:()=>tutPt(90,tutWy(150))},
-  {t:'A cada onda vencida você ganha uma <b>carta</b> de poder. Segura 10 ondas! 💪'}],()=>G.mode==='wall'&&WL===w);}
-function tutSurv(){const S=SV;let p0=null;
+  {t:()=>`Bem-vindo à <b>MURALHA</b>, ${tutNome()}! Os bichos bravos descem por essa trilha pra quebrar o nosso muro. 🛡️`,r:()=>tutWl(10,40,160,190)},
+  {t:'Olha, lá vem um! 👀',start:()=>{e1=tutWS({x:90,y:46,spd:.45,hp:2.2});},a:()=>{const r=eR(e1);return r?tutMid(r):null;},g:'tap',
+    act:()=>!e1||e1.dead||Math.hypot(e1.x-d0().x,e1.y-(d0().y-12))<=wRng(w,d0())+30,hint:'esperando ele chegar…',ok:'Pular'},
+  {t:()=>`Esse círculo é o <b>ALCANCE</b> do ${SP[d0().sp].name}. Quando o bicho entra nele, a gente ataca <b>sozinho</b>!`,r:()=>dr(0),tick:blink,end:()=>{w.hold=null;}},
+  {t:'Vai, pega ele! 💥',r:()=>eR(e1)||dr(0),act:()=>!e1||e1.dead,after:600,hint:'atacando…',ok:'Pular'},
+  {t:'Essa é a carta do <b>ESPECIAL</b>. Tá <b>vazia</b> (0%). Cada bicho derrotado enche um pedaço dela.',r:()=>card(0)||dr(0),start:()=>{d0().charge=0;}},
+  {t:()=>`Derrote <b>8 bichos</b> pra encher o especial! <b>${Math.min(8,w.kills-k0)}/8</b> · carta <b>${Math.round(d0().charge)}%</b>`,live:1,r:()=>card(0),
+    start:()=>{k0=w.kills;sp8=0;clearInterval(spawnIv);spawnIv=setInterval(()=>{if(WL!==w||sp8>=8){clearInterval(spawnIv);return;}if(TUTP)return;tutWS({x:34+Math.random()*112,y:14,spd:.4+Math.random()*.15,hp:1.4});sp8++;},900);},
+    tick:()=>{const n=Math.min(8,w.kills-k0);d0().charge=n*12.5;for(let i=1;i<w.defs.length;i++)w.defs[i].charge=0;if(sp8>=8&&!w.foes.some(e=>!e.dead)&&n<8){tutWS({x:90,y:14,spd:.5,hp:1.2});sp8++;}},
+    act:()=>w.kills-k0>=8,after:700,hint:'derrotando…',ok:'Pular',end:()=>{clearInterval(spawnIv);d0().charge=100;}},
+  {t:'A carta <b>BRILHOU</b>! O especial tá pronto. Lá vem um bando… <b>toque na carta</b> pra soltar o ESPECIAL!',r:()=>card(0)||dr(0),g:'tap',
+    start:()=>{d0().charge=100;for(let k=0;k<5;k++)tutWS({x:50+k*20,y:60+(k%2)*14,spd:.25,hp:3});},
+    act:()=>d0().charge<100||!!w.ult,after:1600,hint:'toque na carta',ok:'Pular'},
+  {t:'BUUUM! 💥 Viu a força? Agora a <b>MIRA</b>: arraste um monstrinho <b>pra cima</b>, até o bicho, e solte. Ele ataca ali!',
+    start:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});eP=tutWS({x:150,y:70,spd:.12,hp:6});a0=w.defs.map(q=>q.aim);},
+    r:()=>dr(Math.min(1,w.defs.length-1)),g:'drag',a:()=>dc(Math.min(1,w.defs.length-1)),b:()=>eP&&!eP.dead?tutPt(eP.x,tutWy(eP.y)):tutPt(150,tutWy(90)),
+    act:()=>w.defs.some((q,k)=>q.aim&&q.aim!==a0[k]),after:900,hint:'arraste pra cima',ok:'Pular'},
+  {t:'Agora arraste um monstrinho <b>pro lado</b>, em cima do vizinho, pra <b>trocar a ordem</b> deles.',when:()=>w.defs.length>1,
+    r:()=>{const a=dr(0),c=dr(1);return{x:Math.min(a.x,c.x),y:a.y,w:Math.abs(c.x-a.x)+a.w,h:a.h};},g:'drag',a:()=>dc(0),b:()=>dc(1),
+    start:()=>{o0=w.defs[0];},act:()=>w.defs[0]!==o0,after:600,hint:'arraste pro lado',ok:'Pular'},
+  {t:'Bicho encostou no muro? <b>Toque nele</b> pra dar um SOCO! 👊',
+    start:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});eP=tutWS({x:60,y:MSTOP()-34+(w.ext||0),spd:.05,hp:8});pc0=w.punchCD||0;},
+    r:()=>eR(eP),g:'tap',a:()=>{const r=eR(eP);return r?tutMid(r):null;},act:()=>(w.punchCD||0)!==pc0,after:700,hint:'toque no bicho',ok:'Pular'},
+  {t:'Boa! Barril e catapulta: quando <b>brilharem</b>, toque neles também. A cada onda vencida você escolhe uma <b>carta de poder</b>.'},
+  {t:'Agora é pra valer: segura <b>10 ondas</b>! Vamos lá! 💪',end:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});}}],
+  ()=>G.mode==='wall'&&WL===w).finally(()=>{clearInterval(spawnIv);if(WL===w){w.tutS=0;w.hold=null;w.spawned=0;w.spawnT=90;for(const d of w.defs)d.charge=Math.min(d.charge,100);}});}
+
+/* 30/out (Felipe): fases tutorial JOGÁVEIS — a pessoa faz cada coisa (Horda, Combina, Torres, Expedição). */
+function tutSurv(){const S=SV;let p0=null,k0=0,x0=0;const spB=()=>tutCv(W-46,H-46,44,44);
   return tutRun('surv',[
-  {t:'<b>HORDA</b>! Vem bicho de todo lado, mas eu ataco sozinho. 😤'},
+  {t:'<b>HORDA</b>! Bichos vêm de todo lado, mas eu ataco sozinho. 😤'},
   {t:'<b>Arrasta o dedo</b> na tela pra me levar. Foge deles!',g:'drag',a:()=>tutPt(W/2,H*.62),b:()=>tutPt(W/2+50,H*.62-30),start:()=>{p0={x:S.pl.x,y:S.pl.y};},act:()=>Math.hypot(S.pl.x-p0.x,S.pl.y-p0.y)>24,hint:'arraste na tela',ok:'Pular'},
-  {t:'Quando encher, toca aqui pro meu <b>ESPECIAL</b>! 💥',r:()=>tutCv(W-46,H-46,44,44),round:1,g:'tap'},
-  {t:'Pega as <b>gemas azuis</b> pra subir de nível e escolher poderes. Aguenta 5 minutos!'}],()=>G.mode==='surv'&&SV===S);}
-function tutMatch(){const S=M3,tl=(r,c)=>{const g=m3Geo();return tutPt(g.x0+(c+.5)*g.ts,g.y0+(r+.5)*g.ts);};let m0=null;
+  {t:'Esse é o botão do meu <b>ESPECIAL</b>. Tá <b>vazio</b>. Cada bicho derrotado enche um pedaço.',r:spB,round:1,start:()=>{S.pl.charge=0;}},
+  {t:()=>`Derrote <b>6 bichos</b> pra encher! <b>${Math.min(6,S.kills-k0)}/6</b> · especial <b>${Math.round(S.pl.charge)}%</b>`,live:1,r:spB,round:1,
+    start:()=>{k0=S.kills;},tick:()=>{S.pl.charge=Math.min(100,(S.kills-k0)/6*100);},act:()=>S.kills-k0>=6,after:500,hint:'fugindo e atacando…',ok:'Pular'},
+  {t:'O especial tá <b>PRONTO</b>! <b>Toque aqui</b> pra soltar!',r:spB,round:1,g:'tap',start:()=>{S.pl.charge=100;},act:()=>S.pl.charge<100,after:1200,hint:'toque no botão',ok:'Pular'},
+  {t:'Os bichos derrotados soltam <b>gemas azuis</b> 💎. Passe por cima delas pra pegar!',start:()=>{x0=S.xp;},act:()=>S.xp>x0,after:500,hint:'pegue uma gema',ok:'Pular'},
+  {t:'Juntando gemas você <b>sobe de nível</b> e escolhe um <b>poder</b> novo. Aguenta <b>5 minutos</b>! 💪'}],()=>G.mode==='surv'&&SV===S);}
+function tutMatch(){const S=M3,tl=(r,c)=>{const g=m3Geo();return tutPt(g.x0+(c+.5)*g.ts,g.y0+(r+.5)*g.ts);},pb=()=>{const p=m3PwBtn();return tutCv(p.x-p.r,p.y-p.r,p.r*2,p.r*2);};
   return tutRun('match',[
-  {t:'<b>COMBINA</b>! Arrasta um monstrinho pro lado do vizinho pra trocar. Junta <b>3 iguais</b>!',r:()=>{const g=m3Geo();return tutCv(g.x0,g.y0,g.bw,g.bh);},g:'drag',a:()=>tl(S.rows-2,Math.floor(S.cols/2)-1),b:()=>tl(S.rows-2,Math.floor(S.cols/2)),
-    start:()=>{m0=S.phase;},act:()=>S.phase!=='idle',after:900,hint:'arraste uma peça',ok:'Pular'},
-  {t:'Juntando peças eu carrego o <b>PODER</b>. Quando brilhar, toca em mim! ⚡',r:()=>{const p=m3PwBtn();return tutCv(p.x-p.r,p.y-p.r,p.r*2,p.r*2);},round:1,g:'tap'},
-  {t:'4 em fila viram <b>ESPECIAL</b>, em L ou T viram <b>BOMBA</b> e 5 viram <b>ESTRELA</b>. Toca num especial pra explodir! 🌟'}],()=>G.mode==='match'&&M3===S);}
-function tutTd(){const T2=TD,P2=id=>{const L=TDL;if(!TDW||!L||!L.e[id])return null;const q=tdwP(L,id);return tutCv(q.x,q.y,q.w,q.h);};
+  {t:'<b>COMBINA</b>! <b>Arraste</b> um monstrinho pro lado do vizinho pra trocar. Junte <b>3 iguais</b>!',r:()=>{const g=m3Geo();return tutCv(g.x0,g.y0,g.bw,g.bh);},g:'drag',a:()=>tl(S.rows-2,Math.floor(S.cols/2)-1),b:()=>tl(S.rows-2,Math.floor(S.cols/2)),
+    act:()=>S.phase!=='idle',after:1200,hint:'arraste uma peça',ok:'Pular'},
+  {t:'Juntando peças, eu encho a barra de <b>PODER</b>. Olha ela aqui embaixo!',r:pb,round:1},
+  {t:'Enchi pra você ver: o PODER tá <b>PRONTO</b>! <b>Toque em mim</b>! ⚡',r:pb,round:1,g:'tap',start:()=>{S.pw=S.pwMax;},act:()=>S.pw<S.pwMax,after:1400,hint:'toque no poder',ok:'Pular'},
+  {t:'4 em fila viram <b>ESPECIAL</b>, em L ou T viram <b>BOMBA</b> e 5 viram <b>ESTRELA</b>. Toque num especial pra explodir! 🌟'}],()=>G.mode==='match'&&M3===S);}
+function tutTd(){const T2=TD,P2=id=>{const L=TDL;if(!TDW||!L||!L.e[id])return null;const q=tdwP(L,id);return tutCv(q.x,q.y,q.w,q.h);},
+  sp=(x,y)=>{const L=TDL;return TDW&&L?tutPt(x*L.f+L.ox,y*L.f+L.oy):tutPt(x,y+tdOY());},sr=(x,y,w,h)=>{const a=sp(x,y),c=sp(x+w,y+h);return{x:a.x,y:a.y,w:c.x-a.x,h:c.y-a.y};},
+  pad=()=>{let bi=0,bd=1e9;TDPADS.forEach((p,i)=>{if(T2.towers.some(t=>t.pad===i))return;const d=Math.abs(p[0]-90)+Math.abs(p[1]-140);if(d<bd){bd=d;bi=i;}});return TDPADS[bi];};let k0=0,P0=null;
   return tutRun('td',[
-  {t:'Os bichos vão marchar pela <b>trilha</b> até o portão! Toca nos pedestais pra colocar os monstrinhos como <b>torres</b>. 🏰'},
-  {t:'Esses botões são os <b>ESPECIAIS</b> de cada torre. Quando acender, toca!',when:()=>!!P2('c1'),r:()=>{const a=P2('c1'),c=P2(T2.towers.length>1?'c'+Math.min(6,Math.max(2,T2.towers.length)):'c1')||a;return{x:Math.min(a.x,c.x),y:Math.min(a.y,c.y),w:Math.max(a.x+a.w,c.x+c.w)-Math.min(a.x,c.x),h:Math.max(a.y+a.h,c.y+c.h)-Math.min(a.y,c.y)};},g:'tap'},
-  {t:'O <b>METEORO</b> cai onde você tocar! ☄️',when:()=>!!P2('meteoro'),r:()=>P2('meteoro'),g:'tap'},
-  {t:'Os <b>GUARDAS</b> seguram os bichos na trilha. 🛡️',when:()=>!!P2('escudo'),r:()=>P2('escudo'),g:'tap'},
-  {t:'Quando estiver pronto, toca aqui pra chamar a <b>próxima onda</b>!',when:()=>!!P2('pilula'),r:()=>P2('pilula'),g:'tap'},
-  {t:'Você também é o <b>HERÓI</b>: toca na trilha pra correr até lá e segurar os bichos com a espada! ⚔️'}],()=>G.mode==='td'&&TD===T2);}
-function tutExp(){const X=EXP,R=k=>{const L=expLay(),q=k==='auto'||k==='fur'||k==='cura'?L.btn.find(b2=>b2.k===k):L[k];return q?tutCv(q.x,q.y,q.w,q.h):null;};
+  {t:'Os bichos vão marchar pela <b>trilha</b> até o portão! Vamos montar a defesa. 🏰'},
+  {t:'<b>Toque num pedestal</b> pra colocar um monstrinho como torre.',start:()=>{P0=pad();T2.energy=Math.max(T2.energy,tdCost()+20);},r:()=>sr(P0[0]-13,P0[1]-13,26,26),round:1,g:'tap',a:()=>sp(P0[0],P0[1]),act:()=>!!T2.pick||T2.towers.length>0,after:300,hint:'toque no pedestal',ok:'Pular'},
+  {t:'Agora <b>escolha</b> quem vai ser a torre!',when:()=>!!T2.pick,r:()=>sr(9,118,52,64),g:'tap',a:()=>sp(35,150),act:()=>T2.towers.length>0,after:500,hint:'toque num monstrinho',ok:'Pular'},
+  {t:'Torre pronta! <b>Toque aqui</b> pra chamar a <b>primeira onda</b>.',when:()=>!!P2('pilula')&&T2.phase==='build',r:()=>P2('pilula'),g:'tap',act:()=>T2.phase==='wave',after:500,hint:'toque em começar',ok:'Pular'},
+  {t:()=>{const tw=T2.towers[0];return `A torre ataca <b>sozinha</b>! Cada bicho derrotado enche o <b>ESPECIAL</b> dela: <b>${tw?Math.round(tw.ch||0):0}%</b>`;},live:1,when:()=>T2.towers.length>0,r:()=>P2('c1'),
+    start:()=>{k0=T2.kills||0;},tick:()=>{const tw=T2.towers[0];if(tw)tw.ch=Math.min(100,((T2.kills||0)-k0)/4*100);},act:()=>T2.towers[0]&&(T2.towers[0].ch||0)>=100,after:300,hint:'derrotando…',ok:'Pular'},
+  {t:'O especial <b>ACENDEU</b>! <b>Toque no botão</b> da torre pra soltar!',when:()=>!!P2('c1')&&T2.towers.length>0,r:()=>P2('c1'),g:'tap',act:()=>(T2.towers[0].ch||0)<100,after:1200,hint:'toque no botão',ok:'Pular'},
+  {t:'Agora o <b>METEORO</b> ☄️: toque nele…',when:()=>!!P2('meteoro')&&T2.phase==='wave',start:()=>{T2.cdMet=0;},r:()=>P2('meteoro'),g:'tap',act:()=>T2.aim==='met'||(T2.cdMet||0)>0,hint:'toque no meteoro',ok:'Pular'},
+  {t:'…e depois <b>toque na trilha</b>, onde estão os bichos!',when:()=>T2.aim==='met',g:'tap',a:()=>{const e=T2.foes.find(f=>!f.dead);const q=e?[e.x,e.y]:tdPos(TDSEG.total*.45);return sp(q[0],q[1]);},act:()=>(T2.cdMet||0)>0,after:1200,hint:'toque na trilha',ok:'Pular'},
+  {t:'Você também é o <b>HERÓI</b>: toque na trilha pra correr até lá e segurar os bichos com a espada! ⚔️'}],()=>G.mode==='td'&&TD===T2);}
+function tutExp(){const X=EXP,R=k=>{const L=expLay(),q=['auto','fur','cura'].includes(k)?L.btn.find(b2=>b2.k===k):L[k];return q?tutCv(q.x,q.y,q.w,q.h):null;};let a0=null;
   return tutRun('exp',[
-  {t:'<b>EXPEDIÇÃO</b>! O nosso time anda sozinho pela trilha e luta em cada onda. 🗺️'},
-  {t:'<b>FÚRIA</b> deixa todo mundo mais forte e <b>CURA</b> recupera a vida do time.',when:()=>!!R('fur'),r:()=>{const a=R('fur'),c=R('cura')||a;return{x:Math.min(a.x,c.x),y:Math.min(a.y,c.y),w:Math.max(a.x+a.w,c.x+c.w)-Math.min(a.x,c.x),h:Math.max(a.y+a.h,c.y+c.h)-Math.min(a.y,c.y)};},g:'tap'},
-  {t:'Com o <b>AUTO</b> ligado, ele usa os poderes e avança de fase sozinho.',when:()=>!!R('auto'),r:()=>R('auto'),g:'tap'},
+  {t:'<b>EXPEDIÇÃO</b>! O time anda sozinho pela trilha e luta em cada onda. 🗺️'},
+  {t:'<b>Toque na FÚRIA</b>: todo mundo ataca 2x mais rápido! 🔥',when:()=>!!R('fur'),start:()=>{X.sk=X.sk||{fur:0,cura:0,furT:0};X.sk.fur=0;},r:()=>R('fur'),g:'tap',act:()=>(X.sk.fur||0)>0,after:900,hint:'toque na fúria',ok:'Pular'},
+  {t:'Agora <b>toque na CURA</b>: recupera a vida do time! ❤️',when:()=>!!R('cura'),start:()=>{X.sk.cura=0;},r:()=>R('cura'),g:'tap',act:()=>(X.sk.cura||0)>0,after:900,hint:'toque na cura',ok:'Pular'},
+  {t:'O <b>AUTO</b> faz isso sozinho e avança de fase. <b>Toque nele</b> pra ligar ou desligar.',when:()=>!!R('auto'),start:()=>{a0=X.auto;},r:()=>R('auto'),g:'tap',act:()=>X.auto!==a0,after:500,hint:'toque no auto',ok:'Pular'},
   {t:'Essas setas trocam de <b>fase</b>.',when:()=>!!R('left'),r:()=>{const a=R('left'),c=R('right')||a;return{x:a.x,y:a.y,w:c.x+c.w-a.x,h:Math.max(a.h,c.h)};}},
   {t:'Dá pra deixar ligado e voltar depois: a expedição continua juntando prêmios! 🎁'}],()=>G.mode==='exp'&&EXP===X);}
+
 /* quem chama: um vigia leve, sem mexer no fluxo de cada modo */
 setInterval(()=>{try{if(TUTON||!party.length||document.getElementById('nomeBox'))return;const t=flags.tut||{};
   if(G.mode==='world'&&!t.world&&!busy&&!ui.length&&CAD.ready&&CAD.vis&&!REVEAL)tutWorld();
   else if(G.mode==='battle'&&!t.battle&&B&&tutBmenu())tutBattle();
-  else if(G.mode==='wall'&&!t.wall&&WL&&WL.running&&!WL.cards&&!WL.paused&&!ui.length&&WL.defs.length)tutWall();
+  else if(G.mode==='wall'&&!t.wall&&WL&&WL.running&&!WL.cards&&!WL.paused&&!ui.length&&WL.defs.length&&WL.wave===1)tutWallScript();
   else if(G.mode==='surv'&&!t.surv&&SV&&!SV.cards&&!SV.paused&&!SV.ask&&!ui.length&&SV.pl)tutSurv();
   else if(G.mode==='match'&&!t.match&&M3&&M3.phase==='idle'&&!ui.length&&!M3.intro)tutMatch();
   else if(G.mode==='td'&&!t.td&&TD&&!TD.intro&&!TD.cards&&!TD.paused&&!TD.pick&&!ui.length)tutTd();

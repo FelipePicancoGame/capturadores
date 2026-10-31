@@ -11566,7 +11566,7 @@ async function tutRun(key,steps,alive){flags.tut=flags.tut||{};if(TUTON||flags.t
       const cap=e=>{if(ph!=='A'||!tgt||!hole)return;const p={x:e.clientX,y:e.clientY};if(tutIn(p,hole))toB();};
       addEventListener('pointerdown',cap,true);
       const okb=bl.querySelector('.ok');if(okb)okb.onclick=e=>{e.stopPropagation();try{tone([660,880],.03);}catch(_){}toB();};
-      const lay=()=>{if(ph!=='A')return;let r=null;try{r=S.r?S.r():null;}catch(_){}
+      const lay=()=>{if(ph!=='A')return;/* 31/out (Felipe: tutorial ficou NA FRENTE de uma conversa do jogo e o controle sumiu): se abrir uma conversa/janela do jogo que o passo não espera, o tutorial some e espera ela fechar */if(key==='world'){let rz=null;try{rz=S.r?S.r():null;}catch(_){}if(ui.length>0&&!rz){if(L.style.display!=='none'){L.style.display='none';TUTP=0;}hole=null;return;}if(L.style.display==='none'){L.style.display='';TUTP=1;}}let r=null;try{r=S.r?S.r():null;}catch(_){}
         let a=null,b2=null;try{a=S.a?S.a():tutMid(r);b2=S.b?S.b():null;}catch(_){}
         if(!r&&tgt&&a)r={x:a.x-38,y:a.y-38,w:76,h:76};
         const vw=innerWidth,vh=innerHeight,p=r?8:0;hole=r?{x:r.x-p,y:r.y-p,w:r.w+2*p,h:r.h+2*p}:null;

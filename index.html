@@ -8955,9 +8955,11 @@ function update(){frame++;if(frame%60===0&&party.length&&G.mode!=='title')flags.
   if(!v)return;
   run2=held.includes('b')||v[2]>.95;sp=(run2?2.1:1.25)*Math.max(.45,v[2])*bikeMul();
   P.dir=Math.abs(v[0])>Math.abs(v[1])?(v[0]<0?'left':'right'):(v[1]<0?'up':'down');
-  let moved=false;const nx=P.px+v[0]*sp,ny=P.py+v[1]*sp;
-  if(!blocked(nx,P.py)){P.px=nx;moved=true;}else if(Math.abs(v[1])<.4){const cyT=Math.floor(P.py/16)*16+11;if(Math.abs(cyT-P.py)>.5&&!blocked(nx,cyT)){P.py+=Math.sign(cyT-P.py)*Math.min(1,Math.abs(cyT-P.py));moved=true;}}
-  if(!blocked(P.px,ny)){P.py=ny;moved=true;}else if(Math.abs(v[0])<.4){const cxT=Math.floor(P.px/16)*16+8;if(Math.abs(cxT-P.px)>.5&&!blocked(cxT,ny)){P.px+=Math.sign(cxT-P.px)*Math.min(1,Math.abs(cxT-P.px));moved=true;}}
+  let moved=false;unstick();const nx=P.px+v[0]*sp,ny=P.py+v[1]*sp;
+  /* 31/out (Felipe): esbarrou num canto ou na ponta de um bloqueio = escorrega e contorna até achar a passagem */
+  if(!blocked(nx,ny)){P.px=nx;P.py=ny;moved=true;}
+  else{if(Math.abs(v[0])>.05&&!blocked(nx,P.py)){P.px=nx;moved=true;}if(Math.abs(v[1])>.05&&!blocked(P.px,ny)){P.py=ny;moved=true;}
+    if(!moved)moved=navAround(v,sp);}
   rockTryFree(v);if(!moved)return;
   pathMoved(v,sp,run2);}
 function pathMoved(v,sp,run2){
@@ -9001,6 +9003,23 @@ const NPCOK={};function npcOffRoadMap(m){if(NPCOK[m])return;NPCOK[m]=1;const IN=
    let bd=null;for(const [dx,dy,dn] of [[0,1,'down'],[1,0,'right'],[-1,0,'left'],[0,-1,'up']])if(fc(n.x+dx,n.y+dy)>=12){bd=dn;break;}if(bd)n.dir=bd;}placed.push([n.x,n.y]);}}
 function fineApply(){for(const m in FINEMASK){const M=MAPS[m];if(!M||M.rowsExact)continue;const F=FINEMASK[m],ws=M.warps||[];M.rows=M.rows.map((r,y)=>r.split('').map((c,x)=>{if(c==='D'||ws.some(w=>w[0]===x&&w[1]===y))return c;const fy=y*4+1,fx=x*4+1,b=(F[fy][fx]+F[fy][fx+1]+F[fy+1][fx]+F[fy+1][fx+1]).includes('1');if(b&&!SOLID.includes(c))return 'Z';if(!b&&SOLID.includes(c)&&!'qL~'.includes(c))return '.';return c;}).join(''));}}
 function solidAt(x,y){const tx=Math.floor(x/16),ty=Math.floor(y/16),ch=tileAt(tx,ty),FM=fineOf(G.map);if(!ch||(FM?(FM[y>>2]||'')[x>>2]==='1':SOLID.includes(ch))||doorLocked(tx,ty))return true;if(pushRockAt(tx,ty))return true;if(dunSolid(tx,ty))return true;return !!npcAt(tx,ty);}
+/* ESCORREGAR NOS BLOQUEIOS (31/out, Felipe): se o caminho da frente está fechado, procura do lado (até 20 px) o ponto mais perto onde dá pra seguir
+   e escorrega até lá. Se não houver passagem perto, não força. unstick(): se o herói ficou dentro de um bloqueio, empurra pro lugar livre mais perto. */
+/* procura, num raio de 45 px, o ponto livre mais perto (sem voltar muito) de onde o herói consegue seguir na direção do dedo, e anda pra lá */
+let NAVC=null;
+function navAround(v,sp){const ux=v[0],uy=v[1],l=Math.hypot(ux,uy)||1,dx=ux/l,dy=uy/l,ST=3,R=22,ox=P.px,oy=P.py;
+  const key=Math.round(ox)+','+Math.round(oy)+','+Math.round(dx*8)+','+Math.round(dy*8);if(NAVC&&NAVC.k===key&&!NAVC.go)return false;
+  const N=2*R+1,seen=new Int16Array(N*N).fill(-1),q=[R*N+R];seen[R*N+R]=R*N+R;let goal=-1;
+  for(let h=0;h<q.length&&goal<0;h++){const c=q[h],cx=c%N-R,cy=((c/N)|0)-R;
+    for(const [ex,ey] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=cx+ex,ny=cy+ey;if(nx<-R||nx>R||ny<-R||ny>R)continue;const id=(ny+R)*N+nx+R;if(seen[id]>=0)continue;
+      const X=ox+nx*ST,Y=oy+ny*ST,pr=nx*ST*dx+ny*ST*dy;if(pr<-30||blocked(X,Y))continue;seen[id]=c;q.push(id);
+      if(pr>=-6&&!blocked(X+dx*5,Y+dy*5)&&!blocked(X+dx*10,Y+dy*10)&&!blocked(X+dx*16,Y+dy*16)){goal=id;break;}}}
+  NAVC={k:key,go:goal>=0};if(goal<0)return wallFollow(v,sp);
+  let n=goal,prev=goal;while(seen[n]!==R*N+R&&n!==R*N+R){prev=n;n=seen[n];}const tx=ox+(prev%N-R)*ST,ty=oy+(((prev/N)|0)-R)*ST,d=Math.hypot(tx-ox,ty-oy),m=Math.min(d,Math.max(1,sp));
+  if(d<.01)return false;const ax=ox+(tx-ox)/d*m,ay=oy+(ty-oy)/d*m;if(!blocked(ax,ay)){P.px=ax;P.py=ay;return true;}if(!blocked(ax,oy)){P.px=ax;return true;}if(!blocked(ox,ay)){P.py=ay;return true;}return false;}
+function wallFollow(v,sp){/* sem passagem perto: se o dedo puxa um pouco pro lado, desliza junto da parede */const st=Math.max(1,Math.min(sp,2))*.7;
+  for(const [mx,my] of Math.abs(v[0])>Math.abs(v[1])?[[0,Math.sign(v[1])]]:[[Math.sign(v[0]),0]]){if(!mx&&!my)continue;const x=P.px+mx*st,y=P.py+my*st;if(!blocked(x,y)){P.px=x;P.py=y;return true;}}return false;}
+function unstick(){if(!blocked(P.px,P.py))return;for(let r=1;r<=24;r++){for(let a=0;a<16;a++){const x=P.px+Math.round(Math.cos(a*Math.PI/8)*r),y=P.py+Math.round(Math.sin(a*Math.PI/8)*r);if(!blocked(x,y)){P.px=x;P.py=y;return;}}}}
 function blocked(x,y){return solidAt(x-5,y-4)||solidAt(x+5,y-4)||solidAt(x-5,y+1)||solidAt(x+5,y+1);}
 function inputVec(){let x=0,y=0;if(held.includes('left'))x--;if(held.includes('right'))x++;if(held.includes('up'))y--;if(held.includes('down'))y++;
   if(x||y){const l=Math.hypot(x,y);return [x/l,y/l,.9];}

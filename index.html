@@ -9093,6 +9093,57 @@ setInterval(()=>{try{if(typeof flags==='undefined'||!flags)return;
   if(!unlOk('auto')){if(flags.wallAuto)flags.wallAuto=false;if(flags.tdAuto)flags.tdAuto=false;if(!unlTut()){if(flags.expAuto!==false)flags.expAuto=false;try{if(EXP&&EXP.auto&&G.mode==='exp')EXP.auto=false;}catch(_){}}}
 }catch(_){}},700);
 /* /DESBLOQUEIO 2x E AUTO */
+/* AJUSTES NOS MINIJOGOS + GRÁFICOS + AVISO DE FPS (31/out, Felipe: "dentro de cada minijogo um botão de ajustes pra desligar som, efeitos...;
+   se o FPS cair, pausa e ensina a pessoa a diminuir os gráficos, ali perto") */
+const GFXN=['ALTO','MÉDIO','LEVE'];function gfxLv(){return Math.max(0,Math.min(2,(flags&&flags.gfx)|0));}
+window.__GFX=0;
+(function(){try{const P=CanvasRenderingContext2D.prototype;
+  const pd=(o,k)=>{while(o){const d=Object.getOwnPropertyDescriptor(o,k);if(d)return d;o=Object.getPrototypeOf(o);}return null;};
+  const dS=pd(P,'shadowBlur');if(dS&&dS.set)Object.defineProperty(P,'shadowBlur',{configurable:true,get(){return dS.get.call(this);},set(v){dS.set.call(this,window.__GFX>=1?0:v);}});
+  const dF=pd(P,'filter');if(dF&&dF.set)Object.defineProperty(P,'filter',{configurable:true,get(){return dF.get.call(this);},set(v){dF.set.call(this,window.__GFX>=2?'none':v);}});
+  const dQ=pd(P,'imageSmoothingQuality');if(dQ&&dQ.set)Object.defineProperty(P,'imageSmoothingQuality',{configurable:true,get(){return dQ.get.call(this);},set(v){dQ.set.call(this,window.__GFX>=2?'low':v);}});
+}catch(e){}})();
+/* brilhos (glowAt) são só enfeite: EFEITOS desligados ou gráfico LEVE tiram */
+{const _gl=glowAt;glowAt=function(x,y,r,col,a){if(window.__GFX>=2||(flags&&flags.glowOff))return;return _gl(x,y,r,col,a);};}
+/* resolução da tela: MÉDIO e LEVE desenham com menos pontos (o celular fraco aguenta) */
+{const _bs=bestS;bestS=function(w,h,cap){const s=_bs(w,h,cap);return window.__GFX>=2?Math.min(s,2):window.__GFX>=1?Math.min(s,3):s;};}
+function gfxApply(){const g=gfxLv();if(window.__GFX===g)return;window.__GFX=g;try{const w=W,h=H;W=0;setScreen(w,h,4);}catch(e){}}
+setInterval(()=>{try{if(typeof flags!=='undefined'&&flags)gfxApply();}catch(e){}},1000);
+const MGMODES={wall:1,td:1,surv:1,match:1,exp:1,math:1};
+function mgPausedNow(){try{const m=G.mode;return (m==='wall'&&WL&&WL.paused)||(m==='td'&&TD&&TD.paused)||(m==='surv'&&SV&&SV.paused);}catch(e){return false;}}
+let MGCFG=0;
+async function gameCfg(hl){if(MGCFG)return;MGCFG=1;try{try{autoPause();}catch(e){}
+  while(true){const mOn=musOn(),sOn=!flags.sfxOff,eOn=!flags.glowOff,tOn=!flags.fxOff,g=gfxLv();
+    const L=[`GRÁFICOS: ${GFXN[g]}`,`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`BRILHOS: ${eOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${tOn?'LIGADO':'DESLIGADO'}`,'VOLTAR'];
+    const j=await choose(L,{noCancel:true,cadAsk:{q:hl?'Toque em GRÁFICOS até ficar MÉDIO ou LEVE':'AJUSTES — toque pra mudar',nf:1,cols:[g===0?'#1f7a3a':g===1?'#a0661a':'#8a2f2f',mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',eOn?'#1f7a3a':'#8a2f2f',tOn?'#1f7a3a':'#8a2f2f','#6a4a2a']}});
+    if(j===0){flags.gfx=(g+1)%3;saveGame();gfxApply();hl=0;try{tone([660,880],.05);}catch(e){}continue;}
+    if(j===1){flags.music=!mOn;saveGame();continue;}
+    if(j===2){flags.sfxOff=!flags.sfxOff;saveGame();continue;}
+    if(j===3){flags.glowOff=!flags.glowOff;saveGame();continue;}
+    if(j===4){flags.fxOff=!flags.fxOff;saveGame();continue;}
+    break;}}finally{MGCFG=0;}}
+/* botão ⚙ dentro do minijogo: aparece no PAUSE (Muralha, Torre, Horda) e sempre nos que não têm pause */
+(function(){try{const el=document.createElement('button');el.id='mgCfg';el.setAttribute('aria-label','Ajustes');el.textContent='⚙ AJUSTES';
+  el.style.cssText='position:fixed;z-index:40;display:none;padding:8px 14px;border-radius:14px;border:2px solid #fff3c8;background:linear-gradient(#ffd23f,#e0a020);color:#3a2a10;font:700 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 0 rgba(0,0,0,.35);touch-action:none';
+  el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();gameCfg().catch(()=>{});});
+  (document.body||document.documentElement).appendChild(el);
+  setInterval(()=>{try{const m=G.mode,inMg=!!MGMODES[m]&&!MGCFG,pz=mgPausedNow(),always=m==='match'||m==='exp'||m==='math';let show=inMg&&(pz||(always&&!ui.length));
+      el.style.display=show?'block':'none';if(!show)return;
+      if(pz){el.style.left='50%';el.style.transform='translateX(-50%)';el.style.top='';el.style.bottom='calc(14% + env(safe-area-inset-bottom))';el.style.opacity='1';el.style.fontSize='16px';}
+      else{el.style.left='calc(6px + env(safe-area-inset-left))';el.style.transform='';el.style.bottom='';el.style.top='42%';el.style.opacity='.8';el.style.fontSize='12px';el.textContent='⚙';}
+      if(pz)el.textContent='⚙ AJUSTES';}catch(e){}},250);
+}catch(e){}})();
+/* vigia de FPS: se o minijogo ficar lento por ~8 s, pausa e ensina a diminuir os gráficos ali mesmo */
+(function(){let n=0,t0=0,low=0,asked=0;function tick(ts){try{if(!t0)t0=ts;n++;const dt=ts-t0;
+    if(dt>=4000){const fps=n*1000/dt;n=0;t0=ts;const m=G.mode,run=MGMODES[m]&&!ui.length&&!mgPausedNow()&&!document.hidden&&!MGCFG;
+      if(run&&fps<40)low++;else low=0;
+      if(low>=2&&!asked&&gfxLv()<2&&!(flags.fpsAsk&&Date.now()-flags.fpsAsk<36e5)){asked=1;low=0;flags.fpsAsk=Date.now();saveGame();
+        (async()=>{try{autoPause();}catch(e){}await say(`O jogo está lento neste celular (${Math.round(fps)} quadros por segundo). Pra jogar melhor, diminua os GRÁFICOS.`);
+          await say('É só tocar em ⚙ AJUSTES (aparece quando você pausa) e mudar GRÁFICOS pra MÉDIO ou LEVE. Vou abrir pra você agora!');await gameCfg(1);})().catch(()=>{});}}}catch(e){}requestAnimationFrame(tick);}
+  requestAnimationFrame(tick);})();
+
+/* /AJUSTES NOS MINIJOGOS */
+
 /* COMBINA COM MAIS AÇÃO E ANIMAÇÃO (30/out, Felipe: "no jogo combina eu quero mais ação e mais animação nele").
    1) peças caem com gravidade e quicam ao chegar; 2) peças "respiram" e uma dá um pulinho de vez em quando;
    3) troca com as duas peças crescendo no meio do caminho; 4) estouro: a peça gira e cresce antes de sumir + faíscas;

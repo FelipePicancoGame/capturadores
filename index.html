@@ -9483,7 +9483,7 @@ if(typeof m3cPoder==='function'){const _pw=m3cPoder;m3cPoder=function(S,R0,t){co
   let dx=0,dy=0,rot=0,sc=ps;
   if(nerv){dx=Math.sin(t/3.2)*R.w*.016;rot=Math.sin(t/4.5)*.035;}
   if(full){const k=(t%120)/120;if(k<.4){const env=Math.sin(k/.4*Math.PI);rot+=Math.sin(k/.4*Math.PI*4)*.08*env;}}
-  if(S.cele){const k=Math.min(1,S.cele.t/40),ek=k*k*(3-2*k);dy-=Math.sin(k*Math.PI)*R.h*.22;rot+=ek*Math.PI*2;}
+  if(S.cele){const k=Math.min(1,S.cele.t/40);dy-=Math.sin(k*Math.PI)*R.h*.18;rot+=Math.sin(k*Math.PI*2)*.1;}
   if(S.winJ){dy-=Math.abs(Math.sin(S.winJ*.18))*R.h*.12;}
   b.save();b.translate(pb.x+dx,pb.y+dy);if(rot)b.rotate(rot);if(sc!==1)b.scale(sc,sc);b.translate(-pb.x,-pb.y);_pw(S,R0,t);
   /* faixa de brilho passando (só dentro do círculo do botão) */
@@ -9537,6 +9537,34 @@ if(typeof m3cObj==='function'){const _ob=m3cObj;m3cObj=function(S,L){m3fxSway(L.
    MÉDIO e LEVE continuam com menos pontos (os limites dos ajustes de gráfico continuam valendo). */
 {const _ps=portraitScreen;portraitScreen=function(){if(!window.__m3hq)return _ps();const land=innerWidth>innerHeight;document.body.classList.toggle('rotp',land);const ar=land?innerWidth/innerHeight:innerHeight/innerWidth;setScreen(180,Math.max(320,Math.min(400,Math.round(180*ar))),6);};}
 {const _mm=matchMode;matchMode=async function(){window.__m3hq=1;try{return await _mm.apply(this,arguments);}finally{window.__m3hq=0;}};}
+/* MONSTRINHO VIVO TIPO O REI (31/out 15h13, Felipe: "quero que tenha animação dos monstrinhos tipo o rei"):
+   o retrato do botão do poder agora usa as ANIMAÇÕES do próprio monstrinho (as mesmas da batalha) e reage ao jogo:
+   parado = respirando (idle) · jogada que não deu = leva susto (damage) · combo de 3+ = comemora (cele; sem cele = attack) · poder = ataca (attack)
+   · 3 jogadas ou menos = fica assustado de tempos em tempos · venceu = comemora sem parar · perdeu = derrotado (defeat).
+   Monstrinho sem animação continua com a foto parada. */
+const M3REI={c:null,x:null};
+function m3reiAct(a){const S=M3;if(S)S.mAct={a,t:0};}
+function m3reiDraw(sp){const S=M3,base=String(sp).replace('*','');if(!S||!MONANIM[base])return null;
+  if(!M3REI.c){const c=document.createElement('canvas');c.width=c.height=256;M3REI.c=c;M3REI.x=c.getContext('2d');}
+  const C=M3REI.c,X=M3REI.x,lose=S.ending&&!S.won,win=S.won&&(S.fin||S.endP);
+  let act='idle',fix;
+  if(lose){act='defeat';S.__lt=(S.__lt||0)+1;fix=Math.floor(S.__lt*(MONANIMFPS.defeat||10)/60);}
+  else if(S.mAct){act=S.mAct.a;fix=Math.floor(S.mAct.t*(MONANIMFPS[act]||10)/60);}
+  else if(win)act='cele';
+  if(act==='cele'&&!('cele' in MONANIM[base]))act='attack';
+  X.setTransform(1,0,0,1,0,0);X.clearRect(0,0,256,256);{const k=256/58;X.setTransform(k,0,0,k,128,128-64*k);}
+  const ob=b,od=MONDIR,ow=MONWALKCTX;let ok=false;b=X;MONDIR=null;MONWALKCTX=0;try{ok=monAnimDraw(sp,act,12,0,fix);}catch(er){ok=false;}finally{b=ob;MONDIR=od;MONWALKCTX=ow;}
+  if(!ok)return null;C.complete=true;C.naturalWidth=256;C.naturalHeight=256;return C;}
+{const _mi=m3Img;m3Img=function(sp){if(window.__m3por){const r=m3reiDraw(sp);if(r)return r;}return _mi(sp);};}
+if(typeof m3cPoder==='function'){const _pw=m3cPoder;m3cPoder=function(S,R0,t){window.__m3por=1;try{return _pw(S,R0,t);}finally{window.__m3por=0;}};}
+/* quando reage */
+{const _pp=m3Power;m3Power=function(){const S=M3,ok=S&&S.phase==='idle'&&S.pw>=S.pwMax;_pp.apply(this,arguments);if(ok)m3reiAct('attack');};}
+{const _b=m3Blast;m3Blast=function(cells,born,label){const S=M3;_b(cells,born,label);if(S&&S.pend&&!S.fin&&S.combo>=3&&!(S.mAct&&(S.mAct.a==='attack'||S.mAct.a==='cele')))m3reiAct('cele');};}
+{const _u=matchUpdate;matchUpdate=function(){const S0=M3,ph0=S0&&S0.phase,mv0=S0?S0.moves:0,mh0=S0?S0.mh:0;_u();const S=M3;if(!S||S!==S0)return;
+  if(ph0==='swap'&&S.phase==='back')m3reiAct('damage');
+  if(S.moves<mv0&&S.moves===3&&!S.won)m3reiAct('damage');
+  const nerv=S.moves<=3&&S.moves>0&&!S.won&&!S.ending;if(nerv&&!S.mAct&&S.t%110===0)m3reiAct('damage');
+  if(S.mAct){S.mAct.t++;const _M=MONANIM[String((party[0]||{}).sp||'').replace('*','')]||{},_a=(S.mAct.a==='cele'&&!('cele' in _M))?'attack':S.mAct.a,n=_M[_a];const len=n&&n.ok?n.n*60/(MONANIMFPS[S.mAct.a]||10):40;if(S.mAct.t>len+4)S.mAct=null;}};}
 /* /COMBINA EFEITOS DOS CONCORRENTES */
 
 

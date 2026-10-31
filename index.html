@@ -9404,6 +9404,74 @@ function m3vBokeh(){const S=M3;if(!S)return;const B=M3V.bok;if(!B.length)for(let
 /* tocar no monstrinho antes do poder encher: ele pula e diz quanto falta */
 {const _t=matchTap;matchTap=function(x,y){const S=M3;if(S&&S.pw<S.pwMax){const pb=m3PwBtn();if(Math.hypot(x-pb.x,y-pb.y)<pb.r+4){S.mh=20;const f=Math.ceil(S.pwMax-S.pw);S.pwMsg={t:0,s:`Combine mais ${f} peça${f>1?'s':''} da cor dele!`};try{tone([440,554],.04);}catch(e){}return;}}return _t(x,y);};}
 /* /COMBINA MAIS VIVO */
+/* COMBINA EFEITOS DOS CONCORRENTES (31/out, Felipe: "quero todas"). Só move, gira e muda o tamanho — a cor da arte do Buchecha não muda.
+   1) BOTÕES: o botão SAIR e o botão do PODER afundam e pulam quando você toca; uma faixa de brilho passa pelo botão do poder
+      (a cada 4 s; a cada 1,5 s quando o poder está pronto) e ele balança quando está pronto.
+   2) MONSTRINHO REAGE: com 3 jogadas ou menos ele treme e sua (gotinhas); em combo de 3+ ele dá um salto com giro e solta estrelinhas;
+      ao vencer a fase ele comemora pulando.
+   3) CENÁRIO VIVO: folhas (arte "folha" do Buchecha, dos golpes) caem devagar pelo fundo; as placas de FASE, JOGADAS e OBJETIVO
+      flutuam de leve; a placa de JOGADAS dá um pulinho a cada jogada gasta.
+   4) JOGAR SEM ESPERAR: dá pra deslizar enquanto as peças ainda caem. A jogada fica marcada (brilho nas 2 peças) e acontece
+      no instante em que o tabuleiro para, se as duas peças continuarem no lugar. */
+const M3FX={press:{},leaves:[]};
+function m3fxPress(k){M3FX.press[k]={t:0};}
+function m3fxPs(k){const p=M3FX.press[k];if(!p)return 1;const t=p.t;return t<4?1-.14*(t/4):t<10?.86+.24*((t-4)/6):t<16?1.1-.1*((t-10)/6):1;}
+/* 1) SAIR afunda/pula: espera o pulinho antes de sair */
+{const _t=matchTap;matchTap=function(x,y){const S=M3;if(S&&typeof m3cOn==='function'&&m3cOn()){const R=m3R(m3cL().s);
+    if(x>=R.x&&x<=R.x+R.w&&y>=R.y&&y<=R.y+R.h){if(S.__sairP)return;if(S.phase==='idle'||S.phase==='fall'){S.__sairP=1;m3fxPress('sair');try{tone([523],.03);}catch(e){}setTimeout(()=>{S.__sairP=0;if(M3===S)_t(x,y);},170);return;}}
+    const pb=m3PwBtn();if(Math.hypot(x-pb.x,y-pb.y)<pb.r+4)m3fxPress('poder');}
+  return _t(x,y);};}
+/* 2) PODER: aperto, brilho, balanço quando pronto, monstrinho nervoso / comemorando */
+if(typeof m3cPoder==='function'){const _pw=m3cPoder;m3cPoder=function(S,R0,t){const pb=m3PwBtn(),R=m3R(R0),full=S.pw>=S.pwMax;
+  const ps=m3fxPs('poder'),nerv=S.moves<=3&&S.moves>0&&!S.won&&!S.ending&&!S.fin&&S.L.type!=='free';
+  let dx=0,dy=0,rot=0,sc=ps;
+  if(nerv){dx=Math.sin(t*1.9)*R.w*.018;rot=Math.sin(t*1.3)*.03;}
+  if(full&&Math.floor(t/120)%1===0){const k=(t%120)/120;if(k<.25)rot+=Math.sin(k/.25*Math.PI*4)*.09;}
+  if(S.cele){const k=S.cele.t/36;dy-=Math.sin(Math.min(1,k)*Math.PI)*R.h*.22;rot+=Math.min(1,k)*Math.PI*2;}
+  if(S.winJ){dy-=Math.abs(Math.sin(S.winJ*.18))*R.h*.12;}
+  b.save();b.translate(pb.x+dx,pb.y+dy);if(rot)b.rotate(rot);if(sc!==1)b.scale(sc,sc);b.translate(-pb.x,-pb.y);_pw(S,R0,t);
+  /* faixa de brilho passando (só dentro do círculo do botão) */
+  const per=full?90:240,k2=(t%per)/40;if(k2<1){const r=R.w*.47;b.save();b.beginPath();b.arc(pb.x,pb.y,r,0,Math.PI*2);b.clip();b.globalCompositeOperation='lighter';
+    const x0=pb.x-r*1.6+k2*r*3.2,g=b.createLinearGradient(x0-r*.35,pb.y-r,x0+r*.35,pb.y+r);g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(.5,'rgba(255,255,255,.55)');g.addColorStop(1,'rgba(255,255,255,0)');
+    b.fillStyle=g;b.fillRect(pb.x-r,pb.y-r,r*2,r*2);b.restore();}
+  b.restore();
+  /* gotinhas de suor quando está nervoso */
+  if(nerv){for(let i=0;i<2;i++){const ph=((t+i*22)%44)/44,sx=pb.x+(i?1:-1)*R.w*.3,sy=pb.y-R.h*.3+ph*R.h*.25,z=R.w*.05;b.save();b.globalAlpha=1-ph;b.fillStyle='#7fd0ff';b.strokeStyle='#1a5a9a';b.lineWidth=Math.max(.6,z*.2);
+      b.beginPath();b.moveTo(sx,sy-z*1.4);b.quadraticCurveTo(sx+z,sy,sx,sy+z*.8);b.quadraticCurveTo(sx-z,sy,sx,sy-z*1.4);b.fill();b.stroke();b.restore();}}};}
+/* combo de 3+ = salto com giro + estrelinhas; vencer = pulos de comemoração */
+{const _b=m3Blast;m3Blast=function(cells,born,label){const S=M3;_b(cells,born,label);if(!S||!S.pend||S.fin)return;
+  if(S.combo>=3&&!S.cele){S.cele={t:0};try{const pb=m3PwBtn();for(let i=0;i<12;i++){const a=i/12*Math.PI*2,v=2+Math.random()*1.5;S.parts.push({x:pb.x,y:pb.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-1,life:28,col:i%2?'#fff3a0':'#ffd23f'});}}catch(e){}}};}
+/* 3) placas flutuando + pulinho da placa de JOGADAS */
+function m3fxSway(R0,ph,hop,fn){const S=M3,t=S?S.t:0,R=m3R(R0),a=Math.sin(t/55+ph)*.018,dy=Math.sin(t/38+ph)*R.h*.025-(hop||0),px=R.x+R.w/2,py=R.y;
+  const ox=TX,oy=TY;b.save();b.translate(px,py+dy);b.rotate(a);b.translate(-px,-py);TX+= -Math.sin(a)*R.h*.5;TY+=dy;try{fn();}finally{b.restore();TX=ox;TY=oy;}}
+if(typeof m3cPlaca==='function'){const _pl=m3cPlaca;m3cPlaca=function(R0,tit,val,valCol,fo){const S=M3;let hop=0;
+  if(S&&tit==='JOGADAS'&&S.jh>0){const k=S.jh/14;hop=Math.sin(k*Math.PI)*m3R(R0).h*.12;}
+  m3fxSway(R0,tit==='FASE'?0:1.7,hop,()=>_pl(R0,tit,val,valCol,fo));};}
+if(typeof m3cObj==='function'){const _ob=m3cObj;m3cObj=function(S,L){m3fxSway(L.o,3.1,0,()=>_ob(S,L));};}
+/* folhas do Buchecha caindo devagar pelo fundo (desenhadas logo depois do fundo, atrás do tabuleiro) */
+{const _bk=m3vBokeh;m3vBokeh=function(){_bk();const S=M3;if(!S||typeof GFX==='undefined'||!GFX.folha||!gfxI(GFX.folha.voo[0]))return;const L=M3FX.leaves,ts=m3Geo().ts;
+  if(!L.length)for(let i=0;i<6;i++)L.push({x:Math.random(),y:Math.random(),v:.0009+Math.random()*.0008,ph:Math.random()*6,s:.55+Math.random()*.35,r:Math.random()*6});
+  b.save();b.globalAlpha=.9;for(const p of L){p.y+=p.v;p.r+=.012;if(p.y>1.06){p.y=-.06;p.x=Math.random();}const x=p.x*W+Math.sin(S.t/45+p.ph)*W*.04,y=p.y*H;
+    gfxDraw(GFX.folha.voo,Math.floor(S.t/8+p.ph*3)%6,x,y,ts*p.s*1.4,p.r+Math.sin(S.t/30+p.ph)*.5);}b.restore();};}
+/* 4) jogada marcada enquanto as peças caem */
+(function(){let st=null;
+  stage.addEventListener('pointerdown',e=>{st=null;const S=M3;if(G.mode!=='match'||!S||ui.length||S.tutS||S.ending||S.fin||S.won)return;if(S.phase!=='fall'&&S.phase!=='pop')return;
+    const [x,y]=toCanvas(e),G2=m3Geo(),c=Math.floor((x-G2.x0)/G2.ts),r=Math.floor((y-G2.y0)/G2.ts);st=(r>=0&&c>=0&&r<S.rows&&c<S.cols)?{x,y,r,c,id:e.pointerId}:null;},true);
+  stage.addEventListener('pointermove',e=>{if(!st||e.pointerId!==st.id)return;const S=M3;if(G.mode!=='match'||!S)return;const [x,y]=toCanvas(e),dx=x-st.x,dy=y-st.y,G2=m3Geo();if(Math.hypot(dx,dy)<G2.ts*.35)return;
+    const h=Math.abs(dx)>Math.abs(dy),r2=st.r+(h?0:Math.sign(dy)),c2=st.c+(h?Math.sign(dx):0);const a=m3Cell(st.r,st.c),q=m3Cell(r2,c2);
+    if(a&&q){if(S.phase==='idle'){S.sel=null;S.idle=0;S.anim={t:0,p:[st.r,st.c,r2,c2]};S.phase='swap';S.swT=performance.now();}else{S.qmv={p:[st.r,st.c,r2,c2],a,q};try{tone([700],.02);}catch(er){}}}st=null;},true);
+  addEventListener('pointerup',()=>{st=null;},true);})();
+{const _u=matchUpdate;matchUpdate=function(){const S0=M3,mv0=S0?S0.moves:0;_u();const S=M3;if(!S||S!==S0)return;
+  for(const k in M3FX.press){M3FX.press[k].t++;if(M3FX.press[k].t>16)delete M3FX.press[k];}
+  if(S.cele){S.cele.t++;if(S.cele.t>36)S.cele=null;}
+  if(S.moves<mv0&&!S.fin)S.jh=14;if(S.jh>0)S.jh--;
+  if(S.won&&(S.endP||S.fin))S.winJ=(S.winJ||0)+1;
+  if(S.qmv){const Q=S.qmv,[r1,c1,r2,c2]=Q.p;if(S.ending||S.fin||S.won||S.tutS){S.qmv=null;}
+    else if(S.phase==='idle'){S.qmv=null;if(m3Cell(r1,c1)===Q.a&&m3Cell(r2,c2)===Q.q){S.sel=null;S.idle=0;S.anim={t:0,p:[r1,c1,r2,c2]};S.phase='swap';S.swT=performance.now();}}}};}
+/* brilho nas 2 peças da jogada marcada */
+{const _r=renderMatch;renderMatch=function(){_r();const S=M3;if(!S||!S.qmv)return;const ts=m3Geo().ts;b.save();b.globalCompositeOperation='lighter';
+  for(const q of [S.qmv.a,S.qmv.q]){for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++)if(S.g[r][c]===q){const G2=m3Geo(),x=G2.x0+(c+q.fx)*ts+ts/2,y=G2.y0+(r+q.fy)*ts+ts/2;glowAt(x,y,ts*.6,'255,246,160',.55+.25*Math.sin(S.t/3));}}b.restore();};}
+/* /COMBINA EFEITOS DOS CONCORRENTES */
 
 
 

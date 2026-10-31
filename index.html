@@ -11032,6 +11032,66 @@ async function jogPost(o){if(!JOGURL)return null;const r=await fetch(JOGURL,{met
 let JOGPEND=[],JOGT=0,JOGRUN=false;
 async function jogSync(){if(!JOGURL||JOGRUN||!party.length)return;JOGRUN=true;try{const d=await jogPost(Object.assign({acao:'oi'},jogDados()));JOGT=Date.now();
   const got=flags.rwGot=flags.rwGot||[];if(d&&d.premios)for(const p of d.premios){if(p&&p.k&&!got.includes(p.k)&&!JOGPEND.some(q=>q.k===p.k))JOGPEND.push(p);}}catch(e){try{__EV('planilha falhou '+String(e).slice(0,40));}catch(_){}}finally{JOGRUN=false;}}
+/* REPORTAR PROBLEMA (31/out, Felipe): botão 🐞 sempre no mesmo lugar, em todas as telas. Tira foto da tela do jogo na hora,
+   deixa anexar um print do celular e escrever o problema. Envia pro Claude ler:
+   dentro do Claude (Oficial/Teste) vai pro banco do artifact (coleção reports); no App vai pra planilha do Felipe (aba Reports + pasta no Drive).
+   Se não conseguir enviar, guarda no aparelho e tenta de novo depois. */
+(function(){
+const RPQ='cv_reports_pend';
+function rpShrink(src,maxW,q){return new Promise(res=>{try{const im=new Image();im.onload=()=>{try{const k=Math.min(1,maxW/im.naturalWidth),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q));}catch(e){res('');}};im.onerror=()=>res('');im.src=src;}catch(e){res('');}});}
+function rpShot(){try{const c=document.getElementById('screen');if(!c)return '';return c.toDataURL('image/jpeg',.8);}catch(e){return '';}}
+function rpCtx(){const o={};try{o.modo=G.mode;o.mapa=G.map;o.x=P.x;o.y=P.y;}catch(e){}try{o.nome=flags.nome||'';o.tid=String(flags.tid||'');o.horas=Math.round((flags.playT||0)/36)/100;}catch(e){}
+  try{o.versao=String(window.__APPVER||'');}catch(e){}try{o.onde=location.host||'claude';}catch(e){}
+  try{o.tela=innerWidth+'x'+innerHeight+' dpr'+(window.devicePixelRatio||1);o.ua=navigator.userAgent.slice(0,160);}catch(e){}
+  try{o.erros=(typeof ERR!=='undefined'?ERR.slice(-8):[]).map(x=>String(x).slice(0,200));}catch(e){}
+  try{const d=JSON.parse(localStorage.getItem('cv_diag_ev')||'null');o.eventos=d&&d.ev?d.ev.slice(-15):[];}catch(e){}
+  try{o.equipe=(party||[]).map(m=>m.sp+' '+m.lv).join(', ');}catch(e){}return o;}
+async function rpSend(r){
+  try{if(window.claude&&claude.use){const db=await claude.use('db');if(db){await db.doc('reports/'+r.id).set(r);return true;}}}catch(e){}
+  try{if(typeof JOGURL!=='undefined'&&JOGURL){const rr=await fetch(JOGURL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({acao:'report'},r))});if(rr.ok){const j=await rr.json().catch(()=>null);if(j&&j.ok)return true;}}}catch(e){}
+  return false;}
+function rpPend(){try{return JSON.parse(localStorage.getItem(RPQ)||'[]')||[];}catch(e){return [];}}
+function rpSavePend(L){try{localStorage.setItem(RPQ,JSON.stringify(L.slice(-5)));}catch(e){try{localStorage.setItem(RPQ,JSON.stringify(L.slice(-1).map(r=>Object.assign({},r,{print:''}))));}catch(_){}}}
+async function rpRetry(){const L=rpPend();if(!L.length)return;const keep=[];for(const r of L){if(!(await rpSend(r)))keep.push(r);}rpSavePend(keep);}
+setTimeout(rpRetry,15000);setInterval(rpRetry,5*60e3);
+const css=document.createElement('style');css.textContent=`
+#rpBtn{position:fixed;left:max(4px,env(safe-area-inset-left,0px));top:42%;z-index:9998;width:34px;height:34px;border-radius:50%;border:2px solid #154c5e;background:#fffaf0;box-shadow:0 2px 0 rgba(0,0,0,.35);font-size:17px;line-height:28px;text-align:center;padding:0;opacity:.82;cursor:pointer;touch-action:manipulation}
+#rpBtn:active{transform:scale(.92)}
+#rpBox{position:fixed;inset:0;z-index:9999;background:rgba(10,20,30,.55);display:flex;align-items:center;justify-content:center;padding:14px}
+#rpBox .pp{background:#fffaf0;border:3px solid #154c5e;border-radius:16px;max-width:380px;width:100%;max-height:92vh;overflow:auto;padding:12px 14px;font-family:CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif;color:#154c5e;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+#rpBox h3{margin:0 0 6px;font-size:20px}#rpBox p{margin:4px 0;font-size:14px;line-height:1.3}
+#rpBox .ims{display:flex;gap:8px;margin:8px 0}#rpBox .ims div{flex:1;min-width:0;border:2px dashed #9bb7c0;border-radius:10px;min-height:70px;display:flex;align-items:center;justify-content:center;font-size:12px;text-align:center;overflow:hidden;position:relative}
+#rpBox .ims img{max-width:100%;max-height:150px;display:block}
+#rpBox textarea{width:100%;box-sizing:border-box;min-height:90px;border:2px solid #154c5e;border-radius:10px;padding:8px;font:15px Arial,sans-serif;color:#102a33;background:#fff}
+#rpBox .bt{display:flex;gap:8px;margin-top:10px}#rpBox button{flex:1;font:800 16px CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif;border-radius:12px;border:2px solid #154c5e;padding:9px;cursor:pointer}
+#rpBox .ok{background:#1f7a3a;color:#fff;border-color:#13562a}#rpBox .no{background:#fff;color:#154c5e}#rpBox .at{background:#e8f2f5;color:#154c5e;width:100%;margin-top:2px}
+#rpBox .msg{font-size:13px;min-height:16px;margin-top:6px}`;document.head.appendChild(css);
+const btn=document.createElement('button');btn.id='rpBtn';btn.type='button';btn.textContent='🐞';btn.setAttribute('aria-label','Avisar um problema');btn.title='Avisar um problema';
+['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click'].forEach(ev=>btn.addEventListener(ev,e=>{e.stopPropagation();},{passive:true}));
+btn.addEventListener('click',()=>rpOpen());document.body.appendChild(btn);
+async function rpOpen(){if(document.getElementById('rpBox'))return;const shot=await rpShrink(rpShot(),360,.66);let print='';
+  const box=document.createElement('div');box.id='rpBox';box.innerHTML=`<div class="pp" role="dialog" aria-label="Avisar um problema"><h3>🐞 Avisar um problema</h3>
+   <p>Conte o que aconteceu. A foto desta tela já vai junto. Se você tirou um print, anexe também.</p>
+   <div class="ims"><div id="rpI1">${shot?'<img alt="Tela do jogo">':'sem foto da tela'}</div><div id="rpI2">nenhum print anexado</div></div>
+   <button class="at" id="rpAt" type="button">📷 Anexar um print</button><input id="rpF" type="file" accept="image/*" hidden>
+   <p style="margin-top:8px">O que aconteceu?</p><textarea id="rpT" maxlength="1500" placeholder="Ex.: na Muralha, o botão de especial não funcionou depois da onda 3"></textarea>
+   <div class="msg" id="rpM"></div><div class="bt"><button class="no" id="rpC" type="button">Cancelar</button><button class="ok" id="rpS" type="button">Enviar</button></div></div>`;
+  ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click','keydown','keyup'].forEach(ev=>box.addEventListener(ev,e=>e.stopPropagation()));
+  document.body.appendChild(box);if(shot)box.querySelector('#rpI1 img').src=shot;
+  const $=s=>box.querySelector(s),close=()=>box.remove();
+  $('#rpC').onclick=close;box.addEventListener('click',e=>{if(e.target===box)close();});
+  $('#rpAt').onclick=()=>$('#rpF').click();
+  $('#rpF').onchange=()=>{const f=$('#rpF').files&&$('#rpF').files[0];if(!f)return;const rd=new FileReader();rd.onload=async()=>{print=await rpShrink(rd.result,420,.66);$('#rpI2').innerHTML=print?'<img alt="Print anexado">':'não deu pra abrir';if(print)$('#rpI2 img').src=print;};rd.readAsDataURL(f);};
+  $('#rpS').onclick=async()=>{const t=$('#rpT').value.trim();if(!t&&!print){$('#rpM').textContent='Escreva o problema ou anexe um print.';return;}
+    $('#rpS').disabled=true;$('#rpM').textContent='Enviando…';
+    const r=Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:new Date().toISOString(),texto:t,tela_jogo:shot,print},rpCtx());
+    const ok=await rpSend(r);if(!ok){const L=rpPend();L.push(r);rpSavePend(L);}
+    $('#rpM').textContent=ok?'Enviado! Obrigado por ajudar a melhorar o jogo. 💛':'Sem internet agora. Guardei aqui e envio sozinho depois. 💛';
+    try{tone([660,880,1320],.05);}catch(e){}setTimeout(close,1600);};
+  setTimeout(()=>{try{$('#rpT').focus();}catch(e){}},50);}
+window.rpOpen=rpOpen;
+})();
+
 /* entrega o prêmio no mapa, com a mensagem do Felipe */
 async function jogEntrega(){if(!JOGPEND.length)return;const got=flags.rwGot=flags.rwGot||[];const feitos=[];
   while(JOGPEND.length){const p=JOGPEND.shift();if(got.includes(p.k))continue;const L=[];

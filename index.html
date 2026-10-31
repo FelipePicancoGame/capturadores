@@ -9623,6 +9623,86 @@ if(typeof m3cPoder==='function'){const _pw=m3cPoder;m3cPoder=function(S,R0,t){wi
   const nerv=S.moves<=3&&S.moves>0&&!S.won&&!S.ending;if(nerv&&!S.mAct&&S.t%110===0)m3reiAct('damage');
   if(S.mAct){S.mAct.t++;const _M=MONANIM[String((party[0]||{}).sp||'').replace('*','')]||{},_a=(S.mAct.a==='cele'&&!('cele' in _M))?'attack':S.mAct.a,n=_M[_a];const len=n&&n.ok?n.n*60/(MONANIMFPS[S.mAct.a]||10):40;if(S.mAct.t>len+4)S.mAct=null;}};}
 /* /COMBINA EFEITOS DOS CONCORRENTES */
+/* COMBINA FASES DE HISTÓRIA (31/out 15h24, Felipe: "fases com um monstrinho sendo capturado... fazer tantos pontos em tanto tempo,
+   com animação mostrando a pressão... ou uma horda de monstrinhos chegando e encurralando ele, e você tem que fazer os pontos pra ele não ser atacado").
+   RESGATE: um monstrinho está preso e a REDE do Bando Sombra vai descendo com o tempo. Faça a meta de pontos antes do tempo acabar.
+   CERCO: uma horda vem dos dois lados pra cima de um monstrinho. O tempo corre; cada combinação EMPURRA a horda pra trás.
+          Se a horda chegar nele, perde. Aguentou até o tempo acabar = a horda foge.
+   Fases: 3, 8, 13... = RESGATE · 5, 10, 15... = CERCO. Painel 🧪 TESTE tem botões pra abrir direto.
+   A cena (placa grande acima do tabuleiro) usa os monstrinhos animados do jogo; a arte própria da cena vem do Buchecha
+   (pedido PEDIDO_CLAUDE_31out_COMBINA_FASES_RESGATE_E_CERCO). Até chegar, o papel e a rede são provisórios. */
+const M3HIS={RES:['ratonga','pedrisco','marolo','brotim','cacauzinho','pinguinho'],AMIGO:['pinguinho','cacauzinho','marolo','brotim'],INIM:['ratonga','pipiu','ratonga']};
+M3LAY.push({n:'Cena',b:[127,640,118],f:[40,40,200,119],j:[260,30,240,143],r:[520,90,370,44],p:[740,1615,270,270],s:[915,30,130,130],o:[60,1660,640,170],cena:[40,195,1000,400]});
+const M3HLAY=M3LAY.length-1;try{M3LBAN[M3HLAY]=1;}catch(e){}
+function m3hTipo(){const S=M3;return S&&S.L&&(S.L.type==='resgate'||S.L.type==='cerco')?S.L.type:null;}
+function m3hNome(sp){try{return (SP[sp]&&SP[sp].name)||sp.charAt(0).toUpperCase()+sp.slice(1);}catch(e){return sp;}}
+{const _l=m3Lv;m3Lv=function(lv){const L=_l(lv);const f=window.__m3force;
+  const t=f||(lv>=3&&lv%5===3?'resgate':lv>=5&&lv%5===0?'cerco':null);
+  if(t){L.type=t;L.collect=null;L.ice=0;L.moves=999;L.tmax=t==='resgate'?Math.max(40,55-Math.floor(lv/5)*3):Math.max(35,45-Math.floor(lv/5)*2);
+    if(t==='resgate')L.goal=4500+lv*300;else L.goal=Math.round((420+lv*150)*.5);}
+  return L;};}
+{const _n=m3New;m3New=function(lv){_n(lv);const S=M3,t=m3hTipo();if(!t)return;S.lay=M3HLAY;S.tl=S.L.tmax;S.press=0;S.hitT=0;
+  const pool=(t==='resgate'?M3HIS.RES:M3HIS.AMIGO).filter(x=>{try{return x!==party[0].sp.replace('*','')&&MONANIM[x];}catch(e){return true;}});
+  S.hsp=pool[(lv*7)%Math.max(1,pool.length)]||'ratonga';S.hen=M3HIS.INIM.filter(x=>MONANIM[x]);if(!S.hen.length)S.hen=['ratonga'];};}
+{const _i=m3Intro;m3Intro=function(){_i();const S=M3,t=m3hTipo();if(S&&S.banner&&t)S.banner.txt=t==='resgate'?`SALVE O ${m3hNome(S.hsp).toUpperCase()}!`:`PROTEJA O ${m3hNome(S.hsp).toUpperCase()}!`;};}
+{const _g=m3GoalOk;m3GoalOk=function(){const S=M3,t=m3hTipo();if(t==='resgate')return S.score>=S.goal;if(t==='cerco')return S.tl<=0&&S.press<1;return _g();};}
+/* vitória: o tempo que sobrou vira raios bônus (máx. 5); derrota: zera as jogadas pro fim normal da fase */
+{const _c=m3Check;m3Check=function(){const S=M3,t=m3hTipo();if(t&&!S.ending&&!S.fin&&!S.tutS){
+    if(!S.won&&m3GoalOk()){S.moves=t==='resgate'?Math.max(1,Math.min(5,Math.ceil(S.tl/8))):3;S.hwin=1;}
+    else if(!S.won&&(S.tl<=0||S.press>=1)){S.moves=0;S.hlose=1;}
+    else if(!S.won&&S.moves<50)S.moves=999;}
+  return _c();};}
+/* relógio, pressão da horda e checagem do fim */
+{const _b=m3Blast;m3Blast=function(cells,born,label){const S=M3,s0=S?S.score:0;_b(cells,born,label);if(!S||m3hTipo()!=='cerco'||S.fin||S.won)return;
+  const pts=S.score-s0;if(pts>0){S.press=Math.max(0,S.press-Math.min(.22,pts/(1500+S.lv*150)));S.hitT=18;}};}
+{const _u=matchUpdate;matchUpdate=function(){const S0=M3;_u();const S=M3;if(!S||S!==S0)return;const t=m3hTipo();if(!t)return;
+  const pause=S.banner||S.tutS||S.ending||S.fin||S.won||S.endP||(typeof ui!=='undefined'&&ui.length)||G.mode!=='match';
+  if(!pause&&S.tl>0){S.tl=Math.max(0,S.tl-1/60);if(t==='cerco')S.press=Math.min(1,S.press+1/60/24*(1+S.lv*.02));}
+  if(S.hitT>0)S.hitT--;
+  if(!pause&&S.phase==='idle'&&(S.tl<=0||S.press>=1||(t==='resgate'&&S.score>=S.goal)))m3Check();
+  if(S.endP&&!S.endP.__h){S.endP.__h=1;const n=m3hNome(S.hsp);
+    S.endP.lines=S.endP.win?[t==='resgate'?`Você salvou o ${n}!`:'A horda fugiu!',...(S.endP.lines||[]).slice(-1)]:[t==='resgate'?`A rede pegou o ${n}...`:`A horda pegou o ${n}...`,'Tente de novo!'];}};}
+/* placa de JOGADAS vira TEMPO; placa do objetivo explica a missão */
+if(typeof m3cPlaca==='function'){const _pl=m3cPlaca;m3cPlaca=function(R0,tit,val,valCol,fo){const S=M3;if(m3hTipo()&&tit==='JOGADAS'){const s=Math.ceil(S.tl);return _pl(R0,'TEMPO',s,s<=10?'#c02a2a':valCol,fo);}return _pl(R0,tit,val,valCol,fo);};}
+if(typeof m3cObj==='function'){const _ob=m3cObj;m3cObj=function(S,L){const t=m3hTipo();if(!t)return _ob(S,L);const R=m3R(L.o),hb=L.o[3];b.drawImage(m3cArt('placa_objetivo'),R.x,R.y,R.w,R.h);
+  m3T(t==='resgate'?'SALVE ANTES DA REDE FECHAR':'EMPURRE A HORDA ATÉ O TEMPO ACABAR',R.x+R.w*.53,R.y+R.h*.36,Math.min(hb*.17,30),'#7a4a1a',R.w*.82);
+  m3T(t==='resgate'?`META: ${S.goal}`:`AGUENTE ${Math.ceil(S.tl)} s`,R.x+R.w*.53,R.y+R.h*.66,Math.min(hb*.24,42),'#2a1a08',R.w*.8);};}
+/* CENA acima do tabuleiro */
+function m3hMon(sp,act,x,foot,k,seed){const od=MONDIR,ow=MONWALKCTX;b.save();b.translate(x,foot);b.scale(k,k);MONDIR=null;MONWALKCTX=0;let ok=false;try{ok=monAnimDraw(sp,act,-77,seed||0);}catch(e){}finally{MONDIR=od;MONWALKCTX=ow;b.restore();}
+  if(!ok){const I=m3Img(sp);if(I&&I.naturalWidth){const h=50*k,w=h*I.naturalWidth/I.naturalHeight;b.drawImage(I,x-w/2,foot-h,w,h);}}}
+function m3hCena(){const S=M3,t=m3hTipo();if(!t)return;const L=m3cL();if(!L.cena)return;const R=m3R(L.cena),T0=S.t,k=R.h/170;
+  b.save();rrect(R.x,R.y,R.w,R.h,R.h*.08,'rgba(255,250,235,.96)',false);b.lineWidth=Math.max(1,R.h*.012);b.strokeStyle='rgba(110,80,40,.55)';b.beginPath();if(b.roundRect)b.roundRect(R.x,R.y,R.w,R.h,R.h*.08);else b.rect(R.x,R.y,R.w,R.h);b.stroke();
+  b.beginPath();b.rect(R.x,R.y,R.w,R.h);b.clip();
+  b.fillStyle='rgba(120,190,90,.35)';b.fillRect(R.x,R.y+R.h*.78,R.w,R.h*.22);
+  const cx=R.x+R.w/2,foot=R.y+R.h*.9,mk=k*1.9,frac=S.tl/S.L.tmax;
+  if(t==='resgate'){const caught=S.endP&&!S.endP.win,freed=S.won;
+    m3hMon(S.hsp,freed?'cele':caught?'defeat':(frac<.35?'damage':'idle'),cx,foot,mk,1);
+    if(!freed){const top=R.y-R.h*.1,ny=top+(foot-top)*(caught?1:Math.min(1,1-frac))*.95,nw=R.w*.36;b.save();b.strokeStyle='rgba(50,32,20,.92)';b.lineWidth=Math.max(1.2,R.h*.02);
+      for(let i=0;i<=8;i++){const x=cx-nw/2+nw*i/8;b.beginPath();b.moveTo(x,top);b.lineTo(cx-nw*.42+nw*.84*i/8,ny);b.stroke();}
+      for(let j=1;j<=6;j++){const y=top+(ny-top)*j/6,w2=nw*(1-.16*j/6);b.beginPath();b.moveTo(cx-w2/2,y);b.lineTo(cx+w2/2,y);b.stroke();}
+      b.lineWidth=Math.max(2,R.h*.025);b.strokeStyle='#5a3a1a';b.beginPath();b.moveTo(cx,top);b.lineTo(R.x+R.w*.9,R.y+R.h*.1);b.stroke();b.restore();
+      const pct=Math.min(1,S.score/S.goal);T(`${Math.round(pct*100)}%`,cx,R.y+R.h*.04,Math.min(9,R.h*.12),'center','#1f7a3a',R.w*.3,'rgba(255,255,255,.9)');}
+    else{for(let i=0;i<5;i++){const a=T0/10+i*1.3;const sx=cx+Math.cos(a)*R.w*.2,sy=foot-R.h*.5+Math.sin(a)*R.h*.22;b.save();b.globalCompositeOperation='lighter';glowAt(sx,sy,R.h*.12,'255,220,90',.8);b.restore();}}}
+  else{const P=S.press,lost=S.endP&&!S.endP.win,run=S.won;
+    m3hMon(S.hsp,run?'cele':lost?'defeat':(P>.6?'damage':'idle'),cx,foot,mk,2);
+    const E=S.hen;for(let side=-1;side<=1;side+=2)for(let i=0;i<2;i++){const sp=E[(i+(side>0?1:0))%E.length];
+      let d=(.13+.36*(1-P)+i*.09)*R.w;if(run)d+=Math.min(R.w,(S.endP?S.endP.t:30)*R.w*.02);if(lost)d=(.1+i*.07)*R.w;
+      const hit=S.hitT>0,kb=hit?Math.sin(S.hitT/18*Math.PI)*R.w*.03:0,x=cx+side*(d+kb);
+      m3hMon(sp,hit?'damage':'walk',x,foot+(i?-R.h*.06:0),mk*(i?.85:.95),side*3+i);}
+    if(P>.65&&!run){b.save();b.globalAlpha=(P-.65)/.35*(.5+.5*Math.sin(T0/4));b.lineWidth=R.h*.06;b.strokeStyle='#ff3a3a';b.strokeRect(R.x,R.y,R.w,R.h);b.restore();}
+    const bw=R.w*.5,bx=cx-bw/2,by=R.y+R.h*.05,bh=R.h*.08;rrect(bx,by,bw,bh,bh/2,'rgba(60,30,20,.55)',false);rrect(bx,by,bw*Math.max(0,1-P),bh,bh/2,P>.65?'#ff5a3a':'#5fcf4a',false);
+    T('DISTÂNCIA DA HORDA',cx,by+bh*1.15,Math.min(6,R.h*.07),'center','#4a2a10',bw);}
+  b.restore();}
+{const _r=renderMatch;renderMatch=function(){_r();try{m3hCena();}catch(e){}};}
+/* 🧪 TESTE: abrir direto */
+(function m3hTestBtns(){const add=()=>{const bx=document.querySelector('#tpan .bx');if(!bx){setTimeout(add,900);return;}if(document.getElementById('tm3h'))return;
+  const h=document.createElement('div');h.id='tm3h';h.innerHTML='<h3>🧩 Combina · fases de história</h3><button id="tm3r">Resgate (rede descendo)</button><button id="tm3c">Cerco (horda chegando)</button>';bx.appendChild(h);
+  const go=async tp=>{try{if(!TEST){TEST=true;saveGame=function(){};const bn=document.getElementById('tban');if(bn)bn.style.display='block';}}catch(e){}
+    document.getElementById('tpan').style.display='none';ui.length=0;if(!party.length)party.push(mk('fagulho',10));window.__m3force=tp;const P=m3St();P.lv=tp==='resgate'?3:5;P.lay=null;
+    try{if(G.mode==='match'&&M3&&M3.done){const d=M3.done;M3.done=null;M3.ending=1;d();await new Promise(r=>setTimeout(r,900));}}catch(e){}
+    await matchMode();};
+  document.getElementById('tm3r').onclick=()=>go('resgate');document.getElementById('tm3c').onclick=()=>go('cerco');};add();})();
+/* /COMBINA FASES DE HISTÓRIA */
 
 
 

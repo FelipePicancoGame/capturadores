@@ -9476,6 +9476,11 @@ if(typeof m3cObj==='function'){const _ob=m3cObj;m3cObj=function(S,L){m3fxSway(L.
 {const _u=matchUpdate;matchUpdate=function(){const S=M3,A=S&&S.anim;if(S&&(S.phase==='swap'||S.phase==='back')&&A)A.t-=.35;_u();
   if(M3===S&&S&&(S.phase==='swap'||S.phase==='back')&&S.anim===A&&A){const k=Math.min(1,A.t/7),e=k*k*(3-2*k),[r1,c1,r2,c2]=A.p,q1=S.g[r1][c1],q2=S.g[r2][c2];
     if(q1&&q2&&k<1){q1.fx=(c2-c1)*e;q1.fy=(r2-r1)*e;q2.fx=(c1-c2)*e;q2.fy=(r1-r2)*e;}}};}
+/* COMBINA NÍTIDO (31/out 14h42, Felipe: "a qualidade tá bem ruim da imagem"): a tela em pé desenhava com no máximo 3 pontos por unidade
+   (540 de largura) e o iPhone esticava pra 1170 — tudo ficava borrado. No Combina, com gráfico ALTO, agora desenha com até 6 (1080 de largura).
+   MÉDIO e LEVE continuam com menos pontos (os limites dos ajustes de gráfico continuam valendo). */
+{const _ps=portraitScreen;portraitScreen=function(){if(!window.__m3hq)return _ps();const land=innerWidth>innerHeight;document.body.classList.toggle('rotp',land);const ar=land?innerWidth/innerHeight:innerHeight/innerWidth;setScreen(180,Math.max(320,Math.min(400,Math.round(180*ar))),6);};}
+{const _mm=matchMode;matchMode=async function(){window.__m3hq=1;try{return await _mm.apply(this,arguments);}finally{window.__m3hq=0;}};}
 /* /COMBINA EFEITOS DOS CONCORRENTES */
 
 

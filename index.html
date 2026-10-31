@@ -9208,7 +9208,8 @@ window.__GFX=0;
 {const _gl=glowAt;glowAt=function(x,y,r,col,a){if(window.__GFX>=2||(flags&&flags.glowOff))return;return _gl(x,y,r,col,a);};}
 /* resolução da tela: MÉDIO e LEVE desenham com menos pontos (o celular fraco aguenta) */
 {const _bs=bestS;bestS=function(w,h,cap){const s=_bs(w,h,cap);return window.__GFX>=2?Math.min(s,2):window.__GFX>=1?Math.min(s,3):s;};}
-function gfxApply(){const g=gfxLv();if(window.__GFX===g)return;window.__GFX=g;try{const w=W,h=H;W=0;setScreen(w,h,4);}catch(e){}}
+let GFXCAP=3;{const _ss=setScreen;setScreen=function(w,h,cap){GFXCAP=cap||4;return _ss(w,h,cap);};}
+function gfxApply(){const g=gfxLv();if(window.__GFX===g)return;window.__GFX=g;try{const w=W,h=H;W=0;setScreen(w,h,GFXCAP);}catch(e){}}
 setInterval(()=>{try{if(typeof flags!=='undefined'&&flags)gfxApply();}catch(e){}},1000);
 const MGMODES={wall:1,td:1,surv:1,match:1,exp:1,math:1};
 function mgPausedNow(){try{const m=G.mode;return (m==='wall'&&WL&&WL.paused)||(m==='td'&&TD&&TD.paused)||(m==='surv'&&SV&&SV.paused);}catch(e){return false;}}

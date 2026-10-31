@@ -11030,7 +11030,7 @@ function jogDados(){if(!flags.tid)flags.tid=10000+Math.floor(Math.random()*89999
   return {id:String(flags.tid),nome:flags.nome||'',heroi:flags.hero||'',nivel:all.reduce((a,m)=>Math.max(a,m.lv||0),0),mons:all.length,dex:Object.keys(flags.dex||{}).length,moedas:flags.coins||0,cristais:gems(),horas:Math.round((flags.playT||0)/360)/10,ver:(window.__APPVER||''),onde:location.host};}
 async function jogPost(o){if(!JOGURL)return null;const r=await fetch(JOGURL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)});return r.ok?r.json():null;}
 let JOGPEND=[],JOGT=0,JOGRUN=false;
-async function jogSync(){if(!JOGURL||JOGRUN||!party.length)return;JOGRUN=true;try{const d=await jogPost(Object.assign({acao:'oi'},jogDados()));JOGT=Date.now();
+async function jogSync(){if(!JOGURL||JOGRUN||!G.mode||G.mode==='title')return;/* na tela inicial o save ainda não carregou */JOGRUN=true;try{const d=await jogPost(Object.assign({acao:'oi'},jogDados()));JOGT=Date.now();
   const got=flags.rwGot=flags.rwGot||[];if(d&&d.premios)for(const p of d.premios){if(p&&p.k&&!got.includes(p.k)&&!JOGPEND.some(q=>q.k===p.k))JOGPEND.push(p);}}catch(e){try{__EV('planilha falhou '+String(e).slice(0,40));}catch(_){}}finally{JOGRUN=false;}}
 /* REPORTAR PROBLEMA (31/out, Felipe): botão 🐞 sempre no mesmo lugar, em todas as telas. Tira foto da tela do jogo na hora,
    deixa anexar um print do celular e escrever o problema. Envia pro Claude ler:
@@ -11104,8 +11104,11 @@ async function jogEntrega(){if(!JOGPEND.length)return;const got=flags.rwGot=flag
     if(L.length)await say(`Você recebeu: ${L.join(', ')}.`);
     if(sp){const where=grantMon(sp,Math.max(5,Math.min(50,+p.monLv||5)));saveGame();await revealMon(sp,where);}}
   if(feitos.length){saveGame();try{await jogPost({acao:'recebi',id:String(flags.tid),nome:flags.nome||'',ks:feitos});}catch(_){}}}
-setInterval(async()=>{try{if(!JOGURL||G.mode!=='world'||busy||!party.length)return;if(JOGPEND.length){busy=true;try{await jogEntrega();}finally{busy=false;}return;}if(Date.now()-JOGT>5*60000)jogSync();}catch(_){}},3000);
-document.addEventListener('visibilitychange',()=>{try{if(!document.hidden&&JOGURL&&party.length&&Date.now()-JOGT>60000)jogSync();}catch(_){}});
+/* 31/out: o registro na planilha vai em qualquer tela (menu, batalha, minijogo, tutorial) e mesmo sem monstrinho ainda.
+   Só a ENTREGA de prêmio espera o jogador estar livre no mapa. */
+setInterval(async()=>{try{if(!JOGURL)return;if(JOGPEND.length&&G.mode==='world'&&!busy&&party.length){busy=true;try{await jogEntrega();}finally{busy=false;}return;}if(Date.now()-JOGT>5*60000)jogSync();}catch(_){}},3000);
+document.addEventListener('visibilitychange',()=>{try{if(!JOGURL)return;if(!document.hidden){if(Date.now()-JOGT>60000)jogSync();}
+  else if(G.mode&&G.mode!=='title'){/* ao sair do jogo, manda as horas e o progresso daquele momento */fetch(JOGURL,{method:'POST',keepalive:true,headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({acao:'oi'},jogDados()))}).catch(()=>{});}}catch(_){}});
 /* ESCALA DOS MONSTRINHOS (30/out, Felipe): o tamanho vem da forma (1ª, 2ª, 3ª: 42/50/58 de altura) x o porte da família. Pequenos 0,9 · médios 1 · grandes 1,1. */
 const MONTAM={pipiu:.9,zumbel:.88,choquinho:.9,peixonete:.9,flocolino:.9,corujito:.9,cogumelim:.9,florina:.94,psiuto:.94,pinguinho:.92,sombrin:.95,ratonga:.95,cacauzinho:.94,pedrisco:1.06,rochedo:1.12,cabrito:1.04,cascal:1.04,cascopedra:1.06,brasinha:1.06,auroril:1.12,lesmagma:1.02,caranguejo:1.02};
 function monK(sp){try{return MONTAM[evoBase(String(sp).replace('*',''))]||1;}catch(e){return 1;}}

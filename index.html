@@ -9128,8 +9128,7 @@ function m3FinStep(){const S=M3,F=S.fin;if(!F){S.phase='idle';return;}F.t++;
     if(L.length){F.loops++;S.combo=0;m3Blast(L,[],'FINAL EXPLOSIVO!');}else{S.fin=null;S.phase='idle';m3Check();}}}
 /* /COMBINA AÇÃO */
 /* COMBINA MAIS VIVO (30/out noite, Felipe: "quero cores mais vivas e mais animações e mais ações").
-   CORES: as peças, o fundo, o tabuleiro e os efeitos do Buchecha são pintados com cor mais forte (saturação), sem trocar nem esticar a arte.
-          Placas, barra e botões ficam iguais (pra leitura dos números).
+   CORES: (retirado às 20h a pedido do Felipe — arte nas cores originais do Buchecha)
    ANIMAÇÕES: luzes coloridas subindo no fundo; onda de brilho passando pelo tabuleiro de tempos em tempos;
           peça escolhida pulsa e brilha; peças balançam enquanto caem; contador de combo grande (x2, x3...) que pula na tela.
    AÇÕES: FEBRE (combo de 4 ou mais = as 2 próximas jogadas valem PONTOS EM DOBRO, tabuleiro brilha nas cores do arco-íris);
@@ -9142,10 +9141,10 @@ function m3vScan(){const n=Object.keys(M3ART).length;if(M3V.n===n&&M3.t%90)retur
 function m3vBokeh(){const S=M3;if(!S)return;const B=M3V.bok;if(!B.length)for(let i=0;i<22;i++)B.push({x:Math.random(),y:Math.random(),r:.5+Math.random(),v:.0006+Math.random()*.0012,c:i%6,ph:Math.random()*6});
   b.save();for(const p of B){p.y-=p.v;if(p.y<-.05){p.y=1.05;p.x=Math.random();}const x=p.x*W+Math.sin(S.t/60+p.ph)*6,y=p.y*H,a=.32+.14*Math.sin(S.t/25+p.ph);
     glowAt(x,y,(4+p.r*6),hex2rgb(M3COL[p.c]).join(','),a);}b.restore();}
-/* pinta a arte com cor forte só durante o desenho do Combina (o resto do jogo não muda) */
+/* 30/out 20h (Felipe: "ficou uma merda a sua intensidade de cor"): cor forte RETIRADA, arte nas cores originais. Só desenha as luzes logo depois do fundo. */
 {const _r=renderMatch;renderMatch=function(){const S=M3;if(!S||/semfiltro|leve/.test(window.__TESTE||''))return _r();try{m3vScan();}catch(e){}
   const P=CanvasRenderingContext2D.prototype.drawImage;
-  b.drawImage=function(im){if(im&&M3V.set.has(im)){const f0=b.filter;b.filter=M3V.f;try{P.apply(b,arguments);}finally{b.filter=f0;}if(M3V.bg.has(im))try{m3vBokeh();}catch(e){}return;}return P.apply(b,arguments);};
+  b.drawImage=function(im){const r=P.apply(b,arguments);if(im&&M3V.bg.has(im))try{m3vBokeh();}catch(e){}return r;};
   try{_r();}finally{delete b.drawImage;}
   /* contador de combo grande */
   if(S.cmb&&S.cmb.t<60){const G2=m3Geo(),k=S.cmb.t,sc=k<8?.4+k/8*.9:k<14?1.3-(k-8)/6*.3:1,a=Math.min(1,(60-k)/12),x=G2.x0+G2.bw-G2.ts*.7,y=G2.y0+G2.ts*.7;

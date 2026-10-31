@@ -9035,8 +9035,8 @@ async function enPainel(){while(true){const e=enSt(),day=qDay(),usd=flags.enGem&
     const ic=document.createElement('span');ic.textContent=ico;ic.style.cssText='position:absolute;left:6%;top:50%;transform:translateY(-52%);pointer-events:none';bt.appendChild(ic);const tx=document.createElement('span');tx.style.cssText='position:absolute;left:34%;right:6%;top:50%;transform:translateY(-52%);text-align:center;font-family:CadBaloo,Fredoka,Arial,sans-serif;font-weight:800;color:#154c5e;white-space:nowrap;pointer-events:none';bt.appendChild(tx);
     bt.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();});bt.addEventListener('pointerup',ev=>{ev.preventDefault();ev.stopPropagation();if(G.mode!=='world'||busy||ui.length)return;tone([660,880],.04);P.path=null;P.mark=null;run(fn);});el.appendChild(bt);return {bt,ic,tx};};
   E.en=mkb('Energia','⚡',enPainel);E.loja=mkb('Loja','💎',lojaReal);E.loja.tx.textContent='LOJA';
-  const _l=cadLayout;cadLayout=function(){_l();try{const r=cadFrame(),k=CAD.k,cx=r.left+r.width/2,T=r.top;const pl=(o,x,y,w,h)=>{o.bt.style.left=(cx+(x-470.5)*k)+'px';o.bt.style.top=(T+y*k)+'px';o.bt.style.width=w*k+'px';o.bt.style.height=h*k+'px';o.ic.style.fontSize=46*k+'px';o.tx.style.fontSize=36*k+'px';};
-    pl(E.en,180,410,195,90);pl(E.loja,600,410,195,90);}catch(_){}};cadLayout();
+  const _l=cadLayout;cadLayout=function(){_l();try{const r=cadFrame(),k=CAD.k,cx=r.left+r.width/2,T=r.top;const pl=(o,x,y,w,h)=>{o.bt.style.left=(cx+(x-470.5)*k)+'px';o.bt.style.top=(T+y*k)+'px';o.bt.style.width=w*k+'px';o.bt.style.height=h*k+'px';o.ic.style.fontSize=46*k*w/195+'px';o.tx.style.fontSize=36*k*w/195+'px';};
+    pl(E.en,...CADLAY.en);pl(E.loja,...CADLAY.loja);}catch(_){}};cadLayout();
   setInterval(()=>{try{const e=enSt(),low=e.v<EN.COST,s=low?`${e.v} · ${enFmt(enNext())}`:`${e.v}/${EN.MAX}`;if(E.en.tx.textContent!==s)E.en.tx.textContent=s;E.en.tx.style.color=low?'#c23b3b':'#154c5e';const bd=document.getElementById('enBadge');if(bd)bd.style.display='none';}catch(_){}},500);
   }catch(x){setTimeout(go,800);}};setTimeout(go,500);})();
 /* /PAINEL ENERGIA + LOJA */
@@ -10642,23 +10642,24 @@ function CADON(){return CAD.ready||CAD.wait;}
   {const s=document.getElementById('stick'),kn=document.getElementById('knob');if(s&&kn){const a=document.createElement('img');a.className='cjb';a.src=CADU.joystick_base;a.alt='';s.insertBefore(a,s.firstChild);const p=document.createElement('img');p.src=CADU.joystick_pino;p.alt='';kn.appendChild(p);}}
   window.addEventListener('resize',()=>setTimeout(cadLayout,60));setInterval(cadTick,150);
 }catch(e){console.error('cad',e);}})();
+const CADLAY={"fechar":[12,65,130,180],"menu":[805,65,125,190],"cfg":[805,262,125,125],"s0":[180,100,195,90],"s1":[390,100,195,90],"s2":[600,100,195,90],"mini":[205,210,260,190],"bike":[485,210,260,190],"en":[180,410,195,90],"loja":[600,410,195,90],"missao":[380,1532,552,418],"joy":[20,1600,350,350]};/* tela do mapa: posições do Montador da Tela do Mapa (base 941x2048) */
 function cadFrame(){const s=document.getElementById('stage'),r=s?s.getBoundingClientRect():{left:0,top:0,width:document.documentElement.clientWidth,height:document.documentElement.clientHeight};return r;}
 function cadLayout(){if(!CAD.ready||!CAD.E)return;const r=cadFrame(),k=Math.min(r.width/941,r.height/2048),E=CAD.E;CAD.k=k;
   const VH=document.documentElement.clientHeight,cx=r.left+r.width/2,L=r.left,T=r.top,R=r.left+r.width,B=r.top+r.height;
   const put=(e,x,y,w,h)=>{e.style.left=x+'px';e.style.top=y+'px';e.style.width=w+'px';e.style.height=h+'px';};
   const tl=(e,x,y,w,h)=>put(e,L+x*k,T+y*k,w*k,h*k),tr=(e,x,y,w,h)=>put(e,R-(941-x)*k,T+y*k,w*k,h*k),tc=(e,x,y,w,h)=>put(e,cx+(x-470.5)*k,T+y*k,w*k,h*k),br=(e,x,y,w,h)=>put(e,R-(941-x)*k,B-(2048-y)*k,w*k,h*k);
-  tl(E.fechar,12,65,130,180);tr(E.menu,805,65,125,190);if(E.cfg)tr(E.cfg,805,262,125,125);
-  const S=[[180,100,195,90],[390,100,195,90],[600,100,195,90]],I=[[188,112,64,64],[398,112,64,64],[608,112,64,64]],V=[[310,145],[520,145],[730,145]];
-  for(let i=0;i<3;i++){tc(E.saldo[i],...S[i]);tc(E.ico[i],...I[i]);tc(E.val[i],V[i][0]-48,V[i][1]-25,96,55);E.val[i].style.textAlign='center';}
-  tc(E.mini,205,210,260,190);tc(E.bike,485,210,260,190);
-  br(E.mis,380,1620,550,330);br(E.hist,470,1580,320,100);br(E.pin,425,1690,55,65);br(E.dlg,425,1760,60,60);br(E.map,435,1835,75,75);
-  br(E.t1,490,1698,300,58);br(E.t2,490,1768,300,58);br(E.t3,520,1840,270,65);br(E.ir,800,1820,120,120);if(E.lst){br(E.lst,700,1532,232,84);E.lst.style.fontSize=34*k+'px';}
-  E.t1.style.fontSize=29*k+'px';E.t2.style.fontSize=28*k+'px';E.t3.style.fontSize=26*k+'px';[E.t1,E.t2,E.t3].forEach(t=>t.style.lineHeight=58*k+'px');
+  const CL=CADLAY;tl(E.fechar,...CL.fechar);tr(E.menu,...CL.menu);if(E.cfg)tr(E.cfg,...CL.cfg);CAD.vq=[];
+  for(let i=0;i<3;i++){const [x,y,w,h]=CL['s'+i],q=w/195,v=h/90;CAD.vq[i]=q;tc(E.saldo[i],x,y,w,h);tc(E.ico[i],x+8*q,y+12*v,64*q,64*v);tc(E.val[i],x+82*q,y+20*v,96*q,55*v);E.val[i].style.textAlign='center';}
+  tc(E.mini,...CL.mini);tc(E.bike,...CL.bike);
+  {const [gx,gy,gw,gh]=CL.missao,q=gw/552,v=gh/418,M=(a,b2,w,h)=>[gx+(a-380)*q,gy+(b2-1532)*v,w*q,h*v];
+  br(E.mis,...M(380,1620,550,330));br(E.hist,...M(470,1580,320,100));br(E.pin,...M(425,1690,55,65));br(E.dlg,...M(425,1760,60,60));br(E.map,...M(435,1835,75,75));
+  br(E.t1,...M(490,1698,300,58));br(E.t2,...M(490,1768,300,58));br(E.t3,...M(520,1840,270,65));br(E.ir,...M(800,1820,120,120));if(E.lst){br(E.lst,...M(700,1532,232,84));E.lst.style.fontSize=34*k*q+'px';}
+  E.t1.style.fontSize=29*k*q+'px';E.t2.style.fontSize=28*k*q+'px';E.t3.style.fontSize=26*k*q+'px';[E.t1,E.t2,E.t3].forEach(t=>t.style.lineHeight=58*k*v+'px');}
   CAD.fv=null;cadVals(true);
   /* joystick: base 350 e pino 145 (kit), canto de baixo à esquerda */
-  const js=350*k,pn=145*k,jl=L+195*k,jb=(VH-B)+273*k;
+  const [jx,jy,jw]=CADLAY.joy,js=jw*k,pn=145/350*jw*k,jl=L+(jx+jw/2)*k,jb=(VH-B)+(2048-(jy+jw/2))*k;
   CAD.css2.textContent=`body.cadk #stick{width:${js}px;height:${js}px;left:${jl}px;bottom:${jb}px;margin:0 0 ${-js/2}px ${-js/2}px}body.cadk #knob{width:${pn}px;height:${pn}px;margin:${-pn/2}px 0 0 ${-pn/2}px}`;}
-function cadVals(force){const E=CAD.E,k=CAD.k;const v=[flags.coins||0,gems(),flags.ess||0];for(let i=0;i<3;i++){const s=String(Math.max(0,Math.floor(v[i]||0)));if(force||CAD.last['v'+i]!==s){CAD.last['v'+i]=s;E.val[i].textContent=s;E.val[i].style.fontSize=(s.length>5?26:38)*k+'px';E.val[i].style.lineHeight=55*k+'px';}}}
+function cadVals(force){const E=CAD.E,k=CAD.k;const v=[flags.coins||0,gems(),flags.ess||0];for(let i=0;i<3;i++){const s=String(Math.max(0,Math.floor(v[i]||0)));if(force||CAD.last['v'+i]!==s){CAD.last['v'+i]=s;E.val[i].textContent=s;const _q=(CAD.vq&&CAD.vq[i])||1;E.val[i].style.fontSize=(s.length>5?26:38)*k*_q+'px';E.val[i].style.lineHeight=55*k*_q+'px';}}}
 function cadTick(){try{if(!CAD.ready)return;const vis=G.mode==='world'&&document.body.classList.contains('inworld')&&railOn();if(vis!==CAD.vis){CAD.vis=vis;document.body.classList.toggle('cadv',vis);if(vis)cadLayout();}if(!vis)return;cadVals(false);
   const E=CAD.E,LC=msCands(),o0=LC&&LC[0];const show=!!o0;[E.mis,E.pin,E.dlg,E.map,E.t1,E.t2,E.t3,E.ir].forEach(e=>e.style.display=show?'':'none');
   if(show){const I0=msInfo(o0);E.hist.style.display=o0.q.main?'':'none';const a=I0.title||'',b2=I0.what||'',c=I0.where||'';if(CAD.last.t1!==a){CAD.last.t1=a;E.t1.textContent=a;}if(CAD.last.t2!==b2){CAD.last.t2=b2;E.t2.textContent=b2;}if(CAD.last.t3!==c){CAD.last.t3=c;E.t3.textContent=c;}E.ir.style.opacity=MSAUTO?.7:1;}else E.hist.style.display='none';

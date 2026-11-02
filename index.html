@@ -69,6 +69,7 @@ window.C1IMG={"historia/01_vila_menina": "blobs/cbec3c49427e9a1e8a868e4eb2130af2
   {bg:'04_saida',title:'O primeiro passo',lines:[['Hero','Finalmente! Vamos ver o que existe além dessas montanhas!']]},
   {bg:'05_floresta',title:'Uma pequena dúvida',lines:[['Hero','Segundo esse mapa, deveríamos estar perto de um rio.'],['Hero','E segundo meus olhos, estou completamente perdido.'],['Hero','Espera… ouvi alguma coisa naquela clareira.']]}
  ];
+ /* CAP1b */const c1g=t=>gender==='menina'?String(t).replace('grande aventureiro','grande aventureira').replace('completamente perdido','completamente perdida').replace('estiver pronto','estiver pronta'):t;
  let root,screen,gender='menino',chosen=null,resolveStart,mode,sceneIndex=0,lineIndex=0,finalizing=false,previousFocus;
  const hero=()=>gender==='menina'?'heroina':'hero';
  const img=(name,cls,alt)=>`<img class="${cls}" src="${C1U(name)}" alt="${alt}">`;
@@ -106,7 +107,7 @@ window.C1IMG={"historia/01_vila_menina": "blobs/cbec3c49427e9a1e8a868e4eb2130af2
  }
  function showStory(){
   if(sceneIndex>=story.length){clearing();return;}
-  const s=story[sceneIndex],line=s.lines[lineIndex];frame('c1-story');screen.innerHTML=scenery(s.bg)+tools()+`<header class="c1-head"><small>Uma amizade inesperada</small><h1>${s.title}</h1></header>`+(sceneIndex===1?img(hero()+'_costas','c1-hero','Hero olhando as montanhas'):sceneIndex===4?actor(hero()+'_mapa','c1-hero','Hero consultando o mapa',true):sceneIndex===2?actor(hero()+'_abaixa','c1-hero','Hero preparando a mochila',true):sceneIndex===0&&lineIndex===2?actor(hero()+'_ri','c1-hero','Hero rindo'):sceneIndex===0||sceneIndex===3?actor(hero()+'_anda','c1-hero','Hero caminhando'):img(hero(),'c1-hero','Hero'))+`<div class="c1-dialogue" aria-live="polite"><strong>${(line[0]==='Hero'&&window.C1NOME?window.C1NOME:line[0]).toUpperCase()}</strong>${line[1]}</div><button class="c1-nav" data-next>Continuar ▸</button>`;
+  const s=story[sceneIndex],line=s.lines[lineIndex];frame('c1-story');screen.innerHTML=scenery(s.bg)+tools()+`<header class="c1-head"><small>Uma amizade inesperada</small><h1>${s.title}</h1></header>`+(sceneIndex===1?img(hero()+'_costas','c1-hero','Hero olhando as montanhas'):sceneIndex===4?actor(hero()+'_mapa','c1-hero','Hero consultando o mapa',true):sceneIndex===2?actor(hero()+'_abaixa','c1-hero','Hero preparando a mochila',true):sceneIndex===0&&lineIndex===2?actor(hero()+'_ri','c1-hero','Hero rindo'):sceneIndex===0||sceneIndex===3?actor(hero()+'_anda','c1-hero','Hero caminhando'):img(hero(),'c1-hero','Hero'))+`<div class="c1-dialogue" aria-live="polite"><strong>${(line[0]==='Hero'&&window.C1NOME?window.C1NOME:line[0]).toUpperCase()}</strong>${c1g(line[1])}</div><button class="c1-nav" data-next>Continuar ▸</button>`;
   if(sceneIndex===2)screen.classList.add('c1-bedroom');
   if(sceneIndex===0)screen.insertAdjacentHTML('beforeend',actor('velhinho','c1-oldman','Morador chamando da janela'));
   animateActors();
@@ -116,7 +117,7 @@ window.C1IMG={"historia/01_vila_menina": "blobs/cbec3c49427e9a1e8a868e4eb2130af2
   frame('c1-story c1-friendship');screen.innerHTML=scenery('07_amizade_'+chosen.id)+`<header class="c1-head"><small>Capítulo 1</small><h1>Uma amizade inesperada</h1></header>`+actor(hero()+'_abaixa','c1-hero','Hero se abaixando para conversar',true)+actor(chosen.id+'_anda','c1-creature c1-approach',chosen.name+' vindo até Hero')+`<div class="c1-dialogue" aria-live="polite"><strong>${(window.C1NOME||'Hero').toUpperCase()}</strong>Então está combinado, ${chosen.name}! Vamos descobrir o Vale juntos.</div><button class="c1-nav" data-finish>Começar a aventura ▸</button>`;
   animateActors();
   sceneTimer=setTimeout(()=>{if(!root)return;const c=screen.querySelector('.c1-approach');if(c)c.outerHTML=img(chosen.id,'c1-creature c1-joy',chosen.name+' feliz');},1100);
-  screen.querySelector('[data-finish]').onclick=finish;
+  {const X=(window.C1EXTRA||[]).map(([w,t])=>[w,c1g(String(t).split('{M}').join(chosen.name))]);let xi=0;const btn=screen.querySelector('[data-finish]');if(X.length)btn.textContent='Continuar ▸';btn.onclick=()=>{if(xi<X.length){const [w,t]=X[xi++];const d=screen.querySelector('.c1-dialogue');if(d)d.innerHTML=(w?`<strong>${w.toUpperCase()}</strong>`:'')+t;btn.textContent=xi>=X.length?'Começar a aventura ▸':'Continuar ▸';return;}finish();};}
  }
  function finish(){
   if(finalizing)return;finalizing=true;
@@ -10282,14 +10283,10 @@ async function newGame(){
   /* CAP1 (02/nov, Felipe): novo começo — Capítulo 1 "Uma amizade inesperada" do Buchecha: o herói sai da vila, se perde na floresta e acha Brotim, Marolo e Fagulho numa clareira; escolhe um. */
   G.mode='intro';const _hero=await hqAsk();NOMEINTRO=await askNome(_hero,'');G.isc=null;G.ipeMon=0;
   G.mode='starter';let key;
-  {let r=null;try{window.C1NOME=NOMEINTRO||'';r=await window.CVChapter1.start({gender:_hero==='menina'?'menina':'menino'});}catch(e){console.error(e);}key=r&&SP[r.starter]?r.starter:'brotim';try{tone([523,659,784],.07);}catch(e){}}
+  {let r=null;try{window.C1NOME=NOMEINTRO||'';window.C1EXTRA=[['','Você e {M} agora são parceiros! Hora de voltar pra vila e começar a aventura de verdade.'],['','O Davi, aquele menino da vila, também ganhou monstrinhos e saiu cedo pra treinar longe daqui. Ele é bem competitivo... um dia vocês vão se esbarrar!'],['','Explore o Vale, faça amigos e siga a HISTÓRIA: o pergaminho 📜 no alto da tela mostra sua próxima missão.'],['','Treine no mato alto da Rota 1, ao norte da cidade. Quando estiver pronto, desafie a Líder Bruna na Arena de telhado azul.'],['','Aperte MENU para ver sua equipe e salvar. Boa sorte!']];r=await window.CVChapter1.start({gender:_hero==='menina'?'menina':'menino'});}catch(e){console.error(e);}key=r&&SP[r.starter]?r.starter:'brotim';try{tone([523,659,784],.07);}catch(e){}}
   party=[mk(key,5)];storage=[];bag={ball:5,potion:2};flags={};
   G.mode='intro';
-  flags.starter=key;flags.hero=_hero;flags.nome=NOMEINTRO;flags.cap1=1;G.mode='intro';await say(`Você e ${SP[key].name} agora são parceiros! Hora de voltar pra vila e começar a aventura de verdade.`);
-  await say('O Davi, aquele menino da vila, também ganhou monstrinhos e saiu cedo pra treinar longe daqui. Ele é bem competitivo... um dia vocês vão se esbarrar!');
-  await say('Explore o Vale, faça amigos e siga a HISTÓRIA: o pergaminho 📜 no alto da tela mostra sua próxima missão.');
-  await say('Treine no mato alto da Rota 1, ao norte da cidade. Quando estiver pronto, desafie a Líder Bruna na Arena de telhado azul.');
-  await say('Aperte MENU para ver sua equipe e salvar. Boa sorte!');
+  flags.starter=key;flags.hero=_hero;flags.nome=NOMEINTRO;flags.cap1=1;G.mode='intro';
   G.map='home';placeAt(4,3,'down');saveGame();}
 /* ---------- PRESENTE DIÁRIO (sequência de 7 dias, inspirado nos bônus diários dos jogos de criaturas modernos) ---------- */
 const DREW=[{c:100,ic:'coin',l:'100 moedas'},{items:{ball:3},ic:'ball',l:'3 Cápsulas'},{items:{potion:3},ic:'potion',l:'3 Poções'},{c:200,ic:'coin',l:'200 moedas'},{items:{sball:2},ic:'sball',l:'2 Super Cápsulas'},{g:5,items:{super:2},ic:'crystal',l:'5 cristais + 2 Super Poções'},{c:300,g:10,items:{candy:1},ic:'candy',l:'Doce Mágico, 300 moedas e 10 cristais'}];

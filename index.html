@@ -56,6 +56,21 @@
 #cv-chapter .c1-tools{display:none!important}
 
 </style>
+<script>/* TELAPWA (02/nov, medidas do iPhone do Felipe no ícone: tela 393x852, mas a página recebia só 793 de altura e o jogo terminava em 759 → faixa preta embaixo).
+   Aberto pelo ícone, em pé: a página, o palco e as telas cheias usam a altura de verdade da tela, e o jogo mede o tamanho pelo palco. */
+(function(){try{const sa=navigator.standalone===true||matchMedia('(display-mode: standalone)').matches||/telapwa/.test(location.hash);if(!sa)return;
+  const D=document.documentElement,gd=k=>Object.getOwnPropertyDescriptor(window,k)||Object.getOwnPropertyDescriptor(Window.prototype,k);const dH=gd('innerHeight'),dW=gd('innerWidth');
+  const oH=()=>dH&&dH.get?dH.get.call(window):D.clientHeight,oW=()=>dW&&dW.get?dW.get.call(window):D.clientWidth;
+  const st=document.createElement('style');(document.head||D).appendChild(st);let F=0;
+  const apply=()=>{try{const port=D.clientHeight>=D.clientWidth,full=port?Math.max(screen.width,screen.height):0,f=full&&full>D.clientHeight+20?full:0;if(f===F)return;F=f;
+    st.textContent=f?`html,body{height:${f}px!important;max-height:none!important;bottom:auto!important}
+#stage{bottom:auto!important;height:calc(${f}px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important}
+#cv-chapter,#cv-novas,#levBox,#duoBox,#ldr{bottom:auto!important;height:${f}px!important}`:'';try{dispatchEvent(new Event('resize'));}catch(e){}}catch(e){}};
+  apply();setInterval(apply,500);addEventListener('orientationchange',()=>setTimeout(apply,300));
+  const stg=()=>document.getElementById('stage');
+  try{Object.defineProperty(window,'innerHeight',{configurable:true,get(){if(F){const s=stg();if(s){const h=s.getBoundingClientRect().height;if(h>100)return Math.round(h);}}return oH();}});
+      Object.defineProperty(window,'innerWidth',{configurable:true,get(){if(F){const s=stg();if(s){const w=s.getBoundingClientRect().width;if(w>100)return Math.round(w);}}return oW();}});}catch(e){}
+}catch(e){}})();</script>
 <script>/* CAP1 */
 window.C1IMG={"historia/01_vila_menina": "blobs/cbec3c49427e9a1e8a868e4eb2130af2.webp", "historia/01_vila_menino": "blobs/f3005300484644bb4faa27e6e8af3187.webp", "historia/02_montanhas_menina": "blobs/f8144631640fde960e06cc2da972cadc.webp", "historia/02_montanhas_menino": "blobs/60257f60b2315837d88447ffd991ec67.webp", "historia/03_quarto_menina": "blobs/bf002f9cff2647c4e168bca7f3f62242.webp", "historia/03_quarto_menino": "blobs/a375208241adf4c16033ad6b5983a77f.webp", "historia/04_saida_menina": "blobs/ec000b69c06ea414091053bddb0f6590.webp", "historia/04_saida_menino": "blobs/66dc293ddcf2cc9bccd52b14f38ffd4f.webp", "historia/05_floresta_menina": "blobs/6fbe475cdc501eb6e45ee6284ed59565.webp", "historia/05_floresta_menino": "blobs/a3d9fccdf98f447de1006e504c301a0c.webp", "historia/06_clareira_menina": "blobs/534b49e4c299a28578d8045e8dbe2d08.webp", "historia/06_clareira_menino": "blobs/75033899fe803d3fa2241c48d74f518f.webp", "historia/07_amizade_brotim_menina": "blobs/41a4958504df90e1f0e9d88c933fcc59.webp", "historia/07_amizade_brotim_menino": "blobs/c969c2a51b740e51ec9bf6fea91f85f3.webp", "historia/07_amizade_fagulho_menina": "blobs/c082a53c51893e69f5574a677d2e40db.webp", "historia/07_amizade_fagulho_menino": "blobs/0eba2f046edcf99acf3ef651bf8dda4c.webp", "historia/07_amizade_marolo_menina": "blobs/e7b8706b9289f6c80a2290410ee3907c.webp", "historia/07_amizade_marolo_menino": "blobs/b8f95cba83bdd7ba3aeaf60711d3fe5c.webp", "brotim": "blobs/b6293ccef76f4f5ba426a2d900a73580.webp", "cartao_agua": "blobs/bc37e1248c2127c80352285592e70f94.webp", "cartao_fogo": "blobs/568fe38b5938e43b6caa4e004bb2f874.webp", "cartao_planta": "blobs/7acad4fee1c123c4a5a8f4b6be5423ea.webp", "fagulho": "blobs/73a8cd0cbf1edc63cd37741be194d10d.webp", "hero": "blobs/ee0ae72d2bbcf141f65284c0d29373a8.webp", "hero_costas": "blobs/a769c2792d11642ac72ee9f48225872e.webp", "heroina": "blobs/1a5a2ba7de05795c6c99c27639ef3c7c.webp", "heroina_costas": "blobs/c0c9bd3fb99a4789ddb3a647e41328cb.webp", "marolo": "blobs/91726c78f12cda35cfa034a785e1c977.webp"};
 (()=>{

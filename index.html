@@ -4779,7 +4779,7 @@ function wArcherMark(e,t,sc){const hy=e.y-(sc*36+10);if(e.acd<=34){const q=1-e.a
   else{const cx=e.x+11*sc/.5,cy=e.y-sc*20;b.save();b.globalAlpha=.85;b.beginPath();b.arc(cx,cy,3,0,Math.PI*2);b.lineWidth=.8;b.strokeStyle='#ff6a5a';b.stroke();ln([[cx-4.5,cy],[cx-1.5,cy]],.7,'#ff6a5a');ln([[cx+1.5,cy],[cx+4.5,cy]],.7,'#ff6a5a');ln([[cx,cy-4.5],[cx,cy-1.5]],.7,'#ff6a5a');ln([[cx,cy+1.5],[cx,cy+4.5]],.7,'#ff6a5a');b.restore();}}
 function wDmg(d){const mv=MOVES[d.mv],stab=mv.type===SP[d.sp].type?1.5:1;return (d.mDmg||1)*(Math.floor((2*d.m.lv/5+2)*mv.pow*d.st.atk/Math.max(8,d.m.lv+5))/50+2)*stab*WL.mDmg*(TRV(d.sp)?1.12:1);}
 function wKill(e,type,src){const w=WL;e.dead=true;w.kills++;try{wNewKill(w,e);}catch(er){}if(w.vamp)w.wall=Math.min(w.wallMax,w.wall+w.vamp);wCombo(e);w.dying.push({sp:e.sp,x:e.x,y:e.y,sc:eSc(e),flip:e.flip,t:0,col:TYPECOL[type]||C.white});
-  for(const d of (w.tutS?[]:w.defs)){const was=d.charge<100;d.charge=Math.min(100,d.charge+(d===src?8:3)*.5*w.chargeMul*d.cMul*(e.boss?4:1));/* 24/out: especial enche na metade da velocidade */if(was&&d.charge>=100){wPop(d.x,d.y-30,'ESPECIAL PRONTO!',C.yellow,7);part(d.x,d.y-6,spCol(d.sp),1,{kind:'ring',sp:0,life:24,grav:0});}}
+  for(const d of (w.tutS?[]:w.defs)){const was=d.charge<100;d.charge=Math.min(100,d.charge+(d===src?8:3)*.5*(w.duo?duoSt(w,d._ow,'chargeMul'):w.chargeMul)*d.cMul*(e.boss?4:1));/* 24/out: especial enche na metade da velocidade */if(was&&d.charge>=100){wPop(d.x,d.y-30,'ESPECIAL PRONTO!',C.yellow,7);part(d.x,d.y-6,spCol(d.sp),1,{kind:'ring',sp:0,life:24,grav:0});}}
   part(e.x,e.y,'rgba(235,235,245,.9)',7,{kind:'smoke',sp:.7,life:26,grav:-.02,size:3});part(e.x,e.y,C.yellow,e.boss?10:3,{kind:'coin',sp:1.2,up:1.6,life:34,grav:.08});
   part(e.x,e.y,TYPECOL[type]||C.white,8,{sp:2});if(e.boss){w.shake=20;w.flash=.6;}}
 
@@ -4861,13 +4861,13 @@ function wMinion(x,y){const w=WL,m=mk('pipiu',Math.max(2,w.avg-2+w.wave)),st=sta
 function wHit(e,dmgBase,type,isSplash,shot){const w=WL;if(e.dead||e.y<30-(w.ext||0))return;dmgBase*=defF(e,w.avg);{const fm=fDef(e,type,isSplash);if(fm<=0){fDodgePop(wPop,e,fm);return;}dmgBase*=fm;}
   if(e.wdodge&&!isSplash&&Math.random()<.35){if(Math.random()<.4)wPop(e.x,e.y-20,'DESVIOU!','#e8e4ff',6.5);return;}
   const eff=effOf(type,SP[e.sp].type),crit=!isSplash&&Math.random()<w.crit;
-  let dmg=Math.max(1,Math.round(dmgBase*eff*(crit?(1.6*w.critMul):1)*(isSplash?.5:1)*(e.kind==='tank'?.8:1)*(e.curse>0?1+.2*w.curse:1)*(e.armorW&&!crit?.4:1)*(w.exec&&e.hp<e.max*.3?1+.4*w.exec:1)*(w.firstHit&&e.hp>=e.max?1+w.firstHit:1)*(w.hunt&&(e.boss||e.elite)?1+.35*w.hunt:1)));
+  let dmg=Math.max(1,Math.round(dmgBase*eff*(crit?(1.6*w.critMul):1)*(isSplash?.5:1)*(e.kind==='tank'?.8:1)*(e.curse>0?1+.2*(w.duo&&e._cuK!=null?e._cuK:w.curse):1)*(e.armorW&&!crit?.4:1)*(w.exec&&e.hp<e.max*.3?1+.4*w.exec:1)*(w.firstHit&&e.hp>=e.max?1+w.firstHit:1)*(w.hunt&&(e.boss||e.elite)?1+.35*w.hunt:1)));
   if(e.shield>0){const a=Math.min(e.shield,dmg);e.shield-=a;dmg-=a;if(e.shield<=0){part(e.x,e.y,'#7fc4ff',12,{sp:2.2});wPop(e.x,e.y-28,'ESCUDO QUEBROU!','#7fc4ff',7);}}
   e.hp-=dmg;e.hit=8;part(e.x,e.y-4,TYPECOL[type]||C.white,isSplash?2:5,{sp:1.6,life:16});if(!isSplash&&shot&&shot.src&&TRV(shot.src.sp)){for(const o of WL.foes)if(o!==e&&!o.dead&&Math.hypot(o.x-e.x,o.y-e.y)<28)wHit(o,dmgBase*.3,'eletrico',true);part(e.x,e.y-6,'#ffe066',6,{sp:2.2,life:14});}
   wPop(e.x+(Math.random()*8-4),e.y-20,(crit?'CRÍTICO ':'')+dmg,dmgCol(type,eff),crit?9:eff>1?10:8);
-  if(!isSplash){if(type==='fogo'&&w.burn)e.burn=120+60*w.burn;if(type==='agua'&&w.slow)e.slow=90+40*w.slow;
+  if(!isSplash){if(type==='fogo'&&w.burn){e.burn=120+60*w.burn;if(w.duo)e._buK=w.burn;}if(type==='agua'&&w.slow)e.slow=90+40*w.slow;
     if(type==='planta'&&w.root&&Math.random()<.2+.15*w.root)e.root=50+20*w.root;if(type==='rocha'&&w.stun&&Math.random()<.15+.12*w.stun)e.stun=50;
-    if(type==='fantasma'&&w.curse)e.curse=200;
+    if(type==='fantasma'&&w.curse){e.curse=200;if(w.duo)e._cuK=w.curse;}
     if(type==='eletrico'&&w.chain){const nx=w.foes.filter(o=>o!==e&&!o.dead).sort((a,c2)=>Math.hypot(a.x-e.x,a.y-e.y)-Math.hypot(c2.x-e.x,c2.y-e.y)).slice(0,w.chain);for(const o of nx)if(Math.hypot(o.x-e.x,o.y-e.y)<70){w.zaps.push({x1:e.x,y1:e.y,x2:o.x,y2:o.y,life:10});wHit(o,dmgBase*.5,type,true);}}
     if(type==='normal'&&w.knock&&!e.boss)e.y=Math.max(10,e.y-5*w.knock);
     if(w.splash){part(e.x,e.y,'#ffb04a',8,{sp:2.4,life:14});for(const o of w.foes)if(o!==e&&!o.dead&&Math.hypot(o.x-e.x,o.y-e.y)<22+8*w.splash)wHit(o,dmgBase*(.3+.2*w.splash)/.5,type,true);}
@@ -4905,7 +4905,7 @@ function wUpdate(){const w=WL;w.t++;wDanger(w);if((flags.wallAuto||(w.duo&&w.duo
   bfxStep(w.ctx);
   for(const e of w.foes){if(e.dead)continue;bTick(w.ctx,e);if(e.dead)continue;fTick(w.ctx,e);if(e.ft&&e.ft.zig&&!e.stun)e.x=Math.max(10,Math.min(170,e.x+Math.sin(w.t/14+e.wob)*.5));e.age=(e.age||0)+1;if(e.hit>0)e.hit--;if(e.curse>0)e.curse--;
     if((e.kind==='tank'||e.boss)&&e.y<MSTOP()&&!e.stun&&!e.root&&Math.round(w.t+e.wob*10)%30===0){part(e.x+(Math.random()*10-5),e.y+(e.boss?26:16),'rgba(210,190,140,.8)',3,{kind:'smoke',sp:.5,life:18,grav:-.01,size:2.4});if(e.boss)w.shake=Math.max(w.shake,3);}
-    if(e.burn>0){e.burn--;if(e.burn%30===0){const bd=Math.max(1,Math.round(e.max*.035*(1+.5*(w.burn-1))));e.hp-=bd;wPop(e.x,e.y-14,bd,'#ff9a3a',7);part(e.x,e.y,'#ff7a2a',3,{sp:.6,up:.8,life:14,grav:-.03});if(e.hp<=0){wKill(e,'fogo');continue;}}}
+    if(e.burn>0){e.burn--;if(e.burn%30===0){const bd=Math.max(1,Math.round(e.max*.035*(1+.5*((w.duo&&e._buK!=null?e._buK:w.burn)-1))));e.hp-=bd;wPop(e.x,e.y-14,bd,'#ff9a3a',7);part(e.x,e.y,'#ff7a2a',3,{sp:.6,up:.8,life:14,grav:-.03});if(e.hp<=0){wKill(e,'fogo');continue;}}}
     if(e.boss){e.stun=0;e.root=0;e.slow=0;}if(e.stun>0){e.stun--;continue;}if(e.root>0){e.root--;continue;}
     const stop=e.boss?MSTOP()-16:e.archer?MSTOP2(e):MSTOP();
     if(e.y<stop){if(e.slowIn&&e.y>=262-wRng(w,null)*.92)e.slowIn=0;e.y+=e.spd*MSPDK()*(e.slow>0?.4:1)*fMove(e)*(w.nearSlow&&!e.boss&&e.y>stop-70?1-w.nearSlow:1)*(e.slowIn?1:1);if(e.slow>0)e.slow--;if(e.kind==='fast'&&w.t%6===0)part(e.x,e.y+10,'rgba(210,190,140,.8)',1,{kind:'smoke',sp:.2,life:14,grav:0,size:2});}
@@ -4913,12 +4913,12 @@ function wUpdate(){const w=WL;w.t++;wDanger(w);if((flags.wallAuto||(w.duo&&w.duo
     else if(++e.atk>=40){e.atk=0;e.hitAnim=8;w.ctx.fx.push({k:'hitfx',x:e.x,y:e.y+16,t:0,dur:10,col:TYPECOL[SP[e.sp].type]||'#ffffff',big:e.boss||e.kind==='tank'?1:0});const dmg=wWallDmg(e,e.boss?3:e.kind==='tank'?1.6:e.elite?1.5:1);if(wShield(w)){wPop(e.x,262,'BLOQUEADO!','#bfe8ff',7);part(e.x,274,'#dff8ff',5,{sp:1.4,life:16});}else{w.wall=Math.max(0,w.wall-dmg);w.shake=8;wPop(e.x,272,'-'+dmg,'#ff5a4a',9);}
       part(e.x,e.y+14,'#8d8378',5,{kind:'debris',sp:1.4,up:1,life:30,grav:.12,size:2});
       if(w.thorns){const td=Math.round(w.thorns*6+e.max*.03);e.hp-=td;wPop(e.x,e.y-20,td,'#b8f0a0',7);part(e.x,e.y+8,'#c8c8d0',4,{sp:1.2});if(e.hp<=0){wKill(e,'normal');continue;}}}}
-  for(const d of w.defs){if(d.fire>0)d.fire--;if(d.stun>0){d.stun--;continue;}if(--d.cd>0)continue;
+  for(const d of w.defs){if(w.duo)DUO_OW=d._ow|0;if(d.fire>0)d.fire--;if(d.stun>0){d.stun--;continue;}if(--d.cd>0)continue;
     const RG=wRng(w,d);let live=w.foes.filter(e=>!e.dead&&e.y>30-(w.ext||0)&&Math.hypot(e.x-d.x,e.y-(d.y-12))<=RG).sort((a,c2)=>(c2.boss?40:0)+c2.y-a.y-(a.boss?40:0));/* 29/out (Felipe): carta lendária Olho do Caçador: primeiro quem leva mais dano do tipo do golpe; sem ninguém fraco, segue a ordem normal */if(w.typeFocus&&live.length>1){const ty=MOVES[d.mv].type,tv=TRV(String(d.sp||'').replace('*',''))&&ty==='agua',ef=e=>{const t2=SP[String(e.sp||'').replace('*','')];if(!t2)return 1;return tv?trovEff(t2.type):effOf(ty,t2.type);};live=live.map((e,i)=>[e,i,ef(e)]).sort((p2,q2)=>q2[2]-p2[2]||p2[1]-q2[1]).map(z=>z[0]);}if(d.aim&&d.aim.t>0){const A=w.foes.filter(e=>!e.dead&&e.y>30-(w.ext||0)&&Math.hypot(e.x-d.aim.x,e.y-d.aim.y)<40&&Math.hypot(e.x-d.x,e.y-(d.y-12))<=RG).sort((a,c2)=>Math.hypot(a.x-d.aim.x,a.y-d.aim.y)-Math.hypot(c2.x-d.aim.x,c2.y-d.aim.y));if(A.length)live=A;}if(!live.length){d.cd=0;continue;}
     const type=MOVES[d.mv].type,shots=(w.nMirror&&Math.random()<(w.nMirrorP||.1)?1:0)+w.multi+(d.multi||0)+(w.swarm&&type==='inseto'?2*w.swarm:0),dmg=wDmg(d);
     for(let k=0;k<shots;k++){const tg=live[k%live.length];bFire(w.ctx,{x:d.x,y:d.y-8-(WART()?WDY+8:0),sp:d.sp,mv:d.mv,type,dmg,pierce:w.pierce+(d.pierce||0),bounce:w.bounce,src:d,ang:(k-(shots-1)/2)*.1,pw:Math.min(2,Math.sqrt((d.mDmg||1)*(w.mDmg||1))),spd:Math.sqrt((d.mSpd||1)*(w.mSpd||1)),tier:d.wl||1},tg);}
     part(d.x,d.y-10,TYPECOL[type],3,{sp:.9,life:10,grav:0});d.fire=8;d.cdMax=Math.max(12,Math.round(150/(1+d.st.spd/10)/(w.mSpd*(d.mSpd||1))));d.cd=d.cdMax;}
-  for(const s of w.shots){s.x+=s.vx;s.y+=s.vy;s.rot+=.3;s.life--;if(!REDUCED&&w.t%2===0)w.parts.push({x:s.x,y:s.y,vx:0,vy:0,life:8,max:8,col:TYPECOL[s.type],size:1.5,grav:0,kind:'spark',rot:0});
+  if(w.duo)DUO_OW=0;for(const s of w.shots){s.x+=s.vx;s.y+=s.vy;s.rot+=.3;s.life--;if(!REDUCED&&w.t%2===0)w.parts.push({x:s.x,y:s.y,vx:0,vy:0,life:8,max:8,col:TYPECOL[s.type],size:1.5,grav:0,kind:'spark',rot:0});
     for(const e of w.foes){if(e.dead||s.hitSet.has(e))continue;if(Math.abs(e.x-s.x)<(e.boss?20:10)&&Math.abs(e.y-s.y)<(e.boss?22:11)){s.hitSet.add(e);wHit(e,s.dmg,s.type,false,s);if(s.pierce--<=0){s.life=0;break;}}}}
   w.shots=w.shots.filter(s=>s.life>0&&s.y>-10-(w.ext||0)&&s.x>-10&&s.x<W+10);
   if(w.meteor){if(--w.meteorT<=0){w.meteorT=Math.max(90,330-w.meteor*70);const live=w.foes.filter(e=>!e.dead&&e.y>10);if(live.length){const tg=live[Math.floor(Math.random()*live.length)];w.meteors.push({tx:tg.x,ty:tg.y,t:0});}}}
@@ -4994,9 +4994,9 @@ function wOffer(){const w=WL;if(w.rr==null)w.rr=1;const cands=[];w.nextTheme=wNe
   let leg=false;if((w.wave===5&&Math.random()<.35)||(w.wave===6&&!w.legSeen)||(w.wave===8&&Math.random()<.25)){w.legSeen=1;const L=WLEG.filter(c2=>!(w.lv[c2.id]));if(L.length&&opts.length){const c2=L[Math.floor(Math.random()*L.length)];opts[Math.min(1,opts.length-1)]={...c2,key:c2.id,mon:null};leg=true;tone([659,880,1175,1568,2093],.09);}}
   const TH=w.nextTheme&&WTHEME[w.nextTheme];if(TH){const isC=c2=>TH.counter.includes(c2.id);if(!opts.some(isC)){const pool=cands.filter(c2=>isC(c2)&&!opts.some(o=>o.key===c2.key));if(pool.length)opts[opts.length-1]=pool[Math.floor(Math.random()*pool.length)];}for(const o of opts)o.rec=isC(o);}
   w.cards={opts,i:1,t:0,leg};}
-function wPick(i){const w=WL,cd=w.cards.opts[i];if(!cd)return;cd.f(w);wcuBonus(cd,w);
+function wPick(i){const w=WL,cd=w.cards.opts[i];if(!cd)return;if(w.duo)duoCardF(w,cd);else{cd.f(w);wcuBonus(cd,w);}
   for(const di of cardTargets(cd)){const d=w.defs[di];d.wl++;d.mDmg*=1.05;d.lvT=50;part(d.x,d.y-6,C.yellow,1,{kind:'ring',sp:0,life:28,grav:0});part(d.x,d.y-6,spCol(d.sp),14,{sp:2,up:1.4,life:30});wPop(d.x,d.y-32,`NÍVEL ${d.wl}!`,C.yellow,9);}if(!cd.noLv)w.lv[cd.key||cd.id]=(w.lv[cd.key||cd.id]||0)+1;if(!w.owned.some(o=>(o.key||o.id)===(cd.key||cd.id)))w.owned.push(cd);
-  part(90,130,RAR[cd.r],24,{sp:3,life:30,grav:.04,size:2});w.cards=null;
+  part(90,130,RAR[cd.r],24,{sp:3,life:30,grav:.04,size:2});w.cards=null;if(w.duo&&!duoBothPicked(w,cd))return;
   const wr=w.wall/w.wallMax,SMW=STG&&STG.mode==='wall';w.dda=SMW?Math.max(.85,Math.min(1,w.dda*(wr<.35?.88:1))):Math.max(.75,Math.min(2.2,w.dda*(wr>.85?1.15:wr>.6?1.05:wr<.35?.88:1)));
   w.wave++;wStormStart(w);if(w.waveHeal){const hh=Math.round(w.wallMax*w.waveHeal);w.wall=Math.min(w.wallMax,w.wall+hh);wPop(90,262,'+'+hh,'#7fe88a',10);}if(w.crystal)w.shieldHits=(w.shieldHits||0)+6;w.thiefDone=w.wave%2===1;wBarrelSpawn(w.wave>=4?2:1);w.spawned=0;w.toSpawn=(SMW?Math.round((STG.i<3?5:6)+w.wave*(STG.i<3?2:2.5)+STG.i*.15+Math.min(5,(w.gap||0)/4)):8+w.wave*3)+((w.wave===5||w.wave===10)?1:0);w.bossHold=0;if(w.wave===5||w.wave===10)w.toSpawn=Math.round((w.toSpawn-1)*1.8)+56+w.wave;w.theme=w.nextTheme||null;w.rangeT=200;if(w.theme==='enxame')w.toSpawn=Math.round(w.toSpawn*1.35);w.surge=0;if(SMW&&(STG.i%3===1||STG.i>=6&&STG.i%3===0)&&w.wave>=2&&w.wave!==5&&w.wave!==10){w.surge=w.wave>=6?3:2;w.toSpawn=Math.round(w.toSpawn*(w.surge===3?1.55:1.35));}w.spawnT=70;if(SMW&&[3,6,8].includes(w.wave))w.rushAt=w.t+380;w.banner={t:80,text:w.theme?`ONDA ${w.wave}: ${WTHEME[w.theme].n}`:`ONDA ${w.wave}`,sub:'Ameaça: '+'●'.repeat(Math.max(1,Math.min(5,Math.round((w.dda-.6)*3.2))))+'○'.repeat(5-Math.max(1,Math.min(5,Math.round((w.dda-.6)*3.2))))};if(w.surge)w.banner.sub=`${w.surge} grupos de inimigos vindo!`;w.running=true;}
 /* TEMPESTADE na Muralha (inspirado nas ondas com clima dos defensores de muralha de celular): raios caem nos inimigos e os monstrinhos elétricos carregam o especial mais rápido */
@@ -5369,7 +5369,7 @@ function murIn(r,x,y,pad){pad=pad||0;return x>=r.x-pad&&x<=r.x+r.w+pad&&y>=r.y-p
 /* monstrinhos em cima das bases salvas (só com a muralha nova) */
 
 function murPlace(w){if(w._murPlaced||!MURNEW())return;w._murPlaced=1;const B=[0,1,2,3].map(i=>murLW('m'+i)).filter(Boolean);if(B.length<4)return;const used=new Set();
-  w.defs.forEach((d,i)=>{let k=w.defs.length===4?i:-1;if(k<0){let bd=1e9;B.forEach((q,j)=>{const dd=Math.abs(q.x+q.w/2-d.x);if(!used.has(j)&&dd<bd){bd=dd;k=j;}});}used.add(k);d._mk=k;const q=B[k];d.x=q.x+q.w/2;d.y=q.y+q.h+1;});}
+  w.defs.forEach((d,i)=>{let k=(w.duo||w.duoG)&&d._mk!=null?d._mk:w.defs.length===4?i:-1;if(k<0){let bd=1e9;B.forEach((q,j)=>{const dd=Math.abs(q.x+q.w/2-d.x);if(!used.has(j)&&dd<bd){bd=dd;k=j;}});}used.add(k);d._mk=k;const q=B[k];d.x=q.x+q.w/2;d.y=q.y+q.h+1;});}
 function MURBG(){try{return MURNEW()&&!!murImg('bg')&&(/^wl_cv/.test(WBGkey()||'')||!!MUR_ART['bg_'+murFase()]);}catch(e){return false;}}
 function murWB(){const r=murLR('ondas');return r&&murUI()?[r.x+1,r.y-WOY,r.y+r.h-WOY]:[4,46-WOY,228];}
 /* kit por fase (cenário, muralha e suporte): usa a peça da fase se existir */
@@ -5646,13 +5646,13 @@ async function wallMode(){if(!party.length)return;try{murPreload();}catch(e){}aw
   WL={ext:Math.max(0,H-320),bg:bioProps(bioRecolor(bakeField(Math.max(0,H-320)),STGB('wall')),STGB('wall'),(x,y)=>x>20&&x<160||y>232+Math.max(0,H-320),16),defs:defs.map((m,i)=>wDef(m,i,defs.length)),foes:[],shots:[],pops:[],parts:[],meteors:[],wave:1,spawned:0,toSpawn:STG&&STG.mode==='wall'?(STG.i<3?7:Math.round(8.5+STG.i*.15)):11,spawnT:90,dda:STG&&STG.mode==='wall'?.9:1,t:0,kills:0,avg,wall:Math.round((80+15*UP('wallHp'))*(WEASE()<1?1.75:1)),wallMax:Math.round((80+15*UP('wallHp'))*(WEASE()<1?1.75:1)),charge:15*UP('ultStart'),chargeMul:1,
     mDmg:1,mSpd:1,multi:1,pierce:0,crit:.05,critMul:1,chain:0,curse:0,zaps:[],splash:0,bounce:0,thorns:0,regen:0,burn:0,slow:0,root:0,stun:0,swarm:0,knock:0,meteor:0,meteorT:200,coinMul:1,
     lv:{},owned:[],shake:0,flash:0,ult:null,ultQ:[],dying:[],fx:[],banner:{t:80,text:'ONDA 1'},cards:null,paused:null,running:false};
-  WL.gap=0;WL.duo=DUOH||null;wcuApply(WL);WL.mDmg*=1+.08*UP('wallDmg');WL.mSpd*=1+.06*UP('wallSpd');WL.crit+=.03*UP('wallCrit');WL.critMul+=.15*UP('wallCritD');WL.regen+=UP('wallRegen')/3;
+  WL.gap=0;WL.duo=DUOH||null;if(DUOH)duoHostPre(WL);else wcuApply(WL);WL.mDmg*=1+.08*UP('wallDmg');WL.mSpd*=1+.06*UP('wallSpd');WL.crit+=.03*UP('wallCrit');WL.critMul+=.15*UP('wallCritD');WL.regen+=UP('wallRegen')/3;
   WL.ctx={fx:WL.fx,foes:()=>WL.foes.filter(e=>e.y>30-(WL.ext||0)),hit:(e,d,ty,o)=>wHit(e,d,ty,!!o.splash,o.shot),part:(...a)=>part(...a),pop:(...a)=>wPop(...a),shake:n=>{WL.shake=Math.max(WL.shake,n);},
     knock:(e,a)=>{if(e.boss)return;e.y=Math.max(8,e.y-a);},pull:(e,x,y,a)=>{if(e.boss)return;const dx=x-e.x,dy=y-e.y,l=Math.hypot(dx,dy)||1;if(l>4){e.x+=dx/l*a;e.y=Math.min(MSTOP(),e.y+dy/l*a);}},
     heal:v=>{const w=WL;if(v>=1){const h=Math.round(w.wallMax*v/100);w.wall=Math.min(w.wallMax,w.wall+h);wPop(90,262,`+${h}`,'#7fe88a',11);}else{w.healAcc=(w.healAcc||0)+v;if(w.healAcc>=1){const h=Math.floor(w.healAcc);w.healAcc-=h;w.wall=Math.min(w.wallMax,w.wall+h);}}},
     rad:e=>e.boss?20:11,dot:(e,d,col)=>{e.hp-=d;wPop(e.x,e.y-14,d,col,7);if(e.hp<=0&&!e.dead)wKill(e,'inseto');},rx:()=>20+Math.random()*140,ry:()=>40-(WL.ext||0)+Math.random()*(190+(WL.ext||0)),fwd:-Math.PI/2,ultMul:3,bounds:[-10,-30-(Math.max(0,H-320)),190,300],
     waveD:270+Math.max(0,H-320),waveL:100,waveC:[90,120],t:()=>WL.t,flash:v=>{WL.flash=Math.max(WL.flash,v);},allies:()=>WL.defs,moveFwd:(e,a)=>{if(e.y<MSTOP())e.y=Math.min(MSTOP()-1,e.y+a);},quakeR:999,allyPop:(a,txt,col)=>wPop(a.x,a.y-30,txt,col,7)};
-  wBarrelSpawn(1);G.mode='wall';await fadeTo(0);
+  if(WL.duo)duoHostInit(WL);wBarrelSpawn(1);G.mode='wall';await fadeTo(0);
   if(!flags.wallSeen2){flags.wallSeen2=true;flags.wallCatSeen=true;flags.wallBarrel=true;flags.wallSeen3=true;/* 29/out: o tutorial com mãozinha ensina */}
   if(!flags.wallCatSeen&&!DUOH){flags.wallCatSeen=true;await say('Novidade: CATAPULTA no meio da muralha! Quando ela brilhar, toque em qualquer lugar do campo pra lançar uma pedra gigante que esmaga e atordoa os inimigos.');}
   if(!flags.wallBarrel&&!DUOH){flags.wallBarrel=true;await say('Novidade: BARRIS EXPLOSIVOS caem no campo! Quando os inimigos passarem perto e o barril brilhar, TOQUE nele pra explodir tudo em volta.');}
@@ -12156,8 +12156,12 @@ setInterval(()=>{try{if(TUTON||!party.length||document.getElementById('nomeBox')
    O PARCEIRO não simula nada: recebe ~8 fotos por segundo e desenha com o mesmo desenho da Muralha; os toques dele viram pedidos pro dono.
    Tópicos da sala (capacidade room; sem ela, BroadcastChannel entre abas do mesmo navegador pra teste):
    mdj parceiro→dono (entrada: monstrinhos + bandeiras), mdw dono→parceiro (boas-vindas), mds dono→parceiro (foto), mda parceiro→dono (ação), mdr dono→parceiro (fim).
-   Etapa 1: cartas escolhidas pelo dono (compartilhadas); prêmios só pros monstrinhos de cada salvo (o parceiro recebe só a mensagem). */
-let DUOH=null,DUOG=null,DUO_CUR=null,DUO_HASHOK=0,DUO_AUTOC=0;
+   Etapa 1: prêmios só pros monstrinhos de cada salvo (o parceiro recebe só a mensagem).
+   Etapa 2 (02/nov, Felipe: "cada um com as próprias cartas, baseado no que já fez"): depois de cada onda OS DOIS escolhem ao mesmo tempo,
+   cada um com 3 cartas só dele (cartas de monstrinho só dos dele; cartas de time só valem pros dele; cartas da muralha são da muralha e somam).
+   A próxima onda só começa quando os dois escolheram. Lugares: dono na esquerda, parceiro na direita, do meio pra ponta.
+   Mais um tópico: mdc dono→parceiro (as cartas dele; só quando mudam). */
+let DUOH=null,DUOG=null,DUO_CUR=null,DUO_HASHOK=0,DUO_AUTOC=0,DUO_OW=0;
 const DUO_LET='ABCDEFGHJKLMNPQRSTUVWXYZ',DUO_KIND=['norm','fast','tank','shield','boss'],DUO_FXOK=new Set(['ring','pillar','hitfx','crack','bolt','zone','wave','spirit','shot','pow','heal','dash','boom','twave','tornado','splash','mcircle','lob','jet','flame','dust','dim','cutin','cast','bigwave','beam']);
 function duoElig(list){const r=list.filter(m=>{try{return behOf(m.sp,m.lv).k!=='whip';}catch(e){return true;}});return r.length?r:list;}
 function duoSer(m){return{sp:m.sp,lv:m.lv,xp:m.xp,hp:m.hp,moves:m.moves,sh:m.sh?1:0,bon:m.bon||null,buf:m.buf||0};}
@@ -12165,8 +12169,8 @@ function duoSer(m){return{sp:m.sp,lv:m.lv,xp:m.xp,hp:m.hp,moves:m.moves,sh:m.sh?
 function duoDes(o){if(!o||typeof o!=='object'||typeof o.sp!=='string'||!SP[o.sp])return null;const lv=Math.max(1,Math.min(100,Math.round(+o.lv||1))),mm=mk(o.sp,lv),bon={};
   if(o.bon&&typeof o.bon==='object')for(const k of ['hp','atk','def','spd'])if(isFinite(+o.bon[k]))bon[k]=Math.max(0,Math.min(999,Math.round(+o.bon[k])));
   return{sp:o.sp,lv,xp:mm.xp,hp:mm.hp,dhp:mm.hp,moves:mm.moves,sh:!!o.sh,bon,buf:isFinite(+o.buf)?+o.buf:0};}
-/* teste (#dupla-teste2): o parceiro usa os 2 primeiros do Sítio (ou um par fixo), pra ver 4 monstrinhos diferentes com o mesmo salvo */
-function duoGuestPick(){if(/dupla-teste2/.test(location.hash||'')){const s=duoElig(storage).filter(m=>!party.slice(0,2).some(p=>p.sp===m.sp));if(s.length>=2)return s.slice(0,2);const lv=Math.max(5,Math.round(party[0]?party[0].lv:10));return [mk('marolo',lv),mk('pedrisco',lv)];}return duoElig(party).slice(0,2);}
+/* teste (#dupla-teste2): o parceiro usa os 2 primeiros do Sítio (ou um par fixo), pra ver 4 monstrinhos diferentes com o mesmo salvo; #dupla-teste1: o parceiro leva só 1 */
+function duoGuestPick(){if(/dupla-teste1/.test(location.hash||''))return duoElig(party).slice(0,1);if(/dupla-teste2/.test(location.hash||'')){const s=duoElig(storage).filter(m=>!party.slice(0,2).some(p=>p.sp===m.sp));if(s.length>=2)return s.slice(0,2);const lv=Math.max(5,Math.round(party[0]?party[0].lv:10));return [mk('marolo',lv),mk('pedrisco',lv)];}return duoElig(party).slice(0,2);}
 /* ---------- sala ---------- */
 function duoLocal(){if(!('BroadcastChannel' in window))return null;const me=Math.random().toString(36).slice(2,10);
   return {local:true,async join(nome){const bc=new BroadcastChannel('mduo-'+nome),ouv={},pf=[];let pres={},peers={},vivo=true;const lista=()=>Object.values(peers);
@@ -12308,7 +12312,7 @@ async function duoCriar(fin){duoMsg('Abrindo a sala…');const room=await duoRoo
   duoStep('esp');document.getElementById('duoCodTxt').textContent=cod;duoMsg('Esperando o parceiro entrar…');
   document.getElementById('duoEspTxt').textContent=room.local?'Modo local (teste): abra outra aba deste navegador e digite o código.':'Mande esse código pro seu parceiro. A partida começa quando ele entrar.';
   duoPres(S,{r:'host'});let comecou=false;
-  S.on('mdj',m=>{if(m.isMe||m.sameTab)return;if(DUOH&&DUOH.S===S){DUOH.wNow=1;return;}if(comecou)return;const d=m.data||{},gm=(Array.isArray(d.mons)?d.mons:[]).slice(0,2).map(duoDes).filter(Boolean);if(!gm.length)return;comecou=true;fin({role:'host',S,cod,gm,gj:d});});
+  S.on('mdj',m=>{if(m.isMe||m.sameTab)return;if(DUOH&&DUOH.S===S){DUOH.wNow=1;if(DUOH.cp)DUOH.cp.ack=0;return;}if(comecou)return;const d=m.data||{},gm=(Array.isArray(d.mons)?d.mons:[]).slice(0,2).map(duoDes).filter(Boolean);if(!gm.length)return;comecou=true;fin({role:'host',S,cod,gm,gj:d});});
   DUO_CUR={cancel:()=>{try{S.leave();}catch(e){}}};}
 async function duoEntrar(cod,fin){cod=(cod||'').toUpperCase().replace(/[^A-Z]/g,'');if(cod.length!==4)return duoMsg('O código tem 4 letras.',1);
   duoMsg('Procurando a sala '+cod+'…');const room=await duoRoom();if(!room)return duoMsg('Não deu pra conectar neste aparelho.',1);let S;
@@ -12321,26 +12325,27 @@ async function duoEntrar(cod,fin){cod=(cod||'').toUpperCase().replace(/[^A-Z]/g,
   await new Promise(r=>setTimeout(r,12000));if(!ok){clearInterval(iv);ok=true;duoMsg('Sala '+cod+' não encontrada. Confira o código e se os dois abriram o jogo pelo '+(duoNoApp()?'App':'Claude')+'.',1);try{S.leave();}catch(e){}}}
 /* ---------- DONO DA SALA ---------- */
 async function duoHostRun(r){const hm=duoElig(party).slice(0,2);
-  const H0=DUOH={S:r.S,cod:r.cod,hm,gm:r.gm,gAuto:!!(r.gj&&r.gj.auto),gfl:(r.gj&&r.gj.fl)||{},gnome:String((r.gj&&r.gj.nome)||'').slice(0,12),off:false,ack:0,wNow:1,k:0,ended:false};
+  const H0=DUOH={S:r.S,cod:r.cod,hm,gm:r.gm,gAuto:!!(r.gj&&r.gj.auto),gfl:duoFlSan(r.gj&&r.gj.fl),cseq:0,cp:null,P:null,gnome:String((r.gj&&r.gj.nome)||'').slice(0,12),off:false,ack:0,wNow:1,k:0,ended:false};
   r.S.on('mda',m=>{if(m.isMe||m.sameTab||DUOH!==H0)return;try{duoHostAct(H0,m.data||{});}catch(e){console.error(e);}});
   r.S.onPeers(ch=>{if(DUOH!==H0)return;const tem=(ch.peers||[]).some(p=>!p.isMe&&!p.sameTab&&p.presence&&p.presence.r==='guest');
     if(!tem&&!H0.off)H0.off=true;else if(tem&&H0.off){H0.off=false;try{if(WL&&WL.duo===H0)wPop(90,140,'PARCEIRO VOLTOU!',C.yellow,10);}catch(e){}}});
   const wel={mons:[...hm,...r.gm].map(duoSer),n:hm.length,nome:String(flags.nome||'').slice(0,12)};
   const iv=setInterval(()=>{try{if(DUOH!==H0)return;H0.k++;if(H0.wNow||(!H0.ack&&H0.k%16===1)){H0.wNow=0;duoEmit(H0.S,'mdw',wel);}
-      if(WL&&WL.duo===H0&&!H0.ended){const s=duoSnap(WL);if(s)duoEmit(H0.S,'mds',s);}}catch(e){console.error(e);}},125);
+      if(WL&&WL.duo===H0&&!H0.ended){const s=duoSnap(WL);if(s)duoEmit(H0.S,'mds',s);const cp=H0.cp;if(cp&&cp.gc&&!cp.done[1]&&!H0.off&&cp.ack!==cp.gc.q&&H0.k-cp.sentK>=16)duoSendCards(H0,WL);}}catch(e){console.error(e);}},125);
   try{await wallMode();}finally{clearInterval(iv);if(DUOH===H0)DUOH=null;setTimeout(()=>{try{r.S.leave();}catch(e){}},1500);}}
-function duoHostAct(H0,a){const w=WL;if(a.k==='hb'){H0.gAuto=!!a.auto;H0.ack=1;return;}if(!w||w.duo!==H0||!w.running||w.cards||w.paused||H0.off||ui.length)return;
+function duoHostAct(H0,a){const w=WL;if(a.k==='hb'){H0.gAuto=!!a.auto;H0.ack=1;return;}
+  if(a.k==='cack'||a.k==='pick'||a.k==='rr'){const cp=H0.cp;if(!w||w.duo!==H0||!cp||!cp.gc||(a.q|0)!==cp.gc.q)return;if(a.k==='cack')cp.ack=cp.gc.q;else if(a.k==='pick')duoPick(w,1,a.i);else duoReroll(w,1,false);return;}if(!w||w.duo!==H0||!w.running||w.cards||w.paused||H0.off||ui.length)return;
   if(a.k==='ult'){const i=a.i|0;if(i>=H0.hm.length&&i<w.defs.length)wSpecial(i);}
-  else if(a.k==='tap'){const x=+a.x,y=+a.y;if(!isFinite(x)||!isFinite(y)||x<-20||x>200||y<-400||y>400)return;if(wThiefTap(x,y))return;if(wBarrelTap(x,y))return;wCatTap(x,y);}}
+  else if(a.k==='tap'){const x=+a.x,y=+a.y;if(!isFinite(x)||!isFinite(y)||x<-20||x>200||y<-400||y>400)return;duoAs(1,()=>{if(wThiefTap(x,y))return;if(wBarrelTap(x,y))return;wCatTap(x,y);});}}
 function duoHostEnd(res){const H0=DUOH,w=WL;if(!H0||!w)return;H0.ended=true;const d={res,wave:w.wave,kills:w.kills};[0,400,900].forEach(ms=>setTimeout(()=>duoEmit(H0.S,'mdr',d),ms));}
 /* toque no especial: na dupla o dono só solta os dele (0-1); os do parceiro (2-3) só o parceiro solta */
 function wTapSp(i){const w=WL;if(w&&w.duo&&i>=w.duo.hm.length){const d=w.defs[i];if(d)wPop(d.x,d.y-30,'É DO PARCEIRO','#9fd0ff',7);return;}wSpecial(i);}
 /* foto da partida (≤4KB): cabeçalho, defensores, inimigos (com id fixo), e enfeites pequenos; se passar do limite, corta efeitos e depois inimigos de trás */
-function duoFxPlain(f){const o={};for(const k in f){if(k==='hist'||k==='hitSet'||k==='hit')continue;const v=f[k],ty=typeof v;
+function duoFxPlain(f){const o={};for(const k in f){if(k==='hist'||k==='hitSet'||k==='hit'||k==='_ow')continue;const v=f[k],ty=typeof v;
     if(ty==='number')o[k]=Math.round(v*100)/100;else if(ty==='string'||ty==='boolean')o[k]=v;
     else if(Array.isArray(v)&&v.length<=24&&v.every(q=>typeof q==='number'||(Array.isArray(q)&&q.length<=4&&q.every(z=>typeof z==='number'))||(q&&typeof q==='object'&&!Array.isArray(q)&&Object.values(q).every(z=>typeof z==='number'))))o[k]=JSON.parse(JSON.stringify(v,(kk,z)=>typeof z==='number'?Math.round(z*100)/100:z));}return o;}
 function duoSnap(w){const R=Math.round,H0=w.duo;for(const e of w.foes)if(!e._id)e._id=(w._fid=(w._fid||0)+1);
-  const s={t:w.t,h:[w.wave,R(w.wall),w.wallMax,w.kills,w.ext||0,MSTOP(),w.running?1:0,w.paused?1:0,w.cards?1:0,w.combo||0,w.comboT||0,w.shake||0,R((w.flash||0)*100),w.spawned||0,w.toSpawn||0,w.bossW||0,H0.off?1:0,R(w.shieldT||0),w.shieldHits||0,w.phoenix?1:0,R(w.rangeT||0)],
+  const s={t:w.t,h:[w.wave,R(w.wall),w.wallMax,w.kills,w.ext||0,MSTOP(),w.running?1:0,w.paused?1:0,(w.cards||H0.cp)?1:0,w.combo||0,w.comboT||0,w.shake||0,R((w.flash||0)*100),w.spawned||0,w.toSpawn||0,w.bossW||0,H0.off?1:0,R(w.shieldT||0),w.shieldHits||0,w.phoenix?1:0,R(w.rangeT||0)],
     d:w.defs.map(d=>[R(d.charge||0),R(d.cd||0),d.cdMax||60,d.fire||0,d.lvT||0,d.wl||1,d.castT|0,d.throwT|0,d.stun|0,d.ultT|0,d.aim&&d.aim.t>0?[R(d.aim.x),R(d.aim.y),d.aim.t]:0])};
   if(w.banner)s.b=[w.banner.text||'',w.banner.sub||'',w.banner.t|0];if(w.bossIntro)s.bi=w.bossIntro.t|0;
   if(w.ult)s.u=[w.ult.defs&&w.ult.defs[0]?w.defs.indexOf(w.ult.defs[0]):-1,w.ult.t|0,w.ult.dur|0];if(w.ultQ&&w.ultQ.length)s.uq=w.ultQ.slice(0,4);
@@ -12351,7 +12356,7 @@ function duoSnap(w){const R=Math.round,H0=w.duo;for(const e of w.foes)if(!e._id)
   if(w.lobs&&w.lobs.length)s.lb=w.lobs.slice(0,8).map(L=>[R(L.x0),R(L.y0),R(L.x1),R(L.y1),L.t|0,L.dur|0,L.col||'',L.type||'',L.flat?1:0]);
   if(w.storm)s.sm=w.storm.t|0;if(w.theme)s.th2=w.theme;if(w._wtW===w.wave&&w._wt)s.wt=Object.entries(w._wt).slice(0,6);
   if(w.pops.length)s.p=w.pops.slice(-10).map(p=>[R(p.x),R(p.y),String(p.t).slice(0,24),typeof p.col==='string'?p.col:'#ffffff',+p.size||8,p.life|0,Math.round((p.vy||0)*100)/100]);
-  if(w.cards)s.c=w.cards.opts.map(o=>[String(o.n||'').slice(0,24),o.r|0,o.mon==null?-1:o.mon]);
+  if(H0.cp)s.cp=[H0.cp.done[0],H0.cp.done[1],H0.cp.gc?H0.cp.gc.q:0];
   const foes=w.foes.filter(e=>!e.dead).sort((a,c2)=>(c2.boss?999:0)+c2.y-a.y-(a.boss?999:0));
   s.f=foes.slice(0,70).map(e=>[e._id,e.sp,R(e.x),R(e.y),R(e.hp),R(e.max),(DUO_KIND.indexOf(e.boss?'boss':e.kind)&7)|(e.elite?8:0)|(e.archer?16:0)|(e.stun>0?32:0)|(e.slow>0?64:0)|(e.root>0?128:0)|(e.burn>0?256:0)|(e.frz>0?512:0)|(e.enr?1024:0)|(e.flip?2048:0)|(e.curse>0?4096:0),e.atk|0,e.hit|0,e.acd|0,R(e.shield||0)]);
   let js=JSON.stringify(s);const fx=[];let fl=0;
@@ -12359,11 +12364,11 @@ function duoSnap(w){const R=Math.round,H0=w.duo;for(const e of w.foes)if(!e._id)
   if(fx.length)s.x=fx;js=JSON.stringify(s);while(js.length>4000&&s.f.length>10){s.f.length=Math.floor(s.f.length*.8);js=JSON.stringify(s);}
   return js.length<=4000?s:null;}
 /* ---------- PARCEIRO ---------- */
-function duoGuestWL(mons){const ext=Math.max(0,H-320),avg=Math.round(mons.reduce((a,m)=>a+m.lv,0)/mons.length);
+function duoGuestWL(mons,nh){const ext=Math.max(0,H-320),avg=Math.round(mons.reduce((a,m)=>a+m.lv,0)/mons.length);
   WL={ext,bg:bioProps(bioRecolor(bakeField(ext),STGB('wall')),STGB('wall'),(x,y)=>x>20&&x<160||y>232+ext,16),defs:mons.map((m,i)=>wDef(m,i,mons.length)),foes:[],shots:[],pops:[],parts:[],meteors:[],wave:1,spawned:0,toSpawn:11,spawnT:90,dda:1,t:0,kills:0,avg,wall:100,wallMax:100,charge:0,chargeMul:1,
     mDmg:1,mSpd:1,multi:1,pierce:0,crit:.05,critMul:1,chain:0,curse:0,zaps:[],splash:0,bounce:0,thorns:0,regen:0,burn:0,slow:0,root:0,stun:0,swarm:0,knock:0,meteor:0,meteorT:200,coinMul:1,
     lv:{},owned:[],shake:0,flash:0,ult:null,ultQ:[],dying:[],fx:[],barrels:[],lobs:[],banner:{t:80,text:'ONDA 1'},cards:null,paused:null,running:false,duoG:true,done:()=>{}};
-  WL.gap=0;const nop=()=>{};
+  WL.gap=0;duoLay(WL.defs,nh);const nop=()=>{};
   WL.ctx={fx:WL.fx,foes:()=>WL.foes,hit:nop,part:(...a)=>part(...a),pop:(...a)=>wPop(...a),shake:nop,knock:nop,pull:nop,heal:nop,rad:e=>e.boss?20:11,dot:nop,rx:()=>90,ry:()=>100,fwd:-Math.PI/2,ultMul:3,bounds:[-10,-30-ext,190,300],
     waveD:270+ext,waveL:100,waveC:[90,120],t:()=>WL.t,flash:nop,allies:()=>WL.defs,moveFwd:nop,quakeR:999,allyPop:nop,dmg:new Map()};return WL;}
 /* posições: o topo do campo e a linha da muralha mudam com a altura da tela; o parceiro converte a foto do dono pra tela dele */
@@ -12385,7 +12390,8 @@ function duoApply(s){const G0=DUOG,w=WL;if(!G0||!w||!w.duoG||!s||!Array.isArray(
   if(s.ct)w.cat={cd:s.ct[0],arm:s.ct[1],aim:s.ct[2]/100,msgT:0,shots:s.ct[3].map(q=>({x0:q[0],y0:M(q[1]),x1:q[2],y1:M(q[3]),t:q[4],dur:q[5],rot:q[4]*.35}))};
   w.meteors=(s.mt||[]).map(m=>({tx:m[0],ty:M(m[1]),t:m[2]}));w.lobs=(s.lb||[]).map(L=>({x0:L[0],y0:M(L[1]),x1:L[2],y1:M(L[3]),t:L[4],dur:L[5],col:L[6]||'#c8b89a',type:L[7]||null,flat:!!L[8],rot:0}));
   w.storm=s.sm!=null?(w.storm||{t:s.sm,next:999}):null;if(w.storm)w.storm.t=s.sm;w.theme=s.th2||null;if(s.wt){w._wtW=w.wave;w._wt=Object.fromEntries(s.wt);}
-  w.duoCards=s.c||null;
+  {const cp=Array.isArray(s.cp)?s.cp:null;w.duoCp=cp;if(cp)G0.phQ=Math.max(G0.phQ|0,cp[2]|0);
+   if(w.cards&&((!w.duoCardsOn&&(w.cards.q|0)<=(G0.phQ|0))||(cp&&cp[1]&&(w.cards.q|0)<=(cp[2]|0))))w.cards=null;}
   w.pops=w.pops.filter(p=>p.loc).concat((s.p||[]).map(p=>({x:p[0],y:M(p[1]),t:p[2],col:p[3],size:p[4],life:p[5],vy:p[6]})));
   w.fx.length=0;for(const f of (s.x||[])){if(!f||!DUO_FXOK.has(f.k))continue;for(const k of ['y','y0','y1','y2','ty','sy'])if(typeof f[k]==='number')f[k]=M(f[k]);if(Array.isArray(f.pts))f.pts=f.pts.map(p=>Array.isArray(p)?[p[0],M(p[1])]:p);w.fx.push(f);}}
 function duoGuestStep(){const w=WL,G0=DUOG;if(!w||!G0)return;w.t++;
@@ -12403,7 +12409,8 @@ function duoGuestStep(){const w=WL,G0=DUOG;if(!w||!G0)return;w.t++;
 function duoGuestTap(x,y){const w=WL,G0=DUOG;if(!w||!G0)return;const n0p=w.pops.length;try{duoGuestTap0(x,y);}finally{for(let k=n0p;k<w.pops.length;k++)w.pops[k].loc=1;}}
 function duoGuestTap0(x,y){const w=WL,G0=DUOG;const OY=Math.max(0,H-320)-wK();
   if((G0.lag||w.duoOff)&&G0.quitR){const r=G0.quitR,sy=y+OY;if(x>=r.x&&x<=r.x+r.w&&sy>=r.y&&sy<=r.y+r.h){G0.fin&&G0.fin({res:'quit',me:1});return;}}
-  if(!G0.got||G0.lag||w.duoCards||w.duoCardsOn||w.duoPaused||w.duoOff||ui.length)return;
+  if(w.cards){if(G0.got&&!G0.lag&&!w.duoOff&&!ui.length)wTap(x,y);return;}
+  if(!G0.got||G0.lag||w.duoCardsOn||w.duoPaused||w.duoOff||ui.length)return;
   if(murUI()&&murSideTap(x,y)){duoEmit(G0.S,'mda',{k:'hb',auto:flags.wallAuto?1:0});return;}
   for(let i=Math.min(3,w.defs.length-1);i>=0;i--){const d=w.defs[i];let hit;if(murUI()){const r=murLU('c'+(d&&d._mk!=null?d._mk:i));hit=!!(r&&murIn(r,x,y));}else hit=Math.abs(x-d.x)<22&&y>291;
     if(!hit)continue;if(i<G0.n){wPop(d.x,d.y-30,'É DO PARCEIRO','#9fd0ff',7);return;}
@@ -12414,38 +12421,129 @@ async function duoGuestRun(r){const wel=r.wel,mons=wel.mons.map(duoDes).filter(B
   const endP=new Promise(res=>{G0.fin=d=>{G0.fin=null;res(d||{});};});
   r.S.on('mds',m=>{if(m.isMe||m.sameTab||DUOG!==G0)return;try{duoApply(m.data);}catch(e){console.error(e);}});
   r.S.on('mdr',m=>{if(m.isMe||m.sameTab||DUOG!==G0)return;G0.fin&&G0.fin(m.data);});
+  r.S.on('mdc',m=>{if(m.isMe||m.sameTab||DUOG!==G0)return;try{duoGotCards(m.data);}catch(e){console.error(e);}});
   r.S.onPeers(ch=>{if(DUOG!==G0)return;G0.hostOn=(ch.peers||[]).some(p=>!p.isMe&&!p.sameTab&&p.presence&&p.presence.r==='host');});
   const hb=setInterval(()=>duoEmit(G0.S,'mda',{k:'hb',auto:flags.wallAuto?1:0}),1000);duoEmit(G0.S,'mda',{k:'hb',auto:flags.wallAuto?1:0});
   try{murPreload();}catch(e){}await fadeTo(1);portraitScreen();try{murPhoneScreen(1);}catch(e){}document.body.classList.add('nopad');
-  duoGuestWL(mons);G.mode='wall';await fadeTo(0);
+  duoGuestWL(mons,G0.n);G.mode='wall';await fadeTo(0);
   let R;try{R=await endP;}finally{clearInterval(hb);}
-  WL.duoCards=null;WL.duoOff=false;WL.duoPaused=false;G0.lag=false;
+  WL.cards=null;WL.duoCardsOn=false;WL.duoOff=false;WL.duoPaused=false;G0.lag=false;
   const res=R.res,wv=R.wave|0;
   if(R.me)await say('Você saiu da partida em dupla.');else if(res==='win'){WL.flash=1;await say('VITÓRIA EM DUPLA! A muralha resistiu às 10 ondas!');}else if(res==='lose')await say(`A muralha caiu na onda ${wv}... Boa defesa em dupla! (${R.kills|0} inimigos derrotados)`);else await say('O dono da sala encerrou a partida.');
   try{r.S.leave();}catch(e){}DUOG=null;await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';WL=null;await fadeTo(0);}
+/* ---------- ETAPA 2: lugares, status e cartas de cada jogador ---------- */
+/* lugares: dono na metade esquerda, parceiro na direita, sempre do meio pra ponta (1º do dono no 1, 2º no 0; 1º do parceiro no 2, 2º no 3).
+   Quem leva 1 monstrinho fica no lugar do meio do lado dele; o lugar da ponta fica vazio. */
+function duoSlot(nh,i){return i<nh?(i===0?1:0):(i-nh===0?2:3);}
+function duoLay(defs,nh){defs.forEach((d,i)=>{d._ow=i<nh?0:1;d._mk=duoSlot(nh,i);d.x=wSX(d._mk,4);});}
+/* status de time que cada jogador tem separado (o resto do WL é da muralha e é dos dois) */
+const DUO_TEAM=['rngMul','mDmg','mSpd','crit','critMul','multi','pierce','splash','bounce','chargeMul','burn','slow','root','stun','swarm','knock','chain','curse','exec','hunt','firstHit','nMirror','nMirrorP','typeFocus','coinMul','rr','legSeen'];
+/* cartas da muralha: o nível é da muralha (limite vale pros dois juntos) */
+const DUO_WALLK=new Set(['fix','hp','bulwark','regen','spike','vamp','lanche','lama','meteor','phoenix','crystal','thornwall','nspike','nbarr','nraio','nice']);
+function duoSt(w,p,k){const o=w.duo&&w.duo.P&&w.duo.P[p|0];return o?o[k]:w[k];}
+function duoAs(p,fn){const pc=DUO_OW;DUO_OW=p|0;try{return fn();}finally{DUO_OW=pc;}}
+/* só os monstrinhos do jogador p (cartas como Chuva de Estrelas e a loja de cartas olham w.defs) */
+function duoSub(w,p,fn){const all=w.defs;w.defs=all.filter(d=>d._ow===p);try{return fn();}finally{w.defs=all;}}
+/* o salvo do parceiro: o que vem pela sala não é confiável — só chaves conhecidas e níveis dentro do limite */
+function duoFlSan(f){f=f&&typeof f==='object'?f:{};const o={up:{},wcs:{},wcu:{},pw:{}},num=(v,a,b)=>{v=Math.round(+v);return isFinite(v)?Math.max(a,Math.min(b,v)):a;};
+  try{for(const u of UPS){const v=f.up&&f.up[u.k];if(v!=null)o.up[u.k]=num(v,0,u.max||10);}}catch(e){}
+  const ids=new Set(WC.map(c=>c.id));for(const k of ['wcs','wcu']){const src=f[k]&&typeof f[k]==='object'?f[k]:{};for(const id in src)if(ids.has(id))o[k][id]=num(src[id],0,k==='wcs'?3:30);}
+  const pw=f.pw&&typeof f.pw==='object'?f.pw:{};for(const t in pw)if(TYPECOL[t])o.pw[t]=num(pw[t],1,5);return o;}
+function duoGUP(H0,k){return UPOFF.has(k)?0:(H0.gfl.up[k]||0);}
+/* roda fn com o salvo do parceiro (melhorias, loja de cartas, bônus das cartas e poderes) no lugar do salvo deste aparelho — e devolve na hora */
+function duoFl(p,fn){const H0=WL&&WL.duo;if(p!==1||!H0)return fn();const K=['up','wcs','wcu','pw'],sv=K.map(k=>[k in flags,flags[k]]);K.forEach(k=>{flags[k]=H0.gfl[k];});
+  try{return fn();}finally{K.forEach((k,j)=>{if(sv[j][0])flags[k]=sv[j][1];else delete flags[k];});}}
+function duoLvProxy(H0,own){const isW=k=>typeof k==='string'&&DUO_WALLK.has(k.split('#')[0]);
+  return new Proxy(own,{get:(t,k)=>isW(k)?H0.lvW[k]:t[k],set:(t,k,v)=>{if(isW(k))H0.lvW[k]=v;else t[k]=v;return true;},has:(t,k)=>isW(k)?k in H0.lvW:k in t});}
+/* começo da partida (antes da loja de cartas): lugares, status separados, loja de cartas de cada um, vida da muralha do melhor dos dois */
+function duoHostPre(w){const H0=w.duo;duoLay(w.defs,H0.hm.length);H0.P=[{},{}];H0.lvW={};H0.cp=null;DUO_OW=0;
+  for(const p of [0,1]){const o=H0.P[p];for(const k of DUO_TEAM)o[k]=w[k];o.lv=duoLvProxy(H0,{});o.owned=[];}
+  for(const k of [...DUO_TEAM,'lv','owned']){delete w[k];Object.defineProperty(w,k,{configurable:true,enumerable:true,get(){return H0.P[DUO_OW][k];},set(v){if(k==='lv')return;H0.P[DUO_OW][k]=v;}});}
+  {const gh=duoGUP(H0,'wallHp'),hh=UP('wallHp');if(gh>hh){const m=Math.round((80+15*gh)*(WEASE()<1?1.75:1)),dd=m-w.wallMax;w.wallMax+=dd;w.wall+=dd;}}
+  for(const p of [0,1])duoAs(p,()=>duoSub(w,p,()=>duoFl(p,()=>wcuApply(w))));
+  w.defs.forEach(d=>{if(d._ow===1)d.charge=15*duoGUP(H0,'ultStart');});}
+/* depois das melhorias do dono (mesma conta da wallMode, com as melhorias do parceiro); cada efeito lembra de quem é */
+function duoHostInit(w){const H0=w.duo,g=k=>duoGUP(H0,k);
+  duoAs(1,()=>{w.mDmg*=1+.08*g('wallDmg');w.mSpd*=1+.06*g('wallSpd');w.crit+=.03*g('wallCrit');w.critMul+=.15*g('wallCritD');});
+  {const gr=g('wallRegen'),hr=UP('wallRegen');if(gr>hr)w.regen+=(gr-hr)/3;}
+  const fx=w.fx;fx.push=function(){for(let j=0;j<arguments.length;j++)duoTagFx(arguments[j]);return Array.prototype.push.apply(this,arguments);};}
+function duoTagFx(f){if(!f||typeof f!=='object'||f._ow!=null)return;const p=DUO_OW;f._ow=p;
+  for(const k of ['on','run'])if(typeof f[k]==='function'){const fn=f[k];f[k]=function(){const pc=DUO_OW;DUO_OW=p;try{return fn.apply(this,arguments);}finally{DUO_OW=pc;}};}}
+/* quem atirou decide os status usados (tiro, área, choque, especial) */
+const DUO_O={wOffer,wPick,wHit,bHit,wDmg,wRng,wSpecial,wWallDef,cardTargets,wNextTheme,wUpdate,pwLv};
+function duoOwOf(s){return s&&s._ow!=null?s._ow:null;}
+wHit=function(e,dm,ty,sp,shot){const w=WL,p=w&&w.duo&&shot?duoOwOf(shot.src):null;if(p==null||p===DUO_OW)return DUO_O.wHit.apply(this,arguments);const a=arguments;return duoAs(p,()=>DUO_O.wHit.apply(this,a));};
+bHit=function(C2,e,dm,ty,o){const w=WL,p=w&&w.duo&&C2===w.ctx&&o?duoOwOf((o.shot&&o.shot.src)||o.src):null;if(p==null||p===DUO_OW)return DUO_O.bHit.apply(this,arguments);const a=arguments;return duoAs(p,()=>DUO_O.bHit.apply(this,a));};
+wDmg=function(d){const w=WL,p=w&&w.duo?duoOwOf(d):null;if(p==null||p===DUO_OW)return DUO_O.wDmg(d);return duoAs(p,()=>DUO_O.wDmg(d));};
+wRng=function(w,d){const p=w&&w.duo?duoOwOf(d):null;if(p==null||p===DUO_OW)return DUO_O.wRng(w,d);return duoAs(p,()=>DUO_O.wRng(w,d));};
+wSpecial=function(i){const w=WL;if(w&&w.duo){const d=w.defs[i==null?w.defs.findIndex(q=>q.charge>=100):i];if(d&&d._ow!=null)return duoAs(d._ow,()=>DUO_O.wSpecial(i));}return DUO_O.wSpecial(i);};
+pwLv=function(t){if(DUO_OW===1&&WL&&WL.duo)return duoFl(1,()=>DUO_O.pwLv(t));return DUO_O.pwLv(t);};
+/* defesa da muralha: a melhoria do melhor dos dois */
+wWallDef=function(){const w=WL;if(w&&w.duo&&duoGUP(w.duo,'wallHp')>UP('wallHp'))return duoFl(1,()=>DUO_O.wWallDef());return DUO_O.wWallDef();};
+/* carta de tipo (Brasas, Maré gelada...) sobe o nível só dos monstrinhos de quem pegou */
+cardTargets=function(cd){const r=DUO_O.cardTargets(cd),w=WL;if(!w||!cd||!cd.need)return r;if(w.duo)return r.filter(i=>w.defs[i]&&w.defs[i]._ow===DUO_OW);if(w.duoG&&DUOG)return r.filter(i=>i>=DUOG.n);return r;};
+/* a ameaça da próxima onda é a mesma pros dois */
+wNextTheme=function(w){if(w&&w.duo&&w._duoTh!==undefined)return w._duoTh;return DUO_O.wNextTheme(w);};
+wUpdate=function(){try{return DUO_O.wUpdate.apply(this,arguments);}finally{DUO_OW=0;}};
+/* fim da onda: as 3 cartas de cada um ao mesmo tempo (o dono vê as dele na tela normal de cartas; as do parceiro vão pela sala) */
+wOffer=function(){const w=WL;if(w&&w.duoG){duoGRr();return;}if(w&&w.duo){if(w.duo.cp)duoReroll(w,DUO_OW,true);else duoOfferAll(w);return;}return DUO_O.wOffer.apply(this,arguments);};
+wPick=function(i){const w=WL;if(w&&w.duoG){duoGPick(i);return;}if(w&&w.duo){duoPick(w,DUO_OW,i);return;}return DUO_O.wPick.apply(this,arguments);};
+function duoOfferFor(w,p){const all=w.defs,sub=all.filter(d=>d._ow===p),pc=DUO_OW,keep=w.cards;DUO_OW=p;w.defs=sub;
+  try{DUO_O.wOffer();const cs=w.cards;if(cs){for(const o of cs.opts)if(o.mon!=null)o.mon=all.indexOf(sub[o.mon]);cs.ow=p;cs.q=++w.duo.cseq;}return cs;}
+  finally{w.defs=all;DUO_OW=pc;w.cards=keep;}}
+function duoOfferAll(w){const H0=w.duo;w._duoTh=undefined;const hc=duoOfferFor(w,0);w._duoTh=w.nextTheme||null;const gc=duoOfferFor(w,1);
+  H0.cp={done:[0,0],hc,gc,gt:0,ack:0,sentK:-99,pick:[null,null],cur:0};w.cards=hc;duoSendCards(H0,w);}
+function duoReroll(w,p,paid){const H0=w.duo,cp=H0.cp;if(!cp||cp.done[p])return;
+  if(!paid){if(!(duoAs(p,()=>w.rr||0)>0))return;duoAs(p,()=>{w.rr--;});}
+  const cs=duoOfferFor(w,p);if(!cs)return;if(p===0){cp.hc=cs;w.cards=cs;}else{cp.gc=cs;cp.gt=0;cp.ack=0;duoSendCards(H0,w);}}
+function duoSendCards(H0,w){const cp=H0.cp,cs=cp&&cp.gc;if(!cs)return;const S=(v,n)=>String(v==null?'':v).slice(0,n);
+  const d=duoAs(1,()=>({q:cs.q,o:cs.opts.map(o=>[S(o.n,30),S(o.d,200),o.r|0,S(o.ic,24),o.mon==null?-1:o.mon,S(o.key||o.id,24),o.noLv?1:0,o.rec?1:0,w.lv[o.key||o.id]||0,o.need||0]),leg:cs.leg?1:0,th:w.nextTheme||0,rr:w.rr||0,wave:w.wave}));
+  cp.sentK=H0.k;duoEmit(H0.S,'mdc',d);}
+/* escolha de um jogador: aplica a carta só pra ele; a próxima onda espera os dois */
+function duoPick(w,p,i){const H0=w.duo,cp=H0.cp;if(!cp||cp.done[p])return;const cs=p?cp.gc:cp.hc;i=Math.max(0,Math.min(2,i|0));if(!cs||!cs.opts[i])return;
+  const keep=w.cards;w.cards=cs;cp.cur=p;try{duoAs(p,()=>DUO_O.wPick(i));}finally{if(w.cards===cs&&!cp.done[p])w.cards=keep;}}
+function duoCardF(w,cd){const p=DUO_OW;duoSub(w,p,()=>cd.f(w));duoFl(p,()=>wcuBonus(cd,w));}
+function duoBothPicked(w,cd){const H0=w.duo,cp=H0.cp;if(!cp)return true;const p=cp.cur|0;cp.done[p]=1;cp.pick[p]=String(cd.n||'');
+  if(!(cp.done[0]&&cp.done[1])){w.cards=cp.done[0]?null:cp.hc;return false;}
+  H0.cp=null;w._duoTh=undefined;w.cards=null;return true;}
+/* se o parceiro não escolher a tempo (a tela dele escolhe sozinha em 30s), o dono escolhe a do meio por ele; parado enquanto ele está sem sinal */
+const DUO_CT=1800+240;
+function duoHostFrame(w){const H0=w.duo,cp=H0.cp;if(!cp||cp.done[1]||H0.off||cp.autoQ)return;if(++cp.gt>=DUO_CT){cp.autoQ=1;const q=cp.gc&&cp.gc.q;setTimeout(()=>{try{if(WL===w&&w.duo.cp===cp&&cp.gc&&cp.gc.q===q&&!cp.done[1])duoPick(w,1,cp.gc.i!=null?cp.gc.i:1);}catch(e){console.error(e);}cp.autoQ=0;},0);}}
+/* PARCEIRO: a tela de cartas de verdade, montada com o que o dono mandou */
+function duoGotCards(d){const G0=DUOG,w=WL;if(!G0||!w||!w.duoG||!d||!Array.isArray(d.o))return;const q=d.q|0;duoEmit(G0.S,'mda',{k:'cack',q});if(q<=(G0.cq|0))return;
+  const S=(v,n)=>String(v==null?'':v).slice(0,n);
+  const opts=d.o.slice(0,3).filter(Array.isArray).map(a=>{const mi=a[4]|0;return {n:S(a[0],30),d:S(a[1],200),r:Math.max(0,Math.min(3,a[2]|0)),ic:S(a[3],24),mon:mi>=G0.n&&w.defs[mi]?mi:null,key:S(a[5],24),noLv:!!a[6],rec:!!a[7],_lv:Math.max(0,Math.min(99,a[8]|0)),need:typeof a[9]==='string'&&TYPECOL[a[9]]?a[9]:undefined};}).filter(o=>o.n);
+  if(!opts.length)return;G0.cq=q;G0.rrWait=0;w.lv={};for(const o of opts)w.lv[o.key]=o._lv;
+  w.rr=Math.max(0,Math.min(9,d.rr|0));w.nextTheme=typeof d.th==='string'&&WTHEME[d.th]?d.th:null;w.cards={opts,i:Math.min(1,opts.length-1),t:0,leg:!!d.leg,q};}
+function duoGPick(i){const w=WL,G0=DUOG;if(!w||!G0||!w.cards)return;const cs=w.cards;i=Math.max(0,Math.min(cs.opts.length-1,i|0));
+  duoEmit(G0.S,'mda',{k:'pick',q:cs.q,i});G0.picked=cs.q;G0.pickN=cs.opts[i].n;w.cards=null;try{tone([523,659,784],.05);}catch(e){}}
+function duoGRr(){const G0=DUOG;if(!G0||!G0.cq)return;G0.rrWait=1;duoEmit(G0.S,'mda',{k:'rr',q:G0.cq});}
 /* desenho por cima da Muralha na dupla: quem é quem, espera das cartas, pausa e conexão */
 function duoPill(x,y,txt,col){const w2=tw(txt,5.6)+8;rrect(x-w2/2,y,w2,9,4.5,'rgba(10,8,24,.75)',false);rrect(x-w2/2+.6,y+.6,w2-1.2,7.8,3.9,col,false);T(txt,x,y+1.2,5.6,'center',C.white,w2,C.ink);}
 function duoOverlay(){const w=WL;if(!w)return;const guest=!!w.duoG,G0=DUOG,n0=guest?(G0?G0.n:2):w.duo.hm.length,OY=Math.max(0,H-320)-wK(),t=w.t;
-  const cardsOpen=guest?!!(w.duoCards||w.duoCardsOn):!!w.cards,paused=guest?w.duoPaused:!!w.paused,off=guest?(w.duoOff||(G0&&G0.lag)):w.duo.off;
+  const cardsOpen=guest?!!(w.cards||w.duoCardsOn):!!(w.cards||w.duo.cp),paused=guest?w.duoPaused:!!w.paused,off=guest?(w.duoOff||(G0&&G0.lag)):w.duo.off;
   if(!cardsOpen&&!paused){w.defs.forEach((d,i)=>{const mine=guest?i>=n0:i<n0,col=mine?'#2fb855':'#3f6ae0';
     b.save();b.beginPath();b.ellipse(d.x,d.y+OY+10,15,4.6,0,0,Math.PI*2);b.lineWidth=1.4;b.strokeStyle=col;b.globalAlpha=.75+.25*Math.sin(t/8+i);b.stroke();b.restore();
     let y=d.y+OY-48;try{if(murUI()){const r=murLU('c'+(d._mk!=null?d._mk:i));if(r)y=r.y+OY-10;}}catch(e){}duoPill(d.x,y,mine?'VOCÊ':'PARCEIRO',col);});}
-  if(guest&&cardsOpen&&!off){texts=[];b.fillStyle='rgba(10,8,28,.84)';b.fillRect(0,0,W,H);const cy=Math.round(H*.3);
-    T(`ONDA ${Math.max(1,w.wave)} VENCIDA!`,W/2,cy,11,'center',C.yellow,W-10,C.ink);T('Seu parceiro está escolhendo a carta'+'.'.repeat(1+Math.floor(t/20)%3),W/2,cy+20,7.4,'center',C.white,W-12,C.ink);
-    (w.duoCards||[]).forEach((c,k)=>{const y=cy+44+k*24;rrect(16,y,W-32,19,7,'rgba(40,32,90,.9)',false);rrect(16,y,5,19,2.5,RAR[c[1]]||'#888',false);T(c[0],W/2+2,y+5.4,7,'center',C.white,W-48,C.ink);});
-    T('As cartas valem pros 4 monstrinhos da muralha.',W/2,cy+44+3*24+6,5.8,'center','#c8c4e8',W-16);}
+  /* cartas (etapa 2): cada um escolhe na própria tela de cartas; quem já escolheu espera o outro */
+  if(cardsOpen&&!off){const cp=guest?w.duoCp:w.duo.cp,meDone=guest?(!w.cards&&((G0&&G0.picked&&G0.picked===G0.cq)||(cp&&cp[1]))):!!(cp&&cp.done[0]),otherDone=guest?!!(cp&&cp[0]):!!(cp&&cp.done[1]);
+    if(w.cards){if(otherDone)duoPill(W/2,Math.max(3,OY+14-24),'SEU PARCEIRO JÁ ESCOLHEU','#2f9f4c');}
+    else{texts=[];b.fillStyle='rgba(10,8,28,.86)';b.fillRect(0,0,W,H);const cy=Math.round(H*.34),dots='.'.repeat(1+Math.floor(t/20)%3);
+      T(`ONDA ${Math.max(1,w.wave)} VENCIDA!`,W/2,cy,11,'center',C.yellow,W-10,C.ink);
+      if(meDone){T('Esperando o parceiro escolher'+dots,W/2,cy+20,7.4,'center',C.white,W-12,C.ink);const pk=guest?(G0&&G0.pickN):(cp&&cp.pick[0]);if(pk)T('Você escolheu: '+pk,W/2,cy+36,6.4,'center','#c8c4e8',W-16);}
+      else T((guest&&G0&&G0.rrWait?'Trocando as cartas':'Recebendo as cartas')+dots,W/2,cy+20,7.4,'center',C.white,W-12,C.ink);}}
   if(guest&&paused&&!off){texts=[];b.fillStyle='rgba(10,8,28,.78)';b.fillRect(0,0,W,H);T('PAUSADO',W/2,H*.36,14,'center',C.white,W-10,C.ink);T('Seu parceiro pausou o jogo.',W/2,H*.36+22,7.4,'center','#e0dcff',W-12,C.ink);}
   if(off||(guest&&G0&&!G0.got)){texts=[];b.fillStyle='rgba(10,8,28,.8)';b.fillRect(0,0,W,H);const cy=Math.round(H*.36);
     const t1=guest?(G0&&!G0.got?'Conectando…':'Sem sinal do dono da sala'):'Parceiro desconectou',t2=guest&&G0&&!G0.got?'Esperando a primeira imagem da partida':'Esperando voltar'+'.'.repeat(1+Math.floor(t/20)%3)+(guest?'':' (o jogo está pausado)');
     T(t1,W/2,cy,10,'center',C.yellow,W-12,C.ink);T(t2,W/2,cy+18,7,'center',C.white,W-12,C.ink);
     if(guest&&G0){const r={x:W/2-45,y:cy+40,w:90,h:20};G0.quitR=r;rrect(r.x,r.y,r.w,r.h,8,'#c23b3b',false);T('SAIR',W/2,r.y+5.5,8.5,'center',C.white,80,C.ink);}}}
-{const _rwD=renderWall;renderWall=function(){_rwD();if(WL&&(WL.duo||WL.duoG))duoOverlay();};}
+{const _rwD=renderWall;renderWall=function(){_rwD();if(WL&&(WL.duo||WL.duoG))duoOverlay();if(WL&&WL.duo)duoHostFrame(WL);};}
 /* link direto pra teste: #dupla (depois de carregar o salvo abre a sala); #dupla-ABCD já entra na sala ABCD */
 setInterval(()=>{try{if(DUO_HASHOK||!/dupla/.test(location.hash||''))return;
   if(G.mode==='title'){const u=ui[ui.length-1];if(!DUO_AUTOC&&u&&u.cfg&&u.cfg.title&&Array.isArray(u.opts)&&u.opts[0]==='CONTINUAR'&&hasSave()){DUO_AUTOC=1;ui.pop();u.res(0);}return;}
   if(G.mode==='world'&&!busy&&!ui.length&&party.length&&!DUOH&&!DUOG&&!document.getElementById('nomeBox')){DUO_HASHOK=1;run(()=>duoLobby());}}catch(e){}},700);
 /* ajuda pros testes automáticos (só leitura + ponto de toque de uma carta) */
-try{window.__DUO={menu:()=>run(()=>minigamesMenu()),get H(){return DUOH;},get G(){return DUOG;},cardPt(i){const w=WL;if(!w)return null;const d=w.defs[i];if(!d)return null;const OY=Math.max(0,H-320)-wK();let x=d.x,y=310;if(murUI()){const r=murLU('c'+(d._mk!=null?d._mk:i));if(r){x=r.x+r.w/2;y=r.y+r.h/2;}}y+=OY;const cr=cv.getBoundingClientRect();return [cr.left+x*cr.width/W,cr.top+y*cr.height/H];}};}catch(e){}
+try{window.__DUO={menu:()=>run(()=>minigamesMenu()),get H(){return DUOH;},get G(){return DUOG;},get OW(){return DUO_OW;},as:(p,f)=>duoAs(p,f),pwLv:t=>pwLv(t),get flags(){return flags;},snapLen(){const s=WL&&WL.duo?duoSnap(WL):null;return s?JSON.stringify(s).length:-1;},CT:DUO_CT,cardPt(i){const w=WL;if(!w)return null;const d=w.defs[i];if(!d)return null;const OY=Math.max(0,H-320)-wK();let x=d.x,y=310;if(murUI()){const r=murLU('c'+(d._mk!=null?d._mk:i));if(r){x=r.x+r.w/2;y=r.y+r.h/2;}}y+=OY;const cr=cv.getBoundingClientRect();return [cr.left+x*cr.width/W,cr.top+y*cr.height/H];},wallPt(x,y){const OY=Math.max(0,H-320)-wK(),cr=cv.getBoundingClientRect();return [cr.left+x*cr.width/W,cr.top+(y+OY)*cr.height/H];}};}catch(e){}
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

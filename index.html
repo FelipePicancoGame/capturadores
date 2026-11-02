@@ -12406,6 +12406,14 @@ setInterval(()=>{try{if(/levar/.test(location.hash||'')&&!window.__LEVH){window.
   el.addEventListener('touchmove',e=>{try{if(e.cancelable)e.preventDefault();}catch(_){}},{passive:false});}
   document.documentElement.style.touchAction='none';};fix();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix);
 }catch(e){}})();
+/* DIAGTELA (02/nov, temporário): na abertura, quando aberto pelo ícone, mostra as medidas da tela pra achar a faixa preta do iPhone */
+(function(){try{const sa=navigator.standalone===true||matchMedia('(display-mode: standalone)').matches||/diagtela/.test(location.hash);if(!sa)return;
+  const pr=document.createElement('div');pr.style.cssText='position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
+  const el=document.createElement('div');el.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:99998;font:11px monospace;color:#fff;background:rgba(200,0,60,.85);padding:3px 6px;pointer-events:none;text-align:center';
+  const up=()=>{try{if(!document.body)return;if(!pr.isConnected)document.body.appendChild(pr);if(!el.isConnected)document.body.appendChild(el);const st=document.getElementById('stage'),cv=document.getElementById('screen'),cs=getComputedStyle(pr),r=st?st.getBoundingClientRect():{},c=cv?cv.getBoundingClientRect():{},vv=window.visualViewport;
+    el.hidden=G.mode!=='title';
+    el.textContent=`win ${innerWidth}x${innerHeight} doc ${document.documentElement.clientWidth}x${document.documentElement.clientHeight} vv ${vv?Math.round(vv.width)+'x'+Math.round(vv.height):'-'} scr ${screen.width}x${screen.height} safe ${parseInt(cs.paddingTop)}/${parseInt(cs.paddingBottom)} stage ${Math.round(r.top)}-${Math.round(r.bottom)} tela ${Math.round(c.top)}-${Math.round(c.bottom)} body ${Math.round(document.body.getBoundingClientRect().height)}`;}catch(e){}};
+  setInterval(up,700);}catch(e){}})();
 function duoEmit(S,t,d){try{const p=S&&S.emit(t,d);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
 function duoPres(S,p){try{const q=S.presence(p);if(q&&q.catch)q.catch(()=>{});}catch(e){}}
 /* ---------- tela de entrada (sala) ---------- */

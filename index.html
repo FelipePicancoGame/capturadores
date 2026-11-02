@@ -12281,6 +12281,15 @@ setInterval(()=>{try{if(/levar/.test(location.hash||'')&&!window.__LEVH){window.
   ['gesturestart','gesturechange'].forEach(ev=>document.addEventListener(ev,e=>{try{e.preventDefault();}catch(_){}},{passive:false}));
   addEventListener('scroll',()=>{if(scrollX||scrollY)scrollTo(0,0);},{passive:true});
 }catch(e){}})();
+/* TELAPRESA2 (02/nov tarde, Felipe: "mexo no direcional e a página toda escorrega" mesmo depois do conserto da manhã):
+   o direcional fica no #stage e usa toques "pointer"; no iPhone, cancelar o pointerdown NÃO impede a página de deslizar.
+   Agora o próprio #stage cancela touchstart/touchmove (o jogo continua recebendo os pointer) e tem touch-action:none. */
+(function(){try{const fix=()=>{for(const id of ['stage','screen','stick']){const el=document.getElementById(id);if(!el||el.__tp2)continue;el.__tp2=1;
+  el.style.touchAction='none';el.style.overscrollBehavior='none';
+  el.addEventListener('touchstart',e=>{try{if(e.cancelable)e.preventDefault();}catch(_){}},{passive:false});
+  el.addEventListener('touchmove',e=>{try{if(e.cancelable)e.preventDefault();}catch(_){}},{passive:false});}
+  document.documentElement.style.touchAction='none';};fix();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix);
+}catch(e){}})();
 function duoEmit(S,t,d){try{const p=S&&S.emit(t,d);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
 function duoPres(S,p){try{const q=S.presence(p);if(q&&q.catch)q.catch(()=>{});}catch(e){}}
 /* ---------- tela de entrada (sala) ---------- */

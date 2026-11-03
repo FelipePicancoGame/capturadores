@@ -9492,8 +9492,9 @@ function solidAt(x,y){const tx=Math.floor(x/16),ty=Math.floor(y/16),ch=tileAt(tx
 /* ESCORREGAR NOS BLOQUEIOS (31/out, Felipe): se o caminho da frente está fechado, procura do lado (até 20 px) o ponto mais perto onde dá pra seguir
    e escorrega até lá. Se não houver passagem perto, não força. unstick(): se o herói ficou dentro de um bloqueio, empurra pro lugar livre mais perto. */
 /* procura, num raio de 45 px, o ponto livre mais perto (sem voltar muito) de onde o herói consegue seguir na direção do dedo, e anda pra lá */
-let NAVC=null;
-function navAround(v,sp){const ux=v[0],uy=v[1],l=Math.hypot(ux,uy)||1,dx=ux/l,dy=uy/l,ST=3,R=22,ox=P.px,oy=P.py;
+let NAVC=null,NAVS=null;
+/* ANDARSUAVE (02/nov, Felipe: o boneco dava uns pulos/escorregões pro lado quando encostava em algo): o contorno procura só bem perto (24 px, antes 66) e não troca de lado a cada passo; sair de dentro de um bloqueio agora é andando, sem teleporte */
+function navAround(v,sp){const ux=v[0],uy=v[1],l=Math.hypot(ux,uy)||1,dx=ux/l,dy=uy/l,ST=3,R=8,ox=P.px,oy=P.py;
   const key=Math.round(ox)+','+Math.round(oy)+','+Math.round(dx*8)+','+Math.round(dy*8);if(NAVC&&NAVC.k===key&&!NAVC.go)return false;
   const N=2*R+1,seen=new Int16Array(N*N).fill(-1),q=[R*N+R];seen[R*N+R]=R*N+R;let goal=-1;
   for(let h=0;h<q.length&&goal<0;h++){const c=q[h],cx=c%N-R,cy=((c/N)|0)-R;
@@ -9501,11 +9502,12 @@ function navAround(v,sp){const ux=v[0],uy=v[1],l=Math.hypot(ux,uy)||1,dx=ux/l,dy
       const X=ox+nx*ST,Y=oy+ny*ST,pr=nx*ST*dx+ny*ST*dy;if(pr<-30||blocked(X,Y))continue;seen[id]=c;q.push(id);
       if(pr>=-6&&!blocked(X+dx*5,Y+dy*5)&&!blocked(X+dx*10,Y+dy*10)&&!blocked(X+dx*16,Y+dy*16)){goal=id;break;}}}
   NAVC={k:key,go:goal>=0};if(goal<0)return wallFollow(v,sp);
-  let n=goal,prev=goal;while(seen[n]!==R*N+R&&n!==R*N+R){prev=n;n=seen[n];}const tx=ox+(prev%N-R)*ST,ty=oy+(((prev/N)|0)-R)*ST,d=Math.hypot(tx-ox,ty-oy),m=Math.min(d,Math.max(1,sp));
+  let n=goal,prev=goal;while(seen[n]!==R*N+R&&n!==R*N+R){prev=n;n=seen[n];}const tx=ox+(prev%N-R)*ST,ty=oy+(((prev/N)|0)-R)*ST,d=Math.hypot(tx-ox,ty-oy),m=Math.min(d,Math.max(.6,sp*.7));
+  {const side=Math.sign((tx-ox)*-dy+(ty-oy)*dx),now=performance.now();if(NAVS&&now-NAVS.t<400&&NAVS.d===Math.round(dx*4)+','+Math.round(dy*4)&&side&&side!==NAVS.s){NAVS.t=now;return wallFollow(v,sp);}NAVS={s:side||((NAVS&&NAVS.s)||0),t:now,d:Math.round(dx*4)+','+Math.round(dy*4)};}
   if(d<.01)return false;const ax=ox+(tx-ox)/d*m,ay=oy+(ty-oy)/d*m;if(!blocked(ax,ay)){P.px=ax;P.py=ay;return true;}if(!blocked(ax,oy)){P.px=ax;return true;}if(!blocked(ox,ay)){P.py=ay;return true;}return false;}
 function wallFollow(v,sp){/* sem passagem perto: se o dedo puxa um pouco pro lado, desliza junto da parede */const st=Math.max(1,Math.min(sp,2))*.7;
   for(const [mx,my] of Math.abs(v[0])>Math.abs(v[1])?[[0,Math.sign(v[1])]]:[[Math.sign(v[0]),0]]){if(!mx&&!my)continue;const x=P.px+mx*st,y=P.py+my*st;if(!blocked(x,y)){P.px=x;P.py=y;return true;}}return false;}
-function unstick(){if(!blocked(P.px,P.py))return;for(let r=1;r<=24;r++){for(let a=0;a<16;a++){const x=P.px+Math.round(Math.cos(a*Math.PI/8)*r),y=P.py+Math.round(Math.sin(a*Math.PI/8)*r);if(!blocked(x,y)){P.px=x;P.py=y;return;}}}}
+function unstick(){if(!blocked(P.px,P.py))return;for(let r=1;r<=24;r++){for(let a=0;a<16;a++){const x=P.px+Math.round(Math.cos(a*Math.PI/8)*r),y=P.py+Math.round(Math.sin(a*Math.PI/8)*r);if(!blocked(x,y)){const d=Math.hypot(x-P.px,y-P.py);if(d<=1.5){P.px=x;P.py=y;}else{P.px+=(x-P.px)/d*1.5;P.py+=(y-P.py)/d*1.5;}return;}}}}
 function blocked(x,y){return solidAt(x-5,y-4)||solidAt(x+5,y-4)||solidAt(x-5,y+1)||solidAt(x+5,y+1);}
 function inputVec(){let x=0,y=0;if(held.includes('left'))x--;if(held.includes('right'))x++;if(held.includes('up'))y--;if(held.includes('down'))y++;
   if(x||y){const l=Math.hypot(x,y);return [x/l,y/l,.9];}

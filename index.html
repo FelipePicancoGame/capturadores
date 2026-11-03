@@ -704,7 +704,7 @@ const MOVES={
 const SP={
   fagulho:{name:'Fagulho',type:'fogo',base:[42,54,41,62],catch:50,xp:64,learn:[[1,'arranhao'],[1,'rosnar'],[4,'brasascostas'],[9,'rolochamas'],[14,'labareda']],desc:'Um dragãozinho de fogo com a cauda em chamas. Rápido e corajoso.'},
   marolo:{name:'Marolo',type:'agua',base:[46,46,63,44],catch:50,xp:64,learn:[[1,'investida'],[1,'rosnar'],[4,'bolha'],[10,'jatocrista']],desc:'Um sapinho de água, calmo e resistente. Aguenta bem os golpes.'},
-  brotim:{name:'Brotim',type:'planta',base:[46,50,48,44],catch:50,xp:64,learn:[[12,'polen'],[1,'investida'],[1,'rosnar'],[4,'folhabroto'],[8,'semente'],[13,'cipo']],desc:'Um brotinho de folhas que cresce e vira uma ave da floresta. Equilibrado e simpático.'},
+  brotim:{name:'Brotim',type:'planta',base:[49,53,51,46],catch:50,xp:64,learn:[[12,'polen'],[1,'investida'],[1,'rosnar'],[4,'folhabroto'],[8,'semente'],[13,'cipo']],desc:'Um brotinho de folhas que cresce e vira uma ave da floresta. Equilibrado e simpático.'},
   pipiu:{name:'Pipiu',type:'normal',base:[42,44,38,57],catch:200,xp:49,learn:[[1,'bicada'],[1,'rosnar'],[7,'penas']]},
   ratonga:{name:'Ratonga',type:'normal',base:[33,55,34,71],catch:200,xp:52,learn:[[1,'investida'],[1,'rosnar'],[6,'mordida'],[9,'rabada']]},
   zumbel:{name:'Zumbel',type:'inseto',base:[40,45,35,50],catch:180,xp:52,learn:[[1,'ferrao'],[1,'investida'],[5,'zumbido']]},
@@ -5734,7 +5734,7 @@ function murBottom(w,t,WKK,BIG){
   w.defs.forEach(d=>{const cdf=1-Math.max(0,d.cd)/Math.max(1,d.cdMax),col=TYPECOL[MOVES[d.mv].type],y=MURNEW()?d.y+3:284.6;rrect(d.x-10,y,20,2.8,1.4,'rgba(10,8,24,.8)',false);rrect(d.x-9.5,y+.4,19*cdf,2,1,cdf>=1?C.white:col,false);});
   {const r=murLU('suporte'),I=murImg('suporte');if(r&&I)murRot(r,()=>{b.save();b.imageSmoothingEnabled=true;b.drawImage(I,r.x,r.y,r.w,r.h);b.restore();});}
   {const r=murLU('vida');if(r)murRot(r,()=>murHP(w,t,r.x,r.y,r.w,r.h));}
-  w.defs.forEach((d,i)=>{const r=murLU('c'+(d._mk!=null?d._mk:Math.min(3,i)));if(!r)return;if(d.charge>=100&&!REDUCED){const k=1.06+.035*Math.sin(t/6+i),cx=r.x+r.w/2,cy=r.y+r.h/2;b.save();b.translate(cx,cy-2.5);b.scale(k,k);b.translate(-cx,-cy);murRot(r,()=>murCard(w,d,i,r.x,r.y,r.w,r.h,t));b.restore();}else murRot(r,()=>murCard(w,d,i,r.x,r.y,r.w,r.h,t));});}
+  const _dr=duoIsDuo(w);w.defs.forEach((d,i)=>{if(_dr&&d._ow!==duoMe(w))return;const r=murLU('c'+(d._mk!=null?d._mk:Math.min(3,i)));if(!r)return;if(d.charge>=100&&!REDUCED){const k=1.06+.035*Math.sin(t/6+i),cx=r.x+r.w/2,cy=r.y+r.h/2;b.save();b.translate(cx,cy-2.5);b.scale(k,k);b.translate(-cx,-cy);murRot(r,()=>murCard(w,d,i,r.x,r.y,r.w,r.h,t));b.restore();}else murRot(r,()=>murCard(w,d,i,r.x,r.y,r.w,r.h,t));});if(_dr)duoResDraw(w,t);}
 /* botões no painel 🧪 TESTE (só aparecem onde o painel existe) */
 (function murTestBtns(){const add=()=>{const bx=document.querySelector('#tpan .bx');if(!bx){setTimeout(add,800);return;}if(document.getElementById('tmurn'))return;const h=document.createElement('div');h.id='tmurn';h.innerHTML='<h3>🏰 Muralha nova (bases grandes)</h3><button id="tmur1">Fase 1 · interface nova</button><button id="tmur2">Especial pronto + muralha quebrando</button>';const hs=bx.querySelectorAll('h3');bx.insertBefore(h,hs[1]||null);
   const go=fx=>{const $=id=>document.getElementById(id);$('tmode').value='wall';$('tw').value='0';if($('tw').onchange)$('tw').onchange();$('tst').value='0';$('tgo').click();
@@ -12669,6 +12669,40 @@ async function amgConvidar(tid){const a=amgLista().find(x=>x.tid===tid),nm=(a&&a
   const r=await amgFala(tid,{k:'inv',cod},8000);if(r&&r.k==='recebi'){if(r.nome)amgAdd(tid,r.nome);duoMsg('Convite enviado pra '+((r&&r.nome)||nm)+'! Esperando aceitar…');}
   else duoMsg('Não deu pra entregar o convite. Mande o código '+cod+' pra ele.',1);}
 {const _dl=duoLobby;duoLobby=async function(){setTimeout(()=>{try{amgPainel();}catch(e){console.error(e);}},0);return _dl.apply(this,arguments);};}
+/* DUORES (02/nov, Felipe: "colocar todas as minhas opções na barra de baixo; pra trocar é só arrastar lá pra cima; cada um controla as duas plataformas dele"):
+   na Muralha em Dupla, a metade da barra que era das cartas do parceiro vira a RESERVA de quem está jogando (os outros monstrinhos da equipe dele).
+   Arrastar um da reserva até um lugar seu (ou até a carta dele) troca. O dono troca na hora; o parceiro pede ao dono pela sala. */
+function duoMe(w){return w&&w.duoG?1:0;}
+function duoIsDuo(w){return !!(w&&(w.duo||w.duoG));}
+function duoResList(w){const me=duoMe(w),act=w.defs.filter(d=>d._ow===me),used=act.map(d=>d.sp+'|'+(d.m.lv|0));const out=[];
+  for(const m of duoElig(party)){const k=m.sp+'|'+(m.lv|0),j=used.indexOf(k);if(j>=0){used.splice(j,1);continue;}out.push(m);if(out.length>=4)break;}return out;}
+function duoResRect(w){const me=duoMe(w),ks=[0,1,2,3].filter(k=>me===0?k>=2:k<2).map(k=>murLU('c'+k)).filter(Boolean);if(!ks.length)return null;
+  const x0=Math.min(...ks.map(r=>r.x)),y0=Math.min(...ks.map(r=>r.y)),x1=Math.max(...ks.map(r=>r.x+r.w)),y1=Math.max(...ks.map(r=>r.y+r.h));return{x:x0,y:y0,w:x1-x0,h:y1-y0};}
+function duoResCells(w){const R=duoResRect(w);if(!R)return[];const L=duoResList(w),n=L.length,cols=2,pad=2,top=R.y+9,rows=n>2?2:1,cw=(R.w-pad*3)/cols,ch=(R.h-11-pad*(rows+1))/rows;
+  return L.map((m,i)=>({m,x:R.x+pad+(i%cols)*(cw+pad),y:top+Math.floor(i/cols)*(ch+pad),w:cw,h:ch}));}
+function duoSwapDo(w,i,m){const old=w.defs[i];if(!old)return;const o=old._ow|0;const nd=duoAs(o,()=>duoFl(o,()=>wDef(m,i)));nd.x=old.x;nd.y=old.y;nd._ow=old._ow;nd._mk=old._mk;
+  for(const f of ['mDmg','mSpd','multi','pierce','cMul','wl'])if(old[f]!=null)nd[f]=old[f];nd.cd=30;nd.charge=Math.min(old.charge||0,60);w.defs[i]=nd;w.ultQ=(w.ultQ||[]).filter(q=>q!==i);
+  try{part(nd.x,nd.y-10,C.yellow,14,{sp:2,up:1});part(nd.x,nd.y-10,C.yellow,1,{kind:'ring',sp:0,life:24,grav:0});wPop(nd.x,nd.y-36,`Vai, ${nm(nd.m)}!`,C.yellow,8);tone([523,784],.05);}catch(e){}}
+function duoResDraw(w,t){if(!duoIsDuo(w)||!murUI())return;const R=duoResRect(w);if(!R)return;const cells=duoResCells(w);
+  b.save();rrect(R.x,R.y,R.w,R.h,5,'rgba(16,12,44,.78)',false);b.strokeStyle='rgba(255,215,90,.75)';b.lineWidth=.8;rpath(R.x+.5,R.y+.5,R.w-1,R.h-1,5);b.stroke();
+  T('RESERVA · arraste',R.x+R.w/2,R.y+1.6,4.6,'center','#ffe27a',R.w-4,C.ink);
+  if(!cells.length)T('sem outros monstrinhos',R.x+R.w/2,R.y+R.h/2,4.4,'center','#cfc6ff',R.w-6,C.ink);
+  const dr=w.resDrag;
+  for(const c of cells){if(dr&&dr.m===c.m&&dr.on)b.globalAlpha=.35;const tc=spCol(c.m.sp)||'#7aa0ff';rrect(c.x,c.y,c.w,c.h,4,darkHex(tc,.55),false);b.strokeStyle=tc;b.lineWidth=.9;rpath(c.x+.5,c.y+.5,c.w-1,c.h-1,4);b.stroke();
+    {const k0=c.m.sp.replace('*',''),M=murImg('a_'+k0)||murImg('s_'+k0)||MONIMG[k0];if(M&&M.complete&&M.naturalWidth)murImgBig(M,c.x+c.w*.08,c.y+c.h*.03,c.w*.84,c.h*.72,0);else drawMon(c.m.sh?c.m.sp+'*':c.m.sp,c.x+c.w/2,c.y+c.h*.6,c.h*.011);}T(`${nm(c.m)} · Nv${c.m.lv}`,c.x+c.w/2,c.y+c.h-6.2,Math.min(5,c.h*.14),'center',C.white,c.w-3,C.ink);b.globalAlpha=1;}
+  if(dr&&dr.on){const tg=duoResTarget(w,dr.x,dr.y);if(tg>=0){const d=w.defs[tg];b.beginPath();b.arc(d.x,d.y-12,19+Math.sin(t/4)*1.5,0,Math.PI*2);b.lineWidth=2.4;b.strokeStyle='rgba(255,226,122,.95)';b.stroke();}
+    drawMon(dr.m.sh?dr.m.sp+'*':dr.m.sp,dr.x,dr.y,.32);}
+  b.restore();}
+function duoResTarget(w,x,y){const me=duoMe(w);for(let i=0;i<w.defs.length;i++){const d=w.defs[i];if(d._ow!==me)continue;const rc=murLU('c'+(d._mk!=null?d._mk:i));
+  if((Math.abs(x-d.x)<24&&y>d.y-46&&y<d.y+18)||(rc&&murIn(rc,x,y)))return i;}return -1;}
+function duoResDrop(w,dr){const i=duoResTarget(w,dr.x,dr.y);if(i<0)return;if(w.duoG){const G0=DUOG;if(!G0)return;duoEmit(G0.S,'mda',{k:'swap',i,m:duoSer(dr.m)});const d=w.defs[i];wPop(d.x,d.y-34,'TROCANDO…','#ffe27a',7);try{tone([523,659],.05);}catch(e){}}
+  else if(w.duo){if(!w.running&&!w.cards)return;duoSwapDo(w,i,dr.m);}}
+{const st=document.getElementById('stage');if(st){const xy=e=>{const [x,y0]=toCanvas(e);return [x,y0-Math.max(0,H-320)+wK()];};
+  st.addEventListener('pointerdown',e=>{try{const w=WL;if(G.mode!=='wall'||!duoIsDuo(w)||w.cards||w.paused||!murUI())return;const [x,y]=xy(e);const c=duoResCells(w).find(c=>x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.h);
+    if(!c){const R=duoResRect(w);if(R&&murIn(R,x,y)){e.stopPropagation();e.preventDefault();}return;}w.resDrag={m:c.m,x,y,x0:x,y0:y,on:false,id:e.pointerId};e.stopPropagation();e.preventDefault();}catch(_){}},true);
+  st.addEventListener('pointermove',e=>{try{const w=WL,dr=w&&w.resDrag;if(!dr||e.pointerId!==dr.id)return;const [x,y]=xy(e);dr.x=x;dr.y=y;if(Math.hypot(x-dr.x0,y-dr.y0)>4)dr.on=true;e.stopPropagation();e.preventDefault();}catch(_){}},true);
+  const fim=e=>{try{const w=WL,dr=w&&w.resDrag;if(!dr||e.pointerId!==dr.id)return;w.resDrag=null;e.stopPropagation();e.preventDefault();if(dr.on&&e.type==='pointerup')duoResDrop(w,dr);else if(!dr.on){const R=duoResRect(w);if(R)wPop(R.x+R.w/2,R.y-4,'Arraste até um lugar seu','#ffe27a',6);}}catch(_){}};
+  st.addEventListener('pointerup',fim,true);st.addEventListener('pointercancel',fim,true);}}
 function duoEmit(S,t,d){try{const p=S&&S.emit(t,d);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
 function duoPres(S,p){try{const q=S.presence(p);if(q&&q.catch)q.catch(()=>{});}catch(e){}}
 /* ---------- tela de entrada (sala) ---------- */
@@ -12711,14 +12745,14 @@ async function duoEntrar(cod,fin){cod=(cod||'').toUpperCase().replace(/[^A-Z]/g,
   duoMsg('Procurando a sala '+cod+'…');const room=await duoRoom();if(!room)return duoMsg('Não deu pra conectar neste aparelho.',1);let S;
   try{S=await room.join('mduo-'+cod.toLowerCase());}catch(e){return duoMsg('Não deu pra entrar. Tente de novo.',1);}
   duoPres(S,{r:'guest'});const mons=duoGuestPick();
-  const pay={mons:mons.map(duoSer),auto:flags.wallAuto?1:0,nome:String(flags.nome||'').slice(0,12),fl:{up:flags.up||{},wcs:flags.wcs||{},wcu:flags.wcu||{},pw:flags.pw||{}}};
+  const pay={mons:mons.map(duoSer),res:duoElig(party).slice(0,6).map(duoSer),auto:flags.wallAuto?1:0,nome:String(flags.nome||'').slice(0,12),fl:{up:flags.up||{},wcs:flags.wcs||{},wcu:flags.wcu||{},pw:flags.pw||{}}};
   let ok=false;const iv=setInterval(()=>{if(!ok)duoEmit(S,'mdj',pay);},1500);duoEmit(S,'mdj',pay);
   S.on('mdw',m=>{if(m.isMe||m.sameTab||ok)return;const d=m.data||{};if(!Array.isArray(d.mons)||d.mons.length<2)return;ok=true;clearInterval(iv);fin({role:'guest',S,cod,wel:d});});
   DUO_CUR={cancel:()=>{clearInterval(iv);ok=true;try{S.leave();}catch(e){}}};
   await new Promise(r=>setTimeout(r,12000));if(!ok){clearInterval(iv);ok=true;duoMsg('Sala '+cod+' não encontrada. Confira o código e se os dois abriram o jogo pelo '+(duoNoApp()?'App':'Claude')+'.',1);try{S.leave();}catch(e){}}}
 /* ---------- DONO DA SALA ---------- */
 async function duoHostRun(r){const hm=duoElig(party).slice(0,2);
-  const H0=DUOH={S:r.S,cod:r.cod,hm,gm:r.gm,gAuto:!!(r.gj&&r.gj.auto),gfl:duoFlSan(r.gj&&r.gj.fl),cseq:0,cp:null,P:null,gnome:String((r.gj&&r.gj.nome)||'').slice(0,12),off:false,ack:0,wNow:1,k:0,ended:false};
+  const H0=DUOH={S:r.S,cod:r.cod,hm,gm:r.gm,gres:((r.gj&&Array.isArray(r.gj.res))?r.gj.res:[]).slice(0,6).map(duoDes).filter(Boolean),gAuto:!!(r.gj&&r.gj.auto),gfl:duoFlSan(r.gj&&r.gj.fl),cseq:0,cp:null,P:null,gnome:String((r.gj&&r.gj.nome)||'').slice(0,12),off:false,ack:0,wNow:1,k:0,ended:false};
   r.S.on('mda',m=>{if(m.isMe||m.sameTab||DUOH!==H0)return;try{duoHostAct(H0,m.data||{});}catch(e){console.error(e);}});
   r.S.onPeers(ch=>{if(DUOH!==H0)return;const tem=(ch.peers||[]).some(p=>!p.isMe&&!p.sameTab&&p.presence&&p.presence.r==='guest');
     if(!tem&&!H0.off)H0.off=true;else if(tem&&H0.off){H0.off=false;try{if(WL&&WL.duo===H0)wPop(90,140,'PARCEIRO VOLTOU!',C.yellow,10);}catch(e){}}});
@@ -12728,6 +12762,7 @@ async function duoHostRun(r){const hm=duoElig(party).slice(0,2);
   try{await wallMode();}finally{clearInterval(iv);if(DUOH===H0)DUOH=null;setTimeout(()=>{try{r.S.leave();}catch(e){}},1500);}}
 function duoHostAct(H0,a){const w=WL;if(a.k==='hb'){H0.gAuto=!!a.auto;H0.ack=1;return;}
   if(a.k==='cack'||a.k==='pick'||a.k==='rr'){const cp=H0.cp;if(!w||w.duo!==H0||!cp||!cp.gc||(a.q|0)!==cp.gc.q)return;if(a.k==='cack')cp.ack=cp.gc.q;else if(a.k==='pick')duoPick(w,1,a.i);else duoReroll(w,1,false);return;}if(!w||w.duo!==H0||!w.running||w.cards||w.paused||H0.off||ui.length)return;
+  if(a.k==='swap'){const i=a.i|0,d=w.defs[i],m=duoDes(a.m);if(!d||d._ow!==1||!m)return;const ok=(H0.gres||[]).find(q=>q.sp===m.sp&&q.lv===m.lv)&&!w.defs.some(q=>q._ow===1&&q!==d&&q.sp===m.sp&&q.m.lv===m.lv);if(!ok)return;duoSwapDo(w,i,m);return;}
   if(a.k==='ult'){const i=a.i|0;if(i>=H0.hm.length&&i<w.defs.length)wSpecial(i);}
   else if(a.k==='tap'){const x=+a.x,y=+a.y;if(!isFinite(x)||!isFinite(y)||x<-20||x>200||y<-400||y>400)return;duoAs(1,()=>{if(wThiefTap(x,y))return;if(wBarrelTap(x,y))return;wCatTap(x,y);});}}
 function duoHostEnd(res){const H0=DUOH,w=WL;if(!H0||!w)return;H0.ended=true;const d={res,wave:w.wave,kills:w.kills};[0,400,900].forEach(ms=>setTimeout(()=>duoEmit(H0.S,'mdr',d),ms));}
@@ -12739,7 +12774,7 @@ function duoFxPlain(f){const o={};for(const k in f){if(k==='hist'||k==='hitSet'|
     else if(Array.isArray(v)&&v.length<=24&&v.every(q=>typeof q==='number'||(Array.isArray(q)&&q.length<=4&&q.every(z=>typeof z==='number'))||(q&&typeof q==='object'&&!Array.isArray(q)&&Object.values(q).every(z=>typeof z==='number'))))o[k]=JSON.parse(JSON.stringify(v,(kk,z)=>typeof z==='number'?Math.round(z*100)/100:z));}return o;}
 function duoSnap(w){const R=Math.round,H0=w.duo;for(const e of w.foes)if(!e._id)e._id=(w._fid=(w._fid||0)+1);
   const s={t:w.t,h:[w.wave,R(w.wall),w.wallMax,w.kills,w.ext||0,MSTOP(),w.running?1:0,w.paused?1:0,(w.cards||H0.cp)?1:0,w.combo||0,w.comboT||0,w.shake||0,R((w.flash||0)*100),w.spawned||0,w.toSpawn||0,w.bossW||0,H0.off?1:0,R(w.shieldT||0),w.shieldHits||0,w.phoenix?1:0,R(w.rangeT||0)],
-    d:w.defs.map(d=>[R(d.charge||0),R(d.cd||0),d.cdMax||60,d.fire||0,d.lvT||0,d.wl||1,d.castT|0,d.throwT|0,d.stun|0,d.ultT|0,d.aim&&d.aim.t>0?[R(d.aim.x),R(d.aim.y),d.aim.t]:0])};
+    dm:w.defs.map(d=>d.sp+'|'+(d.m&&d.m.lv|0)),d:w.defs.map(d=>[R(d.charge||0),R(d.cd||0),d.cdMax||60,d.fire||0,d.lvT||0,d.wl||1,d.castT|0,d.throwT|0,d.stun|0,d.ultT|0,d.aim&&d.aim.t>0?[R(d.aim.x),R(d.aim.y),d.aim.t]:0])};
   if(w.banner)s.b=[w.banner.text||'',w.banner.sub||'',w.banner.t|0];if(w.bossIntro)s.bi=w.bossIntro.t|0;
   if(w.ult)s.u=[w.ult.defs&&w.ult.defs[0]?w.defs.indexOf(w.ult.defs[0]):-1,w.ult.t|0,w.ult.dur|0];if(w.ultQ&&w.ultQ.length)s.uq=w.ultQ.slice(0,4);
   if(w.thief)s.th=[R(w.thief.x),R(w.thief.y),w.thief.hp,w.thief.max,w.thief.dir,w.thief.hit|0];
@@ -12772,6 +12807,7 @@ function duoApply(s){const G0=DUOG,w=WL;if(!G0||!w||!w.duoG||!s||!Array.isArray(
   w.t=s.t|0;w.wave=h[0];w.wall=h[1];w.wallMax=h[2]||1;w.kills=h[3];w.duoRun=!!h[6];w.duoPaused=!!h[7];w.duoCardsOn=!!h[8];w.combo=h[9];w.comboT=h[10];w.shake=h[11];w.flash=h[12]/100;w.spawned=h[13];w.toSpawn=h[14];w.bossW=h[15];w.duoOff=!!h[16];w.shieldT=h[17];w.shieldHits=h[18];w.phoenix=h[19];w.rangeT=h[20];
   w.banner=s.b?{text:s.b[0],sub:s.b[1],t:s.b[2]}:null;w.bossIntro=s.bi!=null?(w.bossIntro||{t:s.bi}):null;
   w.ult=s.u?{t:s.u[1],dur:s.u[2],defs:[w.defs[s.u[0]]].filter(Boolean)}:null;w.ultQ=Array.isArray(s.uq)?s.uq:[];
+  if(Array.isArray(s.dm))s.dm.forEach((k,i)=>{const d=w.defs[i];if(!d||typeof k!=='string')return;const [sp,lv]=k.split('|');if(d.sp===sp&&(d.m.lv|0)===(+lv|0))return;const m=duoDes({sp,lv:+lv});if(!m)return;const nd=wDef(m,i);nd.x=d.x;nd.y=d.y;nd._ow=d._ow;nd._mk=d._mk;w.defs[i]=nd;try{part(nd.x,nd.y-10,C.yellow,12,{sp:2,up:1});}catch(e){}});
   (s.d||[]).forEach((a,i)=>{const d=w.defs[i];if(!d||!Array.isArray(a))return;[d.charge,d.cd,d.cdMax,d.fire,d.lvT,d.wl,d.castT,d.throwT,d.stun,d.ultT]=a;d.aim=a[10]?{x:a[10][0],y:M(a[10][1]),t:a[10][2],t0:300}:null;});
   const old=new Map(w.foes.map(e=>[e._id,e])),nf=[];
   for(const a of (s.f||[])){const [id,sp,x,y,hp,max,bits,atk,hit,acd,sh]=a;if(typeof sp!=='string'||!SP[sp.replace('*','')])continue;let e=old.get(id);const ty=M(y);

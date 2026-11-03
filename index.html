@@ -351,7 +351,7 @@ window.CVNovasHistoriasDados={"versao": 1, "status": "PROPOSTAS_NOVAS_EM_COPIA_D
   Object.defineProperty(P,'src',{configurable:true,enumerable:true,get(){return this.__rel?this.__rel.src:dS.get.call(this);},
     set(v){if(this.__rel&&!this.__inner){this.__rel=null;this.__back=0;}dS.set.call(this,v);if(!this.__inner&&!this.__reg){this.__reg=1;ALL.add(new WeakRef(this));}}});
   /* imagem solta: o jogo vê 'ainda carregando' (como no começo) e, ao perguntar por ela, ela volta a carregar */
-  const ask=im=>{if(im.__rel)bringBack(im);};
+  /* MEMUSO (03/nov, Felipe: Expedição 'bufada' — peças da tela sumindo): imagem que o jogo consulta (pronta? tamanho?) conta como em uso; antes só o desenho direto contava e peças guardadas em cache saíam e voltavam o tempo todo */const ask=im=>{if(im.__rel)bringBack(im);else if(im.__reg)im.__lt=now();};
   Object.defineProperty(P,'naturalWidth',{configurable:true,enumerable:true,get(){ask(this);return dW.get.call(this);}});
   Object.defineProperty(P,'naturalHeight',{configurable:true,enumerable:true,get(){ask(this);return dH.get.call(this);}});
   Object.defineProperty(P,'complete',{configurable:true,enumerable:true,get(){ask(this);return dC.get.call(this);}});
@@ -12060,7 +12060,9 @@ const css=document.createElement('style');css.textContent=`
 #rpBox textarea{width:100%;box-sizing:border-box;min-height:90px;border:2px solid #154c5e;border-radius:10px;padding:8px;font:15px Arial,sans-serif;color:#102a33;background:#fff}
 #rpBox .bt{display:flex;gap:8px;margin-top:10px}#rpBox button{flex:1;font:800 16px CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif;border-radius:12px;border:2px solid #154c5e;padding:9px;cursor:pointer}
 #rpBox .ok{background:#1f7a3a;color:#fff;border-color:#13562a}#rpBox .no{background:#fff;color:#154c5e}#rpBox .at{background:#e8f2f5;color:#154c5e;width:100%;margin-top:2px}
-#rpBox .msg{font-size:13px;min-height:16px;margin-top:6px}`;document.head.appendChild(css);
+#rpBox .msg{font-size:13px;min-height:16px;margin-top:6px}
+/* RPTECLADO (03/nov, Felipe: escrevendo o aviso não dava pra ver o texto): com o teclado aberto a caixa sobe pro alto e esconde as fotos */
+#rpBox.typing{align-items:flex-start;padding-top:calc(8px + env(safe-area-inset-top,0px))}#rpBox.typing .ims,#rpBox.typing .at,#rpBox.typing .p0{display:none}#rpBox.typing .pp{max-height:100%}#rpBox.typing textarea{min-height:70px}`;document.head.appendChild(css);
 const btn=document.createElement('button');btn.id='rpBtn';btn.type='button';btn.textContent='🐞';btn.setAttribute('aria-label','Avisar um problema');btn.title='Avisar um problema';
 ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click'].forEach(ev=>btn.addEventListener(ev,e=>{e.stopPropagation();},{passive:true}));
 btn.addEventListener('click',()=>rpOpen());document.body.appendChild(btn);
@@ -12073,6 +12075,10 @@ async function rpOpen(){if(document.getElementById('rpBox'))return;const shot=aw
    <div class="msg" id="rpM"></div><div class="bt"><button class="no" id="rpC" type="button">Cancelar</button><button class="ok" id="rpS" type="button">Enviar</button></div></div>`;
   ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click','keydown','keyup'].forEach(ev=>box.addEventListener(ev,e=>e.stopPropagation()));
   document.body.appendChild(box);if(shot)box.querySelector('#rpI1 img').src=shot;
+  try{const pp=box.querySelector('.pp p');if(pp)pp.classList.add('p0');const ta=box.querySelector('#rpT'),vv=window.visualViewport,fit=()=>{if(!vv||!box.isConnected)return;box.style.top=vv.offsetTop+'px';box.style.height=vv.height+'px';box.style.bottom='auto';};
+    ta.addEventListener('focus',()=>{box.classList.add('typing');fit();setTimeout(()=>{fit();ta.scrollIntoView({block:'center'});},350);});
+    ta.addEventListener('blur',()=>{setTimeout(()=>{if(document.activeElement!==ta){box.classList.remove('typing');box.style.top='';box.style.height='';box.style.bottom='';}},250);});
+    if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit);}}catch(e){}
   const $=s=>box.querySelector(s),close=()=>box.remove();
   $('#rpC').onclick=close;box.addEventListener('click',e=>{if(e.target===box)close();});
   $('#rpAt').onclick=()=>$('#rpF').click();

@@ -26,6 +26,28 @@ html body #cv-chapter .c1-bgx{display:none}
  html body #cv-chapter .c1-story .c1-dialogue{top:calc(100vw * 16 / 9 * .73)}
 }
 </style>
+<style>/* CAP1d */
+html body #cv-chapter .c1-pick{position:absolute;left:0;right:0;top:calc(100cqw * 16 / 9 * .665);bottom:0;display:flex;flex-direction:column;padding:0 3% 2.5%;gap:1.6cqw;z-index:2}
+html body #cv-chapter .c1-pickhead{text-align:center;color:#4e3a24}
+html body #cv-chapter .c1-pickhead h2{margin:0;font:700 5.6cqw/1.15 'Lilita One','Fredoka',sans-serif;color:#2f6a3a;letter-spacing:.02em}
+html body #cv-chapter .c1-pickhead p{margin:.8cqw 0 0;font:600 3.3cqw/1.3 'Fredoka',sans-serif}
+html body #cv-chapter .c1-cards2{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2cqw}
+html body #cv-chapter .c1-card2{position:relative;display:flex;flex-direction:column;min-height:0;border-radius:3.2cqw;padding:1.6cqw 1.8cqw 1.8cqw;border:.8cqw solid var(--c);background:linear-gradient(var(--l),#fffaf0 62%);box-shadow:0 1cqw 0 rgba(60,40,20,.25);color:#3a2c1c;font-family:'Fredoka',sans-serif;overflow:hidden}
+html body #cv-chapter .t-planta{--c:#3f9a3e;--l:#d9f3c4}html body #cv-chapter .t-agua{--c:#2f78c8;--l:#d4ecff}html body #cv-chapter .t-fogo{--c:#d9602a;--l:#ffe2c6}
+html body #cv-chapter .c1-ph{position:relative;flex:1 1 auto;min-height:12cqw;max-height:26cqw;display:flex;align-items:center;justify-content:center}
+html body #cv-chapter .c1-ph img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 .8cqw .5cqw rgba(0,0,0,.2))}
+html body #cv-chapter .c1-tp{position:absolute;left:0;top:0;background:var(--c);color:#fff;border-radius:9cqw;padding:.4cqw 1.6cqw;font:700 2.5cqw/1.3 'Fredoka',sans-serif}
+html body #cv-chapter .c1-card2 h3{margin:.6cqw 0 0;text-align:center;font:700 4.4cqw/1.1 'Lilita One','Fredoka',sans-serif;color:var(--c)}
+html body #cv-chapter .c1-jeito{margin:.2cqw 0 .8cqw;text-align:center;font:600 2.5cqw/1.2 'Fredoka',sans-serif;color:#6a5236}
+html body #cv-chapter .c1-vs{margin:0 0 .5cqw;font:500 2.3cqw/1.2 'Fredoka',sans-serif}html body #cv-chapter .c1-vs b{color:#2f7a36}html body #cv-chapter .c1-fr b{color:#b2452a}
+html body #cv-chapter .c1-bars{display:grid;gap:.5cqw;margin:.4cqw 0 1cqw}
+html body #cv-chapter .c1-bars div{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:1cqw;position:relative}
+html body #cv-chapter .c1-bars span{font:600 2cqw/1 'Fredoka',sans-serif;color:#6a5236;width:11cqw}
+html body #cv-chapter .c1-bars i{display:block;height:1.5cqw;border-radius:1cqw;background:var(--c);box-shadow:inset 0 0 0 .3cqw rgba(255,255,255,.35)}
+html body #cv-chapter .c1-card2 button{margin-top:auto;border:.5cqw solid #8c6c37;background:#f5c565;color:#3e321e;border-radius:2.2cqw;font:700 3.2cqw/1 'Fredoka',sans-serif;padding:2.2cqw 0;cursor:pointer;min-height:40px}
+html body #cv-chapter .c1-card2 button:active{transform:translateY(2px)}
+@media (min-aspect-ratio:9/17){html body #cv-chapter .c1-bars{display:none}html body #cv-chapter .c1-pickhead p{display:none}}
+</style>
 <style>/* CAP1 */
 #cv-chapter{position:fixed;inset:0;z-index:10000;background:#102d28;display:flex;justify-content:center;align-items:center;touch-action:manipulation;font-family:'Fredoka','Trebuchet MS',sans-serif;color:#fff;user-select:none}
 #cv-chapter *{box-sizing:border-box}#cv-chapter [hidden]{display:none!important}#cv-chapter canvas{background:transparent;box-shadow:none;image-rendering:auto}
@@ -115,16 +137,25 @@ window.C1IMG={"historia/01_vila_menina": "blobs/cbec3c49427e9a1e8a868e4eb2130af2
  function scenery(bg){const k='historia/'+bg+'_'+gender;return `<div class="c1-bgx" style="background-image:url('${C1U(k)}')"></div>`+img(k,'c1-bg','Página da história desenhada');}
  function tools(){return `<div class="c1-tools"><button data-gender aria-label="Trocar protagonista">${gender==='menino'?'Menino':'Menina'} ↔</button><button data-story>Ver desde o início</button></div>`;}
  function bindTools(){screen.querySelector('[data-gender]')?.addEventListener('click',()=>{gender=gender==='menino'?'menina':'menino';chosen?friendship():sceneIndex<5&&mode==='story'?showStory():clearing();});screen.querySelector('[data-story]')?.addEventListener('click',()=>{mode='story';sceneIndex=0;lineIndex=0;chosen=null;showStory();});}
+ /* CAP1d (02/nov, Felipe: "não gostei do layout e da falta de informação"): escolha com título, fala do herói e cartões com tipo, jeito, contra quem é forte, de quem tem medo e os pontos */
+ function c1Pick(){const I=window.C1INFO||{},TN={planta:['Planta','🌿'],agua:['Água','💧'],fogo:['Fogo','🔥'],rocha:['Pedra','🪨'],gelo:['Gelo','❄️'],inseto:['Inseto','🐞'],eletrico:['Elétrico','⚡'],normal:['Normal','⭐'],fantasma:['Fantasma','👻'],voador:['Voador','🪶']},tn=t=>(TN[t]||[t,''])[0],
+   nm=(window.C1NOME||'').trim()||'Hero',lbl=['Vida','Ataque','Defesa','Velocidade'];
+  return `<section class="c1-pick"><div class="c1-pickhead"><h2>Escolha seu primeiro companheiro</h2><p><b>${nm}:</b> Olha só quem eu encontrei! Qual de vocês vai se aventurar comigo?</p></div>
+  <div class="c1-cards2">${monsters.map(m=>{const d=I[m.id]||{},t=TN[m.type]||['',''],b=d.base||[];return `<article class="c1-card2 t-${m.type}">
+   <div class="c1-ph">${img(m.id,'',m.name)}<span class="c1-tp">${t[1]} ${t[0]}</span></div><h3>${m.name}</h3><p class="c1-jeito">${m.personality.replace('<br>',' ')}</p>
+   ${d.forte?`<p class="c1-vs"><b>Forte contra:</b> ${d.forte.map(tn).join(', ')}</p><p class="c1-vs c1-fr"><b>Cuidado com:</b> ${d.fraco.map(tn).join(', ')}</p>`:''}
+   ${b.length?`<div class="c1-bars">${b.map((v,i)=>`<div><span>${lbl[i]}</span><i style="width:${Math.min(100,Math.round(v/70*100))}%"></i></div>`).join('')}</div>`:''}
+   <button data-pick="${m.id}" aria-label="Escolher ${m.name}">ESCOLHER</button></article>`;}).join('')}</div></section>`;}
  function clearing(){
   frame();screen.innerHTML=scenery('06_clareira')+tools()+`<header class="c1-head"><small>Capítulo 1 · Uma amizade inesperada</small><h1>O começo de uma amizade</h1><p>Três encontros. Um primeiro companheiro.</p></header>`+
   monsters.map(m=>actor(m.id+'_idle','c1-creature '+m.id,m.name+' na clareira')).join('')+img(hero()+'_costas','c1-hero','Hero olhando os três monstrinhos')+
   '<div class="c1-dialogue"><strong>HERO</strong>Olha só quem eu encontrei! Qual de vocês vai se aventurar comigo?</div>'+
-  `<div class="c1-cards" aria-label="Escolha seu primeiro monstrinho">${monsters.map(m=>`<article class="c1-card" style="background-image:url('${C1U('cartao_'+m.type)}')">${img(m.id,'',m.name)}<h2>${m.name}</h2><p>${m.personality}</p><button data-pick="${m.id}" aria-label="Escolher ${m.name}">ESCOLHER</button></article>`).join('')}</div><div class="c1-footer">Escolha seu primeiro companheiro</div>`;
+  c1Pick();
   animateActors();bindTools();for(const b of screen.querySelectorAll('[data-pick]'))b.addEventListener('click',()=>confirm(b.dataset.pick,b));
  }
  function confirm(id,trigger){
   const m=monsters.find(m=>m.id===id);if(!m||finalizing)return;
-  const modal=document.createElement('div');modal.className='c1-modal-wrap';modal.innerHTML=`<section class="c1-modal" role="dialog" aria-modal="true" aria-labelledby="c1-confirm-title"><h2 id="c1-confirm-title">Escolher ${m.name}?</h2>${img(id,'',m.name)}<p>${m.name} será seu primeiro companheiro nesta aventura.</p><div class="c1-actions"><button class="secondary" data-no>Ainda não</button><button data-yes>Sim, vamos juntos!</button></div></section>`;
+  const modal=document.createElement('div');modal.className='c1-modal-wrap';modal.innerHTML=`<section class="c1-modal" role="dialog" aria-modal="true" aria-labelledby="c1-confirm-title"><h2 id="c1-confirm-title">Escolher ${m.name}?</h2>${img(id,'',m.name)}<p>${((window.C1INFO||{})[id]||{}).desc||''} ${m.name} será seu primeiro companheiro nesta aventura.</p><div class="c1-actions"><button class="secondary" data-no>Ainda não</button><button data-yes>Sim, vamos juntos!</button></div></section>`;
   screen.append(modal);const cancel=()=>{modal.remove();trigger.focus();};modal.querySelector('[data-no]').onclick=cancel;
   modal.querySelector('[data-yes]').onclick=()=>{if(finalizing)return;chosen=m;modal.remove();friendship();};
   modal.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();cancel();}if(e.key==='Tab'){e.preventDefault();const buttons=[...modal.querySelectorAll('button')];buttons[(buttons.indexOf(document.activeElement)+1)%buttons.length].focus();}};
@@ -10311,7 +10342,7 @@ async function newGame(){
   /* CAP1 (02/nov, Felipe): novo começo — Capítulo 1 "Uma amizade inesperada" do Buchecha: o herói sai da vila, se perde na floresta e acha Brotim, Marolo e Fagulho numa clareira; escolhe um. */
   G.mode='intro';const _hero=await hqAsk();NOMEINTRO=await askNome(_hero,'');G.isc=null;G.ipeMon=0;
   G.mode='starter';let key;
-  {let r=null;try{window.C1NOME=NOMEINTRO||'';window.C1EXTRA=[['','Você e {M} agora são parceiros! Hora de voltar pra vila e começar a aventura de verdade.'],['','O Davi, aquele menino da vila, também ganhou monstrinhos e saiu cedo pra treinar longe daqui. Ele é bem competitivo... um dia vocês vão se esbarrar!'],['','Explore o Vale, faça amigos e siga a HISTÓRIA: o pergaminho 📜 no alto da tela mostra sua próxima missão.'],['','Treine no mato alto da Rota 1, ao norte da cidade. Quando estiver pronto, desafie a Líder Bruna na Arena de telhado azul.'],['','Aperte MENU para ver sua equipe e salvar. Boa sorte!']];r=await window.CVChapter1.start({gender:_hero==='menina'?'menina':'menino'});}catch(e){console.error(e);}key=r&&SP[r.starter]?r.starter:'brotim';try{tone([523,659,784],.07);}catch(e){}}
+  {let r=null;try{window.C1NOME=NOMEINTRO||'';try{const T=Object.keys(TYPECOL);window.C1INFO=Object.fromEntries(['brotim','marolo','fagulho'].map(k=>{const t=SP[k].type;return [k,{desc:SP[k].desc||'',forte:T.filter(o=>effOf(t,o)>1),fraco:T.filter(o=>effOf(o,t)>1),base:SP[k].base||[]}];}));}catch(e){}window.C1EXTRA=[['','Você e {M} agora são parceiros! Hora de voltar pra vila e começar a aventura de verdade.'],['','O Davi, aquele menino da vila, também ganhou monstrinhos e saiu cedo pra treinar longe daqui. Ele é bem competitivo... um dia vocês vão se esbarrar!'],['','Explore o Vale, faça amigos e siga a HISTÓRIA: o pergaminho 📜 no alto da tela mostra sua próxima missão.'],['','Treine no mato alto da Rota 1, ao norte da cidade. Quando estiver pronto, desafie a Líder Bruna na Arena de telhado azul.'],['','Aperte MENU para ver sua equipe e salvar. Boa sorte!']];r=await window.CVChapter1.start({gender:_hero==='menina'?'menina':'menino'});}catch(e){console.error(e);}key=r&&SP[r.starter]?r.starter:'brotim';try{tone([523,659,784],.07);}catch(e){}}
   party=[mk(key,5)];storage=[];bag={ball:5,potion:2};flags={};
   G.mode='intro';
   flags.starter=key;flags.hero=_hero;flags.nome=NOMEINTRO;flags.cap1=1;G.mode='intro';

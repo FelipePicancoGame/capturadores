@@ -1764,13 +1764,13 @@ function drawCfgArt(u){const ks=['cfg_fundo','cartao_opcao','seletor_personagem'
   {b.fillStyle='rgba(120,150,110,.5)';const q=p(150,990);b.fillRect(q[0],q[1],640*s,Math.max(1,3*s));}
   {const y=1018,h=130;card(I.botao_salvar,cx,y,cw,h,4);const is=104,q=p(cx+48,y+(h-is)/2);b.drawImage(I.cfg_icone_salvar,q[0],q[1],is*s,is*s);txt('SALVAR AGORA',cx+cw*.57,y+h/2+3,54,'center',TC,460);}
   {const w=740,h=w*177/951,y=1160;card(I.botao_carregar,cx+5,y,w,h,5);const is=104,q=p(cx+50,y+(h-is)/2);b.drawImage(I.cfg_icone_carregar,q[0],q[1],is*s,is*s);txt('CARREGAR JOGO',cx+cw*.57,y+h/2+3,54,'center',TC,460);}
-  {const y=1322,w=330,h=62,q=p(130,y),q2=p(480,y);txt('📖 Ver a história',295,y+h/2,38,'center','#7a4a1a',320);txt('🖐️ Ver tutoriais',645,y+h/2,38,'center','#6a3fa0',320);u.rects.push({x:q[0],y:q[1],w:w*s,h:h*s,i:6});u.rects.push({x:q2[0],y:q2[1],w:w*s,h:h*s,i:7});}
+  {const y=1322,w=245,h=62,xs=[100,348,596],T=['📖 História','🖐️ Tutoriais','📶 '+offShort()],C=['#7a4a1a','#6a3fa0','#1f6a7a'],I2=[6,7,10];for(let k=0;k<3;k++){const q=p(xs[k],y);txt(T[k],xs[k]+w/2,y+h/2,34,'center',C[k],w-8);u.rects.push({x:q[0],y:q[1],w:w*s,h:h*s,i:I2[k]});}}
   {const w=520,h=w*206/857,x=(941-w)/2,y=1415;card(I.botao_voltar,x,y,w,h,8);txt('VOLTAR',x+w*.58,y+h/2+4,52,'center',TC,260);}
   b.restore();return true;}
 async function cfgMenu(){while(true){const sOn=!flags.sfxOff,fOn=!flags.fxOff;
-  const mOn=musOn(),L=[`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${fOn?'LIGADO':'DESLIGADO'}`,`PERSONAGEM: ${flags.hero==='menina'?'MENINA':'MENINO'}`,'SALVAR AGORA','CARREGAR JOGO','VER A HISTÓRIA','VER TUTORIAIS','VOLTAR',`NARRAÇÃO: ${!flags.narraOff?'LIGADA':'DESLIGADA'}`];
+  const mOn=musOn(),L=[`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${fOn?'LIGADO':'DESLIGADO'}`,`PERSONAGEM: ${flags.hero==='menina'?'MENINA':'MENINO'}`,'SALVAR AGORA','CARREGAR JOGO','VER A HISTÓRIA','VER TUTORIAIS','VOLTAR',`NARRAÇÃO: ${!flags.narraOff?'LIGADA':'DESLIGADA'}`,offLabel()];
   /* 27/out (Felipe): mesmo estilo do Caderno com adesivo (balão de destaque + tirinhas de papel com fita) */
-  const j=await choose(L,{cfgart:1,cadAsk:{q:'CONFIGURAÇÕES — toque pra ligar ou desligar',nf:cfgMenu.open?1:0,cols:[mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',fOn?'#1f7a3a':'#8a2f2f',flags.hero==='menina'?'#a8326e':'#2f5fa8','#154c5e','#154c5e','#154c5e','#7a4fb0','#6a4a2a',!flags.narraOff?'#1f7a3a':'#8a2f2f']}});cfgMenu.open=1;
+  const j=await choose(L,{cfgart:1,cadAsk:{q:'CONFIGURAÇÕES — toque pra ligar ou desligar',nf:cfgMenu.open?1:0,cols:[mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',fOn?'#1f7a3a':'#8a2f2f',flags.hero==='menina'?'#a8326e':'#2f5fa8','#154c5e','#154c5e','#154c5e','#7a4fb0','#6a4a2a',!flags.narraOff?'#1f7a3a':'#8a2f2f','#1f6a7a']}});cfgMenu.open=1;
   if(j===0){flags.music=!musOn();saveGame();try{tone([660,880],.06);}catch(e){}continue;}
   if(j===1){flags.sfxOff=!flags.sfxOff;saveGame();if(!flags.sfxOff)try{tone([660,880],.06);}catch(e){}continue;}
   if(j===2){flags.fxOff=!flags.fxOff;saveGame();continue;}
@@ -1779,6 +1779,7 @@ async function cfgMenu(){while(true){const sOn=!flags.sfxOff,fOn=!flags.fxOff;
   if(j===5){const ok=await loadMenu();if(ok){try{_cPend=null;}catch(e){}party=[];G.mode='title';location.reload();return;}continue;}
   if(j===6){await hqPlay(hqAll());continue;}
   if(j===9){flags.narraOff=!flags.narraOff;saveGame();if(flags.narraOff)narPara();else narFala('Narração ligada. Eu vou ler as histórias pra você.','');continue;}
+  if(j===10){await offMenu();continue;}
   if(j===7){flags.tut={};saveGame();await say('Pronto! Os tutoriais vão aparecer de novo, um em cada parte do jogo.');cfgMenu.open=0;return;}
   cfgMenu.open=0;return;}}
 
@@ -10043,8 +10044,9 @@ function mgPausedNow(){try{const m=G.mode;return (m==='wall'&&WL&&WL.paused)||(m
 let MGCFG=0;
 async function gameCfg(hl){if(MGCFG)return;MGCFG=1;try{try{autoPause();}catch(e){}
   while(true){const mOn=musOn(),sOn=!flags.sfxOff,eOn=!flags.glowOff,tOn=!flags.fxOff,g=gfxLv();
-    const L=[`GRÁFICOS: ${GFXN[g]}`,`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`BRILHOS: ${eOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${tOn?'LIGADO':'DESLIGADO'}`,`NARRAÇÃO: ${!flags.narraOff?'LIGADA':'DESLIGADA'}`,`CHUVA E NEBLINA: ${!flags.wxOff?'LIGADAS':'DESLIGADAS'}`,'VOLTAR'];
-    const j=await choose(L,{noCancel:true,cadAsk:{q:hl?'Toque em GRÁFICOS até ficar MÉDIO ou LEVE':'AJUSTES — toque pra mudar',nf:1,cols:[g===0?'#1f7a3a':g===1?'#a0661a':'#8a2f2f',mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',eOn?'#1f7a3a':'#8a2f2f',tOn?'#1f7a3a':'#8a2f2f',!flags.narraOff?'#1f7a3a':'#8a2f2f',!flags.wxOff?'#1f7a3a':'#8a2f2f','#6a4a2a']}});
+    const L=[`GRÁFICOS: ${GFXN[g]}`,`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`BRILHOS: ${eOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${tOn?'LIGADO':'DESLIGADO'}`,`NARRAÇÃO: ${!flags.narraOff?'LIGADA':'DESLIGADA'}`,`CHUVA E NEBLINA: ${!flags.wxOff?'LIGADAS':'DESLIGADAS'}`,offLabel(),'VOLTAR'];
+    const j=await choose(L,{noCancel:true,cadAsk:{q:hl?'Toque em GRÁFICOS até ficar MÉDIO ou LEVE':'AJUSTES — toque pra mudar',nf:1,cols:[g===0?'#1f7a3a':g===1?'#a0661a':'#8a2f2f',mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',eOn?'#1f7a3a':'#8a2f2f',tOn?'#1f7a3a':'#8a2f2f',!flags.narraOff?'#1f7a3a':'#8a2f2f',!flags.wxOff?'#1f7a3a':'#8a2f2f','#1f6a7a','#6a4a2a']}});
+    if(j===7){await offMenu();continue;}
     if(j===0){flags.gfx=(g+1)%3;saveGame();gfxApply();hl=0;try{tone([660,880],.05);}catch(e){}continue;}
     if(j===1){flags.music=!mOn;saveGame();continue;}
     if(j===2){flags.sfxOff=!flags.sfxOff;saveGame();continue;}
@@ -10072,6 +10074,40 @@ async function gameCfg(hl){if(MGCFG)return;MGCFG=1;try{try{autoPause();}catch(e)
         (async()=>{try{autoPause();}catch(e){}await say(`O jogo está lento neste celular (${Math.round(fps)} quadros por segundo). Pra jogar melhor, diminua os GRÁFICOS.`);
           await say('É só tocar em ⚙ AJUSTES (aparece quando você pausa) e mudar GRÁFICOS pra MÉDIO ou LEVE. Vou abrir pra você agora!');await gameCfg(1);})().catch(()=>{});}}}catch(e){}requestAnimationFrame(tick);}
   requestAnimationFrame(tick);})();
+/* OFFLINE-BG 03/nov (Felipe): baixa o jogo inteiro aos poucos, em segundo plano, pra jogar sem internet. Android no Wi-Fi: sozinho. iPhone: botão nos AJUSTES. */
+const OFFL={on:0,run:0,tot:0,ok:0,done:false,fail:0,list:null,fin:0};
+function offApp(){try{return 'serviceWorker' in navigator&&'caches' in window&&(/github\.io$/i.test(location.hostname||'')||/^(localhost|127\.0\.0\.1)$/.test(location.hostname||''));}catch(e){return false;}}
+function offWifi(){const c=navigator.connection;return !!(c&&c.type==='wifi'&&!c.saveData);}
+function offPref(){try{return localStorage.getItem('cv-offline');}catch(e){return null;}}
+function offSet(v){try{localStorage.setItem('cv-offline',v?'1':'0');}catch(e){}}
+function offOk(){const v=offPref();return v==='1'||(v===null&&offWifi());}
+function offList(){if(OFFL.list)return OFFL.list;const tx=document.documentElement.innerHTML;
+  const re=/(?:\.\/)?((?:assets|blobs)\/[A-Za-z0-9_\/.%-]+\.(?:webp|png|jpg|jpeg|mp3|ogg|m4a|wav|json|gif|woff2?|ttf|otf))/g;const S=new Set();let m;while((m=re.exec(tx)))S.add(m[1]);
+  const ORD=['assets/mapas','assets/monstros','assets/anim','assets/personagens','assets/ui','assets/fontes','assets/musica','assets/cenarios','assets/fx','assets/outros','blobs'];
+  const rk=p=>{const i=ORD.findIndex(o=>p.startsWith(o));return i<0?ORD.length:i;};
+  OFFL.list=[...S].sort((a,b)=>rk(a)-rk(b));OFFL.tot=OFFL.list.length;return OFFL.list;}
+async function offScan(){const c=await caches.open('cv-arte-1');const ks=await c.keys();const have=new Set(ks.map(r=>new URL(r.url).pathname));
+  const L=offList(),need=L.filter(p=>!have.has(new URL(p,location.href).pathname));OFFL.ok=L.length-need.length;OFFL.done=need.length===0;return need;}
+async function offRun(){if(OFFL.run||!offApp()||!navigator.serviceWorker.controller)return;OFFL.run=1;OFFL.fail=0;
+  try{try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});}catch(e){}
+    const need=await offScan();let i=0;const nap=ms=>new Promise(r=>setTimeout(r,ms));
+    const busy=()=>document.hidden||!navigator.onLine||!offOk()||(MGMODES[G.mode]&&!mgPausedNow());
+    const worker=async()=>{while(i<need.length&&OFFL.on&&OFFL.fail<30){if(busy()){await nap(2000);continue;}
+      const p=need[i++];try{const r=await fetch(p);if(r.ok){await r.arrayBuffer();OFFL.ok++;}else OFFL.fail++;}catch(e){if(navigator.onLine)OFFL.fail++;}
+      await nap(80);}};
+    await Promise.all([worker(),worker()]);await offScan();if(OFFL.done)OFFL.fin=1;
+  }catch(e){}finally{OFFL.run=0;}}
+setInterval(()=>{try{if(!offApp()||OFFL.run||OFFL.fin||performance.now()<30000||!navigator.serviceWorker.controller)return;if(offOk()){OFFL.on=1;offRun();}else if(!OFFL.tot)offScan().catch(()=>{});}catch(e){}},15000);
+function offPct(){return OFFL.tot?Math.floor(100*OFFL.ok/OFFL.tot):0;}
+function offShort(){if(!offApp())return 'Offline';if(OFFL.done)return 'Offline ✓';if(OFFL.run&&OFFL.on)return 'Offline '+offPct()+'%';return 'Jogar offline';}
+function offLabel(){if(!offApp())return 'OFFLINE: SÓ NO APP';if(OFFL.done)return 'OFFLINE: PRONTO ✓';if(OFFL.run&&OFFL.on)return `OFFLINE: BAIXANDO ${offPct()}%`;return OFFL.tot?`OFFLINE: ${offPct()}% — BAIXAR`:'JOGAR OFFLINE: BAIXAR';}
+async function offMenu(){if(!offApp()){await say('Jogar sem internet só funciona no App (o ícone do jogo na tela de início do celular).');return;}
+  if(!navigator.serviceWorker.controller){await say('Feche e abra o App de novo, aí já dá pra baixar o jogo pra jogar sem internet.');return;}
+  if(!OFFL.tot){try{await offScan();}catch(e){}}
+  if(OFFL.done){await say('Pronto! O jogo inteiro já está no celular. Dá pra jogar sem internet (só a Dupla, os Amigos e os Presentes precisam de internet).');return;}
+  if(OFFL.run&&OFFL.on){const j=await choose(['CONTINUAR BAIXANDO','PAUSAR'],{cadAsk:{q:`Baixando o jogo pra jogar sem internet: ${offPct()}%. Continua sozinho enquanto você joga.`,nf:1,cols:['#1f7a3a','#8a2f2f']}});if(j===1){OFFL.on=0;offSet(0);}return;}
+  const j=await choose(['BAIXAR AGORA','AGORA NÃO'],{cadAsk:{q:`Baixar o jogo inteiro (uns 300 MB) pra jogar sem internet? Use no Wi-Fi. Já tem ${offPct()}%.`,nf:1,cols:['#1f7a3a','#8a2f2f']}});
+  if(j===0){offSet(1);OFFL.on=1;OFFL.fin=0;offRun();await say('Começou! O jogo vai baixando aos poucos enquanto você joga. Dá pra ver quanto falta aqui nos AJUSTES.');}}
 
 /* /AJUSTES NOS MINIJOGOS */
 

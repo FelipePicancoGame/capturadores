@@ -80,6 +80,7 @@ html body #cv-chapter .c1-bars .c1-tot span{width:auto;font-weight:700}html body
 </style>
 
 <style>/* CAP1 */
+html body #cv-chapter .c1-nav.c1-back{left:5%;right:auto;width:30%;background:#e8dcc0}html body #cv-chapter .c1-nav.c1-fwd{left:38%;right:auto;width:57%}
 #cv-chapter{position:fixed;inset:0;z-index:10000;background:#102d28;display:flex;justify-content:center;align-items:center;touch-action:manipulation;font-family:'Fredoka','Trebuchet MS',sans-serif;color:#fff;user-select:none}
 #cv-chapter *{box-sizing:border-box}#cv-chapter [hidden]{display:none!important}#cv-chapter canvas{background:transparent;box-shadow:none;image-rendering:auto}
 .c1-screen{position:relative;width:min(100vw,56.25dvh);height:min(100dvh,177.778vw);container-type:inline-size;overflow:hidden;background:#366d41;isolation:isolate}
@@ -194,11 +195,11 @@ window.C1IMG={"historia/01_vila_menina": "blobs/cbec3c49427e9a1e8a868e4eb2130af2
  }
  function showStory(){window.C1GEN=gender;
   if(sceneIndex>=story.length){clearing();return;}
-  const s=story[sceneIndex],line=s.lines[lineIndex];frame('c1-story');screen.innerHTML=scenery(s.bg)+tools()+`<header class="c1-head"><small>Uma amizade inesperada</small><h1>${s.title}</h1></header>`+(sceneIndex===1?img(hero()+'_costas','c1-hero','Hero olhando as montanhas'):sceneIndex===4?actor(hero()+'_mapa','c1-hero','Hero consultando o mapa',true):sceneIndex===2?actor(hero()+'_abaixa','c1-hero','Hero preparando a mochila',true):sceneIndex===0&&lineIndex===2?actor(hero()+'_ri','c1-hero','Hero rindo'):sceneIndex===0||sceneIndex===3?actor(hero()+'_anda','c1-hero','Hero caminhando'):img(hero(),'c1-hero','Hero'))+`<div class="c1-dialogue" aria-live="polite"><strong>${(line[0]==='Hero'&&window.C1NOME?window.C1NOME:line[0]).toUpperCase()}</strong>${c1g(line[1])}</div><button class="c1-nav" data-next>Continuar ▸</button>`;
+  const s=story[sceneIndex],line=s.lines[lineIndex];frame('c1-story');screen.innerHTML=scenery(s.bg)+tools()+`<header class="c1-head"><small>Uma amizade inesperada</small><h1>${s.title}</h1></header>`+(sceneIndex===1?img(hero()+'_costas','c1-hero','Hero olhando as montanhas'):sceneIndex===4?actor(hero()+'_mapa','c1-hero','Hero consultando o mapa',true):sceneIndex===2?actor(hero()+'_abaixa','c1-hero','Hero preparando a mochila',true):sceneIndex===0&&lineIndex===2?actor(hero()+'_ri','c1-hero','Hero rindo'):sceneIndex===0||sceneIndex===3?actor(hero()+'_anda','c1-hero','Hero caminhando'):img(hero(),'c1-hero','Hero'))+`<div class="c1-dialogue" aria-live="polite"><strong>${(line[0]==='Hero'&&window.C1NOME?window.C1NOME:line[0]).toUpperCase()}</strong>${c1g(line[1])}</div>`+((sceneIndex>0||lineIndex>0)?`<button class="c1-nav c1-back" data-prev aria-label="Voltar a fala anterior">◂ Voltar</button><button class="c1-nav c1-fwd" data-next>Continuar ▸</button>`:`<button class="c1-nav" data-next>Continuar ▸</button>`);
   if(sceneIndex===2)screen.classList.add('c1-bedroom');
   if(sceneIndex===0)screen.insertAdjacentHTML('beforeend',actor('velhinho','c1-oldman','Morador chamando da janela'));
   animateActors();
-  bindTools();screen.querySelector('[data-next]').onclick=()=>{if(++lineIndex>=s.lines.length){lineIndex=0;sceneIndex++;}showStory();};
+  bindTools();screen.querySelector('[data-next]').onclick=()=>{if(++lineIndex>=s.lines.length){lineIndex=0;sceneIndex++;}showStory();};{/* C1BACK (04/nov, Felipe): voltar pra ver a fala de novo */const pb=screen.querySelector('[data-prev]');if(pb)pb.onclick=()=>{if(lineIndex>0)lineIndex--;else if(sceneIndex>0){sceneIndex--;lineIndex=story[sceneIndex].lines.length-1;}showStory();};}
  }
  function friendship(){
   frame('c1-story c1-friendship');screen.innerHTML=scenery('07_amizade_'+chosen.id)+`<header class="c1-head"><small>Capítulo 1</small><h1>Uma amizade inesperada</h1></header>`+actor(hero()+'_abaixa','c1-hero','Hero se abaixando para conversar',true)+actor(chosen.id+'_anda','c1-creature c1-approach',chosen.name+' vindo até Hero')+`<div class="c1-dialogue" aria-live="polite"><strong>${(window.C1NOME||'Hero').toUpperCase()}</strong>Então está combinado, ${chosen.name}! Vamos descobrir o Vale juntos.</div><button class="c1-nav" data-finish>Começar a aventura ▸</button>`;
@@ -12205,9 +12206,9 @@ function rpSavePend(L){try{localStorage.setItem(RPQ,JSON.stringify(L.slice(-5)))
 async function rpRetry(){const L=rpPend();if(!L.length)return;const keep=[];for(const r of L){if(!(await rpSend(r)))keep.push(r);}rpSavePend(keep);}
 setTimeout(rpRetry,15000);setInterval(rpRetry,5*60e3);
 const css=document.createElement('style');css.textContent=`
-#rpBtn{position:fixed;left:max(4px,env(safe-area-inset-left,0px));top:42%;z-index:9998;width:34px;height:34px;border-radius:50%;border:2px solid #154c5e;background:#fffaf0;box-shadow:0 2px 0 rgba(0,0,0,.35);font-size:17px;line-height:28px;text-align:center;padding:0;opacity:.82;cursor:pointer;touch-action:manipulation}
+#rpBtn{position:fixed;left:max(4px,env(safe-area-inset-left,0px));top:42%;z-index:10060;width:34px;height:34px;border-radius:50%;border:2px solid #154c5e;background:#fffaf0;box-shadow:0 2px 0 rgba(0,0,0,.35);font-size:17px;line-height:28px;text-align:center;padding:0;opacity:.82;cursor:pointer;touch-action:manipulation}
 #rpBtn:active{transform:scale(.92)}
-#rpBox{position:fixed;inset:0;z-index:9999;background:rgba(10,20,30,.55);display:flex;align-items:center;justify-content:center;padding:14px}
+#rpBox{position:fixed;inset:0;z-index:10070;background:rgba(10,20,30,.55);display:flex;align-items:center;justify-content:center;padding:14px}
 #rpBox .pp{background:#fffaf0;border:3px solid #154c5e;border-radius:16px;max-width:380px;width:100%;max-height:92vh;overflow:auto;padding:12px 14px;font-family:CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif;color:#154c5e;box-shadow:0 6px 24px rgba(0,0,0,.4)}
 #rpBox h3{margin:0 0 6px;font-size:20px}#rpBox p{margin:4px 0;font-size:14px;line-height:1.3}
 #rpBox .ims{display:flex;gap:8px;margin:8px 0}#rpBox .ims div{flex:1;min-width:0;border:2px dashed #9bb7c0;border-radius:10px;min-height:70px;display:flex;align-items:center;justify-content:center;font-size:12px;text-align:center;overflow:hidden;position:relative}

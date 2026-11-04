@@ -11506,7 +11506,7 @@ function rivalSp(){const st=flags.starter||evoBase((party[0]||{sp:'fagulho'}).sp
 function rivalTeam(k){const c=rivalSp(),ev=s2=>(EVO[s2]?EVO[s2][0]:s2);if(k===1){const L=Math.max(8,Math.min(12,teamAvg()));return [mk('pipiu',L-1),mk(c,L)];}if(k===2)return [mk('pipiu',11),mk('zumbel',11),mk(c,13)];return [mk('ventania',19),mk('choquinho',19),mk('corujito',20),mk(ev(c),22)];}
 const MISS=[
  {id:'treino1',map:'town',npc:'teo',main:1,t:'Primeiro Treino',h:'O Téo está te esperando na porta da sua casa',
-  pre:['Téo: Oi! A sua avó te deu um monstrinho de aniversário? Que demais!','Téo: Eu tenho um Pipiu bem novinho. Treina com a gente? Assim você aprende a batalhar!','Téo: Dica: escolha o golpe, e se o seu monstrinho ficar fraco, use uma POÇÃO na Mochila.'],
+  pre:['Téo: Oi! A sua avó te deu um monstrinho de aniversário? Que demais!','Téo: Meu monstrinho é um passarinho chamado Pipiu. Treina com a gente? Assim você aprende a batalhar!','Téo: Dica: escolha o golpe, e se o seu monstrinho ficar fraco, use uma POÇÃO na Mochila.'],
   run:async()=>await battle([mk('pipiu',3)],{name:'Téo',look:'teo',after:'Téo: Uau! Você leva jeito! Toma, pra sua aventura.'})==='win',
   done:['Téo: O Guarda Bento tava procurando alguém corajoso. Fala com ele!'],rw:{coins:30,items:{potion:1}}},
  {id:'rival1',map:'route2',npc:'davi',main:1,need:'bike_roubada',t:'O Rival',h:'Um garoto metido está te esperando na Rota 2',

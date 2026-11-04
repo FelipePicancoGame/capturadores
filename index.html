@@ -192,7 +192,7 @@ window.C1IMG={"historia/01_vila_menina": "blobs/cbec3c49427e9a1e8a868e4eb2130af2
   modal.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();cancel();}if(e.key==='Tab'){e.preventDefault();const buttons=[...modal.querySelectorAll('button')];buttons[(buttons.indexOf(document.activeElement)+1)%buttons.length].focus();}};
   modal.querySelector('[data-no]').focus();
  }
- function showStory(){
+ function showStory(){window.C1GEN=gender;
   if(sceneIndex>=story.length){clearing();return;}
   const s=story[sceneIndex],line=s.lines[lineIndex];frame('c1-story');screen.innerHTML=scenery(s.bg)+tools()+`<header class="c1-head"><small>Uma amizade inesperada</small><h1>${s.title}</h1></header>`+(sceneIndex===1?img(hero()+'_costas','c1-hero','Hero olhando as montanhas'):sceneIndex===4?actor(hero()+'_mapa','c1-hero','Hero consultando o mapa',true):sceneIndex===2?actor(hero()+'_abaixa','c1-hero','Hero preparando a mochila',true):sceneIndex===0&&lineIndex===2?actor(hero()+'_ri','c1-hero','Hero rindo'):sceneIndex===0||sceneIndex===3?actor(hero()+'_anda','c1-hero','Hero caminhando'):img(hero(),'c1-hero','Hero'))+`<div class="c1-dialogue" aria-live="polite"><strong>${(line[0]==='Hero'&&window.C1NOME?window.C1NOME:line[0]).toUpperCase()}</strong>${c1g(line[1])}</div><button class="c1-nav" data-next>Continuar ▸</button>`;
   if(sceneIndex===2)screen.classList.add('c1-bedroom');
@@ -1839,6 +1839,18 @@ function narFala(txt,quem){try{if(!NAR.on())return;const t=narLimpa(txt);NAR.cur
   u.pitch=pi;u.rate=ra;u.onstart=()=>{if(!NAR.st){NAR.st=1;try{window.__EV&&__EV('narração ok');}catch(e){}}};u.onerror=e=>{try{window.__EV&&__EV('narração erro '+(e&&e.error||''));}catch(_){}};NAR.u=u;try{speechSynthesis.resume();}catch(e){}speechSynthesis.speak(u);}catch(e){try{window.__EV&&__EV('narração falhou '+String(e).slice(0,40));}catch(_){}}}
 function narPara(){try{if('speechSynthesis' in window)speechSynthesis.cancel();}catch(e){}}
 window.narFala=narFala;window.narPara=narPara;
+/* VOZIA (03/nov, Felipe testou ElevenLabs: Luciano = herói, Roberta = heroína, Cirilo = morador, Will = narrador): introdução do Capítulo 1 com voz de verdade. Fala sem áudio cai na voz do celular. */
+const VOZIA=[["naoepossivelque", "blobs/ab2e5d7e9af3ef839c603bd9a60e9fd6.mp3", "blobs/19e895f9ab2d1378c78930d84b0f03f4.mp3"], ["euouviisso", "blobs/f0e37f34bb3bb4d83e9b303174c81615.mp3", "blobs/f0e37f34bb3bb4d83e9b303174c81615.mp3"], ["tavendoateasrec", "blobs/37a583c04855713a60fa66a5c04c3ec2.mp3", "blobs/22022bafdf079ab4768486a453627269.mp3"], ["deveexistirtanta", "blobs/9e4dd5dc64bafb98d57e144b8abe8b3d.mp3", "blobs/63691736f27627b34968aa2cc3a0a3b5.mp3"], ["comidaaguamapa", "blobs/f1bdd6a7e27c9573779e13705b5be2e2.mp3", "blobs/26f7d7a1c1cfc6cf5a6210651dd9d957.mp3"], ["soesquecideapren", "blobs/8e187a69a38f46652a6c5d583df0fa69.mp3", "blobs/13b6c43f1af7c736e1703c1d0269f013.mp3"], ["finalmentevamos", "blobs/bb1381f21936c6e15cd3385064ebb049.mp3", "blobs/1c23ec7bef7ca51b803692c29d112dff.mp3"], ["segundoessemapa", "blobs/819707007d04a205f8ef17d57d2cd3b6.mp3", null], ["esegundomeusolho", "blobs/4b79cf293bfaa310d713472ff725d0a1.mp3", null], ["esperaouvialgum", "", null]],VZ={a:null,pend:null,on:0,next:null},VZN='blobs/62298862fda31b3824bdb9ade4a433b1.mp3';/* narrador (Will) antes da 1ª fala */
+function vozA(){if(!VZ.a){VZ.a=new Audio();VZ.a.preload='auto';VZ.a.onplaying=()=>{VZ.on=1;};VZ.a.onended=VZ.a.onpause=()=>{VZ.on=0;};VZ.a.addEventListener('ended',()=>{if(VZ.next){const n=VZ.next;VZ.next=null;VZ.a.src=n;VZ.a.play().catch(()=>{VZ.pend=n;});}});}return VZ.a;}
+function vozPara(){VZ.pend=null;VZ.next=null;try{if(VZ.a&&!VZ.a.paused)VZ.a.pause();}catch(e){}VZ.on=0;}
+function vozToca(t){try{const ch=document.querySelector('#cv-chapter .c1-dialogue');if(!ch||ch.offsetParent===null)return false;
+  const k=String(t||'').toLowerCase().normalize('NFD').replace(/[^a-z]/g,'');const e=VOZIA.find(x=>k.startsWith(x[0]));if(!e)return false;
+  const u=window.C1GEN==='menina'?e[2]:e[1];if(u==null)return false;try{speechSynthesis.cancel();}catch(_){}vozPara();if(!u)return true;
+  const a=vozA();let s1=u;if(e[0]==='naoepossivelque'&&!VZ.nar&&VZN){VZ.nar=1;s1=VZN;VZ.next=u;}a.src=s1;a.currentTime=0;const p=a.play();if(p&&p.catch)p.catch(()=>{VZ.pend=s1;});return true;}catch(err){return false;}}
+narFala=(function(f){return function(t,q){if(NAR.on()&&vozToca(t))return;vozPara();return f(t,q);};})(narFala);
+narPara=(function(f){return function(){vozPara();return f();};})(narPara);
+window.narFala=narFala;window.narPara=narPara;
+addEventListener('pointerdown',()=>{try{if(VZ.pend){const a=vozA();a.src=VZ.pend;VZ.pend=null;a.play().catch(()=>{});}else if(!VZ.ok){VZ.ok=1;const a=vozA();if(a.paused&&!a.src){a.muted=true;a.src=VOZIA[0][1];a.play().then(()=>{a.pause();a.muted=false;a.removeAttribute('src');}).catch(()=>{a.muted=false;});}}}catch(e){}},{capture:true});
 (function(){try{if(!('speechSynthesis' in window))return;try{speechSynthesis.onvoiceschanged=()=>{NAR.voz=narVoz();};}catch(e){}
   /* iPhone só deixa falar depois do primeiro toque: destrava com uma fala muda */
   const dest=()=>{if(NAR.st||!NAR.on())return;try{if(NAR.curT){const t=NAR.curT;NAR.curT='';narFala(t,NAR.curQ);}else{const u=new SpeechSynthesisUtterance('.');u.volume=.01;u.lang='pt-BR';u.onstart=()=>{NAR.st=1;};NAR.u=u;speechSynthesis.speak(u);}}catch(e){}};

@@ -56,16 +56,18 @@ $('bLoad').onclick=async()=>{KEY=$('key').value.trim();if(!KEY){st('Cole a chave
     MINE=(await (await api('/v1/voices')).json()).voices||[];
     for(const r of ROLES){CAND[r.id]=[];
       if(r.mine){const v=MINE.find(v=>v.name.toLowerCase().startsWith(r.mine.toLowerCase()));if(v)CAND[r.id].push({id:v.voice_id,name:v.name,prev:v.preview_url,mine:1});}
-      if(r.q){const q=new URLSearchParams({page_size:'12',language:'pt',sort:'usage_character_count_1y',...r.q});
-        try{let vs=(await (await api('/v1/shared-voices?'+q)).json()).voices||[];
-          const br=vs.filter(v=>/bra[sz]il|pt-br/i.test((v.accent||'')+' '+(v.locale||'')));if(br.length>=3)vs=br;
-          for(const v of vs)CAND[r.id].push({id:v.voice_id,owner:v.public_owner_id,name:v.name+(v.description?' — '+v.description.slice(0,50):''),prev:v.preview_url});}catch(e){console.warn(e);}}
-      for(const v of MINE)if(!CAND[r.id].some(c=>c.id===v.voice_id))CAND[r.id].push({id:v.voice_id,name:'(minha) '+v.name,prev:v.preview_url,mine:1});
+      if(r.q){const tries=[{language:'pt',locale:'pt-BR',...r.q},{language:'pt',...r.q},{language:'pt',gender:r.q.gender,age:r.q.age},{language:'pt',gender:r.q.gender}];const seen=new Set();
+        for(const t of tries){if(CAND[r.id].filter(c=>!c.mine).length>=8)break;const q=new URLSearchParams({page_size:'20',sort:'usage_character_count_1y',...t});
+          try{let vs=(await (await api('/v1/shared-voices?'+q)).json()).voices||[];
+            vs=vs.filter(v=>/^pt/i.test(v.language||'')||/bra[sz]il|portug|pt-br/i.test((v.accent||'')+' '+(v.locale||'')));
+            vs.sort((a,b)=>(/bra[sz]il|pt-br/i.test((b.accent||'')+(b.locale||''))?1:0)-(/bra[sz]il|pt-br/i.test((a.accent||'')+(a.locale||''))?1:0));
+            for(const v of vs){if(seen.has(v.voice_id))continue;seen.add(v.voice_id);CAND[r.id].push({id:v.voice_id,owner:v.public_owner_id,name:v.name.split(' - ')[0]+' · '+(v.accent||v.locale||'pt')+(v.description?' — '+v.description.slice(0,40):''),prev:v.preview_url});}}catch(e){console.warn(e);}}}
+      for(const v of MINE)if(!CAND[r.id].some(c=>c.id===v.voice_id)&&!/premade/i.test(v.category||''))CAND[r.id].push({id:v.voice_id,name:'(minha) '+v.name,prev:v.preview_url,mine:1,extra:1});
     }
     drawCast();drawLines();credits();$('bRec').disabled=false;st('Pronto. Escute as vozes (▶), troque se quiser e toque em Gravar tudo.');
   }catch(e){st('Não consegui entrar: '+e.message,1);}};
 function drawCast(){const saved=JSON.parse(ls.get('cv_el_cast')||'{}');const used=new Set();const box=$('cast');box.innerHTML='';
-  for(const r of ROLES){const c=CAND[r.id]||[];let pick=c.find(x=>x.id===saved[r.id])||(r.mine&&c.find(x=>x.mine&&x.name.toLowerCase().startsWith(r.mine.toLowerCase())))||c.find(x=>!used.has(x.id))||c[0];
+  for(const r of ROLES){const c=CAND[r.id]||[];let pick=c.find(x=>x.id===saved[r.id])||(r.mine&&c.find(x=>x.mine&&x.name.toLowerCase().startsWith(r.mine.toLowerCase())))||c.find(x=>!x.extra&&!used.has(x.id))||c.find(x=>!x.extra)||c[0];
     if(pick)used.add(pick.id);CAST[r.id]=pick;
     const d=document.createElement('div');d.className='role';d.innerHTML='<b>'+r.nome+'</b>';const s=document.createElement('select');
     c.forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=x.name;if(x===pick)o.selected=true;s.append(o);});

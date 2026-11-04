@@ -3300,7 +3300,8 @@ function drawShop(u){if(drawPowersArt(u)||drawHonraArt(u)||drawPedArt(u))return;
 function shopPrice(it){const n=(flags.shopBuy||{})[it.k]||0;return SUPL[it.k]?Math.round(it.c*Math.pow(1.15,n)/10)*10:it.c+(it.k==='cafe'?50*n:0);}
 function storeRows(tab){if(tab===0)return SHOPITEMS.map(it=>({n:it.n,d:it.d,ic:it.k,c:shopPrice(it),dis:(flags.coins||0)<shopPrice(it),tag:`tem ${bag[it.k]||0}`}));
   return upsList().map(u=>{const mx=UP(u.k)>=u.max;const lv0=UP(u.k);return{n:u.n,tot:lv0?'Total: '+u.d.replace(/\+(\d+)/g,(m0,n0)=>'+'+(+n0*lv0)):null,d:u.d.charAt(0).toUpperCase()+u.d.slice(1)+'.',ic:UPICON[u.k],bg:'#efe4ff',c:upGem(u),gem:1,max:mx,dis:mx||gems()<upGem(u),lv:UP(u.k),lvMax:u.max};});}
-function upGem(u){return Math.max(4,Math.round(u.c/12))+UP(u.k)*4;}
+const UPCOST={wallHp:[50,80,120,180,250],ultStart:[50,80,120,180],wallRegen:[60,100,150,220],tdEnergy:[50,80,120,180,250],tdLives:[50,80,120,180],tdRange:[50,80,120,180],tdCheap:[50,80,120,180],gemVal:[40,60,90,130],expHp:[50,80,120,180,250],expArmor:[60,100,150,220],expLuck:[60,100,150,220],coinMul:[80,120,180,260,360],expCoins:[80,120,180,260,360]};const SVMC=[40,65,100,145,200];
+function upGem(u){const L=UPCOST[u.k],l=UP(u.k);return L?L[Math.min(l,L.length-1)]:Math.max(4,Math.round(u.c/12))+l*4;}
 let UPF=null;const MODEUPS={wall:['wallHp','wallDmg','wallSpd','wallCrit','wallCritD','wallRegen','ultStart','coinMul'],td:['tdEnergy','tdLives','tdDmg','tdRange','tdSpd','tdCheap','gemVal','coinMul'],exp:['expDmg','expHp','expSpd','expCrit','expArmor','expBoss','expLuck','expCoins']};
 function upsList(){const L=UPS.filter(u=>!UPOFF.has(u.k));return UPF?L.filter(u=>UPF.includes(u.k)):L;}
 async function shopMenu(UF){UPF=UF||null;flags.up=flags.up||{};const S={tab:UF?1:0,t:0,shown:flags.coins||0,toast:null,bump:null,coins:[]};
@@ -4753,7 +4754,7 @@ function pwLv(t){return Math.max(1,Math.min(5,((flags.pw||{})[t])||1));}
 /* ===== notificações vermelhas (tipo WhatsApp) quando dá pra comprar algo + carteira sempre visível ===== */
 let SHOPT=null;function shopToast(txt,bad){SHOPT={txt,bad,t:0};}
 function upBuyN(keys){return UPS.filter(u=>!UPOFF.has(u.k)&&(!keys||keys.includes(u.k))&&UP(u.k)<u.max&&gems()>=upGem(u)).length;}
-function svBuyN(){try{const M=svm();let n=0;for(const u2 of SVMETA){const lv=svmLv(u2.k);if(lv<u2.max&&gems()>=5+lv*4)n++;}for(const u2 of SVUNL)if(!svmU(u2.k)&&gems()>=u2.c)n++;for(const u2 of SVMON)if(!M.mon[u2.sp]&&gems()>=u2.c)n++;return n;}catch(e){return 0;}}
+function svBuyN(){try{const M=svm();let n=0;for(const u2 of SVMETA){const lv=svmLv(u2.k);if(lv<u2.max&&gems()>=SVMC[Math.min(lv,4)])n++;}for(const u2 of SVUNL)if(!svmU(u2.k)&&gems()>=u2.c)n++;for(const u2 of SVMON)if(!M.mon[u2.sp]&&gems()>=u2.c)n++;return n;}catch(e){return 0;}}
 function pwBuyN(){try{return PWT.filter(t=>PWD[t]&&pwLv(t)<5&&(flags.ess||0)>=pwCost(t,pwLv(t))).length;}catch(e){return 0;}}
 function modeBuyN(key){return key==='surv'?svBuyN():upBuyN(MODEUPS[key]);}
 function redDot(x,y,n,s=1){const pl=(1+Math.sin(frame/6)*.08)*s;b.save();b.translate(x,y);b.scale(pl,pl);b.save();b.globalCompositeOperation='lighter';glowAt(0,0,9,'255,60,70',.45);b.restore();E(0,0,6,6,'#ffffff');E(0,0,5,5,'#ff2a3a');b.restore();T(n>9?'9+':String(n),x,y-3.6*s,6.2*s,'center',C.white,12,null);}
@@ -6109,7 +6110,7 @@ async function dexMenu(){const st={pg:0,t:0};
   while(true){const j=await choose(['x'],{dex:st});const per=12,pages=Math.ceil(DEXLIST.length/per);
     if(j<0||j===102)return;if(j===104){await tcardMenu();continue;}if(j===100){st.pg=Math.max(0,st.pg-1);st.t=0;continue;}if(j===101){st.pg=Math.min(pages-1,st.pg+1);st.t=0;continue;}
     if(j===103){if(!dexClaimable()){const k=flags.dexRw||0;await say(k>=DEXRW.length?'Você já pegou todos os prêmios da Coleção. Parabéns!':`Capture ${DEXRW[k].n} espécies diferentes pra ganhar o próximo prêmio.`);continue;}
-      const rw=DEXRW[flags.dexRw||0];flags.dexRw=(flags.dexRw||0)+1;flags.coins=(flags.coins||0)+rw.coins;const parts=[`${rw.coins} moedas`];for(const [k,v] of Object.entries(rw.items)){bag[k]=(bag[k]||0)+v;parts.push(`${v}x ${(SHOPITEMS.find(q=>q.k===k)||{n:k}).n}`);}
+      const rw=DEXRW[flags.dexRw||0];flags.dexRw=(flags.dexRw||0)+1;flags.coins=(flags.coins||0)+rw.coins;addGems(15);const parts=[`${rw.coins} moedas`,'15 💎'];for(const [k,v] of Object.entries(rw.items)){bag[k]=(bag[k]||0)+v;parts.push(`${v}x ${(SHOPITEMS.find(q=>q.k===k)||{n:k}).n}`);}
       st.burst=0;try{tone([784,988,1319,1568],.09);}catch(e){}await say(`Vó Ipê: Que coleção linda! Tome: ${parts.join(', ')}.`);saveGame();continue;}
     const sp=DEXLIST[st.pg*per+j];if(!sp)continue;const own=dexOwn();
     if(dexCaught(sp,own)){const S2=SP[sp],base=EVOBASE[sp],ev=EVO[sp];await say(`Nº ${String(DEXLIST.indexOf(sp)+1).padStart(2,'0')} ${S2.name}, tipo ${TYPES[S2.type]}. ${S2.desc||''}`+(ev?` Evolui para ${ev[2]} no nível ${ev[1]}.`:base?` Evolui de ${SP[base].name}.`:''));}
@@ -6391,12 +6392,12 @@ async function questMenu0(){const st={t:0,burst:null};
   while(true){const Q=qState();const j=await choose(['x'],{quest:st});
     if(j<0||j===99)return;if(j===98){const g=await pedMenu();if(g&&(g.stage||g.map))return{ped:g};continue;}
     if(j===10){if(Q.bonus){await say('Você já abriu o baú de hoje. Volte amanhã pra missões novas!');continue;}if(Q.got.length<3){await say('Complete e pegue as 3 missões do dia pra abrir o baú especial!');continue;}
-      Q.bonus=true;flags.coins=(flags.coins||0)+QBONUS.coins;const parts=[`${QBONUS.coins} moedas`];for(const [k,v] of Object.entries(QBONUS.items)){bag[k]=(bag[k]||0)+v;parts.push(`${v}x ${itemName(k)}`);}
+      Q.bonus=true;flags.coins=(flags.coins||0)+QBONUS.coins;addGems(6);const parts=[`${QBONUS.coins} moedas`,'6 💎'];for(const [k,v] of Object.entries(QBONUS.items)){bag[k]=(bag[k]||0)+v;parts.push(`${v}x ${itemName(k)}`);}
       st.chest=0;tone([523,659,784,1047,1319],.1);saveGame();rwToast('🎁 Baú aberto: '+parts.join(' · '));continue;}
     const id=Q.ids[j];if(!id)continue;const q=QDEF.find(d=>d.id===id);
     if(Q.got.includes(id)){await say('Recompensa já recebida. Mandou bem!');continue;}
     if((Q.prog[id]||0)<q.g){await say(`Falta pouco! ${q.n}. Progresso: ${Q.prog[id]||0}/${q.g}.`);continue;}
-    Q.got.push(id);flags.coins=(flags.coins||0)+q.c;st.burst={k:j,t:0};tone([880,1175,1568],.08);saveGame();}}
+    Q.got.push(id);flags.coins=(flags.coins||0)+q.c;addGems(3);st.burst={k:j,t:0};tone([880,1175,1568],.08);saveGame();rwToast(`+${q.c} moedas · +3 💎`);}}
 function drawQuest(u){UKWAIT=null;if(drawQuestArt(u)||ukWaitDraw(u))return;const st=u.cfg.quest;st.t++;const t=st.t,Q=qState();u.rects=[];u.boxR=null;
   const g=b.createLinearGradient(0,0,0,H);g.addColorStop(0,'#1f6a6a');g.addColorStop(.4,'#1c2a48');g.addColorStop(1,'#120e24');b.fillStyle=g;b.fillRect(0,0,W,H);
   b.save();b.translate(W/2,-20);b.rotate(frame/240);for(let k=0;k<10;k++){b.rotate(Math.PI/5);b.fillStyle='rgba(160,255,230,.05)';b.beginPath();b.moveTo(0,0);b.lineTo(-16,-H*1.6);b.lineTo(16,-H*1.6);b.closePath();b.fill();}b.restore();
@@ -6481,7 +6482,7 @@ async function medalMenu(){const st={t:0,burst:null};
   while(true){const j=await choose(['x'],{medals:st});if(j<0||j===99)return;const md=MEDALS[j];if(!md)continue;const M=medalSt();
     if(M.got.includes(md.id)){await say(`${md.n} (${MTIER[md.tier].n}): ${md.d}. Troféu conquistado!`);continue;}
     if(!medalDone(md)){const v=Math.min(md.v(),md.g);await say(`${md.n} (${MTIER[md.tier].n}): ${md.d}. Progresso: ${md.id==='surv'?Math.floor(v/60)+' de 5 min':v+'/'+md.g}. Prêmio: ${md.c} moedas.`);continue;}
-    M.got.push(md.id);if(!M.seen.includes(md.id))M.seen.push(md.id);flags.coins=(flags.coins||0)+md.c;flags.ess=(flags.ess||0)+1;st.burst={k:j,t:0};tone([523,784,1047,1319,1568],.09);saveGame();rwToast(`🏅 ${md.n}! +${md.c} moedas`);}}
+    M.got.push(md.id);if(!M.seen.includes(md.id))M.seen.push(md.id);flags.coins=(flags.coins||0)+md.c;flags.ess=(flags.ess||0)+1;addGems(10);st.burst={k:j,t:0};tone([523,784,1047,1319,1568],.09);saveGame();rwToast(`🏅 ${md.n}! +${md.c} moedas · +10 💎`);}}
 try{for(const [k,v] of Object.entries({"cartao_trofeu": "blobs/c0f362fe239c7841bf8423d34ee0ce06.webp", "cartao_trofeu_conquistado": "blobs/a389fa061a11a72de05c668fd5535178.webp", "cartao_trofeu_selecionado": "blobs/3e9b234b5a984aa44be481872cccf958.webp", "faixa_titulo_trofeus": "blobs/76e661c1db22b1654b260c80a8b1d8d6.webp", "trofeu_amigo_dos_bichos_apagado": "blobs/6960f97c0a923769a966ba2ea90114aa.webp", "trofeu_amigo_dos_bichos_bronze": "blobs/0d557bfdc39882d0994a41a7732e9c05.webp", "trofeu_amigo_dos_bichos_ouro": "blobs/634bb6a128bc53cbc9ca5a586d7d18dd.webp", "trofeu_amigo_dos_bichos_prata": "blobs/8967941e8d5a2a7b55e115ddbecdb462.webp", "trofeu_colecionador_apagado": "blobs/668edc553a1a5d789212a3ac7ea4b0ed.webp", "trofeu_colecionador_bronze": "blobs/08b1a9b201e7a11f639f4d49899eec0a.webp", "trofeu_colecionador_ouro": "blobs/bf5d76fb63edc76ec482038cce0e917b.webp", "trofeu_colecionador_prata": "blobs/4d05f6e5033ba1c5ea78734a034a50f8.webp", "trofeu_explorador_apagado": "blobs/f23d18964e3d81a4b9088cc34c99de2b.webp", "trofeu_explorador_bronze": "blobs/63310bf55cbf824039c062bfefe319a2.webp", "trofeu_explorador_ouro": "blobs/2578ea5a82c7c2397e8bc64d34f8ae57.webp", "trofeu_explorador_prata": "blobs/0bf610dcba303ec2f19478b44abed8bd.webp", "trofeu_guardiao_do_portao_apagado": "blobs/ec825228b854b4fa4f161e69a2754001.webp", "trofeu_guardiao_do_portao_bronze": "blobs/c3ff5b54e8fd11fabad276404d084c93.webp", "trofeu_guardiao_do_portao_ouro": "blobs/2194a66568b7adcef76b28650ecf18e7.webp", "trofeu_guardiao_do_portao_prata": "blobs/b8432255550a0e5507020466c8c7f3e6.webp", "trofeu_medalha_pedra_apagado": "blobs/721992ece1205c696ef993e5fef7bcb5.webp", "trofeu_medalha_pedra_bronze": "blobs/a042c91275c2c40710a6fd95f32377f5.webp", "trofeu_medalha_pedra_ouro": "blobs/c023dc31b12458d82937073c8d0c23d6.webp", "trofeu_medalha_pedra_prata": "blobs/d889df9418c34aaba2216adb93308be2.webp", "trofeu_mestre_da_colecao_apagado": "blobs/b6ee806fa06be6baf86e301ea238c482.webp", "trofeu_mestre_da_colecao_bronze": "blobs/e9ef328f7a94f85b4cb41db90989d0eb.webp", "trofeu_mestre_da_colecao_ouro": "blobs/616cd320c4fcf1fef9c591209c726414.webp", "trofeu_mestre_da_colecao_prata": "blobs/44b244f45f5086b6049293eb7de2c392.webp", "trofeu_muralha_de_ferro_apagado": "blobs/d74a44c5f3658a3fd5fec5c5020c554d.webp", "trofeu_muralha_de_ferro_bronze": "blobs/130dfa11d8dc66217222d321c74186ac.webp", "trofeu_muralha_de_ferro_ouro": "blobs/a8dae2324e20d41457ff7b637dae4a3c.webp", "trofeu_muralha_de_ferro_prata": "blobs/f62893671d8d249413ddcca61b7a47a0.webp", "trofeu_olho_brilhante_apagado": "blobs/6d9ebc80a44b8d64ca0ed76d57ad9e59.webp", "trofeu_olho_brilhante_bronze": "blobs/e07f4800c66678346daf51e21fe493b9.webp", "trofeu_olho_brilhante_ouro": "blobs/d7825c73b3b3e4e4a4b2d7f3ca820a63.webp", "trofeu_olho_brilhante_prata": "blobs/d5634f4f5e6a61e5f7195617fd98392c.webp", "trofeu_pescador_apagado": "blobs/f4c2b7f286eaf815e700d8e221499d9d.webp", "trofeu_pescador_bronze": "blobs/bd5ba528f9d1dd81b98479ed04c17b3b.webp", "trofeu_pescador_ouro": "blobs/20486a58a3ec5fbd7d7fa7ec0a888417.webp", "trofeu_pescador_prata": "blobs/cbab214cc39b5e4d070b15f96229c34f.webp", "trofeu_primeiros_amigos_apagado": "blobs/02d21543dc2bbc40c27d70382f8ae634.webp", "trofeu_primeiros_amigos_bronze": "blobs/946271b6ae62d0397669cc3016d8f7ab.webp", "trofeu_primeiros_amigos_ouro": "blobs/263fc0deb29d9eaa09e2efcd4a53fd57.webp", "trofeu_primeiros_amigos_prata": "blobs/a86d882b55f0e0e0957115fbbd91b1e5.webp", "trofeu_sobrevivente_apagado": "blobs/bf4e4a7f11dc4c6a4eb25933a21b6a7b.webp", "trofeu_sobrevivente_bronze": "blobs/1bc35cdc475a7547e040e00e8b367b46.webp", "trofeu_sobrevivente_ouro": "blobs/aaa627d54e73ed63118a6d81a660593d.webp", "trofeu_sobrevivente_prata": "blobs/ddb9ff10ff6fccc21b7a3cd793f6c179.webp", "trofeu_transformacao_apagado": "blobs/52ab7ee4a161803b1eb0ccbe686b9ceb.webp", "trofeu_transformacao_bronze": "blobs/ccab8d313424f3ffa400820b75484f2f.webp", "trofeu_transformacao_ouro": "blobs/3447fc2207b932f9dde8bc75378b90f4.webp", "trofeu_transformacao_prata": "blobs/fa59aad0d7227f8d9ceb49469509369b.webp"})){const im=new Image();im.src=v;ASI['tf_'+k]=im;}}catch(e){}
 const TFSLUG={cap5:'primeiros_amigos',evo:'transformacao',fish:'pescador',badge:'medalha_pedra',cap14:'colecionador',wall:'muralha_de_ferro',exp:'explorador',pets:'amigo_dos_bichos',shiny:'olho_brilhante',td:'guardiao_do_portao',surv:'sobrevivente',cap28:'mestre_da_colecao'};
 function tfImg(k){const im=ASI['tf_'+k];return im&&im.complete&&im.naturalWidth?im:null;}
@@ -8905,6 +8906,9 @@ function mtTap(x,y){const T2=MT;if(!T2)return;if(mtTapArt(x,y))return;const by=H
 /* ---------- CRISTAIS (2ª moeda, pra aprimoramentos) e MAPA DE FASES com cenários (estilo mapa de pontinhos dos jogos de plataforma) ---------- */
 function star5(x,y,r,col){b.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.45:r;i?b.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr):b.moveTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);}b.closePath();b.fillStyle=col;b.fill();b.lineWidth=.7;b.strokeStyle='rgba(40,20,10,.6)';b.stroke();}
 function gems(){return flags.gems||0;}
+function ecoDay(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}function ecoRep(){let R=flags.ecoRep;if(!R||R.d!==ecoDay())R=flags.ecoRep={d:ecoDay(),n:0};if(R.n>=5)return 0;R.n++;return 1;}
+function ecoWk(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function ecoWeek(){try{let S=flags.ecoWk;if(!S||S.w!==ecoWk())S=flags.ecoWk={w:ecoWk(),n:0,ok:0};S.n++;if(!S.ok&&S.n>=20){S.ok=1;addGems(50);setTimeout(()=>{try{rwToast('🏆 Desafio da semana: 20 vitórias! +50 💎');}catch(e){}},1500);}else if(!S.ok&&S.n%5===0)setTimeout(()=>{try{rwToast(`🏆 Desafio da semana: ${S.n}/20 vitórias`);}catch(e){}},1500);}catch(e){}}
 function addGems(n){flags.gems=(flags.gems||0)+n;}
 function drawCrystal(x,y,s=1){if(itImg('gem',x,y-1,22*s))return;b.save();b.translate(x,y);b.scale(s,s);poly([[0,-9],[6,-3],[4,7],[-4,7],[-6,-3]],'#a259e6');poly([[0,-9],[6,-3],[0,-1]],'#d8b4ff',false);poly([[-6,-3],[0,-1],[-4,7]],'#7a3ac0',false);poly([[0,-1],[4,7],[-4,7]],'#8a4ad8',false);E(-2,-4,1.2,2,'rgba(255,255,255,.75)',.3,false);b.restore();}
 const BIOMES=[
@@ -9079,11 +9083,11 @@ async function stageMap(key){const st={key,sel:null,t:0};
     if(j===100){await stgLaunch(key,st.world*STGN+st.sel);const S3=stgPage(key,st.world);if(S3.next>st.sel)st.sel=S3.next;for(let w=1;w<STGW;w++)if(st.world===w-1&&stgWOpen(key,w)&&st.sel===STGN-1&&!flags['w'+(w+1)+'ok_'+key]){flags['w'+(w+1)+'ok_'+key]=1;saveGame();await say(`MUNDO ${w+1} liberado! Toque em MUNDO ${w+1} lá em cima: cenários novos e inimigos bem mais fortes.`);}continue;}}}
 async function stgLaunch(key,i){flags.emJogo={k:'stg',key,i,t:Date.now()};saveGame();try{return await stgLaunch0(key,i);}finally{delete flags.emJogo;try{__fotoApagar();}catch(e){}try{saveGame();}catch(e){}}}
 async function stgLaunch0(key,i){const bio=BIOMES[Math.floor(i/3)%BIOMES.length];
-  if(key==='exp'){const m0=flags.expMax||1;flags.expStage=Math.min(i+1,m0);await fadeTo(1);await expedition();await wait(1);const m1=flags.expMax||1;if(m1>m0){let g=0;for(let k=m0;k<m1;k++)g+=1+(k%5===0?1:0);if(g)addGems(g);saveGame();await say(`Fase nova liberada no mapa!${g?` +${g} ${g>1?'cristais':'cristal'} 💎`:''}`);}await rareCatchPending();return;}
+  if(key==='exp'){const m0=flags.expMax||1;flags.expStage=Math.min(i+1,m0);await fadeTo(1);await expedition();await wait(1);const m1=flags.expMax||1;if(m1>m0){let g=0;for(let k=m0;k<m1;k++){g+=3+(k%5===0?10:0);ecoWeek();}if(g)addGems(g);saveGame();await say(`Fase nova liberada no mapa!${g?` +${g} ${g>1?'cristais':'cristal'} 💎`:''}`);}await rareCatchPending();return;}
   await bioTipShow(key,bio);STG={mode:key,i,bio,mult:.85+Math.min(i,15)*.1+Math.max(0,i-15)*.06};STGRES=null;
   try{await ({wall:wallMode,td:towerMode,surv:survMode})[key]();}finally{STG=null;}
   const R=STGRES;STGRES=null;if(!R)return;const A=stgArr(key),old=A[i]||0;
-  if(R.win){const first=!old,ns=Math.max(old,R.stars||1);A[i]=ns;const g=first?1+(i%3===2?1:0)+(ns===3?1:0):(Math.random()<.05?1:0)+(ns===3&&old<3?1:0),c=first?12+3*i:3+Math.floor(i/2);addGems(g);flags.coins=(flags.coins||0)+c;if(first&&i%5===4)essAdd(1,'chefe vencido');saveGame();
+  if(R.win){const first=!old,ns=Math.max(old,R.stars||1);A[i]=ns;const g=(first?3+(typeof WD!=='undefined'?WD:0)+(i%3===2?10:0):ecoRep())+(ns===3&&old<3?3:0);ecoWeek();const _g0=0,c=first?12+3*i:3+Math.floor(i/2);addGems(g);flags.coins=(flags.coins||0)+c;if(first&&i%5===4)essAdd(1,'chefe vencido');saveGame();
     tone([523,659,784,1047],.08);await say(`${first?'FASE CONCLUÍDA!':'Fase repetida!'} ${g?`+${g} cristal 💎 e `:''}+${c} moedas.${first&&i<STGT-1?' A próxima fase foi liberada no mapa!':''}`);}
   else await say('Não foi dessa vez! Dá pra tentar de novo quantas vezes quiser (e repetir fases já vencidas pra ganhar mais).');
   if(R.win&&R.stars>=3&&Math.random()<.01)flags.pendCatch={sp:rgnSpecies(bio),lv:Math.max(5,teamAvg()-1)};await rareCatchPending();}
@@ -9192,8 +9196,8 @@ function drawStageMap(u){if(u.cfg.smap.key==='wall'&&mfReady())return drawStageM
   /* painel */
   const py=H-78,i=st.sel,gi=OFF+i,bio=BIOMES[WD*5+Math.floor(i/3)],stars=S2.stars[i];rrect(4,py,W-8,52,9,'rgba(16,12,40,.92)',false);b.beginPath();if(b.roundRect){b.roundRect(4,py,W-8,52,9);b.lineWidth=1.2;b.strokeStyle=I.col;b.stroke();}
   T(`FASE ${gi+1} · ${bio.n}${i%3===2?' · CHEFE':''}${WD?['',' · DIFÍCIL',' · LENDÁRIO'][WD]:''}`,10,py+4,7.2,'left',WD?'#ffb4c8':C.white,W-80);T(stgObjTxt(key,gi),10,py+15,6,'left','#e8e4ff',W-82);
-  if(key==='exp')T(stars?'Já vencida: repita pra treinar e juntar moedas':`1ª vez: +1 💎${gi%5===4?' +1 💎 do chefe':''} e libera a próxima`,10,py+25,5.4,'left','#fff3c8',W-80);
-  else T(stars?`Repetir: +${6+gi} moedas (20% de chance de 💎)`:`1ª vez: +${1+(i%3===2?1:0)+WD} 💎 (+1 com 3★) e +${30+6*gi} moedas`,10,py+25,5.2,'left','#fff3c8',W-84);
+  if(key==='exp')T(stars?'Já vencida: repita pra treinar e juntar moedas':`1ª vez: +3 💎${gi%5===4?' +10 💎 do chefe':''} e libera a próxima`,10,py+25,5.4,'left','#fff3c8',W-80);
+  else T(stars?`Repetir: +${6+gi} moedas e +1 💎 (até 5 por dia)`:`1ª vez: +${3+WD+(i%3===2?10:0)} 💎 (+3 com 3★) e +${30+6*gi} moedas`,10,py+25,5.2,'left','#fff3c8',W-84);
   for(let s3=0;s3<3;s3++)star5(14+s3*8,py+40,3.4,s3<stars?C.yellow:'rgba(255,255,255,.3)');
   {const bx=W-66,by=py+8,pl=1+Math.sin(t/6)*.04;b.save();b.translate(bx+30,by+11);b.scale(pl,pl);rrect(-30,-11+1.5,60,22,9,'rgba(0,0,0,.35)',false);(pillArt(-30,-11,60,22,'#2f9f4c')||rrect(-30,-11,60,22,9,'#2f9f4c'));(PAok||rrect(-30,-11,60,8,8,'rgba(255,255,255,.22)',false));poly([[-17,-4],[-17,4],[-10.5,0]],'#ffffff',false);b.restore();T(stars?'REPETIR':'JOGAR',bx+35,by+7.3,7.2,'center',C.white,36,C.ink);u.rects.push({x:bx,y:by,w:60,h:22,i:100});}
   const bb=[['VOLTAR','#c23b3b',99],['HISTÓRIA','#3a6ad0',98]];bb.push([key==='surv'?'PODERES 💎':key==='wall'?'CARTAS 🎟':'MELHORIAS 💎','#8a4ad8',97]);const bw=(W-8-(bb.length-1)*4)/bb.length;
@@ -9201,7 +9205,7 @@ function drawStageMap(u){if(u.cfg.smap.key==='wall'&&mfReady())return drawStageM
 /* PODERES DA HORDA: melhorias permanentes e desbloqueios com cristais (como nos jogos de horda) */
 const SVMETA=[{k:'hp',n:'Vida Permanente',d:'+10% de vida em cada nível',max:5,ic:'heart'},{k:'spd',n:'Patas Rápidas',d:'+5% de velocidade de andar',max:5,ic:'energy'},
   {k:'mag',n:'Ímã Permanente',d:'+10% de alcance do ímã em cada nível',max:5,ic:'coin'},{k:'xp',n:'Sabedoria',d:'+6% de experiência das gemas',max:5,ic:'star'}];
-const SVUNL=[{k:'orbit',n:'Escudo Giratório',d:'Carta nova: bolinhas giram em volta e batem nos inimigos',c:20,ic:'star'},{k:'aura',n:'Aura de Calor',d:'Carta nova: machuca quem chega perto',c:20,ic:'sword'},{k:'raio',n:'Raios do Céu',d:'Carta nova: raios caem nos inimigos sozinhos',c:25,ic:'bolt'}];
+const SVUNL=[{k:'orbit',n:'Escudo Giratório',d:'Carta nova: bolinhas giram em volta e batem nos inimigos',c:150,ic:'star'},{k:'aura',n:'Aura de Calor',d:'Carta nova: machuca quem chega perto',c:150,ic:'sword'},{k:'raio',n:'Raios do Céu',d:'Carta nova: raios caem nos inimigos sozinhos',c:200,ic:'bolt'}];
 const SVMON=[];
 function svm(){flags.svm=flags.svm||{lv:{},unl:{},mon:{}};return flags.svm;}
 function svmLv(k){return svm().lv[k]||0;}
@@ -9230,7 +9234,7 @@ function svCardDraw(cd,i,y,on,S,t){const ct=SVCC[SVCAT[cd.id]||0],col=ct[0],rgb=
   b.restore();}
 function svmU(k){return !!svm().unl[k];}
 async function svMetaShop(){while(true){const M=svm(),rows=[],acts=[];
-    for(const u2 of SVMETA){const lv=svmLv(u2.k),c=5+lv*4,mx=lv>=u2.max;rows.push({n:mx?u2.n:`${u2.n} · ${c}💎`,d:u2.d,ic:u2.ic,badge:mx?'MÁX':`Nv ${lv}/${u2.max}`,bcol:mx?'#c9982c':lv?'#2f8f4c':'#8a4ad8',bg:'#efe4ff',can:!mx&&gems()>=c});acts.push(()=>{if(mx)return 'Já está no máximo!';if(gems()<c)return `Faltam ${c-gems()} cristais.`;addGems(-c);M.lv[u2.k]=lv+1;return `${u2.n} subiu pro nível ${lv+1}!`;});}
+    for(const u2 of SVMETA){const lv=svmLv(u2.k),c=SVMC[Math.min(lv,4)],mx=lv>=u2.max;rows.push({n:mx?u2.n:`${u2.n} · ${c}💎`,d:u2.d,ic:u2.ic,badge:mx?'MÁX':`Nv ${lv}/${u2.max}`,bcol:mx?'#c9982c':lv?'#2f8f4c':'#8a4ad8',bg:'#efe4ff',can:!mx&&gems()>=c});acts.push(()=>{if(mx)return 'Já está no máximo!';if(gems()<c)return `Faltam ${c-gems()} cristais.`;addGems(-c);M.lv[u2.k]=lv+1;return `${u2.n} subiu pro nível ${lv+1}!`;});}
     for(const u2 of SVUNL){const has=svmU(u2.k);rows.push({n:u2.n,d:u2.d,ic:u2.ic,badge:has?'✓ TEM':`${u2.c} 💎`,bcol:has?'#2f8f4c':'#8a4ad8',bg:'#e4f0ff',can:!has&&gems()>=u2.c});acts.push(()=>{if(has)return 'Já desbloqueado! Aparece nas cartas da Horda.';if(gems()<u2.c)return `Faltam ${u2.c-gems()} cristais.`;addGems(-u2.c);M.unl[u2.k]=1;return `${u2.n} desbloqueado! Agora pode aparecer nas cartas.`;});}
     for(const u2 of SVMON){const has=!!M.mon[u2.sp];rows.push({n:`Monstrinho: ${SP[u2.sp].name}`,d:has?'Já veio pra sua equipe.':'Desbloqueia esse monstrinho pra jogar!',ic:'ball',badge:has?'✓ TEM':`${u2.c} 💎`,bcol:has?'#2f8f4c':'#8a4ad8',bg:'#fff0e0'});acts.push(async()=>{if(has)return 'Você já desbloqueou.';if(gems()<u2.c)return `Faltam ${u2.c-gems()} cristais.`;addGems(-u2.c);M.mon[u2.sp]=1;const where=grantMon(u2.sp,teamAvg());saveGame();await revealMon(u2.sp,where);return null;});}
     const j=await shopPick(rows,`PODERES DA HORDA · ${gems()}💎`,'Use cristais pra ficar mais forte em todas as partidas');if(j<0||j>=acts.length)return;
@@ -9880,7 +9884,7 @@ function handleTap(x,y){const u=ui[ui.length-1];
 /* ENERGIA (30/out, Felipe: "vamos criar um sistema de energia pro jogo"). Escolhas dele:
    gasta só nos MINIGAMES (Expedição, Muralha, Torres, Horda e cada fase do Combina); máximo 30, cada partida 5, volta 1 a cada 12 min (cheia em 6 h);
    recarga: 5 cristais = +15 (até 3x por dia), Presente do Dia +10, e enche quando algum monstrinho sobe de nível. Missões da história não gastam. */
-const EN={MAX:30,COST:5,REG:12*60e3,GEM:5,GEMQ:15,GEMDAY:3,DAILY:10};
+const EN={MAX:30,COST:5,REG:12*60e3,GEM:30,GEMQ:30,GEMDAY:2,DAILY:10};
 function enSt(){let e=flags.en;const now=Date.now();if(!e||typeof e!=='object'||!(e.v>=0))e=flags.en={v:EN.MAX,t:now};if(e.v>=EN.MAX)e.t=now;else{const n=Math.floor((now-e.t)/EN.REG);if(n>0){e.v=Math.min(EN.MAX,e.v+n);e.t=e.v>=EN.MAX?now:e.t+n*EN.REG;}}return e;}
 function enVal(){return enSt().v;}
 function enNext(){const e=enSt();return e.v>=EN.MAX?0:Math.max(0,EN.REG-(Date.now()-e.t));}
@@ -9889,7 +9893,7 @@ function enAdd(n,why){const e=enSt();e.v+=n;try{saveGame();}catch(_){}try{rwToas
 async function enPay(){if(window.__ENFREE)return true;const e=enSt();
   if(e.v>=EN.COST){e.v-=EN.COST;try{saveGame();}catch(_){}try{rwToast(`⚡ −${EN.COST} energia · sobram ${e.v}`);}catch(_){}return true;}
   const day=qDay(),usd=flags.enGem&&flags.enGem.d===day?flags.enGem.n:0,can=usd<EN.GEMDAY&&gems()>=EN.GEM;
-  const why=usd>=EN.GEMDAY?' A troca por cristais já foi usada 3 vezes hoje.':gems()<EN.GEM?` Faltam cristais pra trocar (precisa de ${EN.GEM} 💎).`:'';
+  const why=usd>=EN.GEMDAY?` A troca por cristais já foi usada ${EN.GEMDAY} vezes hoje.`:gems()<EN.GEM?` Faltam cristais pra trocar (precisa de ${EN.GEM} 💎).`:'';
   const q=`Sem energia! ⚡ ${e.v} de ${EN.MAX}. Cada partida usa ${EN.COST}. A próxima energia chega em ${enFmt(enNext())}.${why}`;
   const opts=can?[`${EN.GEM} 💎 = +${EN.GEMQ} ⚡`,'ESPERAR']:['ESPERAR'];
   const j=await choose(opts,{noCancel:true,cadAsk:{q,nf:1,cols:can?['#1f7a3a','#8a2f2f']:['#8a2f2f']}});
@@ -9907,7 +9911,7 @@ setInterval(()=>{try{const bt=document.querySelector('button[aria-label="Minijog
 /* PAINEL DE ENERGIA + LOJA (dinheiro de verdade) na tela do mapa (30/out, Felipe: "painel de energia no menu de jogo onde fica o menu e mini jogos" e "loja pra comprar coisas com dinheiro real").
    Pagamento ainda NÃO existe: os botões de compra avisam "em breve" (vai ser pela Apple quando o jogo estiver na App Store).
    Peças provisórias: usam a placa de saldo do kit Caderno + emoji; a arte própria (ícone ⚡ e botão LOJA) foi pedida ao Buchecha. */
-const LOJAREAL=[{n:'PUNHADO DE CRISTAIS',sub:'50 💎 · US$ 0,99'},{n:'SACO DE CRISTAIS',sub:'150 💎 · US$ 2,99'},{n:'BAÚ DE CRISTAIS',sub:'400 💎 · US$ 6,99'},{n:'ENERGIA CHEIA',sub:'⚡ cheia + 30 · US$ 0,99'},{n:'PASSE DO MÊS',sub:'10 💎/dia · US$ 4,99'},{n:'MONSTRINHO RARO',sub:'+100 💎 · US$ 9,99'},{n:'2x PRA SEMPRE',sub:'todos os modos · US$ 1,99'},{n:'AUTOMÁTICO PRA SEMPRE',sub:'todos os modos · US$ 2,99'}];
+const LOJAREAL=[{n:'PUNHADO DE CRISTAIS',sub:'100 💎 · US$ 0,99'},{n:'SACO DE CRISTAIS',sub:'550 💎 · US$ 4,99'},{n:'BAÚ DE CRISTAIS',sub:'1.200 💎 · US$ 9,99'},{n:'ENERGIA CHEIA',sub:'⚡ cheia + 30 · US$ 0,99'},{n:'PASSE DO MÊS',sub:'50 💎/dia · US$ 4,99'},{n:'MONSTRINHO RARO',sub:'+100 💎 · US$ 9,99'},{n:'2x PRA SEMPRE',sub:'todos os modos · US$ 4,99'},{n:'AUTOMÁTICO PRA SEMPRE',sub:'todos os modos · US$ 4,99'}];
 /* LOJA AZUL E DOURADA (31/out, Felipe: "aplica a tela nova da loja"; arte do Buchecha LOJA_AZUL_DOURADA_9_OPCOES_31out).
    Tela 1080x1920 (POSICOES.json) escalada inteira e centralizada por cima do jogo (o mapa continua atrás, escurecido; sem lj_fundo).
    3x3: 8 produtos da LOJAREAL + FECHAR. O X do topo e o cartão FECHAR fecham. Pagamento ainda NÃO existe: tocar num produto avisa "em breve".
@@ -10083,7 +10087,7 @@ function b31Slot(D,t,i,r,P,th,busy){const tw=D.towers[i],ch=tw?Math.min(100,tw.c
    respostas: em todos os modos; paga com cristais OU dinheiro real na LOJA).
    Vale pra Batalha (2x/3x), Expedição (2x e AUTO), Muralha (2x e AUTO) e Torres (2x e AUTO). Desbloqueia uma vez, fica pra sempre.
    O tutorial da Expedição continua podendo usar o AUTO de graça. */
-const UNL={fast:{n:'VELOCIDADE 2x',gem:100},auto:{n:'AUTOMÁTICO',gem:150}};
+const UNL={fast:{n:'VELOCIDADE 2x',gem:500},auto:{n:'AUTOMÁTICO',gem:500}};/* ECO04 (04/nov, Felipe aprovou a Economia de Cristais) */
 function unlOk(k){return !!(flags.unl&&flags.unl[k]);}
 function unlTut(){try{return G.mode==='exp'&&!(flags.tut&&flags.tut.exp);}catch(_){return false;}}
 let UNLASK=0;
@@ -10636,7 +10640,7 @@ async function newGame(){
   flags.starter=key;flags.hero=_hero;flags.nome=NOMEINTRO;flags.cap1=1;G.mode='intro';
   G.map='home';placeAt(4,3,'down');saveGame();}
 /* ---------- PRESENTE DIÁRIO (sequência de 7 dias, inspirado nos bônus diários dos jogos de criaturas modernos) ---------- */
-const DREW=[{c:100,ic:'coin',l:'100 moedas'},{items:{ball:3},ic:'ball',l:'3 Cápsulas'},{items:{potion:3},ic:'potion',l:'3 Poções'},{c:200,ic:'coin',l:'200 moedas'},{items:{sball:2},ic:'sball',l:'2 Super Cápsulas'},{g:5,items:{super:2},ic:'crystal',l:'5 cristais + 2 Super Poções'},{c:300,g:10,items:{candy:1},ic:'candy',l:'Doce Mágico, 300 moedas e 10 cristais'}];
+const DREW=[{c:100,g:5,ic:'coin',l:'100 moedas + 5 💎'},{g:5,items:{ball:3},ic:'ball',l:'3 Cápsulas + 5 💎'},{g:10,items:{potion:3},ic:'potion',l:'3 Poções + 10 💎'},{c:200,g:10,ic:'coin',l:'200 moedas + 10 💎'},{g:15,items:{sball:2},ic:'sball',l:'2 Super Cápsulas + 15 💎'},{g:15,items:{super:2},ic:'crystal',l:'15 cristais + 2 Super Poções'},{c:300,g:40,items:{candy:1},ic:'candy',l:'Doce Mágico, 300 moedas e 40 cristais'}];
 function dState(){let D=flags.daily;if(!D||typeof D!=='object')D=flags.daily={last:'',streak:0};return D;}
 function dYest(){const d=new Date(),y=new Date(d.getFullYear(),d.getMonth(),d.getDate()-1);return `${y.getFullYear()}-${y.getMonth()+1}-${y.getDate()}`;}
 function dCoin(x,y,s=1){if(itImg('coin',x,y,16*s))return;b.save();b.translate(x,y);b.scale(s,s);E(0,1,7,7,'#b8781a',0,false);E(0,0,7,7,'#f2b632');E(0,0,4.6,4.6,'#ffd86a',0,false);px(-1,-3,2,6,'#e8a020');E(-2.5,-2.5,1.5,1.5,'rgba(255,255,255,.8)',0,false);b.restore();}
@@ -11369,7 +11373,7 @@ function drawMathCap(u){const st=u.cfg.mcap;st.t++;const t=st.t,Q=st.q;u.rects=[
 
 (function(){const K=.35;try{for(const q of QDEF)q.c=Math.max(5,Math.round(q.c*K));QBONUS.coins=Math.round(QBONUS.coins*K);for(const m of MEDALS)m.c=Math.max(5,Math.round(m.c*K));
   for(const k in CHAPTERS)for(const c of CHAPTERS[k].list){if(c.rw.coins)c.rw.coins=Math.round(c.rw.coins*K);if(c.rw.mon){delete c.rw.mon;c.rw.items=Object.assign({},c.rw.items||{},{sball:1});}}
-  for(const d of DREW){if(d.c)d.c=Math.round(d.c*K);if(d.g)d.g=Math.max(1,Math.round(d.g/4));d.l=d.l.replace(/\d+ moedas/,(d.c||0)+' moedas').replace(/\d+ cristais/,(d.g||0)+(d.g>1?' cristais':' cristal'));}}catch(e){console.error(e);}})();
+  for(const d of DREW){if(d.c)d.c=Math.round(d.c*K);/* ECO04: cristais do presente diário não são mais divididos */d.l=d.l.replace(/\d+ moedas/,(d.c||0)+' moedas').replace(/\d+ cristais/,(d.g||0)+(d.g>1?' cristais':' cristal'));}}catch(e){console.error(e);}})();
 
 /* ---------- MÚSICA v2 (21/out): temas compostos por lugar, instrumentos mais bonitos (piano, flauta, harpa, sinos, cordas) e eco suave ---------- */
 const MUS={on:true,mood:null,next:0,step:0,bus:null,g:{},rev:null,loop:0};

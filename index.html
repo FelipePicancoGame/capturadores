@@ -3194,7 +3194,26 @@ function drawTilesArt3(u){const cf=u.cfg,L=cf.tiles;if(cf.title!=='MENU'||!L||!m
     if(it.badge&&ap>.6){const bx=x+w-14,by=y+14;E(bx,by,15,15,'#ff3a4a');ln([[bx,by-8],[bx,by+2]],4.5,'#ffffff');E(bx,by+7,2.6,2.6,'#ffffff',0,false);}
     u.rects.push({x:ox+x*k,y:oy+y*k,w:w*k,h:h*k,i:idx});});
   b.restore();TX=oTX;TY=oTY;TZ=oTZ;u.boxR={x:0,y:0,w:W,h:H};return true;}
-function drawTiles(u){if(drawTilesArt3(u))return;if(drawTilesArt2(u))return;UKWAIT=null;if(drawTilesArt(u)||ukWaitDraw(u))return;const cf=u.cfg,L=cf.tiles,n=L.length,cols=n>12&&H<300?4:3,tw2=54,gap=5,th=Math.max(36,Math.min(58,Math.floor((H-70)/Math.ceil(n/cols))-gap)),gw=cols*tw2+(cols-1)*gap,x0=Math.round((W-gw)/2),rows=Math.ceil(n/cols),gh=rows*th+(rows-1)*gap,y0=Math.round(Math.max(40,(H-gh)/2+10));
+/* MM2 (03/nov, Felipe aprovou o MENU_MINIJOGOS_v2 do Buchecha): menu de minijogos de madeira clara com flores, posições do MANIFESTO (base 1080x1920) */
+const MM2U={"botao_fechar": "blobs/a398ec42b667b8af92f3f35bb5aef49d.webp", "card_bloqueado": "blobs/8d69ad3ff466832005133f5516812d35.webp", "card_combina": "blobs/cc329e60785f8a46cb0fcd3a5c5cc223.webp", "card_expedicao": "blobs/e33b649e8442fe2dffd79e2ad352b2d1.webp", "card_horda": "blobs/4172304828055f6641663b59d4844bd4.webp", "card_muralha": "blobs/6a2634f319781028383c8bf445050ee2.webp", "card_muralha_dupla": "blobs/56753929d107a8e76e7a66e05ba3651e.webp", "card_torres": "blobs/926a2e667191569b0c2ad5ecab09af63.webp", "painel_minijogos": "blobs/e932462d5eeeb9dcaa6a2cee6d4aeded.webp", "selo_novo": "blobs/ea36f0159a6e7a441b53378629f71c30.webp", "topo_moedas": "blobs/1b593c9c22d1cae3db8983b85fff9e63.webp"},MM2I={};function mm2(k){let i=MM2I[k];if(!i){i=new Image();i.decoding='async';i.src=MM2U[k];MM2I[k]=i;}return i.complete&&i.naturalWidth?i:null;}
+setTimeout(()=>{try{for(const k in MM2U)mm2(k);}catch(e){}},4000);
+const MM2C={'EXPEDIÇÃO':['card_expedicao',90,430],'MURALHA':['card_muralha',570,430],'MURALHA DUPLA':['card_muralha_dupla',90,800],'TORRES':['card_torres',570,800],'HORDA':['card_horda',90,1170],'COMBINA':['card_combina',570,1170]};
+function drawTilesMini2(u){const cf=u.cfg,L=cf.tiles;if(!L||!String(cf.title||'').startsWith('MINIGAMES'))return false;
+ const need=['painel_minijogos','topo_moedas','botao_fechar'].concat(L.filter(it=>MM2C[it.n]).map(it=>MM2C[it.n][0]));let ok=true;for(const k of need)if(!mm2(k))ok=false;if(!ok)return false;
+ u.t2=(u.t2||0)+1;const t=u.t2,k=Math.min(W/1080,H/1920),ox=(W-1080*k)/2,oy=(H-1920*k)/2,oTX=TX,oTY=TY,oTZ=TZ;
+ b.save();b.fillStyle='#1d3b30';b.fillRect(0,0,W,H);b.translate(ox,oy);b.scale(k,k);TX=ox;TY=oy;TZ=k;b.imageSmoothingEnabled=true;try{b.imageSmoothingQuality='high';}catch(e){}
+ rrect(60,280,960,1310,40,'#fff1cf',false);b.drawImage(mm2('painel_minijogos'),0,140,1080,1500);b.drawImage(mm2('topo_moedas'),160,302,760,90);
+ T(String(flags.coins||0),160+218+69,302+27+3,33,'center','#4a2a10',134);T(String((()=>{try{return m3Insig();}catch(e){return flags.badge?1:0;}})()),160+564+60,302+27+3,33,'center','#4a2a10',117);
+ {const m=/⚡\s*(\S+)/.exec(cf.title||'');if(m)T('⚡ Energia '+m[1],540,66,44,'center','#ffffff',900,'#0e2219');}
+ u.rects=[];
+ L.forEach((it,idx)=>{const c=MM2C[it.n];if(!c)return;const key=c[0],x=c[1],y=c[2],sel=idx===u.i,ap=Math.min(1,Math.max(0,(t-idx*1.5)/8));if(ap<=0)return;
+  const sc=(.86+.14*(1-(1-ap)**3))*(sel?1.04+Math.sin(t/6)*.015:1);b.save();b.globalAlpha=ap;b.translate(x+210,y+165);b.scale(sc,sc);b.translate(-(x+210),-(y+165));
+  b.drawImage(mm2(key),x,y,420,330);if(it.sub)T(it.sub,x+210,y+262,30,'center','#294729',350);
+  if(it.badge&&mm2('selo_novo'))b.drawImage(mm2('selo_novo'),x+330,y-30,96,96);b.restore();
+  u.rects.push({x:ox+x*k,y:oy+y*k,w:420*k,h:330*k,i:idx});});
+ const fi=L.findIndex(it=>it.n==='FECHAR');if(fi>=0){const sc=fi===u.i?1.04:1;b.save();b.translate(540,1755);b.scale(sc,sc);b.drawImage(mm2('botao_fechar'),-210,-75,420,150);b.restore();u.rects.push({x:ox+330*k,y:oy+1680*k,w:420*k,h:150*k,i:fi});}
+ b.restore();TX=oTX;TY=oTY;TZ=oTZ;u.boxR={x:0,y:0,w:W,h:H};return true;}
+function drawTiles(u){if(drawTilesMini2(u))return;if(drawTilesArt3(u))return;if(drawTilesArt2(u))return;UKWAIT=null;if(drawTilesArt(u)||ukWaitDraw(u))return;const cf=u.cfg,L=cf.tiles,n=L.length,cols=n>12&&H<300?4:3,tw2=54,gap=5,th=Math.max(36,Math.min(58,Math.floor((H-70)/Math.ceil(n/cols))-gap)),gw=cols*tw2+(cols-1)*gap,x0=Math.round((W-gw)/2),rows=Math.ceil(n/cols),gh=rows*th+(rows-1)*gap,y0=Math.round(Math.max(40,(H-gh)/2+10));
   u.t2=(u.t2||0)+1;const t=u.t2;b.fillStyle='rgba(8,6,24,.72)';b.fillRect(0,0,W,H);
   const g=b.createRadialGradient(W/2,y0+gh/2,10,W/2,y0+gh/2,W);g.addColorStop(0,'rgba(90,70,170,.45)');g.addColorStop(1,'rgba(20,14,50,0)');b.fillStyle=g;b.fillRect(0,0,W,H);
   for(let i=0;i<10;i++){const x=(i*41+frame*.3)%W,y=(i*67+frame*.15)%H;b.globalAlpha=.4;star(x,y,1.4+(i%3)*.4,'#ffe9a8');b.globalAlpha=1;}

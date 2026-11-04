@@ -12500,7 +12500,7 @@ function tutWallScript(){const w=WL;w.tutS=1;for(const d of w.defs)d.charge=0;w.
   {t:'A catapulta tá <b>PRONTA</b>! <b>Toque nos bichos</b> pra jogar a pedra! 🪨',r:()=>tutWl(54,74,72,60),g:'tap',a:()=>tutPt(90,tutWy(104)),
     start:()=>{/* CATBICHO (03/nov, Felipe: "não tem bicho"): os bichos nascem agora, quase parados, dentro do quadro */w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});for(let k=0;k<5;k++)tutWS({x:70+(k%3)*20,y:92+Math.floor(k/3)*20,spd:.004,hp:40});try{cat0=wCat(w).shots.length;wCat(w).cd=0;}catch(_){}},act:()=>{try{return wCat(w).cd>0;}catch(_){return true;}},after:1700,hint:'toque nos bichos',chip:'🪨 lá vai a pedra!',end:()=>{catOK=0;}},
   {t:'Esse é um <b>BARRIL</b> 🛢️. Quando os bichos chegarem perto, <b>toque nele</b>: ele <b>EXPLODE</b> e acerta todos em volta!',
-    start:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});w.barrels=w.barrels||[];brl={x:90,y:150,t:40,seed:1};w.barrels.push(brl);for(let k=0;k<4;k++)tutWS({x:72+k*12,y:126+(k%2)*10,spd:.03,hp:3});},
+    start:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});w.barrels=w.barrels||[];brl={x:90,y:150,t:40,seed:1};w.barrels.push(brl);for(let k=0;k<4;k++)tutWS({x:66+k*16,y:132+(k%2)*12,spd:.004,hp:40});/* CATBICHO: bichos parados em volta do barril */},
     r:()=>brl&&!brl.gone?tutWl(brl.x-16,brl.y-22,32,32):null,round:1,g:'tap',a:()=>brl?tutPt(brl.x,tutWy(brl.y-6)):null,act:()=>!brl||!!brl.gone,after:1400,hint:'toque no barril',chip:'💥 BUUM!'},
   {t:'A cada onda vencida você escolhe uma <b>carta de poder</b>. 🃏'},
   {t:'Agora é pra valer: segura <b>10 ondas</b>! Vamos lá, sem moleza! 💪',end:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});}}],

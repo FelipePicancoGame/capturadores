@@ -12485,7 +12485,7 @@ function tutBattle(){const u0=tutBmenu(),nm2=(me&&me().moves||[]).length;let uB=
   {t:'Quando o selvagem estiver <b>fraquinho</b>, toque na <b>CÁPSULA</b> pra capturar! Ou ataque de novo pra cansar mais.',when:()=>!B.tr&&!!tutBR(q=>q.i===13),r:()=>tutBR(q=>q.i===13)}],()=>G.mode==='battle'&&!!B);}
 /* 30/out (Felipe): FASE TUTORIAL da Muralha — tudo roteirizado; cada coisa: lê (pausado) → toca no lugar → acontece → pausa de novo. */
 function tutWS(o){const w=WL;wSpawn();const e=w.foes[w.foes.length-1];if(!e)return null;e.kind='norm';e.archer=0;e.shield=0;e.elite=false;e.boss=false;e.wdodge=0;e.armorW=0;
-  e.x=o.x??90;e.y=(o.y??20)-(w.ext||0);e.max=e.hp=Math.max(1,Math.round(wAvgDmg()*(o.hp||1.6)));e.spd=(o.spd||.32);e.tutE=1;return e;}
+  e.x=o.x??90;e.y=(o.y??20)-(w.ext||0);e.max=e.hp=Math.max(1,Math.round(wAvgDmg()*(o.hp||1.6)));e.spd=(o.spd||.32);e.tutE=1;e.age=99;/* TUTAGE (04/nov, Felipe: 'não tem bicho'): com o tutorial pausado a idade não subia e o bicho ficava com tamanho zero (invisível) */return e;}
 function tutWallScript(){const w=WL;w.tutS=1;for(const d of w.defs)d.charge=0;w.foes.forEach(e=>e.dead=true);w.foes=[];
   const d0=()=>w.defs[0],card=i=>{const q=w.defs[i]||w.defs[0];if(!murUI())return null;const r=murLU('c'+(q._mk??i));return r?tutWl(r.x,r.y,r.w,r.h):null;},
     dr=i=>{const q=w.defs[Math.min(i,w.defs.length-1)];return tutWl(q.x-17,q.y-40,34,48);},dc=i=>{const q=w.defs[Math.min(i,w.defs.length-1)];return tutPt(q.x,tutWy(q.y-14));},
@@ -12506,10 +12506,10 @@ function tutWallScript(){const w=WL;w.tutS=1;for(const d of w.defs)d.charge=0;w.
     chip:()=>`⚔️ <b>${Math.min(8,w.kills-k0)}/8</b> · carta <b>${Math.round(d0().charge)}%</b>`,
     act:()=>w.kills-k0>=8,after:700,end:()=>{clearInterval(spawnIv);d0().charge=100;}},
   {t:'A carta <b>BRILHOU</b>! O especial tá pronto. Olha o bando chegando… <b>toque na carta</b> pra soltar!',r:()=>card(0)||dr(0),g:'tap',
-    start:()=>{d0().charge=100;for(let k=0;k<5;k++)tutWS({x:50+k*20,y:60+(k%2)*14,spd:.25,hp:3});},
+    start:()=>{d0().charge=100;/* BANDO (04/nov, Felipe: 'não tem bando nenhum na tela'): o bando nasce abaixo da caixa de fala, quase parado */w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});for(let k=0;k<5;k++)tutWS({x:50+k*20,y:152+(k%2)*16+(w.ext||0),spd:.02,hp:10});},
     act:()=>d0().charge<100||!!w.ult,after:1600,hint:'toque na carta',chip:'💥 ESPECIAL!'},
   {t:'BUUUM! 💥 Isso que é treino! Agora a <b>MIRA</b>: toque nesse monstrinho e <b>arraste pra cima</b>, até o bicho, e solte. Ele ataca ali!',
-    start:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});/* MIRAPERTO (04/nov, Gabi: 'o bicho tá muito longe pra eu acertar'): o bicho nasce DENTRO do alcance do monstrinho e quase parado */{const q=w.defs[Math.min(1,w.defs.length-1)],Rr=wRng(w,q);eP=tutWS({x:Math.max(30,Math.min(150,q.x+(q.x<90?1:-1)*Rr*.35)),y:q.y-12-Rr*.7+(w.ext||0),spd:.01,hp:6});}a0=w.defs.map(q=>q.aim);},
+    start:()=>{w.foes.forEach(e=>{if(e.tutE&&!e.dead)e.dead=true;});/* MIRAPERTO (04/nov, Gabi: 'o bicho tá muito longe pra eu acertar'): o bicho nasce DENTRO do alcance do monstrinho e quase parado */{const q=w.defs[Math.min(1,w.defs.length-1)],Rr=wRng(w,q);eP=tutWS({x:Math.max(30,Math.min(150,q.x+(q.x<90?1:-1)*Rr*.35)),y:Math.max(150,q.y-12-Rr*.6)+(w.ext||0),spd:.01,hp:30});}a0=w.defs.map(q=>q.aim);},
     r:()=>dr(Math.min(1,w.defs.length-1)),g:'drag',a:()=>dc(Math.min(1,w.defs.length-1)),b:()=>eP&&!eP.dead?tutPt(eP.x,tutWy(eP.y)):tutPt(150,tutWy(90)),
     act:()=>w.defs.some((q,k)=>q.aim&&q.aim!==a0[k])&&(!eP||eP.dead||eP.hp<eP.max*.6),after:900,hint:'arraste pra cima',chip:()=>w.defs.some((q,k)=>q.aim&&q.aim!==a0[k])?'🎯 olha ele atacando ali!':'🎯 arraste até o bicho e solte'},
   {t:'Viu? Ele atacou <b>onde você mirou</b>! 🎯 Use isso pra pegar o bicho mais perigoso primeiro.',start:()=>{if(eP&&!eP.dead)eP.dead=true;}},

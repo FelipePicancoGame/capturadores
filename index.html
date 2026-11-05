@@ -11163,8 +11163,8 @@ function arAuraDraw(A,G2,t){const cs=G2.cs,on={};
     const bx=p.x+cs*.36,by=p.y-cs*.38,pl=1+.12*Math.sin(t/6);b.save();E(bx,by,4.2*pl,4.2*pl,'#1a6a1a',0,false);E(bx,by,3.4*pl,3.4*pl,'#5ad04a',0,false);T('⬆',bx,by-2.6,4.6,'center','#ffffff',0);b.restore();}
   /* texto quando o bônus começa (uma vez por par flor→vizinho) */
   A.auraSeen=A.auraSeen||{};const now={};for(const i in on)for(const j of on[i].src){const v=A.grid[j],u=A.grid[i];const key=i+'<'+j+':'+(v.form||v.sp)+':'+(u.form||u.sp);now[key]=1;
-    if(!A.auraSeen[key]){const ab=arAbOf(v),p=arCellXY(+i);arPop(p.x,p.y-cs*.55,`+${Math.round(ab.aura.spd*100)}% VELOCIDADE`+(ab.aura.dmg?` +${Math.round(ab.aura.dmg*100)}% DANO`:''),'#b8ff8a');arBurst(p.x,p.y,'#9ae06a',8);
-      if(!A.auraTip){A.auraTip=1;A.msgAura={s:`${ab.n}: a flor ajuda quem está do lado (cima, baixo e lados)`,t:200};}}}
+    if(!A.auraSeen[key]){const ab=arAbOf(v),p=arCellXY(+i);arPop(p.x,p.y-cs*.55,[ab.aura.spd?`+${Math.round(ab.aura.spd*100)}% VELOCIDADE`:'',ab.aura.dmg?`+${Math.round(ab.aura.dmg*100)}% DANO`:''].filter(Boolean).join(' '),'#b8ff8a');arBurst(p.x,p.y,'#9ae06a',8);
+      if(!A.auraTip){A.auraTip=1;A.msgAura={s:`${ab.n}: ajuda quem está do lado (cima, baixo e lados)`,t:200};}}}
   A.auraSeen=now;
   /* flor selecionada ou sendo arrastada: casas que ela ajuda brilham */
   const fi=A.drag?A.drag.i:A.sel;const fu=fi>=0?A.grid[fi]:null,fab=fu&&arAbOf(fu);
@@ -11184,9 +11184,23 @@ function arZap(A,a,c){A.zaps=A.zaps||[];A.zaps.push({x1:a.x,y1:a.y-6,x2:c.x,y2:c
   if(ab.cadeia){let from=e0,fp=tp;const hit=new Set([e0]);for(let k=0;k<ab.cadeia[0];k++){let nb=null,nd=55;for(const e of A.en){if(e.hp<=0||hit.has(e))continue;const q=arPos(G2,e.d),dd=Math.hypot(q.x-fp.x,q.y-fp.y);if(dd<nd){nd=dd;nb=e;}}
       if(!nb)break;hit.add(nb);const q=arPos(G2,nb.d);arZap(A,fp,q);arHit(nb,dmg*ab.cadeia[1],'x',ab.col);if(ab.paralisa&&!nb.boss&&Math.random()<ab.paralisa[0])nb.frz=Math.max(nb.frz||0,ab.paralisa[1]);fp=q;from=nb;}}
   if(ab.paralisa&&e0.hp>0&&!e0.boss&&Math.random()<ab.paralisa[0]){e0.frz=Math.max(e0.frz||0,ab.paralisa[1]);arPop(tp.x,tp.y-18,'PARALISADO!','#fff07a');}
-  if(ab.raios&&s.u){s.u.nr=(s.u.nr||0)+1;if(s.u.nr%ab.raios[0]===0){for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d);arZap(A,{x:q.x+(Math.random()-.5)*10,y:q.y-50},q);arHit(e,dmg*ab.raios[1],'x',ab.col);if(!e.boss)e.frz=Math.max(e.frz||0,ab.raios[2]);}
-    arPop(W/2,G2.ty+20,'TEMPESTADE!','#fff07a');A.fx=(A.fx||[]).concat([{x:W/2,y:G2.ty+40,r:90,col:'#fff0a0',t:18,T:18}]);A.shake=5;tone([880,660,990],.06,'square',.05);}}};}
+  if(ab.raios&&s.u){s.u.nr=(s.u.nr||0)+1;if(s.u.nr%ab.raios[0]===0){for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d);if(ab.raios[3])arBurst(q.x,q.y-8,ab.col,6);else arZap(A,{x:q.x+(Math.random()-.5)*10,y:q.y-50},q);arHit(e,dmg*ab.raios[1],'x',ab.col);if(!e.boss)e.frz=Math.max(e.frz||0,ab.raios[2]);}
+    arPop(W/2,G2.ty+20,ab.raios[3]||'TEMPESTADE!',ab.raios[3]?'#e0c8a0':'#fff07a');A.fx=(A.fx||[]).concat([{x:W/2,y:G2.ty+40,r:90,col:ab.raios[3]?'#c8a070':'#fff0a0',t:18,T:18}]);A.shake=5;tone([880,660,990],.06,'square',.05);}}};}
 /* /ARELETRICO */
+
+/* ARROCHA (05/nov, "proximo"): pedra atordoa, rola, empurra; Cascopedra ajuda os vizinhos com dano (mesmo aviso das flores) */
+Object.assign(ARAB,{
+ pedrisco:{n:'Pedrada',d:'às vezes atordoa o inimigo',col:'#c8a878',paralisa:[.15,35]},
+ pedregao:{n:'Rocha Rolante',d:'a pedra rola e acerta mais 2 atrás',col:'#b09060',perfura:2,paralisa:[.12,35]},
+ cordilhao:{n:'Avalanche',d:'a cada 5 ataques, pedras caem em todos e atordoam',col:'#a08050',perfura:2,raios:[5,.7,40,'AVALANCHE!']},
+ rochedo:{n:'Tremor',d:'faz o chão tremer em volta e deixa lento',col:'#a89070',area:[16,.4],lento:[.3,80]},
+ montanhao:{n:'Terremoto',d:'tremor grande que deixa lento e às vezes atordoa',col:'#907050',area:[24,.55],lento:[.4,100],paralisa:[.12,40]},
+ cabrito:{n:'Cabeçada',d:'empurra o inimigo para trás',col:'#d0b080',empurra:9},
+ cabritao:{n:'Investida',d:'empurra mais e bate forte no chefe',col:'#c0a070',empurra:13,chefe:.5},
+ carneirao:{n:'Chifrada',d:'empurra muito e derruba quem está quase sem vida',col:'#b09060',empurra:16,executa:.15},
+ cascal:{n:'Casco Duro',d:'mira no inimigo mais forte',col:'#a8a090',foco:1,chefe:.4},
+ cascopedra:{n:'Casco de Pedra',d:'vizinhos dão +20% de dano',col:'#988870',foco:1,aura:{spd:0,dmg:.2}}});
+/* /ARROCHA */
 
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").

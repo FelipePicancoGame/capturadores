@@ -10901,9 +10901,9 @@ function arMerge(a,b){if(!arCanMerge(a,b))return false;const sp=AR.grid[b].sp,st
    3) mais calmo: ondas de 30 s (eram 25) e o chefe usa o poder a cada 10 s (eram 7). */
 {const _st2=arStats;arStats=function(sp,star){const S=_st2(sp,star);try{if(!(AR&&AR.mp&&AR.mp.mode==='pvp')){const L=Math.min(30,arSpLv(sp)||0);S.dmg*=1+.03*L;}}catch(e){}return S;};}
 function arLossN(){try{return AR&&AR.goal?Math.min(4,((flags.arLoss||{})[AR.stgI])|0):0;}catch(e){return 0;}}
-{const _wi=arWaveInfo;arWaveInfo=function(w){const I=_wi(w),n=arLossN();if(n)I.hp=Math.round(I.hp*(1-.1*n));return I;};}
+/* (05/nov) Felipe: "não quero a wave ficando mais fraca depois que perde" — ajuda por derrota REMOVIDA; só conta as derrotas. */
 {const _se=arStgEnd;arStgEnd=function(why){try{flags.arLoss=flags.arLoss||{};if(why==='win')delete flags.arLoss[AR.stgI];else flags.arLoss[AR.stgI]=((flags.arLoss[AR.stgI])|0)+1;saveGame();}catch(e){}_se(why);};}
-{const _sw2=arStartWave;arStartWave=function(){_sw2();const A=AR;if(A&&A.wave===1&&A.goal){const n=arLossN();if(n)A.ann={t:0,txt:`Ajuda: inimigos com -${n*10}% de vida`};}};}
+
 
 /* ARCARTAS (05/nov, Felipe: "a cada jogo você ganha fragmento de cartas pra melhorar suas cartas e evoluir elas"):
    no fim de cada partida da Arena (sozinho, fases, juntos, contra) você ganha FRAGMENTOS das cartas do seu time (mais ondas = mais fragmentos; vencer fase = bônus).

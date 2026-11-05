@@ -10548,7 +10548,7 @@ function arRushDraw(A,G2){const t=A.t;
   const yB=G2.by+16,hx=W-19,hy=yB+10,r=13,f=Math.min(1,(A.hpow||0)/ARHP),full=f>=1;
   if(full){b.save();b.globalCompositeOperation='lighter';glowAt(hx,hy,r+9,'255,220,90',.35+.15*Math.sin(t/5));b.restore();}
   E(hx,hy,r+2.2,r+2.2,'#1a1438',0,false);E(hx,hy,r,r,full?'#3a5ae0':'#2a3f8a',0,false);
-  try{b.save();b.beginPath();b.arc(hx,hy,r-.6,0,Math.PI*2);b.clip();b.translate(hx,hy);b.scale(r/8,r/8);b.translate(-8,5);drawPerson(0,0,'down',0,LOOKS.player);b.restore();}catch(e){b.restore();}
+  if(!arHeroFace(hx,hy,r)){try{b.save();b.beginPath();b.arc(hx,hy,r-.6,0,Math.PI*2);b.clip();b.translate(hx,hy);b.scale(r/8,r/8);b.translate(-8,5);drawPerson(0,0,'down',0,LOOKS.player);b.restore();}catch(e){b.restore();}}
   b.save();b.lineCap='round';b.strokeStyle='rgba(255,255,255,.18)';b.lineWidth=2.2;b.beginPath();b.arc(hx,hy,r+1.2,0,Math.PI*2);b.stroke();b.strokeStyle=full?'#ffe040':'#7ad0ff';b.beginPath();b.arc(hx,hy,r+1.2,-Math.PI/2,-Math.PI/2+Math.PI*2*f);b.stroke();b.restore();
   if(full)T('PODER!',hx,hy+r-6,4.8,'center','#fff3a0',30,C.ink);}
 function arMpSnap(A){const M=A.mp;if(!M)return;const PL=arPathLen(arGeo());duoEmit(M.S,'as',{g:A.grid.map(u=>u?[u.form||u.sp,u.star]:0),l:A.lives,w:A.wave,k:A.kills,e:A.en.length,n:String(flags.nome||'').slice(0,12),dm:Math.round(A.dmgT||0),q:A.en.filter(e=>e.hp>0).slice(0,24).map(e=>[Math.round(e.d/PL*1000),e.sp,e.boss?1:0])});}
@@ -10608,7 +10608,7 @@ function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);
   if(A.drag&&A.grid[A.drag.i])arSPiece(A.grid[A.drag.i],A.drag.x,A.drag.y,1.12*G2.cs/30,t,{sel:1});
   const EN=[...A.en].sort((a,b2)=>arPos(G2,a.d).y-arPos(G2,b2.d).y);
   for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';arDrawMon(e.sp,p.x,p.y-(e.boss?16:9),e.sc,'walk',p.dir,e.id*10);b.restore();
-    const bw=e.boss?24:12,bx=p.x-bw/2,by=p.y-(e.boss?42:22);px(bx-.5,by-.5,bw+1,3,'#1a0a0a');px(bx,by,bw*Math.max(0,e.hp/e.max),2,e.boss?'#ff4040':e.poison>0&&e.poisonT>0?'#7ae04a':'#ff7070');if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
+    const by=p.y-(e.boss?42:22);arHpBar(p.x,by,e.hp/e.max,e.boss,e.poison>0&&e.poisonT>0?'#7ae04a':e.burnT>0?'#ff9a30':null);if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
   for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
   if(A.zaps)for(const z of A.zaps){b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);b.lineTo((z.x1+z.x2)/2+(Math.random()-.5)*6,(z.y1+z.y2)/2+(Math.random()-.5)*6);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}
   for(const p of A.parts){b.globalAlpha=Math.max(0,p.life/22);px(p.x,p.y,1.6,1.6,p.col);}b.globalAlpha=1;b.restore();
@@ -10675,14 +10675,14 @@ function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,top=25,L=arLeg
   /* inimigos do parceiro (fantasmas) */
   for(const g of A.gh||[]){let x,y,dir;if(g.d>=L){const p=arPos(G2,g.d);x=p.x;y=p.y;dir=p.dir;}else{x=lx;y=G2.ty-(L-g.d)*ky;dir='s';}
     E(x,y+2,g.boss?10:5,g.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(g.hit>0)b.filter='brightness(1.8)';arDrawMon(g.sp,x,y-(g.boss?16:9),g.sc,'walk',dir,g.id*10);b.restore();
-    const bw=g.boss?24:12;px(x-bw/2-.5,y-(g.boss?42:22)-.5,bw+1,3,'#1a0a0a');px(x-bw/2,y-(g.boss?42:22),bw*Math.max(0,g.hp/g.max),2,'#ffb070');}
+    arHpBar(x,y-(g.boss?42:22),g.hp/g.max,g.boss,'#ffb070');}
   T(`Parceiro: ${P.n||'…'}  ❤ dividido`,W/2+6,top+4+(G2.bh+12)*k+1,4.8,'center','#e0fff8',W-30,C.ink);
   T(`dano ${arFmt(P.dm)} · você ${arFmt(A.dmgT)}`,W-6,top+1,4.6,'right','#ffe8a0',60,C.ink);
   if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do parceiro…',W/2,H/2-8,6,'center','#ffffff');}}
 
 /* ARCOOP2 (04/nov, Felipe mandou o print do jogo em dupla: "Assim"): no JUNTOS os DOIS tabuleiros do mesmo tamanho, um em cima do outro (o do parceiro em cima),
    casas 26x26; a sua estrada sobe pela esquerda do seu, a dele desce pela esquerda do dele, e as duas viram a estrada do meio, entre os tabuleiros, até o portão na direita. Faixa da onda no topo. */
-{const _g=arGeo;arGeo=function(){const mp=!!(AR&&AR.mp),co=arCoop(AR),cs=co?26:25,ch=cs,cols=5,rows=3,bw=cs*cols,bh=ch*rows,x0=co?32:Math.round((W-bw)/2),y0=H-(arSk()==='pedra'?71:59)-bh,lx=12,rx=co?W-9:W-12,ty=y0-19,by=y0+bh+2;
+{const _g=arGeo;arGeo=function(){const mp=!!(AR&&AR.mp),co=arCoop(AR),cs=co?26:25,ch=cs,cols=5,rows=3,bw=cs*cols,bh=ch*rows,x0=co?32:Math.round((W-bw)/2),y0=mp?H-(arSk()==='pedra'?71:59)-bh:Math.round(32+((H-arBarH()-7-32)-(bh+21))/2+19),lx=12,rx=co?W-9:W-12,ty=y0-19,by=y0+bh+2;
   return {cs,ch,cols,rows,bw,bh,x0,y0,lx,rx,ty,by,pts:co?[[lx,by],[lx,ty],[rx,ty]]:[[lx,by],[lx,ty],[rx,ty],[rx,by]]};};}
 function arCoopUnder(A,G2,t){const P=A.mp.peer||{},L=arLeg(G2),lx=G2.lx,top=G2.ty-L,dy=(G2.ty-19-G2.bh)-G2.y0;
   b.save();b.lineCap='round';b.beginPath();b.moveTo(lx,top);b.lineTo(lx,G2.ty);b.strokeStyle='#8a6a40';b.lineWidth=25;b.stroke();b.strokeStyle='#7aa45a';b.lineWidth=23;b.stroke();b.strokeStyle='#ead2a4';b.lineWidth=19.5;b.stroke();b.setLineDash([.8,6]);b.lineCap='butt';b.strokeStyle='#c9ad7e';b.stroke();b.setLineDash([]);b.restore();arPortal(lx,top,t);
@@ -10690,7 +10690,7 @@ function arCoopUnder(A,G2,t){const P=A.mp.peer||{},L=arLeg(G2),lx=G2.lx,top=G2.t
 function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,L=arLeg(G2),lx=G2.lx,dy=(G2.ty-19-G2.bh)-G2.y0;
   for(const g of A.gh||[]){let x,y,dir;if(g.d>=L){const p=arPos(G2,g.d);x=p.x;y=p.y;dir=p.dir;}else{x=lx;y=G2.ty-(L-g.d);dir='s';}
     E(x,y+2,g.boss?10:5,g.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(g.hit>0)b.filter='brightness(1.8)';arDrawMon(g.sp,x,y-(g.boss?16:9),g.sc,'walk',dir,g.id*10);b.restore();
-    const bw=g.boss?24:12;px(x-bw/2-.5,y-(g.boss?42:22)-.5,bw+1,3,'#1a0a0a');px(x-bw/2,y-(g.boss?42:22),bw*Math.max(0,g.hp/g.max),2,'#ffb070');}
+    arHpBar(x,y-(g.boss?42:22),g.hp/g.max,g.boss,'#ffb070');}
   arPill(W/2-36,G2.y0+dy-10.5,72,11,'#a8d890','#6aa856','#3a6a2a');T(`${(P.n||'PARCEIRO').toUpperCase()} · DANO ${arFmt(P.dm)}`,W/2,G2.y0+dy-8,5,'center','#1e3a12',66);
   T(`você · dano ${arFmt(A.dmgT)}`,W/2+3,G2.y0-10.5,0.01,'center','rgba(0,0,0,0)');
   if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do parceiro…',W/2,H/2-8,6,'center','#ffffff');}}
@@ -10704,7 +10704,7 @@ function arPvpUnder(A,G2,t){const P=A.mp.peer||{},V=arPvpGeo(G2),PL=arPathLen(G2
   try{b.save();b.translate(0,MY);b.scale(1,-1);arSPath(G2,t);arSBoard(G2);b.restore();
     for(let i=0;i<15;i++){const u=P.g&&P.g[i];if(!u)continue;const q=arCellXY(i);arSPiece({sp:u[0],star:u[1]},q.x,my(q.y),G2.cs/30,t,{seed:i});}
     for(const e of P.q||[]){const q=arPos(G2,e[0]/1000*PL),y=my(q.y),dir=q.dir==='n'?'s':q.dir==='s'?'n':q.dir;E(q.x,y+2,e[2]?10:5,e[2]?3:2,'rgba(0,0,0,.3)',0,false);arDrawMon(e[1],q.x,y-(e[2]?16:9),e[2]?.5:.28,'walk',dir,e[0]);
-      if(e[4]!=null){const bw=e[2]?24:12;px(q.x-bw/2,y-(e[2]?42:22),bw,2,'#1a0a0a');px(q.x-bw/2,y-(e[2]?42:22),bw*e[4]/100,2,'#ff7070');}}}catch(e){}
+      if(e[4]!=null)arHpBar(q.x,y-(e[2]?42:22),e[4]/100,!!e[2]);}}catch(e){}
   b.restore();}
 function arPvpDraw(A){const M=A.mp,P=M.peer||{};T(`Rival: ${P.n||'…'}`,W/2,2,6,'center','#ffe0ff',70,C.ink);T(`dano ${arFmt(P.dm)} · você ${arFmt(A.dmgT)}`,W/2,11,4.6,'center',(A.dmgT||0)>=(P.dm||0)?'#bff0c0':'#ffd0d0',90,C.ink);
   if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do oponente…',W/2,H/2-8,6,'center','#ffffff');}}
@@ -10736,7 +10736,7 @@ function arEntryDraw(A){const t=A.t;A.hits=[];arLobbyBgDark();
   /* SEU TIME */
   const y3=y2+54,ph=96;if(!(arSk()==='areia'&&arNine(a2('painel_time'),5,y3-1,W-10,ph+2,70,9))){rrect(6,y3,W-12,ph,8,'#1e1008',false);{const g=b.createLinearGradient(0,y3,0,y3+ph);g.addColorStop(0,'#8a5630');g.addColorStop(1,'#4e2c14');b.fillStyle=g;b.beginPath();b.roundRect(7,y3+1,W-14,ph-2,7);b.fill();}}
   T('SEU TIME',12,y3+4,7,'left','#ffffff',60,C.ink);T('toque numa carta para melhorar',W-10,y3+6,4.4,'right','#fff3a0',90);
-  b.save();b.translate(22,y3+30);b.scale(1.35,1.35);b.translate(-8,5);try{drawPerson(0,0,'down',0,LOOKS.player);}catch(e){}b.restore();T('herói',22,y3+46,4.6,'center','#ffe8b0',30,C.ink);
+  {const HI=arHeroImg();if(HI){const hh=46,ww=hh*HI.naturalWidth/HI.naturalHeight;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(HI,22-ww/2,y3+2,ww,hh);b.restore();}else{b.save();b.translate(22,y3+30);b.scale(1.35,1.35);b.translate(-8,5);try{drawPerson(0,0,'down',0,LOOKS.player);}catch(e){}b.restore();}}T('herói',22,y3+46,4.6,'center','#ffe8b0',30,C.ink);
   const dx0=40,dw=(W-48)/5;A.deck.forEach((sp,k)=>{const x=dx0+k*dw,col=ARCOL[arType(sp)]||'#ccc';rrect(x+.2,y3+14.2,dw-.4,39.6,5.5,arRar(sp).col,false);rrect(x+1,y3+15,dw-2,38,5,'#1e1008',false);rrect(x+2,y3+16,dw-4,36,4,col,false);b.save();b.globalAlpha=.3;rrect(x+2,y3+16,dw-4,14,4,'#ffffff',false);b.restore();
     arDrawMon(sp,x+dw/2,y3+29,.26,'idle','s',k);const cl=arCardLv(sp),fr=arFrag(sp),nd=arCardNeed(cl,sp),RR=arRar(sp),can=cl<ARCMAX&&fr>=nd;rrect(x+3,y3+43,dw-6,8,3,'rgba(20,10,5,.75)',false);T(`carta ${cl}`,x+dw/2,y3+44,4.4,'center','#ffffff',dw-8);T(RR.n,x+dw/2,y3+16.2,3.6,'center','#ffffff',dw-5,RR.ink);
     rrect(x+2,y3+54,dw-4,4,2,'rgba(20,10,5,.7)',false);rrect(x+2,y3+54,(dw-4)*Math.min(1,cl>=ARCMAX?1:fr/nd),4,2,can?'#7aff5a':'#5ac0ff',false);T(cl>=ARCMAX?'MÁX':`${fr}/${nd}`,x+dw/2,y3+58.5,4,'center',can?'#bfffb0':'#e8d8c0',dw-4);
@@ -10840,18 +10840,22 @@ function arTopAreia0(A,G2){if(a2('botao_sair'))b.drawImage(a2('botao_sair'),3,2.
   if(A.mp&&A.mp.mode==='pvp')arStrip(A,G2,G2.ty-27);else arStrip(A,G2,4);
   if(!A.mp)arBanner(A,G2,Math.max(30,Math.min(G2.ty-30,(28+G2.ty-12)/2-7)));
   if(A.mp){arPill(W/2-26,G2.y0+G2.bh+1.5,52,12,'#e8b08a','#c87850','#7a3a1a');T('VOCÊ',W/2,G2.y0+G2.bh+4,5.6,'center','#4a1a08',40);}}
-function arBottomAreia0(A,G2,t){const yP=G2.by+7,hh=H-yP;A.bh=[];
+function arBottomAreia0(A,G2,t){const yP=arBarY(G2),hh=H-yP;A.bh=[];
   /* barra de baixo mais baixa (Felipe: "tem que ter o mesmo tamanho, pra isso tem que diminuir a barra de ação"): 5 cartões numa linha, herói + mana no meio, CHAMAR à direita */
   if(!arNine(a2('painel_baixo'),0,yP,W,hh+10,80,10)){rrect(0,yP,W,hh+8,9,'#8a6a40',false);{const g=b.createLinearGradient(0,yP,0,H);g.addColorStop(0,'#ecd4a6');g.addColorStop(1,'#d8b47c');b.fillStyle=g;b.beginPath();b.roundRect(1.5,yP+1.5,W-3,hh+6,8);b.fill();}}
-  const cw=22,ch=36;A.deck.forEach((sp,k)=>{const x=3+k*23.4,y=yP+5,L=A.lv[sp]||0,c=arUpCost(sp),ok=A.mana>=c&&L<5;
-    rrect(x,y+1,cw,ch,5,'rgba(60,30,10,.35)',false);rrect(x,y,cw,ch,5,arRar(sp).col,false);if(!arNine(a2(ok?'cartao':'cartao_apagado'),x+.9,y+.9,cw-1.8,ch-1.8,60,4.5))rrect(x+1,y+1,cw-2,ch-2,4,ok?'#fbeccc':'#e8d8b8',false);
-    arDrawMon(sp,x+cw/2,y+8,.24,'idle','s',k);T(`nv${L+1}`,x+cw/2,y+20.5,4.2,'center','#4a2c14',cw-3);
-    if(L>=5)T('MÁX',x+cw/2,y+27,4.6,'center','#b06010',cw-3);else{arDrop(x+5,y+30.5,1.5);T(String(c),x+cw/2+2,y+27.4,4.8,'center',ok?'#1a4a8a':'#9a8a70',cw-8);}
-    if(!ok&&L<5){b.save();b.globalAlpha=.18;rrect(x+1,y+1,cw-2,ch-2,4,'#5a3a20',false);b.restore();}
-    A.bh.push({x,y,w:cw,h:ch,f:()=>arUpgrade(k)});});
+  const cw=22,ch=38;A.deck.forEach((sp,k)=>{const x=3+k*23.4,y=yP+4,L=A.lv[sp]||0,c=arUpCost(sp),ok=A.mana>=c&&L<5,col=ARCOL[arType(sp)]||'#ccc',RR=arRar(sp);
+    /* carta melhor (05/nov, Felipe: "melhorar as cartas"): borda da raridade, fundo da cor do tipo, monstrinho grande, selo de nível em cima e custo numa pílula */
+    rrect(x,y+1.2,cw,ch,5,'rgba(60,30,10,.4)',false);rrect(x,y,cw,ch,5,RR.col,false);rrect(x+1.1,y+1.1,cw-2.2,ch-2.2,4,col,false);
+    {const g=b.createLinearGradient(0,y,0,y+ch);g.addColorStop(0,'rgba(255,255,255,.45)');g.addColorStop(.55,'rgba(255,255,255,.05)');g.addColorStop(1,'rgba(0,0,0,.25)');b.fillStyle=g;b.beginPath();b.roundRect(x+1.1,y+1.1,cw-2.2,ch-2.2,4);b.fill();}
+    E(x+cw/2,y+21,7,2,'rgba(0,0,0,.25)',0,false);arDrawMon(sp,x+cw/2,y+12.5,.31,'idle','s',k);
+    rrect(x+cw/2-6.5,y-2,13,6.5,3,'#2a1a10',false);T(`nv${L+1}`,x+cw/2,y-1.4,4.2,'center','#ffffff',12);
+    arPill(x+1.5,y+ch-10.5,cw-3,9);if(L>=5)T('MÁX',x+cw/2,y+ch-8.6,4.6,'center','#b06010',cw-5);else{arDrop(x+5.6,y+ch-5.2,1.45);T(String(c),x+cw/2+2.4,y+ch-8.7,4.8,'center',ok?'#1a4a8a':'#9a8a70',cw-9);}
+    if(ok&&L<5){b.save();b.globalAlpha=.4+.3*Math.sin(t/6+k);T('⬆',x+cw-3.5,y+1,5.4,'center','#7aff5a',0,C.ink);b.restore();}
+    if(!ok&&L<5){b.save();b.globalAlpha=.28;rrect(x+1,y+1,cw-2,ch-2,4,'#3a2010',false);b.restore();}
+    A.bh.push({x,y:y-2,w:cw,h:ch+2,f:()=>arUpgrade(k)});});
   /* herói */
   const hx=133,hy=yP+14,r=9,f=Math.min(1,(A.hpow||0)/ARHP),full=f>=1;if(full){b.save();b.globalCompositeOperation='lighter';glowAt(hx,hy,r+7,'255,220,90',.35+.15*Math.sin(t/5));b.restore();}
-  E(hx,hy,r+2,r+2,'#8a6a40',0,false);E(hx,hy,r,r,full?'#4a8ae0':'#3a6a9a',0,false);try{b.save();b.beginPath();b.arc(hx,hy,r-.6,0,Math.PI*2);b.clip();b.translate(hx,hy);b.scale(r/8,r/8);b.translate(-8,5);drawPerson(0,0,'down',0,LOOKS.player);b.restore();}catch(e){b.restore();}
+  E(hx,hy,r+2,r+2,'#8a6a40',0,false);E(hx,hy,r,r,full?'#4a8ae0':'#3a6a9a',0,false);if(!arHeroFace(hx,hy,r)){try{b.save();b.beginPath();b.arc(hx,hy,r-.6,0,Math.PI*2);b.clip();b.translate(hx,hy);b.scale(r/8,r/8);b.translate(-8,5);drawPerson(0,0,'down',0,LOOKS.player);b.restore();}catch(e){b.restore();}}
   b.save();b.lineCap='round';b.strokeStyle='rgba(255,255,255,.35)';b.lineWidth=1.8;b.beginPath();b.arc(hx,hy,r+1,0,Math.PI*2);b.stroke();b.strokeStyle=full?'#ffd030':'#5ac0ff';b.beginPath();b.arc(hx,hy,r+1,-Math.PI/2,-Math.PI/2+Math.PI*2*f);b.stroke();b.restore();
   if(a2('moldura_heroi'))b.drawImage(a2('moldura_heroi'),hx-r-2.6,hy-r-2.6,2*r+5.2,2*r+5.2);if(full)T('PODER!',hx,hy+r-3,4.2,'center','#fff3a0',24,C.ink);A.bh.push({x:hx-r-3,y:hy-r-3,w:2*r+6,h:2*r+6,f:arHeroUse});
   /* mana */
@@ -10866,7 +10870,7 @@ function arBottomAreia0(A,G2,t){const yP=G2.by+7,hh=H-yP;A.bh=[];
   arDrop(cx,cy-4,2.4);T('CHAMAR',cx,cy+1.5,4.6,'center','#ffffff',22,'#0a2a6a');}
   arPill(cx-14,yP+35,28,12);arDrop(cx-7,yP+41.5,1.7);T(String(A.cost),cx+2,yP+37.6,5.4,'center','#4a2c14',16);
   A.bh.push({x:cx-16,y:cy-16,w:32,h:34,f:()=>{A.buyT=performance.now();arBuy();}});}
-{const _tp=arTap;arTap=function(x,y){const A=AR;if(A&&!A.lobby&&!A.result&&ARSKIN==='areia'&&A.bh){const G2=arGeo();if(y>=G2.by+7){for(const h of A.bh)if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h){h.f();return;}return;}}return _tp(x,y);};}
+{const _tp=arTap;arTap=function(x,y){const A=AR;if(A&&!A.lobby&&!A.result&&ARSKIN==='areia'&&A.bh){const G2=arGeo();if(y>=arBarY(G2)){for(const h of A.bh)if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h){h.f();return;}return;}}return _tp(x,y);};}
 
 /* MURALHAHUB (04/nov, Felipe: "Coloca a muralha dupla dentro da muralha. Cria um menu igual criamos pra arena"): MINIJOGOS › MURALHA abre um menu próprio:
    FASES (mapa de fases da Muralha), MURALHA DUPLA (com um amigo), HISTÓRIA e CARTAS. Usa os cartões do menu de minijogos (arte do Buchecha). */
@@ -11064,7 +11068,7 @@ function arTopPedra(A,G2){const pv=A.mp&&A.mp.mode==='pvp',T2=arTimerTxt(A);
   if(pv)arStrip0(A,G2,G2.ty-27);
   if(!A.mp)arBanner(A,G2,Math.max(30,Math.min(G2.ty-30,(28+G2.ty-12)/2-7)));
   if(A.mp){arPill(W/2-26,G2.y0+G2.bh+1.5,52,12,'#e8b08a','#c87850','#7a3a1a');T('VOCÊ',W/2,G2.y0+G2.bh+4,5.6,'center','#4a1a08',40);}}
-function arBottomPedra(A,G2,t){const yP=G2.by+7,hh=H-yP;A.bh=[];
+function arBottomPedra(A,G2,t){const yP=arBarY(G2),hh=H-yP;A.bh=[];
   rrect(0,yP,W,hh+8,9,'#121a28',false);rrect(1.5,yP+1.5,W-3,hh+6,8,'#3a4660',false);rrect(4,yP+3.5,W-8,40,6,'#2a3448',false);px(4,yP+2,W-8,1,'rgba(255,255,255,.18)');
   const cw=(W-12)/5,ch=37;A.deck.forEach((sp,k)=>{const x=4+k*(cw+1),y=yP+5,L=A.lv[sp]||0,c=arUpCost(sp),ok=A.mana>=c&&L<5,col=ARCOL[arType(sp)]||'#ccc';
     rrect(x,y+1,cw,ch,5,'rgba(0,0,0,.4)',false);rrect(x,y,cw,ch,5,arRar(sp).col,false);rrect(x+1,y+1,cw-2,ch-2,4,col,false);b.save();b.globalAlpha=.35;rrect(x+1,y+1,cw-2,ch*.45,4,'#ffffff',false);b.restore();
@@ -11074,7 +11078,7 @@ function arBottomPedra(A,G2,t){const yP=G2.by+7,hh=H-yP;A.bh=[];
   const r2=yP+45;
   /* herói */
   const hx=12,hy=r2+8,r=7.5,f=Math.min(1,(A.hpow||0)/ARHP),full=f>=1;if(full){b.save();b.globalCompositeOperation='lighter';glowAt(hx,hy,r+7,'255,220,90',.35+.15*Math.sin(t/5));b.restore();}
-  E(hx,hy,r+2,r+2,'#121a28',0,false);E(hx,hy,r,r,full?'#4a8ae0':'#3a6a9a',0,false);try{b.save();b.beginPath();b.arc(hx,hy,r-.6,0,Math.PI*2);b.clip();b.translate(hx,hy);b.scale(r/8,r/8);b.translate(-8,5);drawPerson(0,0,'down',0,LOOKS.player);b.restore();}catch(e){b.restore();}
+  E(hx,hy,r+2,r+2,'#121a28',0,false);E(hx,hy,r,r,full?'#4a8ae0':'#3a6a9a',0,false);if(!arHeroFace(hx,hy,r)){try{b.save();b.beginPath();b.arc(hx,hy,r-.6,0,Math.PI*2);b.clip();b.translate(hx,hy);b.scale(r/8,r/8);b.translate(-8,5);drawPerson(0,0,'down',0,LOOKS.player);b.restore();}catch(e){b.restore();}}
   b.save();b.lineCap='round';b.strokeStyle=full?'#ffd030':'#5ac0ff';b.lineWidth=1.6;b.beginPath();b.arc(hx,hy,r+1,-Math.PI/2,-Math.PI/2+Math.PI*2*f);b.stroke();b.restore();A.bh.push({x:0,y:r2-2,w:22,h:20,f:arHeroUse});
   /* mana */
   arPill(23,r2,62,16);arDrop(32,r2+9.2,2.6);T(`MANA ${Math.floor(A.mana)}`,57,r2+4.2,6.4,'center','#3a2410',44);
@@ -11086,6 +11090,20 @@ function arBottomPedra(A,G2,t){const yP=G2.by+7,hh=H-yP;A.bh=[];
   A.bh.push({x:bx,y:r2-2,w:bw,h:20,f:()=>{A.buyT=performance.now();arBuy();}});}
 /* JUNTOS: estrada do parceiro com a arte */
 {const _cu=arCoopUnder;arCoopUnder=function(A,G2,t){_cu(A,G2,t);if(arSk()==='areia'&&a2('estrada_reta_vertical')){const L=arLeg(G2),top=G2.ty-L;arVSegArt(G2.lx,top,G2.ty-12,25);arPortal(G2.lx,top,t);}};}
+
+/* ARCENTRO + VIDA + HERÓI (05/nov, Felipe: "melhorar as cartas, a vida dos monstrinhos / centraliza mais a tela / melhora a imagem do hero"):
+   - a barra de baixo tem altura fixa no pé da tela e, sozinho/fases, o tabuleiro fica centralizado no espaço que sobra (antes ficava colado embaixo com um vazio grande em cima);
+   - barra de vida dos inimigos: cápsula com borda escura, verde→amarelo→vermelho pela vida, cor de veneno/queimadura, maior no chefe;
+   - herói: o rosto da arte do jogador (c_jogador / heroína) no lugar do bonequinho pixelado, no círculo da barra e na Entrada. */
+function arBarH(){return arSk()==='pedra'?62:50;}
+function arBarY(G2){return H-arBarH();}
+function arHpBar(cx,y,f,boss,tint){f=Math.max(0,Math.min(1,f));if(f>=.999&&!boss)return;const w=boss?26:14,h=boss?3.6:2.6,x=cx-w/2;
+  rrect(x-.8,y-.8,w+1.6,h+1.6,(h+1.6)/2,'#1a0a0a',false);rrect(x,y,w,h,h/2,'#4a2020',false);
+  const col=tint||(f>.6?'#5ad84a':f>.3?'#f0c030':'#ff4a3a');if(f>0){rrect(x,y,Math.max(h,w*f),h,h/2,col,false);rrect(x+.6,y+.3,Math.max(0,w*f-1.2),h*.35,h*.2,'rgba(255,255,255,.45)',false);}}
+function arHeroImg(){try{return asImg('c_jogador');}catch(e){return null;}}
+function arHeroFace(hx,hy,r){const I=arHeroImg();if(!I)return false;b.save();b.beginPath();b.arc(hx,hy,r-.6,0,Math.PI*2);b.clip();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';
+  const sw=I.naturalWidth*.8,sh=sw,sx=I.naturalWidth*.12,sy=I.naturalHeight*.02;b.drawImage(I,sx,sy,sw,sh,hx-r*1.05,hy-r*1.02,r*2.1,r*2.1);b.restore();return true;}
+{const _dp=drawPerson;window.__arDP=_dp;}
 
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").

@@ -13930,6 +13930,26 @@ function amgConvite(quem,cod){let el=document.getElementById('amgInv');if(!el){e
     if(DUOH||DUOG){return;}try{const b=document.getElementById('duoBox');if(b&&!b.hidden){const ci=document.getElementById('duoCod');if(ci){ci.value=cod;document.getElementById('duoEntrar').click();return;}}}catch(e){}
     try{DUO_HASHOK=0;const h=(location.hash||'').replace(/^#/,'').replace(/-?dupla-[A-Za-z]{4}/g,'');location.hash=(h?h+'-':'')+'dupla-'+cod;}catch(e){}if(G.mode!=='world')try{say('Termine o que está fazendo e volte pro mapa: a sala do seu amigo abre sozinha.');}catch(e){}};}
 setInterval(()=>{try{if(G.mode==='world'&&party.length)amgAbre();}catch(e){}},3000);
+/* AMGLINK (05/nov, Felipe: "botão pra convidar amigo no jogo e pode criar um link pro whatsapp tbm"): o link abre o App e os dois viram amigos */
+function amgLinkUrl(){return 'https://felipepicancogame.github.io/capturadores/#amigo-'+amgNo()+'-'+encodeURIComponent(String(flags.nome||'').slice(0,14)).replace(/-/g,'%2D');}
+function amgLinkTxt(){return (flags.nome?flags.nome+' te chamou pra':'Vem')+' jogar Capturadores do Vale comigo! Toque no link e a gente vira amigo no jogo:';}
+async function amgShare(){const url=amgLinkUrl(),text=amgLinkTxt();try{if(navigator.share){await navigator.share({title:'Capturadores do Vale',text,url});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+  try{await navigator.clipboard.writeText(text+' '+url);duoMsg('Link copiado! Cole na conversa com seu amigo.');}catch(e){duoMsg(url,1);}}
+function amgZap(){try{window.open('https://wa.me/?text='+encodeURIComponent(amgLinkTxt()+' '+amgLinkUrl()),'_blank');}catch(e){}}
+(function(){try{const m=/amigo-(\d{4,6})(?:-([^#&-]*))?/.exec(location.hash||'');if(!m)return;
+  localStorage.setItem('cv.amglink',JSON.stringify({tid:+m[1],nome:decodeURIComponent(m[2]||'').slice(0,14)}));
+  const h=(location.hash||'').replace(/^#/,'').replace(/-?amigo-\d+(-[^#&-]*)?/,'');history.replaceState(null,'',location.pathname+location.search+(h?'#'+h:''));}catch(e){}})();
+setInterval(()=>{try{if(G.mode!=='world'||!party.length||ui.length||busy)return;const r=localStorage.getItem('cv.amglink');if(!r)return;localStorage.removeItem('cv.amglink');
+  const a=JSON.parse(r);if(!a||!a.tid||a.tid===amgNo())return;const ja=amgLista().some(x=>x.tid===a.tid);amgAdd(a.tid,a.nome);
+  if(!ja)say((a.nome||'Seu amigo')+' agora é seu amigo no jogo! Para jogar junto, abra AMIGOS.');
+  if(duoNoApp())amgFala(a.tid,{k:'oi',tid:amgNo(),nome:String(flags.nome||'').slice(0,14)},8000);}catch(e){}},2500);
+{const _r=amgRecebe;amgRecebe=function(c,m){if(m&&m.k==='oi'){const t=parseInt(m.tid,10);if(t&&t!==flags.tid){const ja=amgLista().some(x=>x.tid===t);amgAdd(t,m.nome);
+    if(!ja&&G.mode==='world'&&!ui.length)try{say((m.nome||'Um amigo')+' entrou pelo seu convite e agora é seu amigo!');}catch(e){}}try{c.send({k:'recebi',tid:flags.tid,nome:String(flags.nome||'').slice(0,14)});}catch(e){}return;}return _r(c,m);};}
+{const _p=amgPainel;amgPainel=function(){_p();try{const pn=document.getElementById('amgPn');if(!pn||document.getElementById('amgLk'))return;const d=document.createElement('div');d.id='amgLk';
+  d.innerHTML='<style>#amgLk{display:flex;gap:8px;margin:0 0 10px}#amgLk button{flex:1;border:0;border-radius:12px;padding:11px 6px;font:700 15px Fredoka,"Lilita One",system-ui,sans-serif;color:#fff;box-shadow:0 3px 0 #0003;cursor:pointer}#amgLk .s{background:#2f8be0}#amgLk .z{background:#25a244}</style><button class="s">📲 Convidar amigo</button><button class="z">💬 WhatsApp</button>';
+  pn.parentNode.insertBefore(d,pn.nextSibling);d.querySelector('.s').onclick=amgShare;d.querySelector('.z').onclick=amgZap;}catch(e){}};}
+/* /AMGLINK */
+
 /* lista de amigos dentro da tela da Muralha em Dupla */
 /* AMGART (02/nov, Buchecha: TELA_INICIAL_E_AMIGOS_v1): painel "Seus amigos" de madeira, uma linha desenhada por amigo,
    bolinha "online" só quando o amigo responde de verdade; convite com a arte nova. */

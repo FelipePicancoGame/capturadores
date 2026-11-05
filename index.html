@@ -11326,6 +11326,102 @@ function arResDraw(A){const R=A.result,s=W/1080,oy=Math.max(0,(H-1920*s)/2),X=v=
 {const _tp=arTap;arTap=function(x,y){const A=AR;if(A&&A.result&&A.resHits&&arResOk()){for(const h of A.resHits)if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h){tone(660,.04);h.f();return;}return;}return _tp(x,y);};}
 /* /ARRESULTADO */
 
+/* ARJARDIM (05/nov, Felipe mandou a imagem "Arena Jardim" e o Buchecha pintou as peças — ARENA_JARDIM_v2):
+   3º estilo da Arena e agora o PADRÃO para todos (botão 🎨 da Entrada troca JARDIM → PEDRA → AREIA).
+   Partida: fundo do jardim, estrada de pedra rosada, tabuleiro de grama com moldura creme, portal espiral e portão de folha,
+   topo com SAIR / ONDA / tempo / vidas em pílulas creme, embaixo MANA (pílula água) + CHAMAR coral e as 5 cartas num painel creme.
+   Entrada: fundo do jardim, placa ARENA, painel SEU TIME e painel JOGAR com 4 botões de folha (MASMORRAS, SEM FIM, JUNTOS, CONTRA).
+   O menu da Muralha continua com o fundo de pedra azul. */
+const ARJ={};['fundo_menu','fundo_partida','placa','painel','folha_verde','folha_verde_ap','folha_coral','folha_coral_ap','chamar','chamar_ap','chamar_sem','pilula_creme','pilula_agua','portal','portao','casa_brilho','grade','estrada_v','estrada_h','estrada_c','ic_bandeira','ic_infinito','ic_grupo','ic_espadas','ic_voltar'].forEach(k=>{try{const im=new Image();im.decoding='async';im.src='blobs/arj_'+k+'.webp';ARJ[k]=im;}catch(e){}});
+function aj(k){const i=ARJ[k];return i&&i.complete&&i.naturalWidth?i:null;}
+arSk=function(){try{if(flags&&!flags.arJ1){flags.arJ1=1;flags.arSkin='jardim';}const s=flags&&flags.arSkin;return s==='pedra'?'pedra':s==='areia'?'areia':'jardim';}catch(e){return 'jardim';}};
+function arJ(){return arSk()==='jardim';}
+function arjCover(I){const s=Math.max(W/I.naturalWidth,H/I.naturalHeight),w=I.naturalWidth*s,h=I.naturalHeight*s;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(I,(W-w)/2,(H-h)/2,w,h);b.restore();}
+function arjPill(k,x,y,w,h){const I=aj(k);if(I&&arNine(I,x,y,w,h,I.naturalHeight/2,h/2))return;arPill0(x,y,w,h,k==='pilula_agua'?'#a6f0dc':null,k==='pilula_agua'?'#5ac8b0':null);}
+function arjPanel(x,y,w,h){const I=aj('painel');if(I&&arNine(I,x,y,w,h,170,Math.min(15,h/3)))return;rrect(x,y+1.5,w,h,8,'rgba(60,40,20,.3)',false);rrect(x,y,w,h,8,'#d8c098',false);rrect(x+1.5,y+1.5,w-3,h-3,7,'#fbefd8',false);}
+function arjLeaf(x,y,w,h,coral,icon,txt,sub,dn){const I=aj(coral?(dn?'folha_coral_ap':'folha_coral'):(dn?'folha_verde_ap':'folha_verde'));
+  if(I){b.save();b.imageSmoothingEnabled=true;b.drawImage(I,x,y,w,h);b.restore();}else{rrect(x,y,w,h,h/2,coral?'#e8604a':'#5aa86a',false);rrect(x+w*.22,y+h*.14,w*.72,h*.72,h*.36,'#fbefd8',false);}
+  const ic=icon&&aj('ic_'+icon);let sw=0;if(ic){const r=ic.naturalWidth/ic.naturalHeight;let s=h*.32;sw=Math.min(s*r,w*.14);s=sw/r;b.drawImage(ic,x+w*.24,y+h/2-s/2,sw,s);}
+  const L0=icon?x+w*.24+sw+w*.02:x+w*.24,R0=x+w*.94,tx=(L0+R0)/2,tw=R0-L0;T(txt,tx,y+h*(sub?.17:.3),h*.3,'center',coral?'#b0362a':'#2f6a3a',tw);if(sub)T(sub,tx,y+h*.56,h*.17,'center','#6a5030',tw);}
+/* fundo */
+{const _bg=arSBg;arSBg=function(){if(arJ()){if(AR&&AR.lobby==='wall'){arSBgPedra();return;}const I=aj(AR&&AR.lobby?'fundo_menu':'fundo_partida');if(I){arjCover(I);return;}b.fillStyle='#78b04a';b.fillRect(0,0,W,H);return;}_bg();};}
+/* estrada */
+function arjV(x,y1,y2,w){const I=aj('estrada_v');if(!I||y2<=y1)return;const th=w*I.naturalHeight/I.naturalWidth;b.save();b.beginPath();b.rect(x-w/2,y1,w,y2-y1);b.clip();b.imageSmoothingEnabled=true;for(let y=y2-th;y>y1-th;y-=th-.3)b.drawImage(I,x-w/2,y,w,th);b.restore();}
+function arjH(y,x1,x2,w){const I=aj('estrada_h');if(!I||x2<=x1)return;const tw=w*I.naturalWidth/I.naturalHeight;b.save();b.beginPath();b.rect(x1,y-w/2,x2-x1,w);b.clip();b.imageSmoothingEnabled=true;for(let x=x1;x<x2;x+=tw-.3)b.drawImage(I,x,y-w/2,tw,w);b.restore();}
+function arjPortal(x,y,t){const I=aj('portal');if(!I){arPortal0(x,y,t);return;}const s=27;b.save();b.imageSmoothingEnabled=true;b.drawImage(I,x-s/2,y-s/2+1,s,s);b.globalCompositeOperation='lighter';glowAt(x,y,12,'190,90,255',.25+.12*Math.sin(t/6));b.restore();}
+function arjGate(x,y,t){const I=aj('portao');if(!I){rrect(x-10,y-13,19,25,9,'#8a6a40',false);return;}const w=24,h=w*I.naturalHeight/I.naturalWidth;b.save();b.imageSmoothingEnabled=true;b.drawImage(I,x-w/2,y+8-h,w,h);b.globalCompositeOperation='lighter';glowAt(x,y-2,10,'90,255,200',.2+.1*Math.sin(t/7));b.restore();}
+{const _sp=arSPath;arSPath=function(G2,t){if(arJ()&&aj('estrada_v')&&aj('estrada_h')&&aj('estrada_c')){const P=G2.pts,w=arCoop(AR)?25:23,lx=P[0][0],by=P[0][1],ty=P[1][1],rx=P[2][0],U=P.length>3,C=aj('estrada_c'),cw=w*C.naturalWidth/80;
+    b.save();b.fillStyle='#74ac46';b.beginPath();b.roundRect(lx,ty,(U?rx:W)-lx,by-ty,6);b.fill();b.restore();
+    arjV(lx,ty-w/2+cw-.4,by+3,w);arjH(ty,lx-w/2+cw-.4,U?rx+w/2-cw+.4:rx+w,w);
+    b.save();b.imageSmoothingEnabled=true;b.drawImage(C,lx-w/2,ty-w/2,cw,cw);b.restore();
+    if(U){b.save();b.translate(2*rx,0);b.scale(-1,1);arjV(rx,ty-w/2+cw-.4,by+3,w);b.imageSmoothingEnabled=true;b.drawImage(C,rx-w/2,ty-w/2,cw,cw);b.restore();}
+    arjPortal(lx,by,t);const gx=P[P.length-1][0],gy=P[P.length-1][1];if(U)arjGate(gx,gy,t);return;}
+  _sp(G2,t);};}
+{const _cu=arCoopUnder;arCoopUnder=function(A,G2,t){_cu(A,G2,t);if(arJ()&&aj('estrada_v')){const L=arLeg(G2),top=G2.ty-L;arjV(G2.lx,top,G2.ty-12,25);arjPortal(G2.lx,top,t);}};}
+/* tabuleiro */
+{const _sb=arSBoard;arSBoard=function(G2){const I=arJ()&&aj('grade');if(I){const sx=G2.bw/791,sy=G2.bh/494;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(I,G2.x0-13*sx,G2.y0-13*sy,I.naturalWidth*sx,I.naturalHeight*sy);b.restore();return;}_sb(G2);};}
+{const _bh=arBarH;arBarH=function(){return arJ()?66:_bh();};}
+/* topo */
+function arTopJardim(A,G2){const pv=A.mp&&A.mp.mode==='pvp',T2=arTimerTxt(A);
+  arjLeaf(2,4,38,13,true,null,'SAIR');
+  if(!pv){arjPill('pilula_creme',42,4,49,14);T(`ONDA ${Math.max(1,A.wave)}${A.goal?'/'+A.goal:''}`,66.5,8,6.2,'center','#3a2410',42);
+    arjPill('pilula_creme',93,4,41,14);const CI=a2('icone_relogio');if(CI)b.drawImage(CI,98,6.5,9,9);T(T2.t,121,8,6.2,'center',T2.red?'#d02020':'#3a2410',24);}
+  arjPill('pilula_creme',136,4,W-138,14);for(let k=0;k<3;k++){const HI=a2(k<A.lives?'coracao_cheio':'coracao_vazio');const hx=142+k*10;if(HI)b.drawImage(HI,hx-1,6.5,9.5,9.5);else T(k<A.lives?'❤':'♡',hx+4,7,7,'center',k<A.lives?'#e02838':'#b89070');}
+  if(pv)arStrip0(A,G2,G2.ty-27);
+  if(!A.mp)arBanner(A,G2,Math.max(30,Math.min(G2.ty-30,(28+G2.ty-12)/2-7)));
+  if(A.mp){arjPill('pilula_creme',W/2-26,G2.y0+G2.bh+1.5,52,12);T('VOCÊ',W/2,G2.y0+G2.bh+4,5.6,'center','#4a1a08',40);}}
+{const _t=arTopAreia;arTopAreia=function(A,G2){if(arJ())return arTopJardim(A,G2);_t(A,G2);};}
+/* barra de baixo */
+function arBottomJardim(A,G2,t){const yP=arBarY(G2),hh=H-yP,r1=yP+1;A.bh=[];
+  /* herói */
+  const hx=11,hy=r1+9,r=8,f=Math.min(1,(A.hpow||0)/ARHP),full=f>=1;if(full){b.save();b.globalCompositeOperation='lighter';glowAt(hx,hy,r+7,'255,220,90',.35+.15*Math.sin(t/5));b.restore();}
+  E(hx,hy,r+2,r+2,'#b8946a',0,false);E(hx,hy,r+1,r+1,'#fbefd8',0,false);E(hx,hy,r,r,full?'#7ac86a':'#5a9a6a',0,false);if(!arHeroFace(hx,hy,r)){try{b.save();b.beginPath();b.arc(hx,hy,r-.6,0,Math.PI*2);b.clip();b.translate(hx,hy);b.scale(r/8,r/8);b.translate(-8,5);drawPerson(0,0,'down',0,LOOKS.player);b.restore();}catch(e){b.restore();}}
+  b.save();b.lineCap='round';b.strokeStyle=full?'#ffd030':'#3ab08a';b.lineWidth=1.8;b.beginPath();b.arc(hx,hy,r+1.6,-Math.PI/2,-Math.PI/2+Math.PI*2*f);b.stroke();b.restore();A.bh.push({x:0,y:r1-2,w:22,h:21,f:arHeroUse});
+  /* mana */
+  arjPill('pilula_agua',22,r1,60,17);arDrop(33,r1+9.6,2.6);T(`MANA ${Math.floor(A.mana)}`,58,r1+4.6,6.2,'center','#0f4a44',40);
+  /* CHAMAR */
+  const can=A.mana>=A.cost&&A.grid.some(u=>!u),dn=A.buyT&&performance.now()-A.buyT<160?1:0,bx=84,bw=W-86,CI=aj(can?(dn?'chamar_ap':'chamar'):'chamar_sem');
+  if(CI){b.save();b.imageSmoothingEnabled=true;b.drawImage(CI,bx,r1-1+dn*.6,bw,19);b.restore();}else rrect(bx,r1,bw,17,8,can?'#e8604a':'#b8b0a0',false);
+  T('CHAMAR',bx+bw*.42,r1+3.4+dn*.6,6.8,'center','#ffffff',bw*.5,'#7a2010');rrect(bx+bw*.68,r1+3+dn*.6,bw*.24,11,5.5,'rgba(255,248,230,.95)',false);arDrop(bx+bw*.68+4.5,r1+9+dn*.6,1.5);T(String(A.cost),bx+bw*.68+bw*.14,r1+5+dn*.6,5.2,'center','#3a2410',bw*.16);
+  if(can){b.save();b.globalAlpha=.1+.08*Math.sin(t/6);rrect(bx+2,r1,bw-4,16,8,'#ffffff',false);b.restore();}
+  A.bh.push({x:bx,y:r1-2,w:bw,h:22,f:()=>{A.buyT=performance.now();arBuy();}});
+  /* cartas no painel creme */
+  const py=yP+20;arjPanel(1,py,W-2,hh-18);
+  const cw=(W-16)/5,ch=Math.min(39,hh-26),cy=py+4;A.deck.forEach((sp,k)=>{const x=6+k*(cw+1),y=cy,L=A.lv[sp]||0,c=arUpCost(sp),ok=A.mana>=c&&L<5,col=ARCOL[arType(sp)]||'#ccc';
+    rrect(x,y+1.2,cw,ch,5,'rgba(90,60,30,.35)',false);rrect(x,y,cw,ch,5,'#fffaf0',false);rrect(x+1,y+1,cw-2,ch-2,4.5,arRar(sp).col,false);rrect(x+2,y+2,cw-4,ch-4,4,col,false);b.save();b.globalAlpha=.35;rrect(x+2,y+2,cw-4,ch*.42,4,'#ffffff',false);b.restore();
+    arDrawMon(sp,x+cw/2,y+10,.27,'idle','s',k);rrect(x+1.5,y-1.5,15,7,3.5,'#fbefd8',false);rrect(x+1.5,y-1.5,15,7,3.5,'rgba(120,90,50,.25)',false);T(L>=5?'Máx':`Nv.${L+1}`,x+9,y-.9,4.4,'center','#4a3018',13);
+    arjPill('pilula_agua',x+2,y+ch-11,cw-4,9.5);if(L>=5)T('MÁX',x+cw/2,y+ch-9.2,4.8,'center','#0f4a44',cw-6);else{arDrop(x+8,y+ch-5.6,1.5);T(String(c),x+cw/2+3,y+ch-9.4,5,'center',ok?'#0f4a44':'#6a8a84',cw-12);}
+    if(!ok&&L<5){b.save();b.globalAlpha=.28;rrect(x+2,y+2,cw-4,ch-14,4,'#000000',false);b.restore();}A.bh.push({x,y,w:cw,h:ch,f:()=>arUpgrade(k)});});}
+{const _b=arBottomAreia;arBottomAreia=function(A,G2,t){if(arJ())return arBottomJardim(A,G2,t);_b(A,G2,t);};}
+/* ENTRADA */
+function arEntryJardim(A){const t=A.t;A.hits=[];arSBg();
+  const SK={jardim:'JARDIM',pedra:'PEDRA',areia:'AREIA'},NX={jardim:'pedra',pedra:'areia',areia:'jardim'};
+  arjPill('pilula_creme',3,4,38,13);T('🎨 '+SK[arSk()],22,7.4,4.5,'center','#4a3018',33);arHit2(1,1,44,20,()=>{flags.arSkin=NX[arSk()];try{saveGame();}catch(e){}tone([660,880],.05);arLobbyMsg(A,'Estilo da Arena: '+SK[arSk()]);});
+  E(W-12,11,8,8,'#7a2a1a',0,false);E(W-12,10.4,7.4,7.4,'#e8604a',0,false);T('✕',W-12,6.2,7,'center','#ffffff',0,'#7a2a1a');arHit2(W-26,0,26,24,()=>A.pick({k:'x'}));
+  const PL=aj('placa');if(PL){b.save();b.imageSmoothingEnabled=true;b.drawImage(PL,W/2-50,1,100,33.7);b.restore();}T('Capturadores do Vale',W/2,10.5,4.6,'center','#3a6a2a',70);T('ARENA',W/2,15.5,11,'center','#e04a3a',80,'#6a1a10');
+  const sp=Math.max(0,(H-36-104-88-8)/2),y1=36+sp*.45,y2=y1+104+6+sp*.25;
+  /* SEU TIME */
+  arjPanel(4,y1,W-8,104);T('SEU TIME',W/2,y1+5,7,'center','#2f6a3a',80);
+  {const hx=22,hy=y1+36,r=12;E(hx,hy,r+2,r+2,'#b8946a',0,false);E(hx,hy,r+1,r+1,'#fbefd8',0,false);E(hx,hy,r,r,'#7ac86a',0,false);if(!arHeroFace(hx,hy,r)){b.save();b.translate(hx,hy+6);b.scale(1.2,1.2);b.translate(-8,5);try{drawPerson(0,0,'down',0,LOOKS.player);}catch(e){}b.restore();}T('herói',hx,hy+r+3,4.6,'center','#6a4a20',30);}
+  const dx0=38,dw=(W-38-10)/5;A.deck.forEach((sp,k)=>{const x=dx0+k*dw,y=y1+16,col=ARCOL[arType(sp)]||'#ccc',RR=arRar(sp);
+    rrect(x+.6,y+1.2,dw-1.2,40,5,'rgba(90,60,30,.3)',false);rrect(x+.6,y,dw-1.2,40,5,'#fffaf0',false);rrect(x+1.4,y+.8,dw-2.8,38.4,4.5,RR.col,false);rrect(x+2.3,y+1.7,dw-4.6,36.6,4,col,false);b.save();b.globalAlpha=.32;rrect(x+2.3,y+1.7,dw-4.6,14,4,'#ffffff',false);b.restore();
+    arDrawMon(sp,x+dw/2,y+15,.26,'idle','s',k);const cl=arCardLv(sp),fr=arFrag(sp),nd=arCardNeed(cl,sp),can=cl<ARCMAX&&fr>=nd;
+    T(RR.n,x+dw/2,y+2.2,3.6,'center','#ffffff',dw-5,RR.ink);rrect(x+3,y+29,dw-6,8,3,'rgba(255,250,235,.92)',false);T(`carta ${cl}`,x+dw/2,y+30,4.4,'center','#4a3018',dw-8);
+    rrect(x+1,y+42,dw-2,9,3,'#d8c4a0',false);rrect(x+1.8,y+42.8,(dw-3.6)*Math.min(1,cl>=ARCMAX?1:fr/nd),7.4,2.6,can?'#4ac83a':'#3ab0c8',false);T(cl>=ARCMAX?'MÁX':can?'SUBIR!':`${fr}/${nd}`,x+dw/2,y+43.4,5,'center','#ffffff',dw-4,'#3a2410');
+    if(can){b.save();b.globalAlpha=.55+.4*Math.sin(t/5);T('⬆',x+dw-5,y-2,7,'center','#4ad83a',0,'#1a4a10');b.restore();}arHit2(x,y,dw,52,()=>arCardUp(A,sp));});
+  T('⚡ herói: congela todos',10,y1+75,4.6,'left','#8a5a10',74);T('🧩 barra: cartas que você tem / quantas faltam',10,y1+84,3.9,'left','#7a6040',86);
+  arjLeaf(W-84,y1+71,76,24,false,'grupo','TROCAR','o time');arHit2(W-84,y1+70,76,26,()=>arTimeEdit(A));
+  /* JOGAR */
+  const S=stgState('arena'),ch=Math.floor(S.next/STGN),fl=S.next%STGN;
+  arjPanel(4,y2,W-8,88);T('JOGAR',W/2,y2+5,7,'center','#b0362a',80);
+  const bw=(W-8-14-4)/2,bh=29,bx1=11,bx2=11+bw+4,r1=y2+17,r2=r1+bh+4;
+  arjLeaf(bx1,r1,bw,bh,false,'bandeira','MASMORRAS',`Cap. ${ch+1} · Andar ${fl+1}`);arHit2(bx1,r1,bw,bh,()=>{A.lobby='dg';A.scroll=null;tone([660,880],.05);});
+  arjLeaf(bx2,r1,bw,bh,true,'infinito','SEM FIM',`recorde: onda ${flags.arenaBest||0}`);arHit2(bx2,r1,bw,bh,()=>A.pick({k:'solo'}));
+  arjLeaf(bx1,r2,bw,bh,false,'grupo','JUNTOS','os dois juntos');arHit2(bx1,r2,bw,bh,()=>A.pick({k:'coop'}));
+  arjLeaf(bx2,r2,bw,bh,true,'espadas','CONTRA','um contra o outro');arHit2(bx2,r2,bw,bh,()=>A.pick({k:'pvp'}));
+  if(A.msg&&A.msg.t>0){A.msg.t--;rrect(14,H/2-12,W-28,24,7,'rgba(40,60,30,.94)',false);T(A.msg.s,W/2,H/2-6,5.6,'center','#ffffff',W-34);}}
+{const _e=arEntryDraw;arEntryDraw=function(A){if(arJ())return arEntryJardim(A);_e(A);};}
+
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").
    Tela própria da ARENA: deck de 5 no topo, os modos de jogo e a lista de TODOS os monstrinhos (os capturados podem entrar no deck; os não capturados aparecem como sombra).

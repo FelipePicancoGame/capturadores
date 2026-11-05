@@ -437,6 +437,28 @@ window.CVNovasHistoriasDados={"versao": 1, "status": "PROPOSTAS_NOVAS_EM_COPIA_D
     }catch(_){}},250);
   setInterval(()=>{try{if(!['','boot','title'].includes(MODE))sweep(25000,false);}catch(_){}},5000);
 }catch(e){}})();
+
+/* LAZYIMG05NOV (05/nov, Felipe: "executa essas otimizações"): o jogo abria ~2000 imagens (≈1,6 GB na memória) já na tela de título.
+   Agora a imagem de arte (blobs/ e assets/) só carrega na PRIMEIRA vez que o jogo usa: desenha, pergunta se está pronta/tamanho, põe na tela
+   ou espera o onload. Mesmos arquivos, mesma qualidade; no máximo uma fração de segundo na 1ª vez. Desligar: #nolazy */
+(function(){try{if(/nolazy|nounload/.test(location.hash))return;const P=HTMLImageElement.prototype,dS=Object.getOwnPropertyDescriptor(P,'src');if(!dS||!dS.set)return;
+  const ART=/(^|\/)(blobs|assets)\/[^?#]+\.(webp|png|jpe?g|gif|svg)(\?|#|$)/i;let ADI=0,LOAD=0;
+  const wake=im=>{if(im&&im.__lazy&&im.__rel){im.__lazy=0;const r=im.__rel;im.__rel=null;im.__reg=0;dS.set.call(im,r.src);LOAD++;}};/* sem __inner/__reg: o SOLTAR ARTE passa a cuidar dela */
+  window.__lazyInfo=()=>({adiadas:ADI,carregadas:LOAD});window.__lazyWake=wake;
+  Object.defineProperty(P,'src',{configurable:true,enumerable:true,get:dS.get,set(v){
+    if(this.__inner&&this.__lazy){this.__lazy=0;this.__reg=0;LOAD++;this.__inner=0;try{return dS.set.call(this,v);}finally{this.__inner=1;}}
+    if(this.__inner||typeof v!=='string'||!ART.test(v)||this.isConnected||this.__hasL||this.onload||this.onerror){if(this.__lazy){this.__lazy=0;this.__rel=null;}return dS.set.call(this,v);}
+    const im=this;im.__lazy=1;im.__rel={src:v};im.__reg=1;ADI++;
+    queueMicrotask(()=>{if(im.__lazy&&(im.onload||im.onerror||im.__hasL||im.isConnected))wake(im);});}});
+  const ael=P.addEventListener||EventTarget.prototype.addEventListener;P.addEventListener=function(t){if(t==='load'||t==='error'){this.__hasL=1;wake(this);}return ael.apply(this,arguments);};
+  for(const k of ['onload','onerror']){const d=Object.getOwnPropertyDescriptor(HTMLElement.prototype,k);if(d&&d.set)Object.defineProperty(P,k,{configurable:true,enumerable:true,get(){return d.get.call(this);},set(f){d.set.call(this,f);if(f)wake(this);}});}
+  for(const k of ['width','height']){const d=Object.getOwnPropertyDescriptor(P,k);if(d&&d.get)Object.defineProperty(P,k,{configurable:true,enumerable:true,get(){wake(this);return d.get.call(this);},set(v){d.set.call(this,v);}});}
+  const dec=P.decode;if(dec)P.decode=function(){wake(this);return dec.apply(this,arguments);};
+  const C=CanvasRenderingContext2D.prototype,cp=C.createPattern;C.createPattern=function(im){if(im&&im.__lazy)wake(im);return cp.apply(this,arguments);};
+  const subtree=n=>{try{if(!n)return;if(n.__lazy)wake(n);if(n.querySelectorAll&&n.childElementCount)for(const i of n.querySelectorAll('img'))if(i.__lazy)wake(i);}catch(_){}};
+  const N=Node.prototype;for(const k of ['appendChild','insertBefore','replaceChild']){const f=N[k];N[k]=function(n){subtree(n);return f.apply(this,arguments);};}
+  const E=Element.prototype;for(const k of ['append','prepend','after','before','replaceWith']){const f=E[k];if(f)E[k]=function(...a){for(const n of a)subtree(n);return f.apply(this,a);};}
+}catch(e){}})();
 </script><script>/* 26/out FILTRO PRONTO (suspeita das quedas no iPhone): o jogo pintava com "filtro" (cor do cristal da Horda, monstrinho de costas mais escuro
    na Muralha/mapa, herói piscando na Torre) dezenas de vezes por segundo. No iPhone cada desenho com filtro cria uma cópia temporária do
    tamanho da tela. Agora cada imagem+filtro é pintada UMA vez numa cópia pronta e o jogo desenha a cópia, sem filtro. Mesmo visual. */

@@ -10692,10 +10692,13 @@ function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,L=arLeg(G2),lx
 /* ARPVP (04/nov, Felipe mandou o print do modo contra: "Fase de ovo" — entendido como o UM CONTRA O OUTRO): o tabuleiro do rival em cima, com a estrada e os inimigos dele;
    no meio a faixa com a onda, o tempo, o chefe e os corações do rival; o seu embaixo. Cada um tem a sua estrada (esquerda + topo do tabuleiro, portão na direita). */
 function arPvpGeo(G2){const sy=G2.ty-27,Hb=G2.by-G2.ty+16,k=Math.min(1,(sy-4-22)/Hb);return {k,sy,top:22};}
-function arPvpUnder(A,G2,t){const P=A.mp.peer||{},V=arPvpGeo(G2),PL=arPathLen(G2);b.save();b.translate(W/2,V.top);b.scale(V.k,V.k);b.translate(-W/2,-(G2.ty-9));
-  try{arSPath(G2,t);arSBoard(G2);for(let i=0;i<15;i++){const u=P.g&&P.g[i];if(!u)continue;const q=arCellXY(i);arSPiece({sp:u[0],star:u[1]},q.x,q.y,G2.cs/30,t,{seed:i});}
-    for(const e of P.q||[]){const q=arPos(G2,e[0]/1000*PL);E(q.x,q.y+2,e[2]?10:5,e[2]?3:2,'rgba(0,0,0,.3)',0,false);arDrawMon(e[1],q.x,q.y-(e[2]?16:9),e[2]?.5:.28,'walk',q.dir,e[0]);
-      if(e[4]!=null){const bw=e[2]?24:12;px(q.x-bw/2,q.y-(e[2]?42:22),bw,2,'#1a0a0a');px(q.x-bw/2,q.y-(e[2]?42:22),bw*e[4]/100,2,'#ff7070');}}}catch(e){}
+function arPvpUnder(A,G2,t){const P=A.mp.peer||{},V=arPvpGeo(G2),PL=arPathLen(G2),MY=G2.ty+G2.by-2,my=y=>MY-y;
+  /* tabuleiro do rival INVERTIDO (Felipe: "Inverte"): a estrada dele desce pela esquerda, passa por BAIXO (perto da faixa do meio) e sobe pela direita */
+  b.save();b.translate(W/2,V.top);b.scale(V.k,V.k);b.translate(-W/2,-(G2.ty-9));
+  try{b.save();b.translate(0,MY);b.scale(1,-1);arSPath(G2,t);arSBoard(G2);b.restore();
+    for(let i=0;i<15;i++){const u=P.g&&P.g[i];if(!u)continue;const q=arCellXY(i);arSPiece({sp:u[0],star:u[1]},q.x,my(q.y),G2.cs/30,t,{seed:i});}
+    for(const e of P.q||[]){const q=arPos(G2,e[0]/1000*PL),y=my(q.y),dir=q.dir==='n'?'s':q.dir==='s'?'n':q.dir;E(q.x,y+2,e[2]?10:5,e[2]?3:2,'rgba(0,0,0,.3)',0,false);arDrawMon(e[1],q.x,y-(e[2]?16:9),e[2]?.5:.28,'walk',dir,e[0]);
+      if(e[4]!=null){const bw=e[2]?24:12;px(q.x-bw/2,y-(e[2]?42:22),bw,2,'#1a0a0a');px(q.x-bw/2,y-(e[2]?42:22),bw*e[4]/100,2,'#ff7070');}}}catch(e){}
   b.restore();}
 function arPvpDraw(A){const M=A.mp,P=M.peer||{};T(`Rival: ${P.n||'…'}`,W/2,2,6,'center','#ffe0ff',70,C.ink);T(`dano ${arFmt(P.dm)} · você ${arFmt(A.dmgT)}`,W/2,11,4.6,'center',(A.dmgT||0)>=(P.dm||0)?'#bff0c0':'#ffd0d0',90,C.ink);
   if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do oponente…',W/2,H/2-8,6,'center','#ffffff');}}

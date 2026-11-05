@@ -36,7 +36,7 @@ html body #cv-novas .nvf-next:active{transform:translateY(.6cqw);box-shadow:0 .4
 /* I18N (05/nov, Felipe: "tradução pro inglês... eu vou passar o link para as pessoas. Aí elas podem escolher e trocar lá"):
    idioma em localStorage cv.lang ('pt'|'en'); link ?lang=en ou #en; troca em AJUSTES › IDIOMA e no botão 🌐 da tela inicial.
    tr(s): frase inteira → modelos com ${...} → pedaços conhecidos. Vale para o texto do canvas (T e fillText), falas (say) e telas em HTML. */
-(function(){let L='pt';try{const q=new URLSearchParams(location.search).get('lang');if(q){L=/^en/i.test(q)?'en':'pt';localStorage.setItem('cv.lang',L);}else L=localStorage.getItem('cv.lang')||'pt';
+(function(){let L='pt';try{const q=new URLSearchParams(location.search).get('lang');if(q){L=/^en/i.test(q)?'en':'pt';localStorage.setItem('cv.lang',L);}else{L=localStorage.getItem('cv.lang');if(!L){/* sem escolha salva: segue o idioma do celular (português → pt, qualquer outro → en) */const nl=(navigator.languages&&navigator.languages[0])||navigator.language||'pt';L=/^pt/i.test(nl)?'pt':'en';}}
   if(/(^|[#&-])en($|[&-])/.test(location.hash||'')){L='en';localStorage.setItem('cv.lang','en');}}catch(e){}window.CVLANG=L;try{document.documentElement.lang=L==='en'?'en':'pt-BR';}catch(e){}})();
 window.CVEN=window.CVEN||{};window.CVENT=window.CVENT||[];
 (function(){const D=window.CVEN,P=[],C=new Map();let FR=null;

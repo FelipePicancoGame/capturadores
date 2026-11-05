@@ -10242,7 +10242,7 @@ function arPathLen(G2){let L=0;for(let i=1;i<G2.pts.length;i++)L+=Math.hypot(G2.
 function arPos(G2,d){let r=d;for(let i=1;i<G2.pts.length;i++){const [ax,ay]=G2.pts[i-1],[bx,by]=G2.pts[i],L=Math.hypot(bx-ax,by-ay);if(r<=L){const f=r/L;return {x:ax+(bx-ax)*f,y:ay+(by-ay)*f,dir:bx>ax?'e':bx<ax?'w':by<ay?'n':'s'};}r-=L;}const p=G2.pts[G2.pts.length-1];return {x:p[0],y:p[1],dir:'s'};}
 function arNew(){const deck=arDeck();AR={t:0,deck,lv:{},mana:100,cost:10,lives:3,wave:0,spawnLeft:0,spawnT:0,between:150,grid:Array(15).fill(null),en:[],shots:[],pops:[],parts:[],sel:-1,drag:null,over:false,best:flags.arenaBest||0,kills:0,pool:arEnemyPool(),done:null,speed:1,boss:null};for(const s of deck)AR.lv[s]=0;}
 function arWaveInfo(w){const boss=w%5===0,hp=Math.round(36*Math.pow(1.24,w-1)),n=boss?3:8+Math.floor(w*1.6);return {boss,hp,n,spd:.34+Math.min(.3,w*.012)};}
-function arStartWave(){AR.wave++;const I=arWaveInfo(AR.wave);AR.wi=I;AR.spawnLeft=I.n;AR.spawnT=0;AR.bossDone=!I.boss;if(I.boss){AR.ann={t:0,txt:`CHEFE! Onda ${AR.wave}`};tone([220,165,110],.18,'sawtooth',.08);}else{AR.ann={t:0,txt:`Onda ${AR.wave}`};}}
+function arStartWave(){if(AR.wave>0)AR.mana+=20+AR.wave*2;AR.wave++;const I=arWaveInfo(AR.wave);AR.wi=I;AR.spawnLeft=I.n;AR.spawnT=0;AR.bossDone=!I.boss;if(I.boss){AR.ann={t:0,txt:`CHEFE! Onda ${AR.wave}`};tone([220,165,110],.18,'sawtooth',.08);}else{AR.ann={t:0,txt:`Onda ${AR.wave}`};}}
 function arSpawn(boss){const G2=arGeo(),I=AR.wi,sp=AR.pool[Math.floor(Math.random()*AR.pool.length)],hp=boss?I.hp*28:I.hp;AR.en.push({sp:boss?(AR.bossSp||(AR.bossSp=AR.pool[Math.floor(Math.random()*AR.pool.length)])):sp,d:0,hp,max:hp,spd:boss?I.spd*.55:I.spd*(.9+Math.random()*.2),slow:0,slowT:0,poison:0,poisonT:0,boss:!!boss,id:Math.random(),sc:boss?.5:.28,hit:0});}
 function arStats(sp,star){const ty=arType(sp),up=AR.lv[sp]||0,base=9*Math.pow(1.75,star-1)*(1+.3*up);
   const R={fogo:[1,46],agua:[.8,40],planta:[.7,44],eletrico:[.85,48],rocha:[2.4,80],gelo:[.6,46],inseto:[.7,38],normal:[.75,26],fantasma:[1,46]}[ty]||[1,40];
@@ -10262,13 +10262,13 @@ function arBurst(x,y,col,n){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2
 function arHit(e,dmg,ty,col){if(!e||e.hp<=0)return;e.hp-=dmg;e.hit=6;const G2=arGeo(),p=arPos(G2,e.d);
   if(ty==='agua'){e.slow=Math.max(e.slow,.3);e.slowT=90;}if(ty==='gelo'){e.slow=Math.max(e.slow,.5);e.slowT=70;}if(ty==='planta'||ty==='inseto'){e.poison=Math.max(e.poison,dmg*.35/60);e.poisonT=180;}
   if(e.hp<=0)arKill(e,p);}
-function arKill(e,p){AR.kills++;const gain=e.boss?50+AR.wave*10:10;AR.mana+=gain;arBurst(p.x,p.y,e.boss?'#ffd040':'#ffffff',e.boss?30:8);arPop(p.x,p.y-10,'+'+gain,'#bfe8ff');if(e.boss){AR.bossDone=true;tone([523,659,784,1046],.1);}}
+function arKill(e,p){AR.kills++;arMpKill(e);const gain=e.boss?50+AR.wave*10:10;AR.mana+=gain;arBurst(p.x,p.y,e.boss?'#ffd040':'#ffffff',e.boss?30:8);arPop(p.x,p.y-10,'+'+gain,'#bfe8ff');if(e.boss){AR.bossDone=true;tone([523,659,784,1046],.1);}}
 function arUpdate(){const A=AR;if(!A||A.over)return;const G2=arGeo(),PL=arPathLen(G2);
   for(let step=0;step<A.speed;step++){A.t++;
-  if(A.spawnLeft<=0&&!A.en.some(e=>e.hp>0)){if(A.between>0)A.between--;else{if(A.wave>0)A.mana+=20+A.wave*2;arStartWave();A.between=150;}}
+  if(A.spawnLeft<=0&&!A.en.some(e=>e.hp>0))arWaveCtl(A);
   if(A.spawnLeft>0){A.spawnT--;if(A.spawnT<=0){const boss=A.wi.boss&&A.spawnLeft===A.wi.n;arSpawn(boss);A.spawnLeft--;A.spawnT=boss?60:Math.max(16,40-A.wave);}}
   for(const e of A.en){if(e.hp<=0)continue;if(e.slowT>0)e.slowT--;else e.slow=0;if(e.poisonT>0){e.poisonT--;e.hp-=e.poison;if(e.hp<=0){arKill(e,arPos(G2,e.d));continue;}}
-    e.d+=e.spd*(1-e.slow);if(e.hit>0)e.hit--;if(e.d>=PL){e.hp=0;A.lives-=e.boss?3:1;tone([200,140],.15,'square',.07);arPop(G2.rx-8,G2.by-10,e.boss?'-3 ❤':'-1 ❤','#ff8080');A.shake=10;if(e.boss)A.bossDone=true;}}
+    e.d+=e.spd*(1-e.slow);if(e.hit>0)e.hit--;if(e.d>=PL){e.hp=0;A.lives-=e.boss?3:1;arMpLeak(e.boss?3:1);tone([200,140],.15,'square',.07);arPop(G2.rx-8,G2.by-10,e.boss?'-3 ❤':'-1 ❤','#ff8080');A.shake=10;if(e.boss)A.bossDone=true;}}
   A.en=A.en.filter(e=>e.hp>0);
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u)continue;if(u.atk>0)u.atk--;if(u.cd>0){u.cd--;continue;}const tg=arTarget();if(!tg)continue;const S=arStats(u.sp,u.star),p=arCellXY(i);u.cd=S.cd;u.atk=12;
     A.shots.push({x:p.x,y:p.y-6,tg,dmg:S.dmg,ty:S.ty,col:ARCOL[S.ty]||'#fff',star:u.star,life:90});}
@@ -10283,8 +10283,8 @@ function arUpdate(){const A=AR;if(!A||A.over)return;const G2=arGeo(),PL=arPathLe
   for(const p of A.pops){p.y-=.35;p.life--;}A.pops=A.pops.filter(p=>p.life>0);
   if(A.zaps){for(const z of A.zaps)z.life--;A.zaps=A.zaps.filter(z=>z.life>0);}
   if(A.ann)A.ann.t++;if(A.shake>0)A.shake--;
-  if(A.lives<=0){arEnd();return;}}}
-async function arEnd(){const A=AR;if(A.over)return;A.over=true;const w=Math.max(0,A.wave-1),coins=w*8+A.kills,nb=w>(flags.arenaBest||0);if(nb)flags.arenaBest=w;flags.coins=(flags.coins||0)+coins;saveGame();
+  if(A.lives<=0){arEnd(A.mp?'lost':undefined);return;}}}
+async function arEnd(why){const A=AR;if(A.over)return;if(A.mp)return arMpEnd(why);A.over=true;const w=Math.max(0,A.wave-1),coins=w*8+A.kills,nb=w>(flags.arenaBest||0);if(nb)flags.arenaBest=w;flags.coins=(flags.coins||0)+coins;saveGame();
   A.result={w,coins,nb};tone([392,330,262],.2);}
 function arDrawMon(sp,x,y,sc,act,dir,seed,fix){const prev=MONDIR;MONDIR=dir&&dir!=='s'?dir:null;b.save();b.translate(Math.round(x),Math.round(y));b.scale(sc,sc);b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';let ok=false;try{ok=monAnimDraw(sp,act,-44,seed||0,fix);}catch(e){}MONDIR=prev;if(!ok){try{const s=spr(sp);b.drawImage(s,-40,-44,80,80);}catch(e){}}b.restore();}
 function renderArena(){const A=AR;if(!A)return;const G2=arGeo(),t=A.t;
@@ -10329,13 +10329,15 @@ function renderArena(){const A=AR;if(!A)return;const G2=arGeo(),t=A.t;
   /* textos flutuantes e avisos */
   for(const p of A.pops){b.globalAlpha=Math.min(1,p.life/20);T(p.t,p.x,p.y,6,'center',p.col,0,C.ink);}b.globalAlpha=1;
   if(A.ann&&A.ann.t<90){const a=A.ann.t<15?A.ann.t/15:A.ann.t>70?(90-A.ann.t)/20:1;b.globalAlpha=a;rrect(20,G2.ty-58,W-40,22,8,A.ann.txt.startsWith('CHEFE')?'#8a1a2a':'#2a3a8a');T(A.ann.txt,W/2,G2.ty-52,9,'center','#ffffff',W-50,C.ink);b.globalAlpha=1;}
-  if(!A.result&&A.wave>0){const nb=5-((A.wave-1)%5)-1;rrect(W/2-48,34,96,16,6,'rgba(20,12,50,.75)',false);T(A.wi&&A.wi.boss?'CHEFE NESTA ONDA!':nb===0?'CHEFE NA PRÓXIMA ONDA!':`Chefe daqui a ${nb+1} ondas`,W/2,38,5.6,'center',A.wi&&A.wi.boss||nb===0?'#ffb0b0':'#e8e0ff',90);}
+  if(!A.result&&A.wave>0){const nb=5-((A.wave-1)%5)-1,cx0=A.mp?W-50:W/2;rrect(cx0-48+(A.mp?4:0),34,A.mp?88:96,16,6,'rgba(20,12,50,.75)',false);T(A.wi&&A.wi.boss?'CHEFE NESTA ONDA!':nb===0?'CHEFE NA PRÓXIMA!':`Chefe daqui a ${nb+1} ondas`,cx0+(A.mp?4:0),38,5.6,'center',A.wi&&A.wi.boss||nb===0?'#ffb0b0':'#e8e0ff',90);}
   if(A.wave===0&&!A.over){T('Chame monstrinhos e junte iguais!',W/2,G2.ty-70,6,'center','#fff3a0',W-20,C.ink);T('A 1ª onda já vem…',W/2,G2.ty-60,5.5,'center','#e0d8ff');}
+  if(A.mp)arMpDraw(A);
+  if(A.result&&A.result.mp){arMpResultDraw(A);return;}
   if(A.result){b.fillStyle='rgba(10,6,30,.82)';b.fillRect(0,0,W,H);const R=A.result,cy=H*.32;T('FIM DA ARENA',W/2,cy,12,'center','#ffd040',W-20,C.ink);T(`Você aguentou ${R.w} onda${R.w===1?'':'s'}`,W/2,cy+22,8,'center','#ffffff');
     if(R.nb)T('NOVO RECORDE!',W/2,cy+36,8,'center','#7ae88a',0,C.ink);T(`+${R.coins} moedas`,W/2,cy+52,8,'center','#ffe070');
     rrect(W/2-50,cy+72,100,22,6,'#3fae5a');T('JOGAR DE NOVO',W/2,cy+78,7,'center',C.white);rrect(W/2-50,cy+100,100,22,6,'#6a6488');T('SAIR',W/2,cy+106,7,'center',C.white);}
 }
-function arTap(x,y){const A=AR;if(!A)return;
+function arTap(x,y){const A=AR;if(!A)return;if(A.result&&A.result.mp){const cy=H*.32;if(x>W/2-50&&x<W/2+50&&y>cy+86&&y<cy+108)A.done&&A.done();return;}
   if(A.result){const cy=H*.32;if(x>W/2-50&&x<W/2+50&&y>cy+72&&y<cy+94){const d=A.done;arNew();AR.done=d;return;}if(x>W/2-50&&x<W/2+50&&y>cy+100&&y<cy+122){A.done&&A.done();}return;}
   if(x<32&&y<26){A.done&&A.done();return;}
   const G2=arGeo(),yB=G2.by+16,yD=yB+28,dw=(W-16)/5;
@@ -10350,11 +10352,86 @@ function arDragInit(){if(window.__ardrag)return;window.__ardrag=1;
   const up=e=>{const D=AR&&AR.drag;if(!D||e.pointerId!==D.id)return;AR.drag=null;if(!D.moved)return;const [x,y]=toCanvas(e),j=arCellAt(x,y);if(j>=0&&arCanMerge(D.i,j))arMerge(D.i,j);else if(j>=0&&j!==D.i&&!AR.grid[j]){AR.grid[j]=AR.grid[D.i];AR.grid[D.i]=null;}AR.sel=-1;AR.dragEnd=performance.now();};
   stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',e=>{if(AR)AR.drag=null;});}
 async function arenaMode(){if(!party.length){await say('Você precisa de um monstrinho!');return;}
+  const k=await choose(['SOZINHO','JUNTOS (2 celulares)','UM CONTRA O OUTRO','VOLTAR'],{cadAsk:{q:'ARENA — como você quer jogar?',nf:1,cols:['#3fae5a','#2f78c8','#d83a3a','#6a6488']}});
+  if(k===1||k===2){await arMpLobby(k===1?'coop':'pvp');return;}if(k!==0)return;
   await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();G.mode='arena';await fadeTo(0);
   if(!flags.arenaSeen){flags.arenaSeen=1;saveGame();await say('ARENA! Os monstrinhos selvagens vão andar pelo caminho em volta do tabuleiro. Não deixe eles chegarem ao portão!');await say('Toque em CHAMAR MONSTRINHO: aparece um dos 5 monstrinhos do seu time. Junte 2 IGUAIS com as MESMAS estrelas para virar um mais forte.');await say('Embaixo, gaste mana para deixar cada tipo mais forte. A cada 5 ondas vem um CHEFE!');}
   await new Promise(r=>{AR.done=r;});
   await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;saveGame();await fadeTo(0);}
 try{MGMODES.arena=1;}catch(e){}
+/* ARENA MP (04/nov, Felipe: "cria o em dupla e o cooperativo tbm"): JUNTOS = os dois defendem ao mesmo tempo e dividem as 3 vidas;
+   CONTRA = cada um no seu tabuleiro, as mesmas ondas, e a cada 8 abates você manda um monstro bônus pro outro. Quem perder as 3 vidas primeiro perde.
+   Cada celular roda o próprio tabuleiro; o dono da sala comanda as ondas. Só no App (PeerJS). Mensagens: aj entrar · ah aceitar · as estado · aw onda · ac limpou · al vazou · ab bônus · ax fim */
+function arWaveCtl(A){const M=A.mp;if(!M){if(A.between>0)A.between--;else{arStartWave();A.between=150;}return;}
+  if(M.role==='host'){if(A.between>0){A.between--;return;}if(A.wave===0||M.peerClr>=A.wave||++M.waitT>900){M.waitT=0;arStartWave();A.between=150;duoEmit(M.S,'aw',{w:A.wave});}}
+  else if(M.sentClr!==A.wave){M.sentClr=A.wave;duoEmit(M.S,'ac',{w:A.wave});}}
+function arMpLeak(n){const M=AR&&AR.mp;if(M&&M.mode==='coop')duoEmit(M.S,'al',{n});}
+function arMpKill(e){const M=AR&&AR.mp;if(!M||M.mode!=='pvp'||e.sent)return;M.kc=(M.kc||0)+1;if(M.kc>=8){M.kc=0;const I=arWaveInfo(Math.max(1,AR.wave));duoEmit(M.S,'ab',{hp:Math.round(I.hp*3)});arPop(W/2,arGeo().ty-30,'Monstro enviado! ➜','#ffb0e0');}}
+function arMpSpawnBonus(hp){const I=arWaveInfo(Math.max(1,AR.wave));const sp=AR.pool[Math.floor(Math.random()*AR.pool.length)];AR.en.push({sp,d:0,hp,max:hp,spd:I.spd*1.1,slow:0,slowT:0,poison:0,poisonT:0,boss:false,sent:1,id:Math.random(),sc:.34,hit:0});arPop(W/2,arGeo().ty-30,'O oponente mandou um monstro!','#ff9090');tone([300,240],.1,'square',.06);}
+function arMpSnap(A){const M=A.mp;if(!M)return;duoEmit(M.S,'as',{g:A.grid.map(u=>u?[u.sp,u.star]:0),l:A.lives,w:A.wave,k:A.kills,e:A.en.length,n:String(flags.nome||'').slice(0,12)});}
+function arMpEnd(why){const A=AR,M=A.mp;if(A.over)return;A.over=true;let win=false;
+  if(M.mode==='coop'){win=false;}else win=why==='peerlost';
+  if(why!=='peerlost'&&why!=='peergone')duoEmit(M.S,'ax',{lost:1,w:A.wave});
+  const w=Math.max(0,A.wave-1);const coins=M.mode==='coop'?w*10+A.kills:(why==='peergone'?0:(win?80:20));flags.coins=(flags.coins||0)+coins;
+  if(M.mode==='pvp'&&win){flags.arenaWins=(flags.arenaWins||0)+1;}if(M.mode==='coop'&&w>(flags.arenaCoopBest||0))flags.arenaCoopBest=w;saveGame();
+  A.result={mp:1,mode:M.mode,win,w,coins,gone:why==='peergone'};tone(win?[523,659,784,1046]:[392,330,262],.15);setTimeout(()=>{try{M.S.leave();}catch(e){}},1500);}
+function arMpDraw(A){const M=A.mp,P=M.peer||{},x0=6,y0=32,cw=11,ch=10;rrect(x0-2,y0-2,cw*5+6,ch*3+18,5,'rgba(20,12,50,.8)',false);
+  T((M.mode==='pvp'?'Oponente: ':'Parceiro: ')+(P.n||'…'),x0,y0-1,4.6,'left','#ffe0ff',cw*5+2);
+  for(let i=0;i<15;i++){const c=i%5,r=Math.floor(i/5),x=x0+c*cw,y=y0+6+r*ch;rrect(x,y,cw-1,ch-1,2,(c+r)%2?'#4a7a3a':'#5a8a4a',false);const u=P.g&&P.g[i];if(u){arDrawMon(u[0],x+cw/2,y+ch/2-1,.1,'idle','s',i);px(x+1,y+ch-2,Math.min(cw-2,u[1]*1.6),1,u[1]>=5?'#ffd040':'#fff3a0');}}
+  T(M.mode==='pvp'?`❤${P.l==null?3:P.l} · onda ${P.w||0}`:`onda ${P.w||0} · ${P.e||0} inimigos`,x0,y0+6+ch*3+1,4.4,'left','#e8e0ff',cw*5+2);
+  if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do '+(M.mode==='pvp'?'oponente':'parceiro')+'…',W/2,H/2-8,6,'center','#ffffff');}}
+function arMpResultDraw(A){const R=A.result;b.fillStyle='rgba(10,6,30,.85)';b.fillRect(0,0,W,H);const cy=H*.32;
+  const tit=R.gone?'O OUTRO SAIU':R.mode==='coop'?'FIM DA DUPLA':R.win?'VOCÊ VENCEU!':'VOCÊ PERDEU';T(tit,W/2,cy,12,'center',R.win?'#7ae88a':'#ffd040',W-20,C.ink);
+  T(R.mode==='coop'?`Vocês aguentaram ${R.w} onda${R.w===1?'':'s'}`:`Chegaram até a onda ${Math.max(1,A.wave)}`,W/2,cy+24,7.5,'center','#ffffff',W-20);
+  T(R.coins?`+${R.coins} moedas`:'sem prêmio',W/2,cy+44,8,'center','#ffe070');if(R.mode==='pvp')T(`Vitórias na Arena: ${flags.arenaWins||0}`,W/2,cy+60,6,'center','#e0d8ff');
+  rrect(W/2-50,cy+86,100,22,6,'#6a6488');T('SAIR',W/2,cy+92,7,'center',C.white);}
+/* sala */
+function arBoxUI(){let el=document.getElementById('arBox');if(el)return el;el=document.createElement('div');el.id='arBox';el.hidden=true;
+  el.innerHTML=`<style>#arBox[hidden],#arBox [hidden]{display:none!important}#arBox{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(10,8,28,.85);font-family:'Fredoka','Lilita One',system-ui,sans-serif;padding:16px;box-sizing:border-box}
+#arBox .dp{width:min(340px,100%);background:linear-gradient(#6a2a7a,#2a1450);border:3px solid #f2b632;border-radius:20px;padding:18px 16px 16px;color:#fff;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#arBox h2{margin:0 0 4px;font-size:24px;color:#ffd23f}#arBox p{margin:6px 0 12px;font-size:15px;color:#f0e2ff;line-height:1.3}
+#arBox button{display:block;width:100%;margin:8px 0;padding:12px;border:0;border-radius:14px;font:inherit;font-size:18px;color:#fff;background:#2f9f4c;box-shadow:0 4px 0 #1b6a30;cursor:pointer}
+#arBox button.az{background:#3f6ae0;box-shadow:0 4px 0 #24409a}#arBox button.vm{background:#8a5a5a;box-shadow:0 4px 0 #5a3434;font-size:15px;padding:9px}
+#arBox input{width:100%;box-sizing:border-box;padding:11px;border-radius:12px;border:2px solid #b87ad8;background:#1d0f2e;color:#fff;font:inherit;font-size:22px;text-align:center;letter-spacing:6px;text-transform:uppercase;-webkit-user-select:text;user-select:text}
+#arBox .cod{font-size:44px;letter-spacing:10px;color:#ffd23f;margin:4px 0}#arBox .av{min-height:20px;font-size:14px;color:#c8f0c8}#arBox .av.ruim{color:#ffb0b0}</style>
+<div class="dp"><h2 id="arTit">ARENA</h2><p id="arSub"></p>
+<div id="arIni"><button id="arCriar">Criar sala</button><p>ou digite o código do amigo:</p><input id="arCod" maxlength="4" autocomplete="off" placeholder="ABCD"><button class="az" id="arEntrar">Entrar</button></div>
+<div id="arEsp" hidden><p>Código da sala:</p><div class="cod" id="arCodTxt"></div><p>Mande esse código pro seu amigo. Começa quando ele entrar.</p></div>
+<div class="av" id="arAv"></div><button class="vm" id="arVoltar">Voltar</button></div>`;document.body.appendChild(el);return el;}
+function arAv(t,r){const a=document.getElementById('arAv');if(a){a.textContent=t||'';a.className='av'+(r?' ruim':'');}}
+async function arMpLobby(mode){if(!duoNoApp()){await say('Jogar a Arena com outra pessoa só funciona no App (o jogo aberto pelo ícone do celular). Os dois precisam abrir pelo App.');return;}
+  const box=arBoxUI();box.hidden=false;const $=id=>document.getElementById(id);$('arIni').hidden=false;$('arEsp').hidden=true;arAv('');$('arCod').value='';
+  $('arTit').textContent=mode==='coop'?'ARENA — JUNTOS':'ARENA — UM CONTRA O OUTRO';$('arSub').textContent=mode==='coop'?'Os dois defendem ao mesmo tempo e dividem as 3 vidas.':'Cada um no seu tabuleiro. A cada 8 monstros que você derrota, manda 1 monstro bônus pro outro!';
+  let S=null,cancel=null;
+  const r=await new Promise(fin=>{let ocup=false;
+    $('arCriar').onclick=async()=>{if(ocup)return;ocup=true;arAv('Abrindo a sala…');const room=await duoRoom();if(!room){arAv('Não deu pra abrir a sala.',1);ocup=false;return;}
+      const cod=Array.from({length:4},()=>DUO_LET[Math.floor(Math.random()*DUO_LET.length)]).join('');try{S=await room.join('arena-'+cod.toLowerCase());}catch(e){arAv('A sala não abriu. Tente de novo.',1);ocup=false;return;}
+      $('arIni').hidden=true;$('arEsp').hidden=false;$('arCodTxt').textContent=cod;arAv('Esperando o amigo entrar…');let ok=false;
+      S.on('aj',m=>{if(m.isMe||m.sameTab||ok)return;const d=m.data||{};if(d.m!==mode){duoEmit(S,'ah',{err:'modo',m:mode});return;}ok=true;duoEmit(S,'ah',{m:mode,n:String(flags.nome||'').slice(0,12)});fin({role:'host',S,peerN:d.n});});
+      cancel=()=>{ok=true;try{S.leave();}catch(e){}};};
+    const ent=async()=>{if(ocup)return;const cod=($('arCod').value||'').toUpperCase().replace(/[^A-Z]/g,'');if(cod.length!==4){arAv('O código tem 4 letras.',1);return;}ocup=true;arAv('Procurando a sala '+cod+'…');
+      const room=await duoRoom();if(!room){arAv('Não deu pra conectar.',1);ocup=false;return;}try{S=await room.join('arena-'+cod.toLowerCase());}catch(e){arAv('Não deu pra entrar.',1);ocup=false;return;}
+      let ok=false;const pay={m:mode,n:String(flags.nome||'').slice(0,12)};const iv=setInterval(()=>{if(!ok)duoEmit(S,'aj',pay);},1200);duoEmit(S,'aj',pay);
+      S.on('ah',m=>{if(m.isMe||m.sameTab||ok)return;const d=m.data||{};if(d.err){ok=true;clearInterval(iv);arAv('Essa sala é do outro modo ('+(d.m==='coop'?'JUNTOS':'CONTRA')+'). Entrem os dois no mesmo.',1);ocup=false;try{S.leave();}catch(e){}return;}ok=true;clearInterval(iv);fin({role:'guest',S,peerN:d.n});});
+      cancel=()=>{ok=true;clearInterval(iv);try{S.leave();}catch(e){}};
+      setTimeout(()=>{if(!ok){ok=true;clearInterval(iv);arAv('Sala '+cod+' não encontrada. Confira o código.',1);ocup=false;try{S.leave();}catch(e){}}},12000);};
+    $('arEntrar').onclick=ent;$('arCod').onkeydown=e=>{if(e.key==='Enter')ent();};
+    $('arVoltar').onclick=()=>{try{cancel&&cancel();}catch(e){}fin(null);};});
+  box.hidden=true;if(!r)return;await arMpRun(mode,r);}
+async function arMpRun(mode,r){const S=r.S;
+  await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();const M=AR.mp={mode,role:r.role,S,peer:{n:r.peerN||''},peerClr:0,waitT:0,sentClr:-1,off:0,last:performance.now()};
+  if(r.role==='guest')AR.between=1e9;G.mode='arena';await fadeTo(0);
+  const mine=()=>AR&&AR.mp===M;
+  S.on('as',m=>{if(m.isMe||m.sameTab||!mine())return;M.peer=Object.assign(M.peer,m.data||{});M.last=performance.now();});
+  S.on('aw',m=>{if(m.isMe||m.sameTab||!mine()||AR.over)return;const w=(m.data||{}).w|0;if(w>AR.wave){AR.wave=w-1;arStartWave();}M.last=performance.now();});
+  S.on('ac',m=>{if(m.isMe||m.sameTab||!mine())return;M.peerClr=Math.max(M.peerClr,(m.data||{}).w|0);});
+  S.on('al',m=>{if(m.isMe||m.sameTab||!mine()||AR.over)return;AR.lives-=(m.data||{}).n|0;AR.shake=8;arPop(W/2,arGeo().ty-30,'O parceiro deixou passar!','#ff9090');if(AR.lives<=0)arEnd('coop');});
+  S.on('ab',m=>{if(m.isMe||m.sameTab||!mine()||AR.over)return;arMpSpawnBonus((m.data||{}).hp|0||100);});
+  S.on('ax',m=>{if(m.isMe||m.sameTab||!mine()||AR.over)return;arEnd(mode==='pvp'?'peerlost':'coop');});
+  const iv=setInterval(()=>{if(!mine()){clearInterval(iv);return;}if(AR.over)return;arMpSnap(AR);const gap=performance.now()-M.last;M.off=gap>3000?Math.floor(gap/33):0;if(gap>20000)arEnd('peergone');},500);
+  duoEmit(S,'as',{g:[],l:3,w:0,k:0,e:0,n:String(flags.nome||'').slice(0,12)});
+  await new Promise(res=>{AR.done=res;});clearInterval(iv);try{S.leave();}catch(e){}
+  await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;saveGame();await fadeTo(0);}
 {let _ok=0;const _iv=setInterval(()=>{try{if(_ok||!/arena/.test(location.hash))return clearInterval(_iv);if(typeof G!=='undefined'&&G.mode==='world'&&!ui.length&&!busy&&party.length){_ok=1;clearInterval(_iv);arenaMode();}}catch(e){}},700);}
 /* /ARENA04NOV */
 

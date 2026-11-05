@@ -11582,6 +11582,9 @@ m7Bg=function(I){const t=m7T(),k=t.k,w=1080*k,s=I.naturalHeight/1920,sp=t.sp;b.s
   b.drawImage(I,0,sp*s,I.naturalWidth,(1920-sp)*s,t.ox,sp*k+t.ex,w,(1920-sp)*k);b.restore();};
 {const _g=arGeo;arGeo=function(){if(!m7m())return _g();const k=m7T().k,S=M7L.solo,R=S.tab,p0=m7P(R[0],R[1]),cs=R[2]/5*k,ch=R[3]/3*k,bw=cs*5,bh=ch*3,pts=[m7P(78,1345),m7P(74,224),m7P(990,224),m7P(1004,1300)];
   return {cs,ch,cols:5,rows:3,bw,bh,x0:p0[0],y0:p0[1],lx:pts[0][0],rx:pts[2][0],ty:pts[1][1],by:pts[0][1],pts};};}
+/* M7GIRO: peças giradas no Montador (5º número = graus) giram no jogo também */
+function m7Rot(r,fn){if(!r||!r[4])return fn();const p=m7P(r[0]+r[2]/2,r[1]+r[3]/2);b.save();b.translate(p[0],p[1]);b.rotate(r[4]*Math.PI/180);b.translate(-p[0],-p[1]);try{fn();}finally{b.restore();}}
+{const _a=m7Box,_b=m7DropNum,_c=m7Mon;m7Box=function(r,...x){return m7Rot(r,()=>_a(r,...x));};m7DropNum=function(r,...x){return m7Rot(r,()=>_b(r,...x));};m7Mon=function(sp,r,...x){return m7Rot(r,()=>_c(sp,r,...x));};}
 
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").

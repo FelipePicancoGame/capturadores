@@ -9171,14 +9171,16 @@ async function stageMap(key){const st={key,sel:null,t:0};
     if(j>=900&&j<900+STGW){const w=j-900;st.goW=w;if(w===st.world)continue;if(!stgWOpen(key,w)){tone([300,240],.06,'square',.03);await say(`O MUNDO ${w+1} abre quando você vencer as 15 fases do Mundo ${w}!`);continue;}st.world=w;st.sel=null;tone([660,880],.05);continue;}
     if(j<0||j===99)return;
     if(j>=0&&j<STGN){if(j>S2.next){tone([300,240],.06,'square',.03);st.lockT={i:j,t:0};continue;}st.sel=j;tone(880,.04);continue;}
+    if(j===98&&key==='arena'){await say('A ARENA ainda não tem história. Vença as fases para ganhar cristais e moedas, igual nos outros jogos!');continue;}
     if(j===98){const ch={wall:wallMode,td:towerMode,surv:survMode,exp:async()=>{await fadeTo(1);await expedition();await wait(1);}}[key];await chapterMenu(key,ch);continue;}
+    if(j===97&&key==='arena'){await say('Na ARENA, quem fica mais forte são os monstrinhos do seu time: os 5 mais fortes viram o seu deck. Treine e evolua eles!');continue;}
     if(j===97){if(key==='surv')await svMetaShop();else if(key==='wall')await wallCardShop();else await shopMenu(MODEUPS[key]);continue;}
     if(j===100){await stgLaunch(key,st.world*STGN+st.sel);const S3=stgPage(key,st.world);if(S3.next>st.sel)st.sel=S3.next;for(let w=1;w<STGW;w++)if(st.world===w-1&&stgWOpen(key,w)&&st.sel===STGN-1&&!flags['w'+(w+1)+'ok_'+key]){flags['w'+(w+1)+'ok_'+key]=1;saveGame();await say(`MUNDO ${w+1} liberado! Toque em MUNDO ${w+1} lá em cima: cenários novos e inimigos bem mais fortes.`);}continue;}}}
 async function stgLaunch(key,i){flags.emJogo={k:'stg',key,i,t:Date.now()};saveGame();try{return await stgLaunch0(key,i);}finally{delete flags.emJogo;try{__fotoApagar();}catch(e){}try{saveGame();}catch(e){}}}
 async function stgLaunch0(key,i){const bio=BIOMES[Math.floor(i/3)%BIOMES.length];
   if(key==='exp'){const m0=flags.expMax||1;flags.expStage=Math.min(i+1,m0);await fadeTo(1);await expedition();await wait(1);const m1=flags.expMax||1;if(m1>m0){let g=0;for(let k=m0;k<m1;k++){g+=3+(k%5===0?10:0);ecoWeek();}if(g)addGems(g);saveGame();await say(`Fase nova liberada no mapa!${g?` +${g} ${g>1?'cristais':'cristal'} 💎`:''}`);}await rareCatchPending();return;}
   await bioTipShow(key,bio);STG={mode:key,i,bio,mult:.85+Math.min(i,15)*.1+Math.max(0,i-15)*.06};STGRES=null;
-  try{await ({wall:wallMode,td:towerMode,surv:survMode})[key]();}finally{STG=null;}
+  try{await ({wall:wallMode,td:towerMode,surv:survMode,arena:arenaStage})[key]();}finally{STG=null;}
   const R=STGRES;STGRES=null;if(!R)return;const A=stgArr(key),old=A[i]||0;
   if(R.win){const first=!old,ns=Math.max(old,R.stars||1);A[i]=ns;const g=(first?3+(typeof WD!=='undefined'?WD:0)+(i%3===2?10:0):ecoRep())+(ns===3&&old<3?3:0);ecoWeek();const _g0=0,c=first?12+3*i:3+Math.floor(i/2);addGems(g);flags.coins=(flags.coins||0)+c;if(first&&i%5===4)essAdd(1,'chefe vencido');saveGame();
     tone([523,659,784,1047],.08);await say(`${first?'FASE CONCLUÍDA!':'Fase repetida!'} ${g?`+${g} cristal 💎 e `:''}+${c} moedas.${first&&i<STGT-1?' A próxima fase foi liberada no mapa!':''}`);}
@@ -9716,7 +9718,7 @@ async function openMenu(){if(flags.migMsg){const t=flags.migMsg;delete flags.mig
   while(true){/* MENUAMG (02/nov, Felipe: cartão do personagem e lista de amigos no menu) */const opts=['EQUIPE','MOCHILA','LOJA','EXPEDIÇÃO','MURALHA','TORRES','HORDA','COMBINA','ARENA','COLEÇÃO','MISSÕES','TROFÉUS','CRECHE','MAPA','NOVIDADES','CARTÃO','AMIGOS','FECHAR'];
     const nb=Object.values(bag).reduce((a,v)=>a+(+v||0),0),tiles=[{n:'EQUIPE',ic:'team',col:'#4f8fe2',col2:'#2a3f8a',sub:`${party.length} monstrinhos`},{n:'MOCHILA',ic:'bag',col:'#d98a3a',col2:'#7a4420',sub:`${nb} itens`},{n:'LOJA',ic:'shop',col:'#e0485a',col2:'#7a1f3a',sub:`${flags.coins||0} moedas · ${gems()}💎`,badge:pwBuyN()>0},{n:'TREINO',ic:'train',col:'#3a9ad8',col2:'#1a3f6a',sub:`${flags.xpPts||0} pontos`,badge:(flags.xpPts||0)>0},{n:'HONRA',ic:'honor',col:'#c8962a',col2:'#5a3a10',sub:`${flags.honra||0} 🏅 · comprar`,badge:(flags.honra||0)>=4},
       {n:'EXPEDIÇÃO',ic:'exp',col:'#3fae5a',col2:'#1f5a3a',sub:`fase ${flags.expMax||1}`},{n:'MURALHA',ic:'wall',col:'#a07ad8',col2:'#4a2f7a',sub:'defenda o Vale'},{n:'TORRES',ic:'tower',col:'#e0a83a',col2:'#7a5a1f',sub:'defenda o portão'},
-      {n:'HORDA',ic:'horde',col:'#d8483a',col2:'#5a1a2a',sub:'sobreviva!'},{n:'COMBINA',ic:'math',col:'#4f6ae8',col2:'#2a1f6a',sub:`fase ${m3St().lv}`},{n:'ARENA',ic:'tower',col:'#d83a8a',col2:'#5a1a4a',sub:`recorde ${flags.arenaBest||0}`},{n:'COLEÇÃO',ic:'dex',col:'#e05050',col2:'#6a1a2a',sub:`${dexCount().c}/${DEXLIST.length}`,badge:dexClaimable()},{n:'MISSÕES',ic:'quest',col:'#2fb59a',col2:'#1f4a5a',sub:`${qState().got.length}/3 hoje`,badge:qClaimable()},{n:'PEDIDOS',ic:'quest',col:'#e07a3a',col2:'#6a2f1a',sub:`${pedSt().done.length}/${PEDIDOS.length} feitos`,badge:pedClaimable()},{n:'TROFÉUS',ic:'medal',col:'#e0a83a',col2:'#6a4410',sub:`${medalSt().got.length}/${MEDALS.length}`,badge:medalClaimable()},{n:'PRESENTES',ic:'gift',col:'#e05a9a',col2:'#6a1f4a',sub:giftReady()?'1 presente!':'nada agora',badge:giftReady()},{n:'CRECHE',ic:'creche',col:'#ff8ab8',col2:'#6a2f7a',sub:(()=>{const C3=cre();return C3.egg?'tem um ovo!':flags.eggs.length?'ovo com você':`${C3.mons.length}/2 brincando`;})(),badge:!!cre().egg},{n:'MAPA',ic:'vmap',col:'#3fae5a',col2:'#1f4a5a',sub:`${VORD.filter(k=>vmVis()[k]).length}/${VORD.length} · voar`,badge:!flags.vmSeen},{n:'NOVIDADES',ic:'news',col:'#ff7ab8',col2:'#8a2f6a',sub:'o que mudou',badge:flags.newsSeen!==NOVIDADES.length},{n:'CARTÃO',ic:'tcard',col:'#e0a83a',col2:'#5a3a10',sub:`Nº ${amgNo()}`},{n:'AMIGOS',ic:'team',col:'#2fb5a0',col2:'#1a4a5a',sub:`${amgLista().length} amigo${amgLista().length===1?'':'s'}`},{n:'MÚSICA',ic:'music',col:'#8a5ad8',col2:'#3a1f6a',sub:musOn()?'ligada':'desligada'},{n:'SALVAR',ic:'save',col:'#5a9ae8',col2:'#2a4a8a',sub:'guardar jogo'},{n:'FECHAR',ic:'close',col:'#6a6488',col2:'#2c2848',sub:'voltar'}];
+      {n:'HORDA',ic:'horde',col:'#d8483a',col2:'#5a1a2a',sub:'sobreviva!'},{n:'COMBINA',ic:'math',col:'#4f6ae8',col2:'#2a1f6a',sub:`fase ${m3St().lv}`},{n:'ARENA',ic:'tower',col:'#d83a8a',col2:'#5a1a4a',sub:`fase ${Math.min(STGT,stgState('arena').next+1)}`},{n:'COLEÇÃO',ic:'dex',col:'#e05050',col2:'#6a1a2a',sub:`${dexCount().c}/${DEXLIST.length}`,badge:dexClaimable()},{n:'MISSÕES',ic:'quest',col:'#2fb59a',col2:'#1f4a5a',sub:`${qState().got.length}/3 hoje`,badge:qClaimable()},{n:'PEDIDOS',ic:'quest',col:'#e07a3a',col2:'#6a2f1a',sub:`${pedSt().done.length}/${PEDIDOS.length} feitos`,badge:pedClaimable()},{n:'TROFÉUS',ic:'medal',col:'#e0a83a',col2:'#6a4410',sub:`${medalSt().got.length}/${MEDALS.length}`,badge:medalClaimable()},{n:'PRESENTES',ic:'gift',col:'#e05a9a',col2:'#6a1f4a',sub:giftReady()?'1 presente!':'nada agora',badge:giftReady()},{n:'CRECHE',ic:'creche',col:'#ff8ab8',col2:'#6a2f7a',sub:(()=>{const C3=cre();return C3.egg?'tem um ovo!':flags.eggs.length?'ovo com você':`${C3.mons.length}/2 brincando`;})(),badge:!!cre().egg},{n:'MAPA',ic:'vmap',col:'#3fae5a',col2:'#1f4a5a',sub:`${VORD.filter(k=>vmVis()[k]).length}/${VORD.length} · voar`,badge:!flags.vmSeen},{n:'NOVIDADES',ic:'news',col:'#ff7ab8',col2:'#8a2f6a',sub:'o que mudou',badge:flags.newsSeen!==NOVIDADES.length},{n:'CARTÃO',ic:'tcard',col:'#e0a83a',col2:'#5a3a10',sub:`Nº ${amgNo()}`},{n:'AMIGOS',ic:'team',col:'#2fb5a0',col2:'#1a4a5a',sub:`${amgLista().length} amigo${amgLista().length===1?'':'s'}`},{n:'MÚSICA',ic:'music',col:'#8a5ad8',col2:'#3a1f6a',sub:musOn()?'ligada':'desligada'},{n:'SALVAR',ic:'save',col:'#5a9ae8',col2:'#2a4a8a',sub:'guardar jogo'},{n:'FECHAR',ic:'close',col:'#6a6488',col2:'#2c2848',sub:'voltar'}];
     const tiles2=opts.map(o=>Object.assign({},tiles.find(t=>t.n===o)));tiles2[0].badge=!!tiles2[0].badge||(flags.xpPts||0)>0;tiles2[2].badge=!!tiles2[2].badge||giftReady()||(flags.honra||0)>=4;tiles2[10].badge=!!tiles2[10].badge||pedClaimable();const pick=await choose(opts,{tiles:tiles2,title:'MENU'});const i={'EQUIPE':0,'MOCHILA':1,'LOJA':-6,'EXPEDIÇÃO':-2,'MURALHA':-3,'TORRES':-4,'HORDA':-7,'COMBINA':-12,'ARENA':-17,'COLEÇÃO':-8,'MISSÕES':-9,'TROFÉUS':-10,'CRECHE':-11,'MAPA':-13,'NOVIDADES':-5,'CARTÃO':-14,'AMIGOS':-16,'FECHAR':3}[opts[pick]]??3;
     if(i===-16){if(!duoNoApp()){await say('Amigos e convites funcionam no App (o jogo aberto pelo ícone do celular). Seu Nº de amigo é '+amgNo()+'.');continue;}await duoLobby();break;}
     if(i===-15){flags.music=!musOn();saveGame();tone([660,880],.06);continue;}
@@ -10241,7 +10243,7 @@ function arGeo(){const cs=30,ch=36,cols=5,rows=3,bw=cs*cols,bh=ch*rows,x0=Math.r
 function arPathLen(G2){let L=0;for(let i=1;i<G2.pts.length;i++)L+=Math.hypot(G2.pts[i][0]-G2.pts[i-1][0],G2.pts[i][1]-G2.pts[i-1][1]);return L;}
 function arPos(G2,d){let r=d;for(let i=1;i<G2.pts.length;i++){const [ax,ay]=G2.pts[i-1],[bx,by]=G2.pts[i],L=Math.hypot(bx-ax,by-ay);if(r<=L){const f=r/L;return {x:ax+(bx-ax)*f,y:ay+(by-ay)*f,dir:bx>ax?'e':bx<ax?'w':by<ay?'n':'s'};}r-=L;}const p=G2.pts[G2.pts.length-1];return {x:p[0],y:p[1],dir:'s'};}
 function arNew(){const deck=arDeck();AR={t:0,deck,lv:{},mana:100,cost:10,lives:3,wave:0,spawnLeft:0,spawnT:0,between:150,grid:Array(15).fill(null),en:[],shots:[],pops:[],parts:[],sel:-1,drag:null,over:false,best:flags.arenaBest||0,kills:0,pool:arEnemyPool(),done:null,speed:1,boss:null};for(const s of deck)AR.lv[s]=0;}
-function arWaveInfo(w){const boss=w%5===0,hp=Math.round(36*Math.pow(1.24,w-1)),n=boss?3:8+Math.floor(w*1.6);return {boss,hp,n,spd:.34+Math.min(.3,w*.012)};}
+function arWaveInfo(w){const g=AR&&AR.goal,boss=w%5===0||(g&&w===g),hp=Math.round(36*Math.pow(1.24,w-1)*((AR&&AR.hpMult)||1)),n=boss?3:8+Math.floor(w*1.6);return {boss,hp,n,spd:.34+Math.min(.3,w*.012)};}
 function arStartWave(){if(AR.wave>0)AR.mana+=20+AR.wave*2;AR.wave++;const I=arWaveInfo(AR.wave);AR.wi=I;AR.spawnLeft=I.n;AR.spawnT=0;AR.bossDone=!I.boss;if(I.boss){AR.ann={t:0,txt:`CHEFE! Onda ${AR.wave}`};tone([220,165,110],.18,'sawtooth',.08);}else{AR.ann={t:0,txt:`Onda ${AR.wave}`};}}
 function arSpawn(boss){const G2=arGeo(),I=AR.wi,sp=AR.pool[Math.floor(Math.random()*AR.pool.length)],hp=boss?I.hp*28:I.hp;AR.en.push({sp:boss?(AR.bossSp||(AR.bossSp=AR.pool[Math.floor(Math.random()*AR.pool.length)])):sp,d:0,hp,max:hp,spd:boss?I.spd*.55:I.spd*(.9+Math.random()*.2),slow:0,slowT:0,poison:0,poisonT:0,boss:!!boss,id:Math.random(),sc:boss?.5:.28,hit:0});}
 function arStats(sp,star){const ty=arType(sp),up=AR.lv[sp]||0,base=9*Math.pow(1.75,star-1)*(1+.3*up);
@@ -10284,7 +10286,7 @@ function arUpdate(){const A=AR;if(!A||A.over)return;const G2=arGeo(),PL=arPathLe
   if(A.zaps){for(const z of A.zaps)z.life--;A.zaps=A.zaps.filter(z=>z.life>0);}
   if(A.ann)A.ann.t++;if(A.shake>0)A.shake--;
   if(A.lives<=0){arEnd(A.mp?'lost':undefined);return;}}}
-async function arEnd(why){const A=AR;if(A.over)return;if(A.mp)return arMpEnd(why);A.over=true;const w=Math.max(0,A.wave-1),coins=w*8+A.kills,nb=w>(flags.arenaBest||0);if(nb)flags.arenaBest=w;flags.coins=(flags.coins||0)+coins;saveGame();
+async function arEnd(why){const A=AR;if(A.over)return;if(A.mp)return arMpEnd(why);if(A.goal)return arStgEnd(why);A.over=true;const w=Math.max(0,A.wave-1),coins=w*8+A.kills,nb=w>(flags.arenaBest||0);if(nb)flags.arenaBest=w;flags.coins=(flags.coins||0)+coins;saveGame();
   A.result={w,coins,nb};tone([392,330,262],.2);}
 function arDrawMon(sp,x,y,sc,act,dir,seed,fix){const prev=MONDIR;MONDIR=dir&&dir!=='s'?dir:null;b.save();b.translate(Math.round(x),Math.round(y));b.scale(sc,sc);b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';let ok=false;try{ok=monAnimDraw(sp,act,-44,seed||0,fix);}catch(e){}MONDIR=prev;if(!ok){try{const s=spr(sp);b.drawImage(s,-40,-44,80,80);}catch(e){}}b.restore();}
 function renderArena(){const A=AR;if(!A)return;const G2=arGeo(),t=A.t;
@@ -10317,7 +10319,7 @@ function renderArena(){const A=AR;if(!A)return;const G2=arGeo(),t=A.t;
   /* topo */
   const hg=b.createLinearGradient(0,0,W,0);hg.addColorStop(0,'#5a3ad8');hg.addColorStop(1,'#d83a8a');b.fillStyle=hg;b.fillRect(0,0,W,28);px(0,28,W,1.5,C.yellow);
   rrect(4,5,26,17,4,'#2a1f5a');T('SAIR',17,9,6,'center',C.white);
-  T('ARENA',W/2,3,9,'center',C.white,70,C.ink);T(`Onda ${Math.max(1,A.wave)} · recorde ${A.best}`,W/2,16,5.5,'center','#ffe8ff');
+  T('ARENA',W/2,3,9,'center',C.white,70,C.ink);T(A.goal?`Fase ${A.stgI+1} · onda ${Math.max(1,A.wave)} de ${A.goal}`:`Onda ${Math.max(1,A.wave)} · recorde ${A.best}`,W/2,16,5.5,'center','#ffe8ff');
   for(let k=0;k<3;k++)T(k<A.lives?'❤':'♡',W-30+k*9,6,7,'center',k<A.lives?'#ff6070':'#806080');
   /* mana e botões */
   const yB=G2.by+16;rrect(8,yB,50,20,5,'#1a2a5a');T('MANA',33,yB+2,5,'center','#a0c8ff');T(String(Math.floor(A.mana)),33,yB+9,8,'center','#ffffff');
@@ -10329,15 +10331,16 @@ function renderArena(){const A=AR;if(!A)return;const G2=arGeo(),t=A.t;
   /* textos flutuantes e avisos */
   for(const p of A.pops){b.globalAlpha=Math.min(1,p.life/20);T(p.t,p.x,p.y,6,'center',p.col,0,C.ink);}b.globalAlpha=1;
   if(A.ann&&A.ann.t<90){const a=A.ann.t<15?A.ann.t/15:A.ann.t>70?(90-A.ann.t)/20:1;b.globalAlpha=a;rrect(20,G2.ty-58,W-40,22,8,A.ann.txt.startsWith('CHEFE')?'#8a1a2a':'#2a3a8a');T(A.ann.txt,W/2,G2.ty-52,9,'center','#ffffff',W-50,C.ink);b.globalAlpha=1;}
-  if(!A.result&&A.wave>0){const nb=5-((A.wave-1)%5)-1,cx0=A.mp?W-50:W/2;rrect(cx0-48+(A.mp?4:0),34,A.mp?88:96,16,6,'rgba(20,12,50,.75)',false);T(A.wi&&A.wi.boss?'CHEFE NESTA ONDA!':nb===0?'CHEFE NA PRÓXIMA!':`Chefe daqui a ${nb+1} ondas`,cx0+(A.mp?4:0),38,5.6,'center',A.wi&&A.wi.boss||nb===0?'#ffb0b0':'#e8e0ff',90);}
+  if(!A.result&&A.wave>0){const nb=5-((A.wave-1)%5)-1,cx0=A.mp?W-50:W/2;rrect(cx0-48+(A.mp?4:0),34,A.mp?88:96,16,6,'rgba(20,12,50,.75)',false);T(A.wi&&A.wi.boss?'CHEFE NESTA ONDA!':A.goal&&A.goal-A.wave>0&&A.goal-A.wave<=nb+1?`Falta${A.goal-A.wave>1?'m':''} ${A.goal-A.wave} onda${A.goal-A.wave>1?'s':''}`:nb===0?'CHEFE NA PRÓXIMA!':`Chefe daqui a ${nb+1} ondas`,cx0+(A.mp?4:0),38,5.6,'center',A.wi&&A.wi.boss||nb===0?'#ffb0b0':'#e8e0ff',90);}
   if(A.wave===0&&!A.over){T('Chame monstrinhos e junte iguais!',W/2,G2.ty-70,6,'center','#fff3a0',W-20,C.ink);T('A 1ª onda já vem…',W/2,G2.ty-60,5.5,'center','#e0d8ff');}
   if(A.mp)arMpDraw(A);
   if(A.result&&A.result.mp){arMpResultDraw(A);return;}
+  if(A.result&&A.result.stg){arStgResultDraw(A);return;}
   if(A.result){b.fillStyle='rgba(10,6,30,.82)';b.fillRect(0,0,W,H);const R=A.result,cy=H*.32;T('FIM DA ARENA',W/2,cy,12,'center','#ffd040',W-20,C.ink);T(`Você aguentou ${R.w} onda${R.w===1?'':'s'}`,W/2,cy+22,8,'center','#ffffff');
     if(R.nb)T('NOVO RECORDE!',W/2,cy+36,8,'center','#7ae88a',0,C.ink);T(`+${R.coins} moedas`,W/2,cy+52,8,'center','#ffe070');
     rrect(W/2-50,cy+72,100,22,6,'#3fae5a');T('JOGAR DE NOVO',W/2,cy+78,7,'center',C.white);rrect(W/2-50,cy+100,100,22,6,'#6a6488');T('SAIR',W/2,cy+106,7,'center',C.white);}
 }
-function arTap(x,y){const A=AR;if(!A)return;if(A.result&&A.result.mp){const cy=H*.32;if(x>W/2-50&&x<W/2+50&&y>cy+86&&y<cy+108)A.done&&A.done();return;}
+function arTap(x,y){const A=AR;if(!A)return;if(A.result&&A.result.stg){const cy=H*.32;if(x>W/2-50&&x<W/2+50&&y>cy+86&&y<cy+108)A.done&&A.done();return;}if(A.result&&A.result.mp){const cy=H*.32;if(x>W/2-50&&x<W/2+50&&y>cy+86&&y<cy+108)A.done&&A.done();return;}
   if(A.result){const cy=H*.32;if(x>W/2-50&&x<W/2+50&&y>cy+72&&y<cy+94){const d=A.done;arNew();AR.done=d;return;}if(x>W/2-50&&x<W/2+50&&y>cy+100&&y<cy+122){A.done&&A.done();}return;}
   if(x<32&&y<26){A.done&&A.done();return;}
   const G2=arGeo(),yB=G2.by+16,yD=yB+28,dw=(W-16)/5;
@@ -10352,17 +10355,35 @@ function arDragInit(){if(window.__ardrag)return;window.__ardrag=1;
   const up=e=>{const D=AR&&AR.drag;if(!D||e.pointerId!==D.id)return;AR.drag=null;if(!D.moved)return;const [x,y]=toCanvas(e),j=arCellAt(x,y);if(j>=0&&arCanMerge(D.i,j))arMerge(D.i,j);else if(j>=0&&j!==D.i&&!AR.grid[j]){AR.grid[j]=AR.grid[D.i];AR.grid[D.i]=null;}AR.sel=-1;AR.dragEnd=performance.now();};
   stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',e=>{if(AR)AR.drag=null;});}
 async function arenaMode(){if(!party.length){await say('Você precisa de um monstrinho!');return;}
-  const k=await choose(['SOZINHO','JUNTOS (2 celulares)','UM CONTRA O OUTRO','VOLTAR'],{cadAsk:{q:'ARENA — como você quer jogar?',nf:1,cols:['#3fae5a','#2f78c8','#d83a3a','#6a6488']}});
-  if(k===1||k===2){await arMpLobby(k===1?'coop':'pvp');return;}if(k!==0)return;
+  const k=await choose(['FASES','SEM FIM (recorde)','JUNTOS (2 celulares)','UM CONTRA O OUTRO','VOLTAR'],{cadAsk:{q:'ARENA — como você quer jogar?',nf:1,cols:['#e0a020','#3fae5a','#2f78c8','#d83a3a','#6a6488']}});
+  if(k===0){await stageMap('arena');return;}if(k===2||k===3){await arMpLobby(k===2?'coop':'pvp');return;}if(k!==1)return;
   await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();G.mode='arena';await fadeTo(0);
   if(!flags.arenaSeen){flags.arenaSeen=1;saveGame();await say('ARENA! Os monstrinhos selvagens vão andar pelo caminho em volta do tabuleiro. Não deixe eles chegarem ao portão!');await say('Toque em CHAMAR MONSTRINHO: aparece um dos 5 monstrinhos do seu time. Junte 2 IGUAIS com as MESMAS estrelas para virar um mais forte.');await say('Embaixo, gaste mana para deixar cada tipo mais forte. A cada 5 ondas vem um CHEFE!');}
   await new Promise(r=>{AR.done=r;});
   await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;saveGame();await fadeTo(0);}
 try{MGMODES.arena=1;}catch(e){}
+/* ARENA FASES (04/nov, Felipe: "crie tbm aquela progressão de fazer igual nos outros jogos"): mesmo MAPA DE FASES da Muralha/Torres/Horda (3 mundos x 15 fases).
+   Cada fase pede aguentar N ondas (5 na 1ª, +1 a cada 3 fases, +2 por mundo); a última onda tem CHEFE. Inimigos do cenário da fase e mais fortes (STG.mult).
+   Estrelas: 3 sem perder vida, 2 perdendo 1, 1 perdendo 2. Os prêmios são os mesmos das outras fases (stgLaunch0). */
+try{STGINFO.arena={n:'ARENA',col:'#d83a8a'};}catch(e){}
+{const _o=stgObjTxt;stgObjTxt=function(k,i){return k==='arena'?`Aguente ${arStgGoal(i)} ondas (chefe na última)`:_o(k,i);};}
+function arStgGoal(i){return 5+Math.floor((i%STGN)/3)+Math.floor(i/STGN)*2;}
+function arStgPool(bio){const L=(SMMON[bio&&bio.k]||[]).filter(s=>SP[s]&&MONANIM[s]),base=arEnemyPool();return L.length?[...L.slice(0,2),...L.slice(0,2),...base.slice(0,4)]:base;}
+async function arenaStage(){if(!STG)return;await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();AR.goal=arStgGoal(STG.i);AR.stgI=STG.i;AR.hpMult=STG.mult;AR.pool=arStgPool(STG.bio);
+  const bl=(SMMON[STG.bio&&STG.bio.k]||[])[2];if(bl&&SP[bl]&&MONANIM[bl])AR.bossSp=bl;G.mode='arena';await fadeTo(0);
+  if(!flags.arenaSeen){flags.arenaSeen=1;saveGame();await say('ARENA! Os monstrinhos selvagens andam pelo caminho em volta do tabuleiro. Não deixe eles chegarem ao portão!');await say('Toque em CHAMAR MONSTRINHO e junte 2 IGUAIS com as MESMAS estrelas para virar um mais forte. Embaixo, gaste mana para deixar cada tipo mais forte.');}
+  await say(`FASE ${STG.i+1}: aguente ${AR.goal} ondas. A última tem um CHEFE!`);
+  await new Promise(r=>{AR.done=r;});
+  await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;saveGame();await fadeTo(0);}
+function arStgEnd(why){const A=AR;A.over=true;const win=why==='win',stars=win?Math.max(1,A.lives):0;STGRES={win,stars};A.result={stg:1,win,stars};tone(win?[523,659,784,1046]:[392,330,262],.15);}
+function arStgResultDraw(A){const R=A.result;b.fillStyle='rgba(10,6,30,.85)';b.fillRect(0,0,W,H);const cy=H*.32;
+  T(R.win?'FASE CONCLUÍDA!':'NÃO FOI DESSA VEZ',W/2,cy,12,'center',R.win?'#7ae88a':'#ffd040',W-20,C.ink);
+  if(R.win){for(let k=0;k<3;k++)star(W/2-22+k*22,cy+32,8,k<R.stars?'#ffd040':'#5a5070');}else T(`Chegou até a onda ${A.wave} de ${A.goal}`,W/2,cy+26,7.5,'center','#ffffff',W-20);
+  T('Os prêmios aparecem ao sair',W/2,cy+54,6,'center','#e0d8ff');rrect(W/2-50,cy+86,100,22,6,'#3fae5a');T('CONTINUAR',W/2,cy+92,7,'center',C.white);}
 /* ARENA MP (04/nov, Felipe: "cria o em dupla e o cooperativo tbm"): JUNTOS = os dois defendem ao mesmo tempo e dividem as 3 vidas;
    CONTRA = cada um no seu tabuleiro, as mesmas ondas, e a cada 8 abates você manda um monstro bônus pro outro. Quem perder as 3 vidas primeiro perde.
    Cada celular roda o próprio tabuleiro; o dono da sala comanda as ondas. Só no App (PeerJS). Mensagens: aj entrar · ah aceitar · as estado · aw onda · ac limpou · al vazou · ab bônus · ax fim */
-function arWaveCtl(A){const M=A.mp;if(!M){if(A.between>0)A.between--;else{arStartWave();A.between=150;}return;}
+function arWaveCtl(A){const M=A.mp;if(!M){if(A.goal&&A.wave>=A.goal){arEnd('win');return;}if(A.between>0)A.between--;else{arStartWave();A.between=150;}return;}
   if(M.role==='host'){if(A.between>0){A.between--;return;}if(A.wave===0||M.peerClr>=A.wave||++M.waitT>900){M.waitT=0;arStartWave();A.between=150;duoEmit(M.S,'aw',{w:A.wave});}}
   else if(M.sentClr!==A.wave){M.sentClr=A.wave;duoEmit(M.S,'ac',{w:A.wave});}}
 function arMpLeak(n){const M=AR&&AR.mp;if(M&&M.mode==='coop')duoEmit(M.S,'al',{n});}

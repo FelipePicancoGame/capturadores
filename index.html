@@ -66,11 +66,7 @@ window.CVEN=window.CVEN||{};window.CVENT=window.CVENT||[];
     if(document.body)go2();else addEventListener('DOMContentLoaded',go2);}
 })();
 function cvSetLang(l){try{localStorage.setItem('cv.lang',l);}catch(e){}try{const u=new URL(location.href);u.searchParams.delete('lang');u.hash=(u.hash||'').replace(/(^#|-)en(?=$|-)/,'');location.replace(u.toString());}catch(e){location.reload();}}
-/* botão 🌐 na tela inicial */
-(function(){try{const el=document.createElement('button');el.id='cvLangB';el.textContent=window.CVLANG==='en'?'🌐 Português':'🌐 English';
-  el.style.cssText='position:fixed;z-index:60;top:calc(env(safe-area-inset-top,0px) + 10px);right:10px;display:none;padding:8px 12px;border:2px solid #154c5e;border-radius:12px;background:#fffaf0;color:#154c5e;font:700 15px Fredoka,"Lilita One",system-ui,sans-serif;box-shadow:0 3px 0 #0003';
-  el.onclick=()=>cvSetLang(window.CVLANG==='en'?'pt':'en');const add=()=>document.body.appendChild(el);if(document.body)add();else addEventListener('DOMContentLoaded',add);
-  setInterval(()=>{try{el.style.display=(window.__GM&&window.__GM()==='title')?'block':'none';}catch(e){}},500);}catch(e){}})();
+/* 05/nov: Felipe pediu que o idioma só troque em AJUSTES (sem botão na tela inicial) */
 /* /I18N */
 
 </script>

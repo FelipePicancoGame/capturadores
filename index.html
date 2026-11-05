@@ -10865,12 +10865,21 @@ function arBottomAreia(A,G2,t){const yP=G2.by+7,hh=H-yP;A.bh=[];
 
 /* MURALHAHUB (04/nov, Felipe: "Coloca a muralha dupla dentro da muralha. Cria um menu igual criamos pra arena"): MINIJOGOS › MURALHA abre um menu próprio:
    FASES (mapa de fases da Muralha), MURALHA DUPLA (com um amigo), HISTÓRIA e CARTAS. Usa os cartões do menu de minijogos (arte do Buchecha). */
-function wallHubDraw(A){A.hits=[];arLobbyBgDark();T('MURALHA',W/2,5,11,'center','#ffffff',120,C.ink);E(W-14,11,8,8,'#16242a',0,false);E(W-14,10,7,7,'#e04050',0,false);T('✕',W-14,6,7,'center','#ffffff',0,C.ink);arHit2(W-26,0,26,24,()=>A.pick({k:'x'}));
-  const S=stgState('wall'),wd=Math.floor(S.next/STGN),fs=S.next%STGN,tot=S.stars.reduce((a,x)=>a+x,0),cw=Math.min(W-24,150),chh=cw*330/420,x=(W-cw)/2,y1=24,y2=y1+chh+6;
-  const card=(key,y,sub,k)=>{const I=mm2(key);if(I){b.save();b.imageSmoothingEnabled=true;b.drawImage(I,x,y,cw,chh);b.restore();}else{rrect(x,y,cw,chh,10,'#f8e2a8',false);T(key==='card_muralha'?'MURALHA':'MURALHA DUPLA',W/2,y+chh*.55,9,'center','#294729',cw-20);}
-    T(sub,W/2,y+chh*262/330+.5,5.4,'center','#294729',cw*.8);arHit2(x,y,cw,chh,()=>A.pick({k}));};
-  card('card_muralha',y1,`FASES · Mundo ${wd+1} · Fase ${fs+1} · ★${tot}`,'fases');card('card_muralha_dupla',y2,'com um amigo (2 celulares)','dupla');
-  const yb=y2+chh+8,bw=(W-30)/2;arBtn(10,yb,bw,20,'#4a9aff','#1a5ad8','HISTÓRIA',7);arHit2(10,yb,bw,20,()=>A.pick({k:'hist'}));arBtn(20+bw,yb,bw,20,'#ffd84a','#f08a20','CARTAS',7);arHit2(20+bw,yb,bw,20,()=>A.pick({k:'cartas'}));}
+function wallHubDraw(A){const t=A.t;A.hits=[];arLobbyBgDark();
+  /* igual à Entrada da Arena (Felipe: "Nesse jeito pra muralha"): cartão largo de FASES em cima, dois cartões lado a lado, botão amarelo embaixo */
+  T('MURALHA',W/2,5,11,'center','#ffffff',120,C.ink);E(W-14,11,8,8,'#16242a',0,false);E(W-14,10,7,7,'#e04050',0,false);T('✕',W-14,6,7,'center','#ffffff',0,C.ink);arHit2(W-26,0,26,24,()=>A.pick({k:'x'}));
+  const S=stgState('wall'),wd=Math.floor(S.next/STGN),fs=S.next%STGN,tot=S.stars.reduce((a,x)=>a+x,0),y1=26;
+  rrect(6,y1,W-12,52,8,'#0c1418',false);{const g=b.createLinearGradient(0,y1,0,y1+50);g.addColorStop(0,'#5a7a4a');g.addColorStop(1,'#2e4a2a');b.fillStyle=g;b.beginPath();b.roundRect(7,y1+1,W-14,49,7);b.fill();}
+  {const I=mm2('card_muralha');if(I){b.save();b.beginPath();b.roundRect(7,y1+1,W-14,49,7);b.clip();b.globalAlpha=.55;b.imageSmoothingEnabled=true;b.drawImage(I,I.naturalWidth*.12,I.naturalHeight*.1,I.naturalWidth*.76,I.naturalHeight*.42,7,y1+1,W-14,49);b.restore();}}
+  const pool=arStgPool(BIOMES[Math.floor(S.next/3)%BIOMES.length]);for(let k=0;k<2;k++)arDrawMon(pool[k%pool.length],W-70+k*21,y1+30,.32,'idle','w',k);arChest(W-22,y1+30,1.3,false);
+  b.save();b.beginPath();b.moveTo(6,y1+28);b.lineTo(96,y1+28);b.lineTo(104,y1+40);b.lineTo(96,y1+52);b.lineTo(6,y1+52);b.closePath();b.fillStyle='#4aae3a';b.fill();b.restore();
+  T('FASES',12,y1+31,8,'left','#ffffff',84,C.ink);T(`Mundo ${wd+1} · Fase ${fs+1} · ★${tot}`,12,y1+42,5.2,'left','#e8ffe0',86,C.ink);T('Defenda o Vale das ondas',12,y1+5,5,'left','#ffffff',100,C.ink);arHit2(6,y1,W-12,52,()=>A.pick({k:'fases'}));
+  const y2=y1+58,cw=(W-18)/2;[['DUPLA','#9a3ae0','com um amigo','dupla','card_muralha_dupla'],['HISTÓRIA','#2a7ae8','capítulos da Muralha','hist',null]].forEach((c,k)=>{const x=6+k*(cw+6);rrect(x,y2,cw,48,8,'#0c1418',false);const g=b.createLinearGradient(0,y2,0,y2+46);g.addColorStop(0,'#3a6a8a');g.addColorStop(1,'#1e3a54');b.fillStyle=g;b.beginPath();b.roundRect(x+1,y2+1,cw-2,45,7);b.fill();
+    if(c[4]){const I=mm2(c[4]);if(I){b.save();b.beginPath();b.roundRect(x+1,y2+1,cw-2,45,7);b.clip();b.imageSmoothingEnabled=true;b.drawImage(I,I.naturalWidth*.14,I.naturalHeight*.12,I.naturalWidth*.72,I.naturalHeight*.45,x+1,y2+1,cw-2,32);b.restore();}}
+    else{T('📖',x+cw/2,y2+8,14,'center','#ffffff');}
+    b.save();b.beginPath();b.moveTo(x,y2+30);b.lineTo(x+cw-12,y2+30);b.lineTo(x+cw-6,y2+39);b.lineTo(x+cw-12,y2+48);b.lineTo(x,y2+48);b.closePath();b.fillStyle=c[1];b.fill();b.restore();
+    T(c[0],x+5,y2+32,7.5,'left','#ffffff',cw-16,C.ink);T(c[2],x+5,y2+3,4.6,'left','#e0ecff',cw-8,C.ink);arHit2(x,y2,cw,48,()=>A.pick({k:c[3]}));});
+  const y4=y2+54;arBtn(6,y4,W-12,26,'#ffd84a','#f08a20');T('CARTAS',W/2,y4+4,8,'center','#ffffff',100,C.ink);T('melhore suas cartas da Muralha',W/2,y4+15,5,'center','#4a2a08',150);arHit2(6,y4,W-12,26,()=>A.pick({k:'cartas'}));}
 async function wallHub(){while(true){const r=await arLobbyShow('wall');if(!r||r.k==='x')return;
   if(r.k==='fases')await stageMap('wall');else if(r.k==='dupla')await duoLobby();else if(r.k==='hist')await chapterMenu('wall',wallMode);else if(r.k==='cartas')await wallCardShop();}}
 

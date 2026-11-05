@@ -10736,8 +10736,8 @@ function arEntryDraw(A){const t=A.t;A.hits=[];arLobbyBgDark();
   const y3=y2+54,ph=96;rrect(6,y3,W-12,ph,8,'#1e1008',false);{const g=b.createLinearGradient(0,y3,0,y3+ph);g.addColorStop(0,'#8a5630');g.addColorStop(1,'#4e2c14');b.fillStyle=g;b.beginPath();b.roundRect(7,y3+1,W-14,ph-2,7);b.fill();}
   T('SEU TIME',12,y3+4,7,'left','#ffffff',60,C.ink);T('toque numa carta para melhorar',W-10,y3+6,4.4,'right','#fff3a0',90);
   b.save();b.translate(22,y3+30);b.scale(1.35,1.35);b.translate(-8,5);try{drawPerson(0,0,'down',0,LOOKS.player);}catch(e){}b.restore();T('herói',22,y3+46,4.6,'center','#ffe8b0',30,C.ink);
-  const dx0=40,dw=(W-48)/5;A.deck.forEach((sp,k)=>{const x=dx0+k*dw,col=ARCOL[arType(sp)]||'#ccc';rrect(x+1,y3+15,dw-2,38,5,'#1e1008',false);rrect(x+2,y3+16,dw-4,36,4,col,false);b.save();b.globalAlpha=.3;rrect(x+2,y3+16,dw-4,14,4,'#ffffff',false);b.restore();
-    arDrawMon(sp,x+dw/2,y3+29,.26,'idle','s',k);const cl=arCardLv(sp),fr=arFrag(sp),nd=arCardNeed(cl),can=cl<ARCMAX&&fr>=nd;rrect(x+3,y3+43,dw-6,8,3,'rgba(20,10,5,.75)',false);T(`carta ${cl}`,x+dw/2,y3+44,4.4,'center','#ffffff',dw-8);
+  const dx0=40,dw=(W-48)/5;A.deck.forEach((sp,k)=>{const x=dx0+k*dw,col=ARCOL[arType(sp)]||'#ccc';rrect(x+.2,y3+14.2,dw-.4,39.6,5.5,arRar(sp).col,false);rrect(x+1,y3+15,dw-2,38,5,'#1e1008',false);rrect(x+2,y3+16,dw-4,36,4,col,false);b.save();b.globalAlpha=.3;rrect(x+2,y3+16,dw-4,14,4,'#ffffff',false);b.restore();
+    arDrawMon(sp,x+dw/2,y3+29,.26,'idle','s',k);const cl=arCardLv(sp),fr=arFrag(sp),nd=arCardNeed(cl,sp),RR=arRar(sp),can=cl<ARCMAX&&fr>=nd;rrect(x+3,y3+43,dw-6,8,3,'rgba(20,10,5,.75)',false);T(`carta ${cl}`,x+dw/2,y3+44,4.4,'center','#ffffff',dw-8);T(RR.n,x+dw/2,y3+16.2,3.6,'center','#ffffff',dw-5,RR.ink);
     rrect(x+2,y3+54,dw-4,4,2,'rgba(20,10,5,.7)',false);rrect(x+2,y3+54,(dw-4)*Math.min(1,cl>=ARCMAX?1:fr/nd),4,2,can?'#7aff5a':'#5ac0ff',false);T(cl>=ARCMAX?'MÁX':`${fr}/${nd}`,x+dw/2,y3+58.5,4,'center',can?'#bfffb0':'#e8d8c0',dw-4);
     if(can){b.save();b.globalAlpha=.5+.4*Math.sin(A.t/5);T('⬆',x+dw-6,y3+14,7,'center','#7aff5a',0,C.ink);b.restore();}arHit2(x,y3+15,dw,46,()=>arCardUp(A,sp));});
   T('⚡ herói: congela todos',12,y3+66,4.6,'left','#fff3a0',70,C.ink);
@@ -10843,7 +10843,7 @@ function arBottomAreia(A,G2,t){const yP=G2.by+7,hh=H-yP;A.bh=[];
   /* barra de baixo mais baixa (Felipe: "tem que ter o mesmo tamanho, pra isso tem que diminuir a barra de ação"): 5 cartões numa linha, herói + mana no meio, CHAMAR à direita */
   rrect(0,yP,W,hh+8,9,'#8a6a40',false);{const g=b.createLinearGradient(0,yP,0,H);g.addColorStop(0,'#ecd4a6');g.addColorStop(1,'#d8b47c');b.fillStyle=g;b.beginPath();b.roundRect(1.5,yP+1.5,W-3,hh+6,8);b.fill();}
   const cw=22,ch=36;A.deck.forEach((sp,k)=>{const x=3+k*23.4,y=yP+5,L=A.lv[sp]||0,c=arUpCost(sp),ok=A.mana>=c&&L<5;
-    rrect(x,y+1,cw,ch,5,'rgba(60,30,10,.35)',false);rrect(x,y,cw,ch,5,'#b08050',false);rrect(x+1,y+1,cw-2,ch-2,4,ok?'#fbeccc':'#e8d8b8',false);
+    rrect(x,y+1,cw,ch,5,'rgba(60,30,10,.35)',false);rrect(x,y,cw,ch,5,arRar(sp).col,false);rrect(x+1,y+1,cw-2,ch-2,4,ok?'#fbeccc':'#e8d8b8',false);
     arDrawMon(sp,x+cw/2,y+8,.24,'idle','s',k);T(`nv${L+1}`,x+cw/2,y+20.5,4.2,'center','#4a2c14',cw-3);
     if(L>=5)T('MÁX',x+cw/2,y+27,4.6,'center','#b06010',cw-3);else{arDrop(x+5,y+30.5,1.5);T(String(c),x+cw/2+2,y+27.4,4.8,'center',ok?'#1a4a8a':'#9a8a70',cw-8);}
     if(!ok&&L<5){b.save();b.globalAlpha=.18;rrect(x+1,y+1,cw-2,ch-2,4,'#5a3a20',false);b.restore();}
@@ -10912,22 +10912,30 @@ function arLossN(){try{return AR&&AR.goal?Math.min(4,((flags.arLoss||{})[AR.stgI
 const ARCMAX=10;
 function arCardLv(sp){return Math.max(1,((flags.arCard||{})[sp])|0||1);}
 function arFrag(sp){return ((flags.arFrag||{})[sp])|0;}
-function arCardNeed(l){return 5*l;}
+function arCardNeed(l,sp){return Math.round(5*l*(sp?arRar(sp).cost:1));}
 function arCardCoins(l){return 20*l;}
 {const _st3=arStats;arStats=function(sp,star){const S=_st3(sp,star);try{S.dmg*=1+.1*(arCardLv(sp)-1);}catch(e){}return S;};}
-function arCardUp(A,sp){const l=arCardLv(sp),n=arCardNeed(l),c=arCardCoins(l),fr=arFrag(sp),nm=(SP[sp]&&SP[sp].name)||sp;
+function arCardUp(A,sp){const l=arCardLv(sp),n=arCardNeed(l,sp),c=arCardCoins(l),fr=arFrag(sp),nm=(SP[sp]&&SP[sp].name)||sp;
   if(l>=ARCMAX){arLobbyMsg(A,`A carta do ${nm} já está no máximo!`);return;}
   if(fr<n){tone([300,240],.06,'square',.03);arLobbyMsg(A,`${nm}: faltam ${n-fr} fragmentos (jogue mais partidas)`);return;}
   flags.arFrag[sp]=fr-n;flags.arCard=flags.arCard||{};flags.arCard[sp]=l+1;saveGame();tone([523,659,784,1046],.08);arLobbyMsg(A,`${nm}: carta nível ${l+1}! (+10% de dano)`);}
 function arFragGive(A,why){const deck=(A.deck||arDeck()).slice(0,5);if(!deck.length)return;const w=Math.max(0,(A.wave||1)-1),win=!!(A.result&&A.result.win);
   let n=3+Math.floor(w/2)+(win?5:0);if(A.mp)n+=2;n=Math.min(25,n);const got={};flags.arFrag=flags.arFrag||{};
-  for(let k=0;k<n;k++){const sp=deck[Math.floor(Math.random()*deck.length)];got[sp]=(got[sp]||0)+1;flags.arFrag[sp]=(flags.arFrag[sp]|0)+1;}
+  const wt=deck.map(s2=>arRar(s2).w),tw=wt.reduce((a,x)=>a+x,0);for(let k=0;k<n;k++){let r=Math.random()*tw,sp=deck[0];for(let q=0;q<deck.length;q++){r-=wt[q];if(r<=0){sp=deck[q];break;}}got[sp]=(got[sp]||0)+1;flags.arFrag[sp]=(flags.arFrag[sp]|0)+1;}
   A.fragGot=got;A.fragN=n;try{saveGame();}catch(e){}}
 {const _ae=arEnd;arEnd=function(why){const A=AR,was=A&&A.over;const r=_ae(why);try{if(AR===A&&A&&A.over&&!was&&!A.fragGiven){A.fragGiven=1;arFragGive(A,why);}}catch(e){}return r;};}
 {const _me=arMpEnd;arMpEnd=function(why){const A=AR,was=A&&A.over;const r=_me(why);try{if(AR===A&&A&&A.over&&!was&&!A.fragGiven){A.fragGiven=1;arFragGive(A,why);}}catch(e){}return r;};}
 function arFragDraw(A){if(!A.fragGot)return;const L=Object.entries(A.fragGot),y=Math.min(H-44,H*.32+128);rrect(12,y,W-24,38,8,'rgba(40,24,10,.92)',false);
   T(`🧩 +${A.fragN} fragmentos de carta`,W/2,y+3,6,'center','#fff3a0',W-30,C.ink);const cw=(W-28)/Math.max(1,L.length);
   L.forEach(([sp,n],k)=>{const x=14+k*cw+cw/2;arDrawMon(sp,x-5,y+28,.2,'idle','s',k);T(`×${n}`,x+7,y+21,6,'center','#ffffff',0,C.ink);});}
+
+/* ARRARIDADE (05/nov, Felipe: "sistema de recompensa de cartas por épica, normal, lendária, rara... os monstros mais fortes vão ser lendários, mais difíceis de pegar"):
+   raridade pela força do monstrinho (soma dos atributos base): COMUM < 215 ≤ RARA < 260 ≤ ÉPICA < 300 ≤ LENDÁRIA (Auroril e Aurorion são lendárias).
+   Lendária bate mais forte (comum ×1, rara ×1,15, épica ×1,3, lendária ×1,5), mas os fragmentos dela caem menos (peso 4/3/2/1) e subir a carta custa mais (×1 / ×1,4 / ×2 / ×3).
+   Cor da borda da carta: cinza, azul, roxa, dourada. */
+const ARRAR=[{k:'comum',n:'COMUM',col:'#9aa0a8',ink:'#3a3f48',mul:1,w:4,cost:1},{k:'rara',n:'RARA',col:'#3a8ae8',ink:'#0e2a6a',mul:1.15,w:3,cost:1.4},{k:'epica',n:'ÉPICA',col:'#a050e0',ink:'#3a0e6a',mul:1.3,w:2,cost:2},{k:'lendaria',n:'LENDÁRIA',col:'#f0b020',ink:'#6a3a00',mul:1.5,w:1,cost:3}];
+function arRar(sp){const S=SP[sp];if(!S)return ARRAR[0];if(sp==='auroril'||sp==='aurorion')return ARRAR[3];const t=(S.base||[]).reduce((a,b)=>a+b,0);return ARRAR[t>=300?3:t>=260?2:t>=215?1:0];}
+{const _st4=arStats;arStats=function(sp,star){const S=_st4(sp,star);try{S.dmg*=arRar(sp).mul;}catch(e){}return S;};}
 
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").

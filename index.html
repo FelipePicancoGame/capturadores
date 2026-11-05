@@ -10482,7 +10482,7 @@ async function arMpRun(mode,r){const S=r.S;
    Chefes com PODER (pelo tipo): chama ajudantes, vira pedra, embaralha, se cura, dispara, quebra estrela. Avisa com "!" antes. Depois de 40 s o chefe fica com FÚRIA.
    PODER DO HERÓI no canto da barra de baixo: enche derrotando inimigos; toque para congelar e ferir todos. Números de dano subindo.
    JUNTOS/CONTRA: o tabuleiro do outro aparece em cima, com os inimigos andando, e o dano de cada lado. */
-const ARWT=25*60,ARHP=25;
+const ARWT=30*60,ARHP=25;
 const ARBP={invocar:{n:'Chama ajudantes',ic:'👥'},pedra:{n:'Vira pedra',ic:'🪨'},troca:{n:'Embaralha',ic:'🔀'},cura:{n:'Se cura',ic:'💚'},corre:{n:'Dispara',ic:'💨'},quebra:{n:'Quebra estrela',ic:'💥'}};
 const ARBPT={fogo:'quebra',agua:'cura',planta:'invocar',inseto:'invocar',rocha:'pedra',gelo:'pedra',eletrico:'troca',fantasma:'troca',normal:'corre'};
 function arBossPow(sp){return ARBPT[arType(sp)]||'corre';}
@@ -10498,7 +10498,7 @@ function arRushTick(A){if(A.wt>0)A.wt--;if(A.hfx>0)A.hfx--;if(A.bfx&&A.bfx.t>0)A
     if(e.frz>0){e.frz--;e.d=Math.max(0,e.d-e.spd*(1-e.slow));}
     if(e.dash>0){e.dash--;e.d+=e.spd*2.2;}
     if(!e.boss||!e.pw)continue;e.age++;if(e.age===40*60){e.spd*=1.6;const p=arPos(arGeo(),e.d);arPop(p.x,p.y-52,'FÚRIA!','#ff6060');tone([160,120],.12,'sawtooth',.06);}
-    if(e.warn>0)e.warn--;if(--e.pt===50)e.warn=50;if(e.pt<=0){e.pt=420;arBossDo(A,e);}}
+    if(e.warn>0)e.warn--;if(--e.pt===50)e.warn=50;if(e.pt<=0){e.pt=600;arBossDo(A,e);}}
   if(A.dn){for(const d of A.dn){d.y-=.45;d.life--;}A.dn=A.dn.filter(d=>d.life>0);}}
 function arBossDo(A,e){const G2=arGeo(),p=arPos(G2,e.d),P=ARBP[e.pw];arPop(p.x,p.y-56,P.ic+' '+P.n+'!','#ffb0b0');tone([300,200],.1,'sawtooth',.06);A.bfx={t:24,k:e.pw};
   const units=A.grid.map((u,i)=>u?i:-1).filter(i=>i>=0);
@@ -10891,6 +10891,16 @@ function arSetForm(u,announce,i){if(!u)return;const was=u.form||u.sp,o=arFormOf(
   if(announce&&o.f!==was&&o.fi>0){const p=arCellXY(i);arBurst(p.x,p.y,'#ffffff',24);arPop(p.x,p.y-22,'EVOLUIU! '+((SP[o.f]&&SP[o.f].name)||''),'#fff3a0');tone([523,784,1046,1318],.08);}}
 function arMerge(a,b){if(!arCanMerge(a,b))return false;const sp=AR.grid[b].sp,st=AR.grid[b].star+1;AR.grid[a]=null;const u={sp,star:st,cd:20,atk:0,born:AR.t};AR.grid[b]=u;
   const p=arCellXY(b);arBurst(p.x,p.y,'#fff3a0',18);arBurst(p.x,p.y,ARCOL[arType(sp)],14);arPop(p.x,p.y-14,'★'.repeat(Math.min(st,4))+(st>4?'+':''),'#fff3a0');tone([660,880,1100],.07);arSetForm(u,true,b);return true;}
+
+/* ARFORCA (05/nov, Felipe travou numa fase: "como eu fico mais forte?" / "já usei [a regra da semana] e to perdendo ainda"):
+   1) o NÍVEL do monstrinho no Vale conta: +3% de dano por nível (até o nível 30 = +90%). Não vale no CONTRA (fica justo).
+   2) cada DERROTA seguida na mesma fase tira 10% da vida dos inimigos dela (até -40%); vencer zera.
+   3) mais calmo: ondas de 30 s (eram 25) e o chefe usa o poder a cada 10 s (eram 7). */
+{const _st2=arStats;arStats=function(sp,star){const S=_st2(sp,star);try{if(!(AR&&AR.mp&&AR.mp.mode==='pvp')){const L=Math.min(30,arSpLv(sp)||0);S.dmg*=1+.03*L;}}catch(e){}return S;};}
+function arLossN(){try{return AR&&AR.goal?Math.min(4,((flags.arLoss||{})[AR.stgI])|0):0;}catch(e){return 0;}}
+{const _wi=arWaveInfo;arWaveInfo=function(w){const I=_wi(w),n=arLossN();if(n)I.hp=Math.round(I.hp*(1-.1*n));return I;};}
+{const _se=arStgEnd;arStgEnd=function(why){try{flags.arLoss=flags.arLoss||{};if(why==='win')delete flags.arLoss[AR.stgI];else flags.arLoss[AR.stgI]=((flags.arLoss[AR.stgI])|0)+1;saveGame();}catch(e){}_se(why);};}
+{const _sw2=arStartWave;arStartWave=function(){_sw2();const A=AR;if(A&&A.wave===1&&A.goal){const n=arLossN();if(n)A.ann={t:0,txt:`Ajuda: inimigos com -${n*10}% de vida`};}};}
 
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").

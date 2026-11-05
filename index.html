@@ -10637,11 +10637,11 @@ function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);
   if(!A.result)arRushDraw(A,G2);
   if(A.wave===0&&!A.over){T('Chame monstrinhos e junte iguais!',W/2,G2.y0+G2.bh/2-10,6.5,'center','#fff3a0',W-20,C.ink);T('A 1ª onda já vem…',W/2,G2.y0+G2.bh/2,5.5,'center','#ffffff',0,C.ink);}
   if(A.mp)arMpDraw(A);
-  if(A.result&&A.result.mp){arMpResultDraw(A);return;}
-  if(A.result&&A.result.stg){arStgResultDraw(A);return;}
+  if(A.result&&A.result.mp){arMpResultDraw(A);arFragDraw(A);return;}
+  if(A.result&&A.result.stg){arStgResultDraw(A);arFragDraw(A);return;}
   if(A.result){b.fillStyle='rgba(10,6,30,.82)';b.fillRect(0,0,W,H);const R=A.result,cy=H*.32;T('FIM DA ARENA',W/2,cy,12,'center','#ffd040',W-20,C.ink);T(`Você aguentou ${R.w} onda${R.w===1?'':'s'}`,W/2,cy+22,8,'center','#ffffff');
     if(R.nb)T('NOVO RECORDE!',W/2,cy+36,8,'center','#7ae88a',0,C.ink);T(`+${R.coins} moedas`,W/2,cy+52,8,'center','#ffe070');
-    rrect(W/2-50,cy+72,100,22,6,'#3fae5a');T('JOGAR DE NOVO',W/2,cy+78,7,'center',C.white);rrect(W/2-50,cy+100,100,22,6,'#6a6488');T('SAIR',W/2,cy+106,7,'center',C.white);}}
+    rrect(W/2-50,cy+72,100,22,6,'#3fae5a');T('JOGAR DE NOVO',W/2,cy+78,7,'center',C.white);rrect(W/2-50,cy+100,100,22,6,'#6a6488');T('SAIR',W/2,cy+106,7,'center',C.white);arFragDraw(A);}}
 /* ARCOOP (04/nov, Felipe: "no jogo em dupla temos que compartilhar a mesma estrada, 2 estradas vão convergir em 1 estrada no meio pros 2"):
    No JUNTOS cada um tem a sua estrada que sobe pela esquerda; as duas se juntam na ESTRADA DO MEIO (entre os dois tabuleiros) e vão até o portão na direita.
    Na estrada do meio os dois podem acertar os inimigos de qualquer um: os inimigos do parceiro aparecem como "fantasmas" (posição pelo estado de 0,5 s) e o dano vai pra ele por mensagem 'ad'.
@@ -10734,13 +10734,16 @@ function arEntryDraw(A){const t=A.t;A.hits=[];arLobbyBgDark();
     T(c[0],x+5,y2+32,7.5,'left','#ffffff',cw-16,C.ink);T(k?'um contra o outro':'os dois juntos',x+5,y2+3,4.6,'left','#e0ecff',cw-8,C.ink);arHit2(x,y2,cw,48,()=>A.pick({k:c[3]}));});
   /* SEU TIME */
   const y3=y2+54,ph=96;rrect(6,y3,W-12,ph,8,'#1e1008',false);{const g=b.createLinearGradient(0,y3,0,y3+ph);g.addColorStop(0,'#8a5630');g.addColorStop(1,'#4e2c14');b.fillStyle=g;b.beginPath();b.roundRect(7,y3+1,W-14,ph-2,7);b.fill();}
-  T('SEU TIME',12,y3+4,7,'left','#ffffff',60,C.ink);T('os 5 que você chama na partida',W-10,y3+6,4.4,'right','#f0dcc0',90);
+  T('SEU TIME',12,y3+4,7,'left','#ffffff',60,C.ink);T('toque numa carta para melhorar',W-10,y3+6,4.4,'right','#fff3a0',90);
   b.save();b.translate(22,y3+30);b.scale(1.35,1.35);b.translate(-8,5);try{drawPerson(0,0,'down',0,LOOKS.player);}catch(e){}b.restore();T('herói',22,y3+46,4.6,'center','#ffe8b0',30,C.ink);
   const dx0=40,dw=(W-48)/5;A.deck.forEach((sp,k)=>{const x=dx0+k*dw,col=ARCOL[arType(sp)]||'#ccc';rrect(x+1,y3+15,dw-2,38,5,'#1e1008',false);rrect(x+2,y3+16,dw-4,36,4,col,false);b.save();b.globalAlpha=.3;rrect(x+2,y3+16,dw-4,14,4,'#ffffff',false);b.restore();
-    arDrawMon(sp,x+dw/2,y3+31,.26,'idle','s',k);rrect(x+3,y3+43,dw-6,8,3,'rgba(20,10,5,.75)',false);T(`nv ${arSpLv(sp)||1}`,x+dw/2,y3+44,4.6,'center','#ffffff',dw-8);arHit2(x,y3+15,dw,38,()=>arTimeEdit(A));});
-  T('⚡ Poder do herói: congela todos',12,y3+57,4.8,'left','#fff3a0',W-24,C.ink);
-  arBtn(W/2-40,y3+65,80,17,'#4a9aff','#1a5ad8','TROCAR O TIME',6);arHit2(W/2-40,y3+64,80,19,()=>arTimeEdit(A));
-  T('Chamar começa com estes 5. Juntando, sai qualquer um deles.',W/2,y3+86,4.2,'center','#e8d0b0',W-20);
+    arDrawMon(sp,x+dw/2,y3+29,.26,'idle','s',k);const cl=arCardLv(sp),fr=arFrag(sp),nd=arCardNeed(cl),can=cl<ARCMAX&&fr>=nd;rrect(x+3,y3+43,dw-6,8,3,'rgba(20,10,5,.75)',false);T(`carta ${cl}`,x+dw/2,y3+44,4.4,'center','#ffffff',dw-8);
+    rrect(x+2,y3+54,dw-4,4,2,'rgba(20,10,5,.7)',false);rrect(x+2,y3+54,(dw-4)*Math.min(1,cl>=ARCMAX?1:fr/nd),4,2,can?'#7aff5a':'#5ac0ff',false);T(cl>=ARCMAX?'MÁX':`${fr}/${nd}`,x+dw/2,y3+58.5,4,'center',can?'#bfffb0':'#e8d8c0',dw-4);
+    if(can){b.save();b.globalAlpha=.5+.4*Math.sin(A.t/5);T('⬆',x+dw-6,y3+14,7,'center','#7aff5a',0,C.ink);b.restore();}arHit2(x,y3+15,dw,46,()=>arCardUp(A,sp));});
+  T('⚡ herói: congela todos',12,y3+66,4.6,'left','#fff3a0',70,C.ink);
+  arBtn(W-90,y3+72,82,17,'#4a9aff','#1a5ad8','TROCAR O TIME',6);arHit2(W-90,y3+71,82,19,()=>arTimeEdit(A));
+  T(`🧩 fragmentos: ganhe jogando`,12,y3+79,4.4,'left','#e8d0b0',80);
+  if(A.msg&&A.msg.t>0){A.msg.t--;rrect(14,H/2-12,W-28,24,7,'rgba(10,15,25,.92)',false);T(A.msg.s,W/2,H/2-6,5.6,'center','#ffffff',W-34);}
   /* SEM FIM */
   const y4=y3+ph+6;arBtn(6,y4,W-12,26,'#ffd84a','#f08a20');T('SEM FIM',W/2,y4+4,8,'center','#ffffff',100,C.ink);T(`sozinho · recorde: onda ${flags.arenaBest||0}`,W/2,y4+15,5,'center','#4a2a08',120);arHit2(6,y4,W-12,26,()=>A.pick({k:'solo'}));}
 async function arTimeEdit(A){if(A.busy)return;A.busy=1;try{const k=await arHub();A.deck=arDeck();if(k==='fases'){A.lobby='dg';A.scroll=null;}else if(k==='coop'||k==='pvp')A.pick({k});else if(k==='sem')A.pick({k:'solo'});}finally{A.busy=0;}}
@@ -10901,6 +10904,30 @@ function arLossN(){try{return AR&&AR.goal?Math.min(4,((flags.arLoss||{})[AR.stgI
 {const _wi=arWaveInfo;arWaveInfo=function(w){const I=_wi(w),n=arLossN();if(n)I.hp=Math.round(I.hp*(1-.1*n));return I;};}
 {const _se=arStgEnd;arStgEnd=function(why){try{flags.arLoss=flags.arLoss||{};if(why==='win')delete flags.arLoss[AR.stgI];else flags.arLoss[AR.stgI]=((flags.arLoss[AR.stgI])|0)+1;saveGame();}catch(e){}_se(why);};}
 {const _sw2=arStartWave;arStartWave=function(){_sw2();const A=AR;if(A&&A.wave===1&&A.goal){const n=arLossN();if(n)A.ann={t:0,txt:`Ajuda: inimigos com -${n*10}% de vida`};}};}
+
+/* ARCARTAS (05/nov, Felipe: "a cada jogo você ganha fragmento de cartas pra melhorar suas cartas e evoluir elas"):
+   no fim de cada partida da Arena (sozinho, fases, juntos, contra) você ganha FRAGMENTOS das cartas do seu time (mais ondas = mais fragmentos; vencer fase = bônus).
+   Na Entrada, SEU TIME: toque numa carta com fragmentos suficientes para subir a CARTA de nível (para sempre): +10% de dano por nível, até o nível 10.
+   Custo: só fragmentos — 5, 10, 15... (5 × nível). Sem moedas (Felipe: "não quero o 2"). flags.arFrag / flags.arCard. */
+const ARCMAX=10;
+function arCardLv(sp){return Math.max(1,((flags.arCard||{})[sp])|0||1);}
+function arFrag(sp){return ((flags.arFrag||{})[sp])|0;}
+function arCardNeed(l){return 5*l;}
+function arCardCoins(l){return 20*l;}
+{const _st3=arStats;arStats=function(sp,star){const S=_st3(sp,star);try{S.dmg*=1+.1*(arCardLv(sp)-1);}catch(e){}return S;};}
+function arCardUp(A,sp){const l=arCardLv(sp),n=arCardNeed(l),c=arCardCoins(l),fr=arFrag(sp),nm=(SP[sp]&&SP[sp].name)||sp;
+  if(l>=ARCMAX){arLobbyMsg(A,`A carta do ${nm} já está no máximo!`);return;}
+  if(fr<n){tone([300,240],.06,'square',.03);arLobbyMsg(A,`${nm}: faltam ${n-fr} fragmentos (jogue mais partidas)`);return;}
+  flags.arFrag[sp]=fr-n;flags.arCard=flags.arCard||{};flags.arCard[sp]=l+1;saveGame();tone([523,659,784,1046],.08);arLobbyMsg(A,`${nm}: carta nível ${l+1}! (+10% de dano)`);}
+function arFragGive(A,why){const deck=(A.deck||arDeck()).slice(0,5);if(!deck.length)return;const w=Math.max(0,(A.wave||1)-1),win=!!(A.result&&A.result.win);
+  let n=3+Math.floor(w/2)+(win?5:0);if(A.mp)n+=2;n=Math.min(25,n);const got={};flags.arFrag=flags.arFrag||{};
+  for(let k=0;k<n;k++){const sp=deck[Math.floor(Math.random()*deck.length)];got[sp]=(got[sp]||0)+1;flags.arFrag[sp]=(flags.arFrag[sp]|0)+1;}
+  A.fragGot=got;A.fragN=n;try{saveGame();}catch(e){}}
+{const _ae=arEnd;arEnd=function(why){const A=AR,was=A&&A.over;const r=_ae(why);try{if(AR===A&&A&&A.over&&!was&&!A.fragGiven){A.fragGiven=1;arFragGive(A,why);}}catch(e){}return r;};}
+{const _me=arMpEnd;arMpEnd=function(why){const A=AR,was=A&&A.over;const r=_me(why);try{if(AR===A&&A&&A.over&&!was&&!A.fragGiven){A.fragGiven=1;arFragGive(A,why);}}catch(e){}return r;};}
+function arFragDraw(A){if(!A.fragGot)return;const L=Object.entries(A.fragGot),y=Math.min(H-44,H*.32+128);rrect(12,y,W-24,38,8,'rgba(40,24,10,.92)',false);
+  T(`🧩 +${A.fragN} fragmentos de carta`,W/2,y+3,6,'center','#fff3a0',W-30,C.ink);const cw=(W-28)/Math.max(1,L.length);
+  L.forEach(([sp,n],k)=>{const x=14+k*cw+cw/2;arDrawMon(sp,x-5,y+28,.2,'idle','s',k);T(`×${n}`,x+7,y+21,6,'center','#ffffff',0,C.ink);});}
 
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").

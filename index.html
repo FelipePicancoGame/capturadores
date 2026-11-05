@@ -11093,13 +11093,27 @@ async function gameCfg(hl){if(MGCFG)return;MGCFG=1;try{try{autoPause();}catch(e)
       else{el.style.left='calc(6px + env(safe-area-inset-left))';el.style.transform='';el.style.bottom='';el.style.top='42%';el.style.opacity='.8';el.style.fontSize='12px';el.textContent='⚙';}
       if(pz)el.textContent='⚙ AJUSTES';}catch(e){}},250);
 }catch(e){}})();
-/* vigia de FPS: se o minijogo ficar lento por ~8 s, pausa e ensina a diminuir os gráficos ali mesmo */
-(function(){let n=0,t0=0,low=0,asked=0;function tick(ts){try{if(!t0)t0=ts;n++;const dt=ts-t0;
-    if(dt>=4000){const fps=n*1000/dt;n=0;t0=ts;const m=G.mode,run=MGMODES[m]&&!ui.length&&!mgPausedNow()&&!document.hidden&&!MGCFG;
-      if(run&&fps<40)low++;else low=0;
-      if(low>=2&&!asked&&gfxLv()<2&&!(flags.fpsAsk&&Date.now()-flags.fpsAsk<36e5)){asked=1;low=0;flags.fpsAsk=Date.now();saveGame();
-        (async()=>{try{autoPause();}catch(e){}await say(`O jogo está lento neste celular (${Math.round(fps)} quadros por segundo). Pra jogar melhor, diminua os GRÁFICOS.`);
-          await say('É só tocar em ⚙ AJUSTES (aparece quando você pausa) e mudar GRÁFICOS pra MÉDIO ou LEVE. Vou abrir pra você agora!');await gameCfg(1);})().catch(()=>{});}}}catch(e){}requestAnimationFrame(tick);}
+/* FPSVIGIA05NOV (05/nov, Felipe: "faz isso pra todas as partes do jogo... se o jogo ficar lento ele já avisa; se a pessoa não mexer, troca a qualidade na terceira vez").
+   Vale em todo o jogo (mapa, batalha, minijogos). Lento = menos de 40 quadros/s por 8 s seguidos. Aparece um aviso no alto com o botão DIMINUIR.
+   1º e 2º aviso: a pessoa escolhe. No 3º aviso sem ela mexer, o jogo diminui sozinho um nível (ALTO → MÉDIO → LEVE). A contagem zera quando o gráfico muda. */
+(function(){let n=0,t0=0,low=0,last=0,box=null,boot=performance.now();
+  function warnN(){const g=gfxLv();if(flags.fpsWG!==g){flags.fpsWG=g;flags.fpsWN=0;}return flags.fpsWN|0;}
+  function lower(){flags.gfx=Math.min(2,gfxLv()+1);flags.fpsWG=flags.gfx;flags.fpsWN=0;saveGame();gfxApply();}
+  function hide(){if(box){box.remove();box=null;}}
+  function show(fps){const k=warnN()+1;flags.fpsWN=k;flags.fpsWG=gfxLv();saveGame();hide();
+    box=document.createElement('div');box.id='fpsAviso';
+    box.style.cssText="position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);z-index:10070;width:min(92vw,380px);box-sizing:border-box;padding:10px 12px;border-radius:14px;background:#2a1450f2;border:2px solid #f2b632;color:#fff;font:15px/1.3 'Fredoka','Trebuchet MS',sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.45);text-align:center";
+    const btn="border:0;border-radius:10px;padding:8px 12px;font:inherit;font-size:15px;color:#fff;cursor:pointer;margin:6px 4px 0";
+    if(k>=3){lower();box.innerHTML=`🐢 O jogo continuava lento, então eu diminuí os <b>GRÁFICOS</b> para <b>${GFXN[gfxLv()]}</b>. Dá para mudar em ⚙ AJUSTES.<br><button data-x style="${btn};background:#2f9f4c">OK</button>`;}
+    else box.innerHTML=`🐢 O jogo está lento neste celular (${Math.round(fps)} quadros por segundo). Diminua os <b>GRÁFICOS</b> para ficar mais leve.<br><small style="color:#ffe8a0">Aviso ${k} de 3: no 3º eu diminuo sozinho.</small><br><button data-d style="${btn};background:#2f9f4c">Diminuir agora</button><button data-x style="${btn};background:#6a4a8a">Agora não</button>`;
+    box.onclick=e=>{const t=e.target.closest('button');if(!t)return;if(t.hasAttribute('data-d')){lower();try{tone([660,880],.05);}catch(_){}box.innerHTML=`✅ GRÁFICOS em <b>${GFXN[gfxLv()]}</b>.`;setTimeout(hide,1800);}else hide();};
+    document.body.appendChild(box);setTimeout(()=>{if(box&&box.isConnected)hide();},k>=3?7000:14000);}
+  function tick(ts){try{if(!t0)t0=ts;n++;const dt=ts-t0;
+    if(dt>=4000){const fps=n*1000/dt;n=0;t0=ts;
+      const ld=document.getElementById('ldr'),lv=ld&&ld.isConnected&&ld.style.display!=='none'&&getComputedStyle(ld).display!=='none';if(lv)boot=ts;
+      const run=!lv&&!document.hidden&&ts-boot>10000&&typeof flags!=='undefined'&&flags&&!(typeof MGCFG!=='undefined'&&MGCFG)&&!(MGMODES[G.mode]&&mgPausedNow())&&!box;
+      if(run&&fps<40)low++;else if(!run||fps>=48)low=0;
+      if(low>=2&&gfxLv()<2&&Date.now()-last>60000){low=0;last=Date.now();show(fps);}}}catch(e){}requestAnimationFrame(tick);}
   requestAnimationFrame(tick);})();
 /* OFFLINE-BG 03/nov (Felipe): baixa o jogo inteiro aos poucos, em segundo plano, pra jogar sem internet. Android no Wi-Fi: sozinho. iPhone: botão nos AJUSTES. */
 const OFFL={on:0,run:0,tot:0,ok:0,done:false,fail:0,list:null,fin:0};
@@ -13048,14 +13062,10 @@ window.__GM=function(){try{return G.mode;}catch(_){return '';}};
     return {sid:SID,build:BUILD,quando:new Date().toISOString(),seg:Math.round((now-T0)/1000),fps,...jog,quadrosMB:M(cvMB),quadrosN:cvN,quadrosGrandes:big.slice(0,8).join(' '),imagensMB:M(imMB),imagensN:imN,imagensUsadas30sMB:M(im30),maiores:top.slice(0,8).map(t=>M(t[0])+'MB '+t[1]).join(' | '),musicaMB:M(au),
       heapMB:performance.memory?M(performance.memory.usedJSHeapSize):null,ua:navigator.userAgent.slice(0,140),tela:screen.width+'x'+screen.height+'@'+(devicePixelRatio||1),memAparelhoGB:navigator.deviceMemory||null,teste:window.__TESTE||'',soltas:(window.__unloadInfo?JSON.stringify(__unloadInfo()):''),eventos:EV.slice(-25).join(' > '),erros:ERR.join(' || '),base:window.__DIAGDB||'?'};}
   let prev=null;try{prev=JSON.parse(localStorage.getItem('cv_diag')||'null');}catch(_){}
-  /* se a última sessão caiu: mostra o relatório na tela (pra mandar print), toque pra fechar */
-  try{if(prev&&!prev.limpo&&prev.seg>=10&&!(prev.build&&prev.build!==BUILD)){const show=()=>{const d=document.createElement('div');d.id='diagBox';d.style.cssText='position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top));z-index:100000;background:rgba(10,12,30,.94);color:#fff;font:12px/1.35 -apple-system,sans-serif;padding:10px 12px;border:2px solid #ffcf3f;border-radius:12px;white-space:pre-wrap;max-height:38vh;overflow:auto';
-      const P=prev;d.textContent='RELATÓRIO DA ÚLTIMA QUEDA (mande um print pro Claude, depois toque pra fechar)\n'+
-       'Quando: '+P.quando+' · jogando há '+P.seg+' s\nModo: '+P.modo+' · tempo no modo: '+P.tempoModo+' · inimigos: '+P.inimigos+' · fps: '+P.fps+'\n'+
-       'Quadros (canvas): '+P.quadrosMB+' MB em '+P.quadrosN+' · grandes: '+P.quadrosGrandes+'\nImagens desenhadas: '+P.imagensMB+' MB ('+P.imagensN+') · usadas nos últimos 30 s: '+P.imagensUsadas30sMB+' MB\n'+
-       'Música: '+P.musicaMB+' MB · animações vivas: '+P.anim+' · telas guardadas: '+P.telas+'\nMaiores: '+P.maiores+'\nAparelho: '+P.tela+' · mem: '+P.memAparelhoGB+' · base: '+P.base+'\n'+P.ua+(P.teste?'\nTESTE: '+P.teste:'')+'\nErros: '+(P.erros||'nenhum')+'\nÚltimos acontecimentos: '+(P.eventos||'');
-      d.onclick=()=>{d.remove();try{const q=JSON.parse(localStorage.getItem('cv_diag')||'null');}catch(_){}};document.body.appendChild(d);};
-    if(document.body)show();else addEventListener('DOMContentLoaded',show);}}catch(_){}
+  /* ERROSOCULTOS05NOV (05/nov, Felipe: "quando a pessoa fecha o jogo aparece o erro na frente da tela, retira isso... se o erro acontecer, na hora que apertar o 🐞 manda pra você"):
+     o relatório da última queda NÃO aparece mais na tela. Ele continua indo pra base (diag_quedas) e vai junto quando a pessoa aperta o 🐞. */
+  try{window.__ERR=ERR;addEventListener('unhandledrejection',e=>{try{const r=e&&e.reason;ERR.push('promessa: '+String(r&&r.message||r).slice(0,140));if(ERR.length>6)ERR.shift();}catch(_){}});
+    if(prev&&!prev.limpo&&prev.seg>=10&&!(prev.build&&prev.build!==BUILD)){const P=prev;window.__QUEDA='QUEDA ANTERIOR '+P.quando+' · '+P.seg+'s · modo '+P.modo+' · fps '+P.fps+' · quadros '+P.quadrosMB+'MB/'+P.quadrosN+' · imagens '+P.imagensMB+'MB · heap '+P.heapMB+'MB · tela '+P.tela+' · erros: '+(P.erros||'nenhum')+' · eventos: '+String(P.eventos||'').slice(-300);}}catch(_){}
   let DB=null;(async()=>{try{const db=await __CLUSE('db');window.__DIAGDB=db?'sim':'nao';if(!db)return;DB=db;if(prev&&!prev.limpo){const nova=prev.build&&prev.build!==BUILD;await db.doc((nova?'diag_novaversao/':'diag_quedas/')+prev.sid).set({...prev,registradoEm:new Date().toISOString(),tipo:nova?'RECARREGOU: saiu versão nova do jogo':'QUEDA: a página fechou sem sair normalmente'});}}catch(_){}})();
   addEventListener('pagehide',()=>{try{const s=snap();s.limpo=true;localStorage.setItem('cv_diag',JSON.stringify(s));}catch(_){}});
   let busy=false;setInterval(()=>{try{const s=snap();s.limpo=false;try{localStorage.setItem('cv_diag',JSON.stringify(s));}catch(_){}if(DB&&!busy){busy=true;DB.doc('diag/'+SID).set(s).catch(()=>0).then(()=>{busy=false;});}}catch(_){}},2000);
@@ -13163,7 +13173,7 @@ function rpShot(){try{const c=document.getElementById('screen');if(!c)return '';
 function rpCtx(){const o={};try{o.modo=G.mode;o.mapa=G.map;o.x=P.x;o.y=P.y;}catch(e){}try{o.nome=flags.nome||'';o.tid=String(flags.tid||'');o.horas=Math.round((flags.playT||0)/36)/100;}catch(e){}
   try{o.versao=String(window.__APPVER||'');}catch(e){}try{o.onde=location.host||'claude';}catch(e){}
   try{o.tela=innerWidth+'x'+innerHeight+' dpr'+(window.devicePixelRatio||1);o.ua=navigator.userAgent.slice(0,160);}catch(e){}
-  try{o.erros=(typeof ERR!=='undefined'?ERR.slice(-8):[]).map(x=>String(x).slice(0,200));}catch(e){}
+  try{o.erros=(window.__ERR||[]).slice(-8).map(x=>String(x).slice(0,200));if(window.__QUEDA)o.erros.push(String(window.__QUEDA).slice(0,600));}catch(e){}
   try{const d=JSON.parse(localStorage.getItem('cv_diag_ev')||'null');o.eventos=d&&d.ev?d.ev.slice(-15):[];}catch(e){}
   try{o.equipe=(party||[]).map(m=>m.sp+' '+m.lv).join(', ');}catch(e){}return o;}
 async function rpSend(r){

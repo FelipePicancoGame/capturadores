@@ -3221,7 +3221,7 @@ const MM2U={"botao_fechar": "blobs/a398ec42b667b8af92f3f35bb5aef49d.webp", "card
 setTimeout(()=>{try{for(const k in MM2U)mm2(k);}catch(e){}},4000);
 /* MMARENA (04/nov, Felipe: "Coloca arena nos mini jogos"): ARENA no lugar da MURALHA DUPLA (que foi para dentro da MURALHA: "Coloca a muralha dupla dentro da muralha"), desenhado por código com o ícone da Arena */
 const MM2C={'EXPEDIÇÃO':['card_expedicao',90,430],'MURALHA':['card_muralha',570,430],'MURALHA DUPLA':['card_muralha_dupla',90,800],'TORRES':['card_torres',90,800],'HORDA':['card_horda',570,800],'COMBINA':['card_combina',90,1170],'ARENA':['card_arena',570,1170]};
-const MMARI=new Image();MMARI.src='blobs/ar_icone_menu_arena.webp';
+const MMARI=new Image();MMARI.src='blobs/ar_icone_menu_arena.webp';const MMARC=new Image();MMARC.src='blobs/mm2_card_arena.webp'; /* cartão do Buchecha (05/nov) */
 function mm2Arena(x,y,w,h){rrect(x+6,y+12,w-6,h-6,30,'rgba(60,30,10,.35)',false);rrect(x,y,w,h,30,'#7a4a1a',false);rrect(x+8,y+8,w-16,h-16,24,'#f8e2a8',false);rrect(x+8,y+8,w-16,(h-16)*.62,24,'#d8483a',false);
   if(MMARI.complete&&MMARI.naturalWidth){const s2=Math.min(150/MMARI.naturalWidth,150/MMARI.naturalHeight);b.drawImage(MMARI,x+w/2-MMARI.naturalWidth*s2/2,y+16,MMARI.naturalWidth*s2,MMARI.naturalHeight*s2);}
   T('ARENA',x+w/2,y+h*.6,50,'center','#ffffff',w-30,'#5a1a10');}
@@ -3235,7 +3235,7 @@ function drawTilesMini2(u){const cf=u.cfg,L=cf.tiles;if(!L||!String(cf.title||''
  u.rects=[];
  L.forEach((it,idx)=>{const c=MM2C[it.n];if(!c)return;const key=c[0],x=c[1],y=c[2],sel=idx===u.i,ap=Math.min(1,Math.max(0,(t-idx*1.5)/8));if(ap<=0)return;
   const sc=(.86+.14*(1-(1-ap)**3))*(sel?1.04+Math.sin(t/6)*.015:1);b.save();b.globalAlpha=ap;b.translate(x+210,y+165);b.scale(sc,sc);b.translate(-(x+210),-(y+165));
-  if(key==='card_arena')mm2Arena(x,y,420,330);else b.drawImage(mm2(key),x,y,420,330);if(it.sub)T(it.sub,x+210,y+262,30,'center',key==='card_arena'?'#4a2a10':'#294729',350);
+  if(key==='card_arena'&&!(MMARC.complete&&MMARC.naturalWidth))mm2Arena(x,y,420,330);else b.drawImage(key==='card_arena'?MMARC:mm2(key),x,y,420,330);if(it.sub)T(it.sub,x+210,y+262,30,'center','#294729',350);
   if(it.badge&&mm2('selo_novo'))b.drawImage(mm2('selo_novo'),x+330,y-30,96,96);b.restore();
   u.rects.push({x:ox+x*k,y:oy+y*k,w:420*k,h:330*k,i:idx});});
  const fi=L.findIndex(it=>it.n==='FECHAR');if(fi>=0){const sc=fi===u.i?1.04:1;b.save();b.translate(540,1755);b.scale(sc,sc);b.drawImage(mm2('botao_fechar'),-210,-75,420,150);b.restore();u.rects.push({x:ox+330*k,y:oy+1680*k,w:420*k,h:150*k,i:fi});}

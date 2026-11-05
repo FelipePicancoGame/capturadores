@@ -10241,7 +10241,7 @@ function arDeck(){const seen={},out=[];const P=[...party].sort((a,b)=>b.lv-a.lv)
   for(const s of ARSTARTS){if(out.length>=5)break;if(!seen[s]&&SP[s]){seen[s]=1;out.push(s);}}return out;}
 function arEnemyPool(){const S=new Set();try{for(const k in ENC)for(const t in ENC[k])for(const e of ENC[k][t])if(SP[e[0]])S.add(e[0]);}catch(e){}const L=[...S].filter(s=>MONANIM[s]);return L.length?L:['ratonga','pipiu','cascal'];}
 function arGeo(){const cs=30,ch=(AR&&(AR.mp||window.ARSTY!==0))?30:36,cols=5,rows=3,bw=cs*cols,bh=ch*rows,x0=Math.round((W-bw)/2),y0=H-110-ch*3,lx=7,rx=W-7,ty=y0-16,by=y0+bh+12;
-  return {cs,ch,cols,rows,bw,bh,x0,y0,lx,rx,ty,by,pts:[[lx,by],[lx,ty],[rx,ty],[rx,by]]};}
+  return {cs,ch,cols,rows,bw,bh,x0,y0,lx,rx,ty,by,pts:(AR&&AR.mp&&AR.mp.mode==='coop')?[[lx,by],[lx,ty],[rx,ty]]:[[lx,by],[lx,ty],[rx,ty],[rx,by]]};}
 function arPathLen(G2){let L=0;for(let i=1;i<G2.pts.length;i++)L+=Math.hypot(G2.pts[i][0]-G2.pts[i-1][0],G2.pts[i][1]-G2.pts[i-1][1]);return L;}
 function arPos(G2,d){let r=d;for(let i=1;i<G2.pts.length;i++){const [ax,ay]=G2.pts[i-1],[bx,by]=G2.pts[i],L=Math.hypot(bx-ax,by-ay);if(r<=L){const f=r/L;return {x:ax+(bx-ax)*f,y:ay+(by-ay)*f,dir:bx>ax?'e':bx<ax?'w':by<ay?'n':'s'};}r-=L;}const p=G2.pts[G2.pts.length-1];return {x:p[0],y:p[1],dir:'s'};}
 function arNew(){const deck=arDeck();AR={t:0,deck,lv:{},mana:100,cost:10,lives:3,wave:0,spawnLeft:0,spawnT:0,between:150,grid:Array(15).fill(null),en:[],shots:[],pops:[],parts:[],sel:-1,drag:null,over:false,best:flags.arenaBest||0,kills:0,pool:arEnemyPool(),done:null,speed:1,boss:null};for(const s of deck)AR.lv[s]=0;}
@@ -10460,11 +10460,12 @@ async function arMpRun(mode,r){const S=r.S;
   await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();const M=AR.mp={mode,role:r.role,S,peer:{n:r.peerN||''},peerClr:0,waitT:0,sentClr:-1,off:0,last:performance.now()};
   if(r.role==='guest')AR.between=1e9;G.mode='arena';await fadeTo(0);
   const mine=()=>AR&&AR.mp===M;
-  S.on('as',m=>{if(m.isMe||m.sameTab||!mine())return;M.peer=Object.assign(M.peer,m.data||{});M.last=performance.now();});
+  S.on('as',m=>{if(m.isMe||m.sameTab||!mine())return;M.peer=Object.assign(M.peer,m.data||{});M.last=performance.now();arGhosts(AR);});
   S.on('aw',m=>{if(m.isMe||m.sameTab||!mine()||AR.over)return;const w=(m.data||{}).w|0;if(w>AR.wave){AR.wave=w-1;arStartWave();}M.last=performance.now();});
   S.on('ac',m=>{if(m.isMe||m.sameTab||!mine())return;M.peerClr=Math.max(M.peerClr,(m.data||{}).w|0);});
   S.on('al',m=>{if(m.isMe||m.sameTab||!mine()||AR.over)return;AR.lives-=(m.data||{}).n|0;AR.shake=8;arPop(W/2,arGeo().ty-30,'O parceiro deixou passar!','#ff9090');if(AR.lives<=0)arEnd('coop');});
   S.on('ab',m=>{if(m.isMe||m.sameTab||!mine()||AR.over)return;arMpSpawnBonus((m.data||{}).hp|0||100);});
+  S.on('ad',m=>{if(m.isMe||m.sameTab||!mine()||AR.over)return;arCoopDmg(m.data||{});});
   S.on('ax',m=>{if(m.isMe||m.sameTab||!mine()||AR.over)return;arEnd(mode==='pvp'?'peerlost':'coop');});
   const iv=setInterval(()=>{if(!mine()){clearInterval(iv);return;}if(AR.over)return;arMpSnap(AR);const gap=performance.now()-M.last;M.off=gap>3000?Math.floor(gap/33):0;if(gap>20000)arEnd('peergone');},500);
   duoEmit(S,'as',{g:[],l:3,w:0,k:0,e:0,n:String(flags.nome||'').slice(0,12)});
@@ -10545,7 +10546,7 @@ function arRushDraw(A,G2){const t=A.t;
   b.save();b.lineCap='round';b.strokeStyle='rgba(255,255,255,.18)';b.lineWidth=2.2;b.beginPath();b.arc(hx,hy,r+1.2,0,Math.PI*2);b.stroke();b.strokeStyle=full?'#ffe040':'#7ad0ff';b.beginPath();b.arc(hx,hy,r+1.2,-Math.PI/2,-Math.PI/2+Math.PI*2*f);b.stroke();b.restore();
   if(full)T('PODER!',hx,hy+r-6,4.8,'center','#fff3a0',30,C.ink);}
 function arMpSnap(A){const M=A.mp;if(!M)return;const PL=arPathLen(arGeo());duoEmit(M.S,'as',{g:A.grid.map(u=>u?[u.sp,u.star]:0),l:A.lives,w:A.wave,k:A.kills,e:A.en.length,n:String(flags.nome||'').slice(0,12),dm:Math.round(A.dmgT||0),q:A.en.filter(e=>e.hp>0).slice(0,24).map(e=>[Math.round(e.d/PL*1000),e.sp,e.boss?1:0])});}
-function arMpDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),top=24,bot=G2.ty-37,avail=Math.max(20,bot-top),fullH=(G2.by-G2.ty)+16,k=Math.min(.6,avail/fullH),PL=arPathLen(G2),t=A.t;
+function arMpDraw(A){if(arCoop(A))return arCoopDraw(A);const M=A.mp,P=M.peer||{},G2=arGeo(),top=24,bot=G2.ty-37,avail=Math.max(20,bot-top),fullH=(G2.by-G2.ty)+16,k=Math.min(.6,avail/fullH),PL=arPathLen(G2),t=A.t;
   const _T=T;T=function(){};try{b.save();b.translate(W/2,top+5*k);b.scale(k,k);b.translate(-W/2,-(G2.ty-8));
     rrect(G2.lx-8,G2.ty-12,G2.rx-G2.lx+16,fullH+4,10,M.mode==='pvp'?'rgba(90,20,40,.55)':'rgba(20,40,90,.55)',false);
     if(window.ARSTY!==0){arSPath(G2,t);arSBoard(G2);}else if(!arArtPath(G2)){b.save();b.lineCap='round';b.lineJoin='round';b.strokeStyle='#c8a46a';b.lineWidth=10;b.beginPath();G2.pts.forEach((q,i)=>i?b.lineTo(q[0],q[1]):b.moveTo(q[0],q[1]));b.stroke();b.restore();}
@@ -10582,10 +10583,10 @@ function arSPiece(u,x,y,k,t,o){o=o||{};const col=ARCOL[arType(u.sp)]||'#cccccc',
 function arStar5(x,y,r,col){b.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.45:r;i?b.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr):b.moveTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);}b.closePath();b.fillStyle=col;b.fill();b.lineWidth=.6;b.strokeStyle='#3a2200';b.stroke();}
 function arSFlask(x,y,s){E(x,y+1.5*s,3.6*s,3.6*s,'#0e2a50',0,false);E(x,y+1.5*s,3*s,3*s,'#3ab0ff',0,false);px(x-1.2*s,y-3.6*s,2.4*s,2.6*s,'#cfe8ff');E(x-1*s,y+.6*s,1*s,.8*s,'#ffffff',0,false);}
 function arSSkull(x,y){E(x,y,2.1,1.9,'#e8dcc8',0,false);px(x-1.3,y+1,2.6,1.3,'#e8dcc8');px(x-1.1,y-.4,.9,.9,'#2a1a10');px(x+.3,y-.4,.9,.9,'#2a1a10');}
-function arStrip(A,G2,y){const h=19,T2=arTimerTxt(A),bsp=arBossSp(A),now=A.wi&&A.wi.boss&&A.wave>0,cx=W/2+14;
-  rrect(2,y,W-4,h,5,'#2a160a',false);const g=b.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'#8a5630');g.addColorStop(1,'#5a3418');b.fillStyle=g;b.beginPath();b.roundRect?b.roundRect(3,y+1,W-6,h-2,4):b.rect(3,y+1,W-6,h-2);b.fill();px(6,y+2,W-12,.8,'rgba(255,220,160,.35)');
-  T(`Onda ${Math.max(1,A.wave)}${A.goal?'/'+A.goal:''}`,7,y+2,7,'left','#ffffff',52,C.ink);
-  const n=Math.min(13,Math.max(0,A.spawnLeft)+A.en.filter(e=>e.hp>0&&!e.boss).length);for(let k=0;k<n;k++)arSSkull(9+k*4.6,y+14.2);
+function arStrip(A,G2,y){const h=19,sx=arCoop(A)?16:2,T2=arTimerTxt(A),bsp=arBossSp(A),now=A.wi&&A.wi.boss&&A.wave>0,cx=W/2+14;
+  rrect(sx,y,W-2-sx,h,5,'#2a160a',false);const g=b.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'#8a5630');g.addColorStop(1,'#5a3418');b.fillStyle=g;b.beginPath();b.roundRect?b.roundRect(sx+1,y+1,W-4-sx,h-2,4):b.rect(sx+1,y+1,W-4-sx,h-2);b.fill();px(sx+4,y+2,W-10-sx,.8,'rgba(255,220,160,.35)');
+  T(`Onda ${Math.max(1,A.wave)}${A.goal?'/'+A.goal:''}`,sx+5,y+2,7,'left','#ffffff',52,C.ink);
+  const n=Math.min(13,Math.max(0,A.spawnLeft)+A.en.filter(e=>e.hp>0&&!e.boss).length);for(let k=0;k<n;k++)arSSkull(sx+7+k*4.6,y+14.2);
   const fx=cx-22,fy=y+h/2;E(fx,fy,7.6,7.6,now?'#ff5060':'#c9982c',0,false);E(fx,fy,6.6,6.6,'#2a1020',0,false);b.save();b.beginPath();b.arc(fx,fy,6.4,0,Math.PI*2);b.clip();arDrawMon(bsp,fx,fy-3,.19,'idle','s',2);b.restore();
   T(T2.t==='—'||T2.t==='…'?T2.t:'⏱ '+T2.t,cx-12,y+3.5,7,'left',T2.red?'#ffc0c0':'#ffffff',46,C.ink);
   if(A.mp){const M=A.mp,P=M.peer||{};T(`❤${A.lives}`,W-8,y+3.5,6.5,'right','#ffb0b8',30,C.ink);}
@@ -10633,6 +10634,42 @@ function arRender2(){const A=AR,G2=arGeo(),t=A.t;b.save();if(A.shake>0)b.transla
   if(A.result){b.fillStyle='rgba(10,6,30,.82)';b.fillRect(0,0,W,H);const R=A.result,cy=H*.32;T('FIM DA ARENA',W/2,cy,12,'center','#ffd040',W-20,C.ink);T(`Você aguentou ${R.w} onda${R.w===1?'':'s'}`,W/2,cy+22,8,'center','#ffffff');
     if(R.nb)T('NOVO RECORDE!',W/2,cy+36,8,'center','#7ae88a',0,C.ink);T(`+${R.coins} moedas`,W/2,cy+52,8,'center','#ffe070');
     rrect(W/2-50,cy+72,100,22,6,'#3fae5a');T('JOGAR DE NOVO',W/2,cy+78,7,'center',C.white);rrect(W/2-50,cy+100,100,22,6,'#6a6488');T('SAIR',W/2,cy+106,7,'center',C.white);}}
+/* ARCOOP (04/nov, Felipe: "no jogo em dupla temos que compartilhar a mesma estrada, 2 estradas vão convergir em 1 estrada no meio pros 2"):
+   No JUNTOS cada um tem a sua estrada que sobe pela esquerda; as duas se juntam na ESTRADA DO MEIO (entre os dois tabuleiros) e vão até o portão na direita.
+   Na estrada do meio os dois podem acertar os inimigos de qualquer um: os inimigos do parceiro aparecem como "fantasmas" (posição pelo estado de 0,5 s) e o dano vai pra ele por mensagem 'ad'.
+   A estrada ficou mais curta, então no JUNTOS os inimigos andam 30% mais devagar. */
+function arCoop(A){return !!(A&&A.mp&&A.mp.mode==='coop');}
+function arLeg(G2){return G2.by-G2.ty;}
+{const _sp2=arSpawn;arSpawn=function(boss){_sp2(boss);const A=AR;if(arCoop(A)){const e=A.en[A.en.length-1];if(e)e.spd*=.7;}};}
+{const _t=arTarget;arTarget=function(){const own=_t(),A=AR;if(!arCoop(A)||!A.gh)return own;const L=arLeg(arGeo());let g=null;for(const x of A.gh)if(x.hp>0&&x.d>=L&&(!g||x.d>g.d))g=x;if(!g)return own;if(!own)return g;
+  /* os dois perto do portão: mira em quem está mais à frente */return g.d>own.d?g:own;};}
+{const _h2=arHit;arHit=function(e,dmg,ty,col){if(e&&e.ghost){if(e.hp<=0)return;e.hp-=dmg;e.hit=6;const A=AR;try{duoEmit(A.mp.S,'ad',{i:e.nid,d:Math.round(dmg*10)/10,t:ty});}catch(_){}
+    A.dn=A.dn||[];if(A.dn.length<26&&dmg>=e.max*.04){const p=arPos(arGeo(),e.d);A.dn.push({x:p.x,y:p.y-24,v:Math.round(dmg),col:col||'#ffffff',life:28});}A.dmgT=(A.dmgT||0)+dmg;return;}
+  _h2(e,dmg,ty,col);};}
+function arCoopDmg(d){const A=AR;if(!A)return;const e=A.en.find(x=>x.nid===d.i&&x.hp>0);if(e)arHit(e,+d.d||0,d.t||'normal');}
+function arGhosts(A){if(!arCoop(A))return;const P=A.mp.peer||{},G2=arGeo(),PL=arPathLen(G2),old={};for(const g of A.gh||[])old[g.nid]=g;const out=[];
+  for(const q of P.q||[]){if(q[3]==null)continue;const d=q[0]/1000*PL,g=old[q[3]];const hp=(q[4]==null?100:q[4]);
+    if(g){if(Math.abs(g.d-d)>14)g.d=d;else g.d+=(d-g.d)*.5;g.spd=(q[5]||0)/1000;g.hp=Math.min(g.hp,hp);g.boss=!!q[2];out.push(g);}
+    else out.push({ghost:1,nid:q[3],sp:q[1],boss:!!q[2],d,hp,max:100,spd:(q[5]||0)/1000,slow:0,hit:0,id:q[3]*.13,sc:q[2]?.5:.28});}
+  A.gh=out;}
+{const _u=arRushTick;arRushTick=function(A){_u(A);if(arCoop(A)&&A.gh){for(const g of A.gh){g.d+=g.spd;if(g.hit>0)g.hit--;}A.gh=A.gh.filter(g=>g.hp>0&&g.d<arPathLen(arGeo()));}};}
+function arMpSnap(A){const M=A.mp;if(!M)return;const PL=arPathLen(arGeo());duoEmit(M.S,'as',{g:A.grid.map(u=>u?[u.sp,u.star]:0),l:A.lives,w:A.wave,k:A.kills,e:A.en.length,n:String(flags.nome||'').slice(0,12),dm:Math.round(A.dmgT||0),
+  q:A.en.filter(e=>e.hp>0).slice(0,24).map(e=>{if(!e.nid)e.nid=(A.nidc=(A.nidc||0)+1);return [Math.round(e.d/PL*1000),e.sp,e.boss?1:0,e.nid,Math.max(1,Math.round(e.hp/e.max*100)),Math.round(e.spd*(1-(e.slow||0))*(e.frz>0?0:1)*1000)];})});}
+/* desenho do JUNTOS: tabuleiro do parceiro em cima, a estrada dele desce pela esquerda até a estrada do meio */
+function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,top=25,L=arLeg(G2),bot=G2.ty-34,avail=Math.max(20,bot-top),k=Math.min(.6,avail/(G2.bh+12)),lx=G2.lx,ky=(G2.ty-top-4)/L;
+  /* estrada do parceiro */
+  b.save();b.lineCap='round';b.strokeStyle='#123a42';b.lineWidth=15;b.beginPath();b.moveTo(lx,top+4);b.lineTo(lx,G2.ty);b.stroke();b.strokeStyle='#86c2b9';b.lineWidth=12;b.stroke();b.strokeStyle='rgba(255,255,255,.18)';b.lineWidth=5;b.stroke();b.restore();
+  b.save();b.globalCompositeOperation='lighter';glowAt(lx,top+4,14,'190,90,255',.5);b.restore();E(lx,top+4,9,5,'#3a0e5a',0,false);E(lx,top+4,6.5,3.5,'#8a3ae0',0,false);
+  /* tabuleiro do parceiro */
+  const _T=T;T=function(){};try{b.save();b.translate(W/2+6,top+4);b.scale(k,k);b.translate(-W/2,-(G2.y0-6));arSBoard(G2);
+    for(let i=0;i<15;i++){const u=P.g&&P.g[i];if(!u)continue;const q=arCellXY(i);arSPiece({sp:u[0],star:u[1]},q.x,q.y,1,t,{seed:i});}b.restore();}catch(e){try{b.restore();}catch(_){}}T=_T;
+  /* inimigos do parceiro (fantasmas) */
+  for(const g of A.gh||[]){let x,y,dir;if(g.d>=L){const p=arPos(G2,g.d);x=p.x;y=p.y;dir=p.dir;}else{x=lx;y=G2.ty-(L-g.d)*ky;dir='s';}
+    E(x,y+2,g.boss?10:5,g.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(g.hit>0)b.filter='brightness(1.8)';arDrawMon(g.sp,x,y-(g.boss?16:9),g.sc,'walk',dir,g.id*10);b.restore();
+    const bw=g.boss?24:12;px(x-bw/2-.5,y-(g.boss?42:22)-.5,bw+1,3,'#1a0a0a');px(x-bw/2,y-(g.boss?42:22),bw*Math.max(0,g.hp/g.max),2,'#ffb070');}
+  T(`Parceiro: ${P.n||'…'}  ❤ dividido`,W/2+6,top+4+(G2.bh+12)*k+1,4.8,'center','#e0fff8',W-30,C.ink);
+  T(`dano ${arFmt(P.dm)} · você ${arFmt(A.dmgT)}`,W-6,top+1,4.6,'right','#ffe8a0',60,C.ink);
+  if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do parceiro…',W/2,H/2-8,6,'center','#ffffff');}}
 
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").

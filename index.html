@@ -10682,7 +10682,7 @@ function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,top=25,L=arLeg
 
 /* ARCOOP2 (04/nov, Felipe mandou o print do jogo em dupla: "Assim"): no JUNTOS os DOIS tabuleiros do mesmo tamanho, um em cima do outro (o do parceiro em cima),
    casas 26x26; a sua estrada sobe pela esquerda do seu, a dele desce pela esquerda do dele, e as duas viram a estrada do meio, entre os tabuleiros, até o portão na direita. Faixa da onda no topo. */
-{const _g=arGeo;arGeo=function(){const mp=!!(AR&&AR.mp),co=arCoop(AR),cs=co?26:25,ch=cs,cols=5,rows=3,bw=cs*cols,bh=ch*rows,x0=co?32:Math.round((W-bw)/2),y0=mp?H-(arSk()==='pedra'?71:59)-bh:Math.round(32+((H-arBarH()-7-32)-(bh+21))/2+19),lx=12,rx=co?W-9:W-12,ty=y0-19,by=y0+bh+2;
+{const _g=arGeo;arGeo=function(){const mp=!!(AR&&AR.mp),co=arCoop(AR),cs=co?26:24,ch=cs,cols=5,rows=3,bw=cs*cols,bh=ch*rows,x0=co?32:Math.round((W-bw)/2),y0=mp?H-(arSk()==='pedra'?71:59)-bh:Math.round(32+((H-arBarH()-7-32)-(bh+21))/2+19),lx=co?12:11.5,rx=co?W-9:W-11.5,ty=y0-19,by=y0+bh+2;
   return {cs,ch,cols,rows,bw,bh,x0,y0,lx,rx,ty,by,pts:co?[[lx,by],[lx,ty],[rx,ty]]:[[lx,by],[lx,ty],[rx,ty],[rx,by]]};};}
 function arCoopUnder(A,G2,t){const P=A.mp.peer||{},L=arLeg(G2),lx=G2.lx,top=G2.ty-L,dy=(G2.ty-19-G2.bh)-G2.y0;
   b.save();b.lineCap='round';b.beginPath();b.moveTo(lx,top);b.lineTo(lx,G2.ty);b.strokeStyle='#8a6a40';b.lineWidth=25;b.stroke();b.strokeStyle='#7aa45a';b.lineWidth=23;b.stroke();b.strokeStyle='#ead2a4';b.lineWidth=19.5;b.stroke();b.setLineDash([.8,6]);b.lineCap='butt';b.strokeStyle='#c9ad7e';b.stroke();b.setLineDash([]);b.restore();arPortal(lx,top,t);
@@ -11035,7 +11035,7 @@ function arSBgPedra(){b.fillStyle='#1e2a3e';b.fillRect(0,0,W,H);for(let y=0,r=0;
 function arVSegArt(x,y1,y2,w){const V=a2('estrada_reta_vertical');if(!V||y2<=y1)return false;b.save();b.beginPath();b.rect(x-w/2,y1,w,y2-y1);b.clip();b.imageSmoothingEnabled=true;for(let y=y1;y<y2;y+=w-.4)b.drawImage(V,x-w/2,y,w,w);b.restore();return true;}
 function arHSegArt(y,x1,x2,w){const Hh=a2('estrada_reta_horizontal');if(!Hh||x2<=x1)return false;b.save();b.beginPath();b.rect(x1,y-w/2,x2-x1,w);b.clip();b.imageSmoothingEnabled=true;for(let x=x1;x<x2;x+=w-.4)b.drawImage(Hh,x,y-w/2,w,w);b.restore();return true;}
 function arSPath(G2,t){if(arSk()==='pedra')return arSPathPedra(G2,t);const C=a2('estrada_curva'),J=a2('estrada_juncao');
-  if(C&&a2('estrada_reta_vertical')&&a2('estrada_reta_horizontal')){const P=G2.pts,w=25,lx=P[0][0],by=P[0][1],ty=P[1][1],rx=P[2][0],U=P.length>3;
+  if(C&&a2('estrada_reta_vertical')&&a2('estrada_reta_horizontal')){const P=G2.pts,w=arCoop(AR)?25:23,lx=P[0][0],by=P[0][1],ty=P[1][1],rx=P[2][0],U=P.length>3;
     arVSegArt(lx,ty+w/2-.3,by+3,w);arHSegArt(ty,lx+w/2-.3,U?rx-w/2+.3:rx+w,w);if(U)arVSegArt(rx,ty+w/2-.3,by+3,w);
     b.save();b.imageSmoothingEnabled=true;b.drawImage(arCoop(AR)&&J?J:C,lx-w/2,ty-w/2,w,w);if(U){b.translate(rx,ty);b.scale(-1,1);b.drawImage(C,-w/2,-w/2,w,w);}b.restore();
     arPortal(lx,by,t);const gx=P[P.length-1][0],gy=P[P.length-1][1],gu=U?-8:0,GI=a2('portao');if(GI)b.drawImage(GI,gx-10,gy-14+gu,20,26);else{rrect(gx-10,gy-13+gu,19,25,9,'#8a6a40',false);}return;}

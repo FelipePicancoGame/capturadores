@@ -10546,7 +10546,7 @@ function arRushDraw(A,G2){const t=A.t;
   b.save();b.lineCap='round';b.strokeStyle='rgba(255,255,255,.18)';b.lineWidth=2.2;b.beginPath();b.arc(hx,hy,r+1.2,0,Math.PI*2);b.stroke();b.strokeStyle=full?'#ffe040':'#7ad0ff';b.beginPath();b.arc(hx,hy,r+1.2,-Math.PI/2,-Math.PI/2+Math.PI*2*f);b.stroke();b.restore();
   if(full)T('PODER!',hx,hy+r-6,4.8,'center','#fff3a0',30,C.ink);}
 function arMpSnap(A){const M=A.mp;if(!M)return;const PL=arPathLen(arGeo());duoEmit(M.S,'as',{g:A.grid.map(u=>u?[u.sp,u.star]:0),l:A.lives,w:A.wave,k:A.kills,e:A.en.length,n:String(flags.nome||'').slice(0,12),dm:Math.round(A.dmgT||0),q:A.en.filter(e=>e.hp>0).slice(0,24).map(e=>[Math.round(e.d/PL*1000),e.sp,e.boss?1:0])});}
-function arMpDraw(A){if(arCoop(A))return arCoopDraw(A);const M=A.mp,P=M.peer||{},G2=arGeo(),top=24,bot=G2.ty-37,avail=Math.max(20,bot-top),fullH=(G2.by-G2.ty)+16,k=Math.min(.6,avail/fullH),PL=arPathLen(G2),t=A.t;
+function arMpDraw(A){if(arCoop(A))return arCoopDraw(A);if(A.mp.mode==='pvp')return arPvpDraw(A);const M=A.mp,P=M.peer||{},G2=arGeo(),top=24,bot=G2.ty-37,avail=Math.max(20,bot-top),fullH=(G2.by-G2.ty)+16,k=Math.min(.6,avail/fullH),PL=arPathLen(G2),t=A.t;
   const _T=T;T=function(){};try{b.save();b.translate(W/2,top+5*k);b.scale(k,k);b.translate(-W/2,-(G2.ty-8));
     rrect(G2.lx-8,G2.ty-12,G2.rx-G2.lx+16,fullH+4,10,M.mode==='pvp'?'rgba(90,20,40,.55)':'rgba(20,40,90,.55)',false);
     if(window.ARSTY!==0){arSPath(G2,t);arSBoard(G2);}else if(!arArtPath(G2)){b.save();b.lineCap='round';b.lineJoin='round';b.strokeStyle='#c8a46a';b.lineWidth=10;b.beginPath();G2.pts.forEach((q,i)=>i?b.lineTo(q[0],q[1]):b.moveTo(q[0],q[1]));b.stroke();b.restore();}
@@ -10589,13 +10589,13 @@ function arStrip(A,G2,y){const co=arCoop(A),h=19,sx=co?36:2,ex=co?W-36:W-2,T2=ar
   const n=Math.min(co?7:13,Math.max(0,A.spawnLeft)+A.en.filter(e=>e.hp>0&&!e.boss).length);for(let k=0;k<n;k++)arSSkull(sx+7+k*4.6,y+14.2);
   const fx=cx-22,fy=y+h/2;E(fx,fy,7.6,7.6,now?'#ff5060':'#c9982c',0,false);E(fx,fy,6.6,6.6,'#2a1020',0,false);b.save();b.beginPath();b.arc(fx,fy,6.4,0,Math.PI*2);b.clip();arDrawMon(bsp,fx,fy-3,.19,'idle','s',2);b.restore();
   T(T2.t==='—'||T2.t==='…'?T2.t:'⏱ '+T2.t,cx-12,y+3.5,7,'left',T2.red?'#ffc0c0':'#ffffff',46,C.ink);
-  if(co){}else if(A.mp){const M=A.mp,P=M.peer||{};T(`❤${A.lives}`,W-8,y+3.5,6.5,'right','#ffb0b8',30,C.ink);}
+  if(co){}else if(A.mp){const M=A.mp,P=M.peer||{},pl=P.l==null?3:P.l;T((P.n||'Rival').slice(0,9),ex-6,y+2.5,5,'right','#ffe0e0',34,C.ink);T('❤'.repeat(Math.max(0,pl))+'♡'.repeat(Math.max(0,3-pl)),ex-6,y+10,5.5,'right','#ff6070',30,C.ink);}
   else{const nb=arNextBoss(A);T(now?'CHEFE!':nb===0?'chefe já':`chefe em ${nb}`,W-7,y+4.5,5.4,'right',now||nb<=1?'#ffc0c0':'#f0e0c8',36,C.ink);}}
 function arBanner(A,G2,y){if(A.mp||A.wave===0)return;const bsp=arBossSp(A),P=ARBP[arBossPow(bsp)],nb=arNextBoss(A),bo=A.en.find(e=>e.boss&&e.hp>0),nm=(SP[bsp]&&SP[bsp].name)||'Chefe';
   const txt=bo?`CHEFE ${nm}: ${P.ic} ${P.n}`:nb===0?`Chefe ${nm} nesta onda! ${P.ic}`:`Faltam ${nb} onda${nb>1?'s':''} para o chefe ${nm} ${P.ic}`;
   rrect(10,y,W-20,15,5,bo||nb===0?'rgba(110,15,30,.78)':'rgba(10,25,35,.72)',false);T(txt,W/2,y+4,5.8,'center','#ffffff',W-26,C.ink);}
 function arRender2(){const A=AR,G2=arGeo(),t=A.t;b.save();if(A.shake>0)b.translate((Math.random()-.5)*3,(Math.random()-.5)*3);
-  arSBg();if(arCoop(A))arCoopUnder(A,G2,t);arSPath(G2,t);arSBoard(G2);
+  arSBg();if(arCoop(A))arCoopUnder(A,G2,t);else if(A.mp&&A.mp.mode==='pvp')arPvpUnder(A,G2,t);arSPath(G2,t);arSBoard(G2);
   const selU=A.sel>=0?A.grid[A.sel]:null;
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u||(A.drag&&A.drag.i===i))continue;const p=arCellXY(i),pop=Math.max(0,1-(t-u.born)/12);arSPiece(u,p.x,p.y,(1+pop*.25)*G2.cs/30,t,{glow:selU&&i!==A.sel&&arCanMerge(A.sel,i),sel:i===A.sel,atk:u.atk>0,seed:i*.37});}
   if(A.drag&&A.grid[A.drag.i])arSPiece(A.grid[A.drag.i],A.drag.x,A.drag.y,1.12*G2.cs/30,t,{sel:1});
@@ -10607,7 +10607,7 @@ function arRender2(){const A=AR,G2=arGeo(),t=A.t;b.save();if(A.shake>0)b.transla
   for(const p of A.parts){b.globalAlpha=Math.max(0,p.life/22);px(p.x,p.y,1.6,1.6,p.col);}b.globalAlpha=1;b.restore();
   /* topo */
   rrect(3,4,30,16,5,'#16242a',false);rrect(3.5,4,29,15,5,'#3a6ad8',false);T('SAIR',18,8,6,'center',C.white,26,C.ink);
-  if(!arCoop(A))T('ARENA',W/2,3,8,'center',C.white,70,C.ink);if(!arCoop(A))T(A.goal?`Fase ${A.stgI+1}`:A.mp?'':`recorde: onda ${A.best}`,W/2,14,5,'center','#d8f4ee');
+  if(!A.mp)T('ARENA',W/2,3,8,'center',C.white,70,C.ink);if(!A.mp)T(A.goal?`Fase ${A.stgI+1}`:A.mp?'':`recorde: onda ${A.best}`,W/2,14,5,'center','#d8f4ee');
   for(let k=0;k<3;k++)T(k<A.lives?'❤':'♡',W-29+k*9,6,7,'center',k<A.lives?'#ff5068':'#6a8088',0,C.ink);
   if(arCoop(A)){arStrip(A,G2,2);}else if(A.mp){arStrip(A,G2,G2.ty-27);}else{arStrip(A,G2,24);arBanner(A,G2,Math.max(46,Math.min(G2.ty-34,(24+19+G2.ty-12)/2-7)));}
   /* barra de baixo */
@@ -10640,7 +10640,7 @@ function arRender2(){const A=AR,G2=arGeo(),t=A.t;b.save();if(A.shake>0)b.transla
    A estrada ficou mais curta, então no JUNTOS os inimigos andam 30% mais devagar. */
 function arCoop(A){return !!(A&&A.mp&&A.mp.mode==='coop');}
 function arLeg(G2){return G2.by-G2.ty;}
-{const _sp2=arSpawn;arSpawn=function(boss){_sp2(boss);const A=AR;if(arCoop(A)){const e=A.en[A.en.length-1];if(e)e.spd*=.7;}};}
+{const _sp2=arSpawn;arSpawn=function(boss){_sp2(boss);const A=AR;if(A&&A.mp){const e=A.en[A.en.length-1];if(e)e.spd*=.7;}};}
 {const _t=arTarget;arTarget=function(){const own=_t(),A=AR;if(!arCoop(A)||!A.gh)return own;const L=arLeg(arGeo());let g=null;for(const x of A.gh)if(x.hp>0&&x.d>=L&&(!g||x.d>g.d))g=x;if(!g)return own;if(!own)return g;
   /* os dois perto do portão: mira em quem está mais à frente */return g.d>own.d?g:own;};}
 {const _h2=arHit;arHit=function(e,dmg,ty,col){if(e&&e.ghost){if(e.hp<=0)return;e.hp-=dmg;e.hit=6;const A=AR;try{duoEmit(A.mp.S,'ad',{i:e.nid,d:Math.round(dmg*10)/10,t:ty});}catch(_){}
@@ -10673,7 +10673,7 @@ function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,top=25,L=arLeg
 
 /* ARCOOP2 (04/nov, Felipe mandou o print do jogo em dupla: "Assim"): no JUNTOS os DOIS tabuleiros do mesmo tamanho, um em cima do outro (o do parceiro em cima),
    casas 26x26; a sua estrada sobe pela esquerda do seu, a dele desce pela esquerda do dele, e as duas viram a estrada do meio, entre os tabuleiros, até o portão na direita. Faixa da onda no topo. */
-{const _g=arGeo;arGeo=function(){if(!arCoop(AR))return _g();const cs=26,ch=26,cols=5,rows=3,bw=cs*cols,bh=ch*rows,x0=Math.round((W-bw)/2)+3,y0=H-174,lx=9,rx=W-6,ty=y0-15,by=y0+bh+2;
+{const _g=arGeo;arGeo=function(){if(!(AR&&AR.mp))return _g();const cs=26,ch=26,cols=5,rows=3,bw=cs*cols,bh=ch*rows,x0=Math.round((W-bw)/2)+3,y0=H-174,lx=9,rx=W-6,ty=y0-15,by=y0+bh+2;
   return {cs,ch,cols,rows,bw,bh,x0,y0,lx,rx,ty,by,pts:[[lx,by],[lx,ty],[rx,ty]]};};}
 function arCoopUnder(A,G2,t){const P=A.mp.peer||{},L=arLeg(G2),lx=G2.lx,top=G2.ty-L,dy=(G2.ty-15-G2.bh)-G2.y0;
   b.save();b.lineCap='round';b.strokeStyle='#123a42';b.lineWidth=15;b.beginPath();b.moveTo(lx,top);b.lineTo(lx,G2.ty);b.stroke();b.strokeStyle='#86c2b9';b.lineWidth=12;b.stroke();b.strokeStyle='rgba(255,255,255,.18)';b.lineWidth=5;b.stroke();b.restore();
@@ -10686,6 +10686,17 @@ function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,L=arLeg(G2),lx
   T(`${P.n||'Parceiro'} · dano ${arFmt(P.dm)}`,W/2+3,G2.y0+dy-15,5,'center','#e0fff8',W-40,C.ink);
   T(`você · dano ${arFmt(A.dmgT)}`,W/2+3,G2.y0-10.5,0.01,'center','rgba(0,0,0,0)');
   if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do parceiro…',W/2,H/2-8,6,'center','#ffffff');}}
+
+/* ARPVP (04/nov, Felipe mandou o print do modo contra: "Fase de ovo" — entendido como o UM CONTRA O OUTRO): o tabuleiro do rival em cima, com a estrada e os inimigos dele;
+   no meio a faixa com a onda, o tempo, o chefe e os corações do rival; o seu embaixo. Cada um tem a sua estrada (esquerda + topo do tabuleiro, portão na direita). */
+function arPvpGeo(G2){const sy=G2.ty-27,Hb=G2.by-G2.ty+16,k=Math.min(1,(sy-4-22)/Hb);return {k,sy,top:22};}
+function arPvpUnder(A,G2,t){const P=A.mp.peer||{},V=arPvpGeo(G2),PL=arPathLen(G2);b.save();b.translate(W/2,V.top);b.scale(V.k,V.k);b.translate(-W/2,-(G2.ty-9));
+  try{arSPath(G2,t);arSBoard(G2);for(let i=0;i<15;i++){const u=P.g&&P.g[i];if(!u)continue;const q=arCellXY(i);arSPiece({sp:u[0],star:u[1]},q.x,q.y,G2.cs/30,t,{seed:i});}
+    for(const e of P.q||[]){const q=arPos(G2,e[0]/1000*PL);E(q.x,q.y+2,e[2]?10:5,e[2]?3:2,'rgba(0,0,0,.3)',0,false);arDrawMon(e[1],q.x,q.y-(e[2]?16:9),e[2]?.5:.28,'walk',q.dir,e[0]);
+      if(e[4]!=null){const bw=e[2]?24:12;px(q.x-bw/2,q.y-(e[2]?42:22),bw,2,'#1a0a0a');px(q.x-bw/2,q.y-(e[2]?42:22),bw*e[4]/100,2,'#ff7070');}}}catch(e){}
+  b.restore();}
+function arPvpDraw(A){const M=A.mp,P=M.peer||{};T(`Rival: ${P.n||'…'}`,W/2,2,6,'center','#ffe0ff',70,C.ink);T(`dano ${arFmt(P.dm)} · você ${arFmt(A.dmgT)}`,W/2,11,4.6,'center',(A.dmgT||0)>=(P.dm||0)?'#bff0c0':'#ffd0d0',90,C.ink);
+  if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do oponente…',W/2,H/2-8,6,'center','#ffffff');}}
 
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").

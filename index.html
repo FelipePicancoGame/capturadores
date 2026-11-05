@@ -11185,7 +11185,7 @@ function arZap(A,a,c){A.zaps=A.zaps||[];A.zaps.push({x1:a.x,y1:a.y-6,x2:c.x,y2:c
       if(!nb)break;hit.add(nb);const q=arPos(G2,nb.d);arZap(A,fp,q);arHit(nb,dmg*ab.cadeia[1],'x',ab.col);if(ab.paralisa&&!nb.boss&&Math.random()<ab.paralisa[0])nb.frz=Math.max(nb.frz||0,ab.paralisa[1]);fp=q;from=nb;}}
   if(ab.paralisa&&e0.hp>0&&!e0.boss&&Math.random()<ab.paralisa[0]){e0.frz=Math.max(e0.frz||0,ab.paralisa[1]);arPop(tp.x,tp.y-18,'PARALISADO!','#fff07a');}
   if(ab.raios&&s.u){s.u.nr=(s.u.nr||0)+1;if(s.u.nr%ab.raios[0]===0){for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d);if(ab.raios[3])arBurst(q.x,q.y-8,ab.col,6);else arZap(A,{x:q.x+(Math.random()-.5)*10,y:q.y-50},q);arHit(e,dmg*ab.raios[1],'x',ab.col);if(!e.boss)e.frz=Math.max(e.frz||0,ab.raios[2]);}
-    arPop(W/2,G2.ty+20,ab.raios[3]||'TEMPESTADE!',ab.raios[3]?'#e0c8a0':'#fff07a');A.fx=(A.fx||[]).concat([{x:W/2,y:G2.ty+40,r:90,col:ab.raios[3]?'#c8a070':'#fff0a0',t:18,T:18}]);A.shake=5;tone([880,660,990],.06,'square',.05);}}};}
+    arPop(W/2,G2.ty+20,ab.raios[3]||'TEMPESTADE!',ab.raios[3]?'#ffffff':'#fff07a');A.fx=(A.fx||[]).concat([{x:W/2,y:G2.ty+40,r:90,col:ab.raios[3]?ab.col:'#fff0a0',t:18,T:18}]);A.shake=5;tone([880,660,990],.06,'square',.05);}}};}
 /* /ARELETRICO */
 
 /* ARROCHA (05/nov, "proximo"): pedra atordoa, rola, empurra; Cascopedra ajuda os vizinhos com dano (mesmo aviso das flores) */
@@ -11216,6 +11216,31 @@ Object.assign(ARAB,{
 {const _pd=arPlantaDraw;arPlantaDraw=function(A,G2,t){_pd(A,G2,t);for(const e of A.en){if(e.hp<=0||!(e.ice>0))continue;e.ice--;if(!(e.frz>0)){e.ice=0;continue;}const q=arPos(G2,e.d),h=e.boss?30:18,w=e.boss?20:13;
   b.save();b.globalAlpha=.55;rrect(q.x-w/2,q.y-h+1,w,h,3,'#bfeaff',false);b.globalAlpha=.8;b.strokeStyle='#ffffff';b.lineWidth=.8;b.strokeRect(q.x-w/2+.5,q.y-h+1.5,w-1,h-1);px(q.x-w/2+2,q.y-h+3,2,h*.5,'#ffffff');b.restore();}};}
 /* /ARGELO */
+
+/* ARFANTASMA (05/nov, "ok"): susto (o inimigo volta para trás), maldição (leva mais dano), crítico, atravessa; Noctávio pesadelo em todos */
+Object.assign(ARAB,{
+ assombro:{n:'Susto',d:'às vezes assusta o inimigo, que volta para trás',col:'#c0a0ff',medo:[.18,45]},
+ assombrao:{n:'Pavor',d:'assusta todos em volta do alvo',col:'#a080ff',area:[18,.4],medo:[.22,55],medoArea:1},
+ espectron:{n:'Assombração',d:'atravessa 3 inimigos e às vezes dá crítico',col:'#9070e0',perfura:3,crit:[.2,2.5]},
+ auroril:{n:'Luz Fantasma',d:'30% de chance de crítico triplo',col:'#e0b0ff',crit:[.3,3]},
+ aurorion:{n:'Aurora',d:'crítico triplo e brilho que acerta em volta',col:'#d090ff',crit:[.35,3],area:[16,.45]},
+ sombrin:{n:'Sombra',d:'amaldiçoa: o inimigo leva +25% de dano de todos',col:'#7a50c0',maldicao:[.25,180]},
+ sombrale:{n:'Maldição',d:'amaldiçoa todos em volta: +40% de dano',col:'#6a40b0',area:[18,.35],maldicao:[.4,200],maldArea:1},
+ noctavio:{n:'Pesadelo',d:'a cada 5 ataques, todos se assustam e voltam',col:'#5a30a0',maldicao:[.25,150],raios:[5,.4,0,'PESADELO!'],medoTodos:50}});
+{const _h=arHit;arHit=function(e,dmg,ty,col){if(e&&e.curseT>0)dmg*=1+(e.curse||0);return _h(e,dmg,ty,col);};}
+function arScare(e,dur){if(!e||e.hp<=0||e.boss)return;e.fear=Math.max(e.fear||0,dur);}
+function arCurse(e,f,dur){if(!e||e.hp<=0)return;e.curse=Math.max(e.curseT>0?e.curse:0,f);e.curseT=Math.max(e.curseT||0,dur);}
+{const _oh=arOnHit;arOnHit=function(A,s,tp,dmg){_oh(A,s,tp,dmg);const ab=s.ab,e0=s.tg,G2=arGeo();
+  if(ab.crit&&e0.hp>0&&Math.random()<ab.crit[0]){arHit(e0,dmg*(ab.crit[1]-1),'x',ab.col);arPop(tp.x,tp.y-18,'CRÍTICO!','#e0b0ff');}
+  const near=r=>A.en.filter(e=>e.hp>0&&Math.hypot(arPos(G2,e.d).x-tp.x,arPos(G2,e.d).y-tp.y)<r);
+  if(ab.medo&&Math.random()<ab.medo[0]){const L=ab.medoArea?near(ab.area[0]):[e0];for(const e of L)arScare(e,ab.medo[1]);if(L.some(e=>!e.boss))arPop(tp.x,tp.y-18,'BUUU!','#d8c0ff');}
+  if(ab.maldicao){const L=ab.maldArea?near(ab.area[0]):[e0];for(const e of L)arCurse(e,ab.maldicao[0],ab.maldicao[1]);}
+  if(ab.medoTodos&&ab.raios&&s.u&&s.u.nr%ab.raios[0]===0)for(const e of A.en)arScare(e,ab.medoTodos);};}
+{const _rt=arRushTick;arRushTick=function(A){_rt(A);for(const e of A.en){if(e.hp<=0)continue;if(e.curseT>0)e.curseT--;if(e.fear>0){e.fear--;if(!(e.frz>0))e.d=Math.max(0,e.d-e.spd*1.6);}}};}
+{const _pd=arPlantaDraw;arPlantaDraw=function(A,G2,t){_pd(A,G2,t);for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d),hh=e.boss?40:20;
+  if(e.curseT>0){b.save();b.globalAlpha=.35+.15*Math.sin(t/5);b.globalCompositeOperation='lighter';E(q.x,q.y-hh*.45,e.boss?14:8,e.boss?18:10,'#8a4aff',0,false);b.restore();E(q.x,q.y-hh-4,1.6,1.6,'#c090ff',0,false);}
+  if(e.fear>0){T('!!',q.x+6,q.y-hh-2,5.5,'center','#ffffff',0,'#5a30a0');}}};}
+/* /ARFANTASMA */
 
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").

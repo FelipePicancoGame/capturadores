@@ -10594,7 +10594,7 @@ function arStrip(A,G2,y){const co=arCoop(A),h=19,sx=co?36:2,ex=co?W-36:W-2,T2=ar
 function arBanner(A,G2,y){if(A.mp||A.wave===0)return;const bsp=arBossSp(A),P=ARBP[arBossPow(bsp)],nb=arNextBoss(A),bo=A.en.find(e=>e.boss&&e.hp>0),nm=(SP[bsp]&&SP[bsp].name)||'Chefe';
   const txt=bo?`CHEFE ${nm}: ${P.ic} ${P.n}`:nb===0?`Chefe ${nm} nesta onda! ${P.ic}`:`Faltam ${nb} onda${nb>1?'s':''} para o chefe ${nm} ${P.ic}`;
   rrect(10,y,W-20,15,5,bo||nb===0?'rgba(110,15,30,.78)':'rgba(10,25,35,.72)',false);T(txt,W/2,y+4,5.8,'center','#ffffff',W-26,C.ink);}
-function arRender2(){const A=AR,G2=arGeo(),t=A.t;b.save();if(A.shake>0)b.translate((Math.random()-.5)*3,(Math.random()-.5)*3);
+function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);else arEntryDraw(A);return;}const G2=arGeo(),t=A.t;b.save();if(A.shake>0)b.translate((Math.random()-.5)*3,(Math.random()-.5)*3);
   arSBg();if(arCoop(A))arCoopUnder(A,G2,t);else if(A.mp&&A.mp.mode==='pvp')arPvpUnder(A,G2,t);arSPath(G2,t);arSBoard(G2);
   const selU=A.sel>=0?A.grid[A.sel]:null;
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u||(A.drag&&A.drag.i===i))continue;const p=arCellXY(i),pop=Math.max(0,1-(t-u.born)/12);arSPiece(u,p.x,p.y,(1+pop*.25)*G2.cs/30,t,{glow:selU&&i!==A.sel&&arCanMerge(A.sel,i),sel:i===A.sel,atk:u.atk>0,seed:i*.37});}
@@ -10698,6 +10698,91 @@ function arPvpUnder(A,G2,t){const P=A.mp.peer||{},V=arPvpGeo(G2),PL=arPathLen(G2
 function arPvpDraw(A){const M=A.mp,P=M.peer||{};T(`Rival: ${P.n||'…'}`,W/2,2,6,'center','#ffe0ff',70,C.ink);T(`dano ${arFmt(P.dm)} · você ${arFmt(A.dmgT)}`,W/2,11,4.6,'center',(A.dmgT||0)>=(P.dm||0)?'#bff0c0':'#ffd0d0',90,C.ink);
   if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do oponente…',W/2,H/2-8,6,'center','#ffffff');}}
 
+/* ARENTRADA (04/nov, Felipe mandou prints "Entrada" e "Mapa de progressão das fases"): MENU › ARENA abre uma tela própria (desenhada por código):
+   MASMORRAS (fases), JUNTOS e CONTRA (com um amigo), o SEU TIME com 5 decks salvos (toque num monstrinho para trocar), e SEM FIM.
+   MASMORRAS: regra da semana (um tipo causa +50% de dano nas fases), capítulos = mundos, lista de andares com os inimigos, força, ondas, estrelas, baú e JOGAR. */
+const ARWKT=['fogo','agua','planta','eletrico','rocha','gelo'],ARWKN={fogo:'Fogo',agua:'Água',planta:'Planta',eletrico:'Elétrico',rocha:'Pedra',gelo:'Gelo'};
+function arWeek(){const ms=7*864e5,n=Math.floor(Date.now()/ms);return {ty:ARWKT[n%ARWKT.length],left:(n+1)*ms-Date.now()};}
+{const _st=arStats;arStats=function(sp,star){const S=_st(sp,star);try{if(AR&&AR.goal&&S.ty===arWeek().ty)S.dmg*=1.5;}catch(e){}return S;};}
+function arSpLv(sp){let L=0;for(const m of party)if(m.sp===sp&&m.lv>L)L=m.lv;return L;}
+function arHit2(x,y,w,h,f){AR.hits.push({x,y,w,h,f});}
+function arBtn(x,y,w,h,c1,c2,txt,size){rrect(x,y+1.5,w,h,6,'#0c1418',false);const g=b.createLinearGradient(0,y,0,y+h);g.addColorStop(0,c1);g.addColorStop(1,c2);b.fillStyle=g;b.beginPath();b.roundRect?b.roundRect(x,y,w,h,6):b.rect(x,y,w,h);b.fill();b.save();b.globalAlpha=.25;rrect(x+2,y+1,w-4,h*.4,5,'#ffffff',false);b.restore();if(txt)T(txt,x+w/2,y+h/2-(size||7)*.55,size||7,'center','#ffffff',w-6,C.ink);}
+function arChest(x,y,s,open){rrect(x-7*s,y-3*s,14*s,9*s,2*s,'#7a4a1a',false);rrect(x-7*s,y-7*s,14*s,5*s,3*s,'#a0662a',false);px(x-7*s,y-3.5*s,14*s,1.4*s,'#f0c040');px(x-1*s,y-5*s,2*s,6*s,'#f0c040');px(x-1.2*s,y-2*s,2.4*s,2.4*s,'#ffe070');
+  if(open){T('✔',x+5*s,y-2*s,8*s,'center','#7aff5a',0,C.ink);}}
+function arLobbyBgDark(){arSBg();b.save();b.fillStyle='rgba(8,12,24,.45)';b.fillRect(0,0,W,H);b.restore();}
+function arEntryDraw(A){const t=A.t;A.hits=[];arLobbyBgDark();
+  T('ARENA',W/2,5,11,'center','#ffffff',120,C.ink);E(W-14,11,8,8,'#16242a',0,false);E(W-14,10,7,7,'#e04050',0,false);T('✕',W-14,6,7,'center','#ffffff',0,C.ink);arHit2(W-26,0,26,24,()=>A.pick({k:'x'}));
+  /* MASMORRAS */
+  const S=stgState('arena'),ch=Math.floor(S.next/STGN),fl=S.next%STGN,y1=26;rrect(6,y1,W-12,52,8,'#0c1418',false);{const g=b.createLinearGradient(0,y1,0,y1+50);g.addColorStop(0,'#2e6a70');g.addColorStop(1,'#173c48');b.fillStyle=g;b.beginPath();b.roundRect(7,y1+1,W-14,49,7);b.fill();}
+  const pool=arStgPool(BIOMES[Math.floor(S.next/3)%BIOMES.length]);for(let k=0;k<3;k++)arDrawMon(pool[k%pool.length],W-88+k*21,y1+30,.32,'idle','s',k);arChest(W-22,y1+30,1.3,false);
+  b.save();b.beginPath();b.moveTo(6,y1+28);b.lineTo(96,y1+28);b.lineTo(104,y1+40);b.lineTo(96,y1+52);b.lineTo(6,y1+52);b.closePath();b.fillStyle='#4aae3a';b.fill();b.restore();
+  T('MASMORRAS',12,y1+31,8,'left','#ffffff',84,C.ink);T(`Capítulo ${ch+1} · Andar ${fl+1}`,12,y1+42,5.2,'left','#e8ffe0',86,C.ink);T('Fases com chefes e baús',12,y1+5,5,'left','#cfeee6',90,C.ink);arHit2(6,y1,W-12,52,()=>{A.lobby='dg';A.scroll=null;tone([660,880],.05);});
+  /* JUNTOS e CONTRA */
+  const y2=y1+58,cw=(W-18)/2;[['JUNTOS','#9a3ae0','#6a1ab0','coop'],['CONTRA','#2a7ae8','#1a4ab0','pvp']].forEach((c,k)=>{const x=6+k*(cw+6);rrect(x,y2,cw,48,8,'#0c1418',false);const g=b.createLinearGradient(0,y2,0,y2+46);g.addColorStop(0,'#3a6a8a');g.addColorStop(1,'#1e3a54');b.fillStyle=g;b.beginPath();b.roundRect(x+1,y2+1,cw-2,45,7);b.fill();
+    arDrawMon(A.deck[k*2%A.deck.length]||'fagulho',x+cw/2-10,y2+20,.3,'idle','s',k);arDrawMon(A.deck[(k*2+1)%A.deck.length]||'marolo',x+cw/2+10,y2+20,.3,'idle',k?'w':'s',k+2);
+    b.save();b.beginPath();b.moveTo(x,y2+30);b.lineTo(x+cw-12,y2+30);b.lineTo(x+cw-6,y2+39);b.lineTo(x+cw-12,y2+48);b.lineTo(x,y2+48);b.closePath();b.fillStyle=c[1];b.fill();b.restore();
+    T(c[0],x+5,y2+32,7.5,'left','#ffffff',cw-16,C.ink);T(k?'um contra o outro':'os dois juntos',x+5,y2+3,4.6,'left','#e0ecff',cw-8,C.ink);arHit2(x,y2,cw,48,()=>A.pick({k:c[3]}));});
+  /* SEU TIME */
+  const y3=y2+54,ph=96;rrect(6,y3,W-12,ph,8,'#1e1008',false);{const g=b.createLinearGradient(0,y3,0,y3+ph);g.addColorStop(0,'#8a5630');g.addColorStop(1,'#4e2c14');b.fillStyle=g;b.beginPath();b.roundRect(7,y3+1,W-14,ph-2,7);b.fill();}
+  T('SEU TIME',12,y3+4,7,'left','#ffffff',60,C.ink);T('os 5 que você chama na partida',W-10,y3+6,4.4,'right','#f0dcc0',90);
+  b.save();b.translate(22,y3+30);b.scale(1.35,1.35);b.translate(-8,5);try{drawPerson(0,0,'down',0,LOOKS.player);}catch(e){}b.restore();T('herói',22,y3+46,4.6,'center','#ffe8b0',30,C.ink);
+  const dx0=40,dw=(W-48)/5;A.deck.forEach((sp,k)=>{const x=dx0+k*dw,col=ARCOL[arType(sp)]||'#ccc';rrect(x+1,y3+15,dw-2,38,5,'#1e1008',false);rrect(x+2,y3+16,dw-4,36,4,col,false);b.save();b.globalAlpha=.3;rrect(x+2,y3+16,dw-4,14,4,'#ffffff',false);b.restore();
+    arDrawMon(sp,x+dw/2,y3+31,.26,'idle','s',k);rrect(x+3,y3+43,dw-6,8,3,'rgba(20,10,5,.75)',false);T(`nv ${arSpLv(sp)||1}`,x+dw/2,y3+44,4.6,'center','#ffffff',dw-8);arHit2(x,y3+15,dw,38,()=>arTimeEdit(A));});
+  T('⚡ Poder do herói: congela todos',12,y3+57,4.8,'left','#fff3a0',W-24,C.ink);
+  arBtn(W/2-40,y3+65,80,17,'#4a9aff','#1a5ad8','TROCAR O TIME',6);arHit2(W/2-40,y3+64,80,19,()=>arTimeEdit(A));
+  T('Chamar começa com estes 5. Juntando, sai qualquer um deles.',W/2,y3+86,4.2,'center','#e8d0b0',W-20);
+  /* SEM FIM */
+  const y4=y3+ph+6;arBtn(6,y4,W-12,26,'#ffd84a','#f08a20');T('SEM FIM',W/2,y4+4,8,'center','#ffffff',100,C.ink);T(`sozinho · recorde: onda ${flags.arenaBest||0}`,W/2,y4+15,5,'center','#4a2a08',120);arHit2(6,y4,W-12,26,()=>A.pick({k:'solo'}));}
+async function arTimeEdit(A){if(A.busy)return;A.busy=1;try{const k=await arHub();A.deck=arDeck();if(k==='fases'){A.lobby='dg';A.scroll=null;}else if(k==='coop'||k==='pvp')A.pick({k});else if(k==='sem')A.pick({k:'solo'});}finally{A.busy=0;}}
+function arDgDraw(A){const t=A.t,S=stgState('arena'),wk=arWeek();A.hits=[];arLobbyBgDark();if(A.ch==null)A.ch=Math.min(STGW-1,Math.floor(S.next/STGN));const ch=A.ch,open=stgWOpen('arena',ch);
+  /* topo */
+  {const g=b.createLinearGradient(0,0,0,58);g.addColorStop(0,'#3a2a5a');g.addColorStop(1,'#1a1a34');b.fillStyle=g;b.fillRect(0,0,W,58);}
+  const bp=arStgPool(BIOMES[(ch*5)%BIOMES.length]);for(let k=0;k<4;k++)arDrawMon(bp[k%bp.length],22+k*45,44,.42,'idle','s',k+ch);b.fillStyle='rgba(10,8,30,.35)';b.fillRect(0,0,W,58);
+  T('MASMORRAS',W/2,14,12,'center','#ffffff',150,C.ink);const dd=Math.floor(wk.left/864e5),hh=Math.floor(wk.left/36e5)%24;T(`a regra muda em ${dd}d ${hh}h`,W/2,30,5.4,'center','#e8e0ff',130,C.ink);
+  /* regra */
+  rrect(0,58,W,24,0,'#6a4426',false);px(0,58,W,1.2,'#b07a40');px(0,81,W,1.2,'#2a160a');rrect(6,55,22,28,4,'#3a4ab0',false);E(17,67,7,7,ARCOL[wk.ty],0,false);T('⚔',17,63,7,'center','#ffffff',0,C.ink);
+  T('Regra da semana:',34,61,5,'left','#f0dcc0');T(`${ARWKN[wk.ty]} causa +50% de dano`,34,70,6.6,'left','#ffe040',W-40,C.ink);
+  /* capítulo */
+  const yc=88;rrect(4,yc,W-8,18,6,'#4a1a7a',false);rrect(5,yc+1,W-10,15,5,'#8a3ad8',false);T(`Capítulo ${ch+1}${open?'':' 🔒'}`,W/2,yc+4,8,'center','#ffffff',100,C.ink);
+  if(ch>0){T('◀',14,yc+4,8,'center','#ffffff',0,C.ink);arHit2(0,yc,30,20,()=>{A.ch--;A.scroll=null;tone(700,.03);});}
+  if(ch<STGW-1){T('▶',W-14,yc+4,8,'center','#ffffff',0,C.ink);arHit2(W-30,yc,30,20,()=>{A.ch++;A.scroll=null;tone(700,.03);});}
+  /* andares */
+  const y0=yc+21,y1=H-30,fh=74,tot=STGN*fh;if(A.scroll==null){const nx=S.next-ch*STGN;A.scroll=Math.max(0,Math.min(tot-(y1-y0),(Math.max(0,Math.min(STGN-1,nx))-.3)*fh));}A.scroll=Math.max(0,Math.min(Math.max(0,tot-(y1-y0)),A.scroll));A.dgY=[y0,y1];
+  b.save();b.beginPath();b.rect(0,y0,W,y1-y0);b.clip();
+  const TT=(s2,x,yy,...r)=>{if(yy>=y0-1&&yy<=y1-7)T(s2,x,yy,...r);};
+  for(let f=0;f<STGN;f++){const y=y0+f*fh-A.scroll;if(y>y1||y+fh<y0)continue;const g=ch*STGN+f,st=S.stars[g]||0,can=open&&g<=S.next,bio=BIOMES[Math.floor(g/3)%BIOMES.length];
+    rrect(8,y+3,W-16,fh-6,6,'#0e2a30',false);{const gr=b.createLinearGradient(0,y+3,0,y+fh-3);gr.addColorStop(0,can?'#3a7a7a':'#2a4a50');gr.addColorStop(1,can?'#22505a':'#1a3038');b.fillStyle=gr;b.beginPath();b.roundRect(9,y+4,W-18,fh-8,5);b.fill();}
+    px(14,y+34,W-28,6,'rgba(60,20,40,.55)');
+    TT(`Andar ${f+1}`,15,y+7,7.5,'left','#ffffff',70,C.ink);TT(bio.n,15,y+17,4.6,'left','#cfeee6',80);for(let s=0;s<3;s++)arStar5(W-40+s*9,y+12,3.4,s<st?'#ffd040':'#4a5a60');
+    const pl=arStgPool(bio);for(let k=0;k<4;k++)arDrawMon(pl[(k+f)%pl.length],26+k*19,y+38,.27,'idle','e',k+f);if((f+1)%5===0||f===STGN-1)TT('👑',98,y+24,7,'center','#ffffff');
+    arChest(W-26,y+33,1.2,st>0);
+    const mult=Math.round((.85+Math.min(g,15)*.1+Math.max(0,g-15)*.06)*100);rrect(13,y+fh-24,40,13,4,'rgba(10,20,25,.75)',false);TT('⚔',19,y+fh-22.5,6,'center','#ff9a40');TT(`${mult}%`,37,y+fh-21.5,5.6,'center','#ffd060',26);
+    rrect(W-53,y+fh-24,40,13,4,'rgba(10,20,25,.75)',false);TT(`${arStgGoal(g)} ondas`,W-33,y+fh-21.5,5.2,'center','#ffffff',36);
+    const vis=y+fh-27>=y0-2&&y+fh-14<=y1;if(can){arBtn(W/2-26,y+fh-27,52,18,'#4a9aff','#1a5ad8',vis?(st>0?'JOGAR DE NOVO':'JOGAR'):'',st>0?5.4:7.5);if(y+fh-27>=y0&&y+fh-9<=y1)arHit2(W/2-26,y+fh-27,52,18,()=>A.pick({k:'stage',i:g}));}
+    else{arBtn(W/2-26,y+fh-27,52,18,'#8a8a8a','#5a5a5a',vis?'🔒':'',7);if(y+fh-27>=y0&&y+fh-9<=y1)arHit2(W/2-26,y+fh-27,52,18,()=>{tone([300,240],.06,'square',.03);arLobbyMsg(A,open?'Vença o andar anterior primeiro!':`O Capítulo ${ch+1} abre quando você vencer o Capítulo ${ch}.`);});}}
+  b.restore();
+  /* barra de baixo */
+  rrect(0,H-28,W,28,0,'#5a3418',false);px(0,H-28,W,1.5,'#b07a40');arBtn(6,H-24,30,20,'#4a9aff','#1a5ad8','◀',8);arHit2(0,H-28,42,28,()=>{A.lobby='entry';tone(600,.03);});
+  const tot3=S.stars.slice(ch*STGN,ch*STGN+STGN).reduce((a,x)=>a+x,0);arStar5(W/2-26,H-14,4.5,'#ffd040');T(`${tot3}/${STGN*3}`,W/2-18,H-19,7,'left','#ffffff',50,C.ink);
+  if(A.msg&&A.msg.t>0){A.msg.t--;rrect(14,H/2-12,W-28,24,7,'rgba(10,15,25,.92)',false);T(A.msg.s,W/2,H/2-6,5.6,'center','#ffffff',W-34);}}
+function arLobbyMsg(A,s){A.msg={s,t:110};}
+function arLobbyInit(){if(window.__arlob)return;window.__arlob=1;let D=null;
+  stage.addEventListener('pointerdown',e=>{if(G.mode!=='arena'||!AR||AR.lobby!=='dg'||ui.length)return;const [x,y]=toCanvas(e);D={y0:y,s0:AR.scroll||0,id:e.pointerId,mv:false};});
+  stage.addEventListener('pointermove',e=>{if(!D||!AR||e.pointerId!==D.id)return;const [x,y]=toCanvas(e);if(Math.abs(y-D.y0)>5)D.mv=true;if(D.mv)AR.scroll=D.s0-(y-D.y0);});
+  const up=e=>{if(D&&D.mv&&AR)AR.dragEnd=performance.now();D=null;};stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',up);
+  stage.addEventListener('wheel',e=>{if(G.mode==='arena'&&AR&&AR.lobby==='dg'){AR.scroll=(AR.scroll||0)+e.deltaY*.3;}},{passive:true});}
+{const _tap=arTap;arTap=function(x,y){const A=AR;if(A&&A.lobby){if(ui.length)return;for(let k=(A.hits||[]).length-1;k>=0;k--){const h=A.hits[k];if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h){h.f();return;}}return;}return _tap(x,y);};}
+async function arLobbyShow(kind){await fadeTo(1);portraitScreen();document.body.classList.add('nopad');AR={lobby:kind,over:true,grid:[],en:[],t:0,hits:[],deck:arDeck()};arLobbyInit();arDragInit();G.mode='arena';await fadeTo(0);
+  const r=await new Promise(res=>{AR.pick=res;});await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;await fadeTo(0);return r;}
+async function arenaSolo(){await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();G.mode='arena';await fadeTo(0);
+  if(!flags.arenaSeen){flags.arenaSeen=1;saveGame();await say('ARENA! Os monstrinhos selvagens vão andar pelo caminho em volta do tabuleiro. Não deixe eles chegarem ao portão!');await say('Toque em CHAMAR: aparece um dos 5 monstrinhos do seu time. Junte 2 IGUAIS com as MESMAS estrelas para virar um mais forte.');await say('Embaixo, gaste mana para deixar cada tipo mais forte. A cada 5 ondas vem um CHEFE com um poder!');}
+  await new Promise(r=>{AR.done=r;});await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;saveGame();await fadeTo(0);}
+async function arenaMode2(){if(!party.length){await say('Você precisa de um monstrinho!');return;}let kind='entry';
+  while(true){const r=await arLobbyShow(kind);if(!r||r.k==='x')return;
+    if(r.k==='stage'){await stgLaunch('arena',r.i);kind='dg';continue;}
+    if(r.k==='solo'){await arenaSolo();kind='entry';continue;}
+    if(r.k==='coop'||r.k==='pvp'){await arMpLobby(r.k);kind='entry';continue;}}}
+
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").
    Tela própria da ARENA: deck de 5 no topo, os modos de jogo e a lista de TODOS os monstrinhos (os capturados podem entrar no deck; os não capturados aparecem como sombra).
@@ -10784,6 +10869,7 @@ arenaMode=async function(){if(!party.length){await say('Você precisa de um mons
       await new Promise(r=>{AR.done=r;});
       await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;saveGame();await fadeTo(0);continue;}}};
 /* /ARENAMENU04NOV */
+arenaMode=arenaMode2; /* ARENTRADA: a Entrada nova (estilo dos prints) abre primeiro; o MENU DA ARENA vira o TROCAR O TIME */
 
 
 function mgPausedNow(){try{const m=G.mode;return (m==='wall'&&WL&&WL.paused)||(m==='td'&&TD&&TD.paused)||(m==='surv'&&SV&&SV.paused);}catch(e){return false;}}

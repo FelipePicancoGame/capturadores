@@ -11553,6 +11553,15 @@ function arEntryM7(A){const t=A.t,M=M7L.menu;A.hits=[];arSBg();
    ['juntos','JUNTOS','os dois juntos',()=>A.pick({k:'coop'})],['contra','CONTRA','um contra o outro',()=>A.pick({k:'pvp'})],['trocar','TROCAR O TIME','monte seu time',()=>arTimeEdit(A)]].forEach(o=>{const r=M[o[0]];
     m7F(o[1],r[0]+r[2]*.47,r[1]+r[3]*.27,r[3]*.33,'#fff0d8',r[2]*.75,'#a8361f');m7F(o[2],r[0]+r[2]*.5,r[1]+r[3]*.76,r[3]*.18,'#3d2a1c',r[2]*.45);m7Hit(r,o[3]);});
   if(A.msg&&A.msg.t>0){A.msg.t--;rrect(14,H/2-12,W-28,24,7,'rgba(60,40,20,.94)',false);T(A.msg.s,W/2,H/2-6,5.6,'center','#ffffff',W-34);}}
+/* M7FUNDO (Felipe: "a arte em cima e embaixo está bugada"): o celular é mais comprido que o desenho (9:16); em vez de esticar a borda,
+   a sobra é preenchida com o próprio desenho ampliado e desfocado (pronto uma vez só), e o desenho fica inteiro no meio */
+const M7BLUR={};
+function m7Bg(I){const t=m7T(),w=1080*t.k,h=1920*t.k;let C=M7BLUR[I.src];
+  if(!C||C.W!==W||C.H!==H){try{C=document.createElement('canvas');C.width=Math.max(1,Math.round(W*2));C.height=Math.max(1,Math.round(H*2));const x=C.getContext('2d'),s=Math.max(C.width/I.naturalWidth,C.height/I.naturalHeight);
+      x.filter='blur(10px) brightness(.9)';x.drawImage(I,(C.width-I.naturalWidth*s)/2,(C.height-I.naturalHeight*s)/2,I.naturalWidth*s,I.naturalHeight*s);x.filter='none';C.W=W;C.H=H;M7BLUR[I.src]=C;}catch(e){C=null;}}
+  b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';if(C&&(t.oy>0||t.ox>0))b.drawImage(C,0,0,W,H);
+  if(t.oy>0){const s=b.createLinearGradient(0,t.oy-4,0,t.oy+2);s.addColorStop(0,'rgba(0,0,0,0)');s.addColorStop(1,'rgba(0,0,0,.18)');b.fillStyle=s;b.fillRect(0,t.oy-4,W,6);}
+  b.drawImage(I,t.ox,t.oy,w,h);b.restore();}
 
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").

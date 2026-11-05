@@ -10279,7 +10279,7 @@ function arUpdate(){const A=AR;if(!A||A.over)return;const G2=arGeo(),PL=arPathLe
   for(const e of A.en){if(e.hp<=0)continue;if(e.slowT>0)e.slowT--;else e.slow=0;if(e.poisonT>0){e.poisonT--;e.hp-=e.poison;if(e.hp<=0){arKill(e,arPos(G2,e.d));continue;}}
     e.d+=e.spd*(1-e.slow);if(e.hit>0)e.hit--;if(e.d>=PL){e.hp=0;A.lives-=e.boss?3:1;arMpLeak(e.boss?3:1);tone([200,140],.15,'square',.07);arPop(G2.rx-8,G2.by-10,e.boss?'-3 ❤':'-1 ❤','#ff8080');A.shake=10;if(e.boss)A.bossDone=true;}}
   A.en=A.en.filter(e=>e.hp>0);
-  for(let i=0;i<15;i++){const u=A.grid[i];if(!u)continue;if(u.stone>0){u.stone--;continue;}if(u.atk>0)u.atk--;if(u.cd>0){u.cd--;continue;}const tg=arTarget();if(!tg)continue;const S=arStats(u.sp,u.star),p=arCellXY(i);if(u.fi)S.dmg*=1+.2*u.fi;u.cd=S.cd;u.atk=12;
+  for(let i=0;i<15;i++){const u=A.grid[i];if(!u)continue;if(u.stone>0){u.stone--;continue;}if(u.atk>0)u.atk--;if(u.cd>0){u.cd--;continue;}const tg=arTarget();if(!tg)continue;const S=arStats(u.sp,u.star),p=arCellXY(i);if(u.fi)S.dmg*=1+.2*u.fi;u.cd=S.cd;arAura(A,u,i,S);u.atk=12;
     arFire(A,u,i,S,p,tg);}
   for(const s of A.shots){const tp=s.tg.hp>0?arPos(G2,s.tg.d):null;if(!tp){s.life=0;continue;}const dx=tp.x-s.x,dy=tp.y-6-s.y,L=Math.hypot(dx,dy),v=5;if(L<v+2){s.life=0;let dmg=s.dmg;
       if(s.ty==='fantasma'&&Math.random()<.25){dmg*=3;arPop(tp.x,tp.y-16,'CRÍTICO!','#e0b0ff');}
@@ -10602,10 +10602,10 @@ function arBanner(A,G2,y){if(A.mp||A.wave===0)return;const bsp=arBossSp(A),P=ARB
   rrect(10,y,W-20,15,5,bo||nb===0?'rgba(110,15,30,.78)':'rgba(10,25,35,.72)',false);T(txt,W/2,y+4,5.8,'center','#ffffff',W-26,C.ink);}
 function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);else if(A.lobby==='wall')wallHubDraw(A);else arEntryDraw(A);return;}const G2=arGeo(),t=A.t;b.save();if(A.shake>0)b.translate((Math.random()-.5)*3,(Math.random()-.5)*3);
   arSBg();if(arCoop(A))arCoopUnder(A,G2,t);else if(A.mp&&A.mp.mode==='pvp')arPvpUnder(A,G2,t);arSPath(G2,t);arSBoard(G2);
-  arAbDraw(A,G2,t);
+  arAbDraw(A,G2,t);arPlantaDraw(A,G2,t);
   const selU=A.sel>=0?A.grid[A.sel]:null;
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u||(A.drag&&A.drag.i===i))continue;const p=arCellXY(i),pop=Math.max(0,1-(t-u.born)/12);arSPiece(u,p.x,p.y,(1+pop*.25)*G2.cs/30,t,{glow:selU&&i!==A.sel&&arCanMerge(A.sel,i),sel:i===A.sel,atk:u.atk>0,seed:i*.37});}
-  if(A.drag&&A.grid[A.drag.i])arSPiece(A.grid[A.drag.i],A.drag.x,A.drag.y,1.12*G2.cs/30,t,{sel:1});
+  arAuraDraw(A,G2,t);if(A.drag&&A.grid[A.drag.i])arSPiece(A.grid[A.drag.i],A.drag.x,A.drag.y,1.12*G2.cs/30,t,{sel:1});
   const EN=[...A.en].sort((a,b2)=>arPos(G2,a.d).y-arPos(G2,b2.d).y);
   for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';arDrawMon(e.sp,p.x,p.y-(e.boss?16:9),e.sc,'walk',p.dir,e.id*10);b.restore();
     const by=p.y-(e.boss?42:22);arHpBar(p.x,by,e.hp/e.max,e.boss,e.poison>0&&e.poisonT>0?'#7ae04a':e.burnT>0?'#ff9a30':null);if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
@@ -11122,6 +11122,56 @@ function arSBgTemplo(t){if(ARTPL.complete&&ARTPL.naturalWidth){const s=Math.max(
   /* sombra nas bordas e luz no meio */
   const v=b.createRadialGradient(W/2,H*.48,H*.18,W/2,H*.5,H*.75);v.addColorStop(0,'rgba(255,200,120,.08)');v.addColorStop(1,'rgba(10,5,0,.55)');b.fillStyle=v;b.fillRect(0,0,W,H);}
 {const _bg=arSBg;arSBg=function(){if(arSk()==='areia'){arSBgTemplo((AR&&AR.t)||0);return;}_bg();};}
+
+/* ARPLANTA (05/nov, Felipe: "gostei" + "coloca um informativo quando uma carta buffar a outra no exemplo da florzinha"):
+   PLANTA: Brotim/Arvorito prendem com raiz; Florestão espinhos no chão que prendem; Florina/Florabela/Floraia dão bônus aos VIZINHOS
+   (cima, baixo, esquerda, direita) — o bônus aparece: folhinhas ligando a flor ao vizinho, selo verde ⬆ no vizinho, texto "+15% VELOCIDADE"
+   quando começa, e ao tocar na flor as casas que ela ajuda brilham de verde; Toxik/Peçonitro/Venenox veneno que acumula; Cacauzinho dá mana. */
+Object.assign(ARAB,{
+ brotim:{n:'Semente',d:'às vezes prende o inimigo com uma raiz',col:'#7ad04a',raiz:[.12,40]},
+ arvorito:{n:'Raízes',d:'acerta 2 inimigos e prende mais vezes',col:'#5ab83a',multi:2,raiz:[.2,50]},
+ florestao:{n:'Floresta Viva',d:'espinhos no chão que ferem, deixam lento e prendem',col:'#3a9a2a',base:'#1a4a10',poca:[28,260,.45,.3],raiz:[.25,55]},
+ florina:{n:'Pólen',d:'vizinhos atacam 15% mais rápido',col:'#ffb0e0',aura:{spd:.15,dmg:0}},
+ florabela:{n:'Perfume',d:'vizinhos atacam 25% mais rápido',col:'#ff90d0',aura:{spd:.25,dmg:0}},
+ floraia:{n:'Jardim',d:'vizinhos 30% mais rápidos e +15% de dano',col:'#ff70c0',aura:{spd:.3,dmg:.15}},
+ cogumelim:{n:'Veneno',d:'veneno que acumula a cada ataque',col:'#9ae04a',veneno:[.25,180,4]},
+ cogumelao:{n:'Nuvem Tóxica',d:'envenena todos em volta do alvo',col:'#7ad03a',area:[18,.35],veneno:[.3,200,4]},
+ cogumestre:{n:'Praga',d:'veneno forte que pula para outro inimigo quando o envenenado morre',col:'#5ac02a',area:[16,.3],veneno:[.35,220,5],praga:1},
+ cacauzinho:{n:'Sementinha',d:'às vezes ganha +1 de mana ao acertar',col:'#c08a4a',mana:[.35,1]}});
+function arNbr(i){const c=i%5,r=Math.floor(i/5),L=[];if(c>0)L.push(i-1);if(c<4)L.push(i+1);if(r>0)L.push(i-5);if(r<2)L.push(i+5);return L;}
+/* soma o bônus de todas as flores vizinhas (não soma consigo mesma; o maior de cada flor) */
+function arAuraOn(A,i){let spd=0,dmg=0;const src=[];for(const j of arNbr(i)){const v=A.grid[j];if(!v||v.stone>0)continue;const ab=arAbOf(v);if(ab&&ab.aura){spd+=ab.aura.spd;dmg+=ab.aura.dmg;src.push(j);}}return {spd:Math.min(spd,.6),dmg:Math.min(dmg,.45),src};}
+function arAura(A,u,i,S){const a=arAuraOn(A,i);if(!a.src.length)return;if(a.dmg)S.dmg*=1+a.dmg;u.cd=Math.max(5,Math.round(u.cd*(1-a.spd)));u.auraT=A.t;}
+function arPoison(e,dps,dur,max,praga){if(!e||e.hp<=0)return;e.poiN=Math.min(max||4,(e.poiN||0)+1);e.poiB=Math.max(e.poiB||0,dps);e.poison=e.poiB*e.poiN;e.poisonT=Math.max(e.poisonT||0,dur);if(praga)e.praga=1;}
+{const _oh=arOnHit;arOnHit=function(A,s,tp,dmg){_oh(A,s,tp,dmg);const ab=s.ab,e0=s.tg,G2=arGeo();
+  if(ab.raiz&&e0.hp>0&&!e0.boss&&Math.random()<ab.raiz[0]){e0.frz=Math.max(e0.frz||0,ab.raiz[1]);e0.root=ab.raiz[1];arPop(tp.x,tp.y-18,'PRESO!','#b8f08a');}
+  if(ab.veneno){const [f,dur,mx]=ab.veneno;arPoison(e0,dmg*f/60,dur,mx,ab.praga);if(ab.area){const r=ab.area[0];for(const e of A.en){if(e===e0||e.hp<=0)continue;const q=arPos(G2,e.d);if(Math.hypot(q.x-tp.x,q.y-tp.y)<r)arPoison(e,dmg*f/60,dur,mx,ab.praga);}}}
+  if(ab.mana&&Math.random()<ab.mana[0]){A.mana+=ab.mana[1];arPop(tp.x,tp.y-20,'+'+ab.mana[1]+' mana','#bfe8ff');}};}
+/* PRAGA: quando um envenenado pela Praga morre, o veneno pula para o inimigo mais perto */
+{const _k=arKill;arKill=function(e,p){_k(e,p);try{const A=AR;if(!A||!e.praga||!(e.poiN>0))return;const G2=arGeo();let nb=null,nd=70;for(const o of A.en){if(o===e||o.hp<=0)continue;const q=arPos(G2,o.d),dd=Math.hypot(q.x-p.x,q.y-p.y);if(dd<nd){nd=dd;nb=o;}}
+  if(nb){nb.poiN=Math.max(nb.poiN||0,e.poiN);nb.poiB=Math.max(nb.poiB||0,e.poiB||0);nb.poison=nb.poiB*nb.poiN;nb.poisonT=Math.max(nb.poisonT||0,200);nb.praga=1;const q=arPos(G2,nb.d);A.zaps=(A.zaps||[]);arPop(q.x,q.y-20,'PRAGA!','#9ae04a');arBurst(q.x,q.y-6,'#7ad03a',6);}}catch(_){}};}
+/* raízes enrolando o inimigo preso e bolhinhas do veneno */
+function arPlantaDraw(A,G2,t){for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d);
+  if(e.root>0&&e.frz>0){e.root--;b.save();b.strokeStyle='#5a3a14';b.lineWidth=1.4;for(let k=0;k<3;k++){b.beginPath();const a=k*2.1+t/30;b.moveTo(q.x+Math.cos(a)*6,q.y+2);b.quadraticCurveTo(q.x+Math.cos(a+1)*8,q.y-6,q.x+Math.cos(a+2)*4,q.y-10);b.stroke();}E(q.x-3,q.y-8,1.6,1,'#6ac83a',0,false);E(q.x+4,q.y-4,1.6,1,'#6ac83a',0,false);b.restore();}
+  if(e.poiN>0&&e.poisonT>0&&Math.floor(t/6)%2){for(let k=0;k<Math.min(3,e.poiN);k++)E(q.x-4+k*4,q.y-14-((t+k*9)%14)*.5,1.2,1.2,'#9ae04a',0,false);}
+  if(!(e.poisonT>0))e.poiN=0;}}
+/* INFORMATIVO DO BÔNUS: folhas ligando a flor ao vizinho, selo ⬆ verde e texto quando o bônus começa; tocar na flor mostra as casas que ela ajuda */
+function arAuraDraw(A,G2,t){const cs=G2.cs,on={};
+  for(let i=0;i<15;i++){const u=A.grid[i];if(!u)continue;const a=arAuraOn(A,i);if(!a.src.length)continue;on[i]=a;const p=arCellXY(i);
+    for(const j of a.src){const q=arCellXY(j),mx=(p.x+q.x)/2,my=(p.y+q.y)/2;b.save();b.globalAlpha=.55+.25*Math.sin(t/8+i);b.strokeStyle='#7ae04a';b.lineWidth=1.3;b.setLineDash([2,2]);b.lineDashOffset=-t/3;b.beginPath();b.moveTo(q.x,q.y);b.lineTo(p.x,p.y);b.stroke();b.setLineDash([]);
+      const k=((t/40)+i*.3)%1;E(q.x+(p.x-q.x)*k,q.y+(p.y-q.y)*k,1.6,1.6,'#ffd0f0',0,false);arLeaf(mx,my,.42,Math.atan2(p.y-q.y,p.x-q.x));b.restore();}
+    const bx=p.x+cs*.36,by=p.y-cs*.38,pl=1+.12*Math.sin(t/6);b.save();E(bx,by,4.2*pl,4.2*pl,'#1a6a1a',0,false);E(bx,by,3.4*pl,3.4*pl,'#5ad04a',0,false);T('⬆',bx,by-2.6,4.6,'center','#ffffff',0);b.restore();}
+  /* texto quando o bônus começa (uma vez por par flor→vizinho) */
+  A.auraSeen=A.auraSeen||{};const now={};for(const i in on)for(const j of on[i].src){const v=A.grid[j],u=A.grid[i];const key=i+'<'+j+':'+(v.form||v.sp)+':'+(u.form||u.sp);now[key]=1;
+    if(!A.auraSeen[key]){const ab=arAbOf(v),p=arCellXY(+i);arPop(p.x,p.y-cs*.55,`+${Math.round(ab.aura.spd*100)}% VELOCIDADE`+(ab.aura.dmg?` +${Math.round(ab.aura.dmg*100)}% DANO`:''),'#b8ff8a');arBurst(p.x,p.y,'#9ae06a',8);
+      if(!A.auraTip){A.auraTip=1;A.msgAura={s:`${ab.n}: a flor ajuda quem está do lado (cima, baixo e lados)`,t:200};}}}
+  A.auraSeen=now;
+  /* flor selecionada ou sendo arrastada: casas que ela ajuda brilham */
+  const fi=A.drag?A.drag.i:A.sel;const fu=fi>=0?A.grid[fi]:null,fab=fu&&arAbOf(fu);
+  if(fab&&fab.aura){let ci=fi;if(A.drag){const c=arCellAt(A.drag.x,A.drag.y);if(c>=0)ci=c;}for(const j of arNbr(ci)){const q=arCellXY(j);b.save();b.globalAlpha=.35+.2*Math.sin(t/5);rrect(q.x-cs/2+1.5,q.y-cs/2+1.5,cs-3,cs-3,4,'#7ae04a',false);b.restore();}
+    const p=arCellXY(ci);T(`${fab.n}: ${fab.d}`,W/2,G2.by+4,5.2,'center','#d8ffb8',W-20,C.ink);}
+  if(A.msgAura&&A.msgAura.t>0){A.msgAura.t--;const y=G2.y0-30;b.save();b.globalAlpha=Math.min(1,A.msgAura.t/30);rrect(12,y,W-24,15,5,'rgba(20,70,20,.88)',false);T(A.msgAura.s,W/2,y+4,5.4,'center','#ffffff',W-30,C.ink);b.restore();}}
+/* /ARPLANTA */
 
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").

@@ -10290,23 +10290,38 @@ function arUpdate(){const A=AR;if(!A||A.over)return;const G2=arGeo(),PL=arPathLe
 async function arEnd(why){const A=AR;if(A.over)return;if(A.mp)return arMpEnd(why);if(A.goal)return arStgEnd(why);A.over=true;const w=Math.max(0,A.wave-1),coins=w*8+A.kills,nb=w>(flags.arenaBest||0);if(nb)flags.arenaBest=w;flags.coins=(flags.coins||0)+coins;saveGame();
   A.result={w,coins,nb};tone([392,330,262],.2);}
 function arDrawMon(sp,x,y,sc,act,dir,seed,fix){const prev=MONDIR;MONDIR=dir&&dir!=='s'?dir:null;b.save();b.translate(Math.round(x),Math.round(y));b.scale(sc,sc);b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';let ok=false;try{ok=monAnimDraw(sp,act,-44,seed||0,fix);}catch(e){}MONDIR=prev;if(!ok){try{const s=spr(sp);b.drawImage(s,-40,-44,80,80);}catch(e){}}b.restore();}
+/* ARENAARTE (04/nov, Felipe: 'coloca sim' a arte da Arena do Buchecha, ARENA_v1 itens 1 a 5): fundo, tabuleiro, caminho, botões, mana, cartões do deck, corações e estrelas. Sem a arte carregada, volta o desenho antigo. */
+const ARART={};['fundo_arena','tabuleiro_moldura','tabuleiro_casa_grama_clara','tabuleiro_casa_grama_escura','tabuleiro_casa_selecionada','tabuleiro_casa_brilhando','caminho_reto_horizontal','caminho_reto_vertical','caminho_curva_superior_esquerda','caminho_curva_superior_direita','caminho_inicio','caminho_portao','botao_chamar_normal','botao_chamar_apertado','botao_chamar_sem_mana','botao_sair','painel_mana','cartao_deck_moldura','coracao_cheio','coracao_vazio','bolinha_estrela_comum','bolinha_estrela_dourada'].forEach(k=>{try{const im=new Image();im.decoding='async';im.src='blobs/ar_'+k+'.webp';ARART[k]=im;}catch(e){}});
+function arI(k){const i=ARART[k];return i&&i.complete&&i.naturalWidth?i:null;}
+function arD(k,x,y,w,h){const I=arI(k);if(!I)return false;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(I,x,y,w,h);b.restore();return true;}
+function arArtOk(){return !!(arI('fundo_arena')&&arI('tabuleiro_moldura')&&arI('tabuleiro_casa_grama_clara')&&arI('caminho_reto_vertical'));}
+function arArtBg(){const F=arI('fundo_arena');if(!F||!arArtOk())return false;const s=Math.max(W/F.naturalWidth,H/F.naturalHeight);b.save();b.imageSmoothingEnabled=true;b.drawImage(F,(W-F.naturalWidth*s)/2,0,F.naturalWidth*s,F.naturalHeight*s);b.restore();const g=b.createLinearGradient(0,H-90,0,H);g.addColorStop(0,'rgba(16,10,40,0)');g.addColorStop(1,'rgba(16,10,40,.35)');b.fillStyle=g;b.fillRect(0,H-90,W,90);return true;}
+function arArtPath(G2){if(!arArtOk())return false;const w=11,cw=w*140/52,L=G2.lx,R=G2.rx,T0=G2.ty,B0=G2.by;
+  /* retas verticais (esquerda e direita) */
+  for(const X of [L,R]){for(let y=T0+cw-w/2;y<B0;y+=w*2){const h=Math.min(w*2,B0-y);if(h>0)arD('caminho_reto_vertical',X-w/2,y,w,h+.5);}}
+  for(let x=L-w/2+cw;x<R+w/2-cw;x+=w*2){const ww=Math.min(w*2,R+w/2-cw-x);if(ww>0)arD('caminho_reto_horizontal',x,T0-w/2,ww+.5,w);}
+  arD('caminho_curva_superior_esquerda',L-w/2,T0-w/2,cw,cw);arD('caminho_curva_superior_direita',R+w/2-cw,T0-w/2,cw,cw);
+  const sw=w*160/52,sh=w*200/52;arD('caminho_inicio',L-sw/2,B0-sh*.45,sw,sh);arD('caminho_portao',R-sw/2,B0-sh*.45,sw,sh);
+  T('início',L+2,B0+sh*.55-1,4.6,'center','#ffffff',30,C.ink);T('portão',R-2,B0+sh*.55-1,4.6,'center','#ffffff',30,C.ink);return true;}
+function arArtBoard(G2){if(!arArtOk())return false;const k=G2.bw/1500;const ky=G2.bh/1080;arD('tabuleiro_moldura',G2.x0-50*k,G2.y0-50*ky,1600*k,1180*ky);
+  for(let i=0;i<15;i++){const c=i%5,r=Math.floor(i/5);arD((c+r)%2?'tabuleiro_casa_grama_escura':'tabuleiro_casa_grama_clara',G2.x0+c*G2.cs,G2.y0+r*G2.ch,G2.cs,G2.ch);}return true;}
 function renderArena(){const A=AR;if(!A)return;const G2=arGeo(),t=A.t;
   b.save();if(A.shake>0)b.translate((Math.random()-.5)*3,(Math.random()-.5)*3);
-  {const SF=asImg('st_fundo');if(SF)imgCover(SF);else{const g=b.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2a1f5a');g.addColorStop(1,'#1a1438');b.fillStyle=g;b.fillRect(0,0,W,H);}b.fillStyle='rgba(16,10,40,.35)';b.fillRect(0,0,W,H);const g2=b.createLinearGradient(0,G2.ty-20,0,H);g2.addColorStop(0,'rgba(16,10,40,0)');g2.addColorStop(.25,'rgba(16,10,40,.7)');g2.addColorStop(1,'rgba(16,10,40,.92)');b.fillStyle=g2;b.fillRect(0,G2.ty-20,W,H);}
+  if(!arArtBg()){const SF=asImg('st_fundo');if(SF)imgCover(SF);else{const g=b.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2a1f5a');g.addColorStop(1,'#1a1438');b.fillStyle=g;b.fillRect(0,0,W,H);}b.fillStyle='rgba(16,10,40,.35)';b.fillRect(0,0,W,H);const g2=b.createLinearGradient(0,G2.ty-20,0,H);g2.addColorStop(0,'rgba(16,10,40,0)');g2.addColorStop(.25,'rgba(16,10,40,.7)');g2.addColorStop(1,'rgba(16,10,40,.92)');b.fillStyle=g2;b.fillRect(0,G2.ty-20,W,H);}
   /* caminho */
-  b.save();b.lineCap='round';b.lineJoin='round';b.strokeStyle='#8a6a40';b.lineWidth=13;b.beginPath();G2.pts.forEach((p,i)=>i?b.lineTo(p[0],p[1]):b.moveTo(p[0],p[1]));b.stroke();b.strokeStyle='#c8a46a';b.lineWidth=10;b.stroke();
+  if(!arArtPath(G2)){b.save();b.lineCap='round';b.lineJoin='round';b.strokeStyle='#8a6a40';b.lineWidth=13;b.beginPath();G2.pts.forEach((p,i)=>i?b.lineTo(p[0],p[1]):b.moveTo(p[0],p[1]));b.stroke();b.strokeStyle='#c8a46a';b.lineWidth=10;b.stroke();
   b.setLineDash([3,4]);b.strokeStyle='rgba(120,80,40,.5)';b.lineWidth=1;b.stroke();b.setLineDash([]);b.restore();
-  E(G2.lx,G2.by+4,8,4,'#5a3a8a',0,false);T('início',G2.lx,G2.by+8,5,'center','#e0d0ff');E(G2.rx,G2.by+4,8,4,'#8a2a3a',0,false);T('portão',G2.rx,G2.by+8,5,'center','#ffd0d0');
+  E(G2.lx,G2.by+4,8,4,'#5a3a8a',0,false);T('início',G2.lx,G2.by+8,5,'center','#e0d0ff');E(G2.rx,G2.by+4,8,4,'#8a2a3a',0,false);T('portão',G2.rx,G2.by+8,5,'center','#ffd0d0');}
   /* tabuleiro */
-  rrect(G2.x0-4,G2.y0-4,G2.bw+8,G2.bh+8,6,'#4a3a2a');
-  for(let i=0;i<15;i++){const c=i%5,r=Math.floor(i/5),x=G2.x0+c*G2.cs,y=G2.y0+r*G2.ch;rrect(x+1,y+1,G2.cs-2,G2.ch-2,4,(c+r)%2?'#5a8a4a':'#68985a',false);}
+  if(!arArtBoard(G2)){rrect(G2.x0-4,G2.y0-4,G2.bw+8,G2.bh+8,6,'#4a3a2a');
+  for(let i=0;i<15;i++){const c=i%5,r=Math.floor(i/5),x=G2.x0+c*G2.cs,y=G2.y0+r*G2.ch;rrect(x+1,y+1,G2.cs-2,G2.ch-2,4,(c+r)%2?'#5a8a4a':'#68985a',false);}}
   /* unidades */
   const selU=A.sel>=0?A.grid[A.sel]:null;
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u)continue;const p=arCellXY(i);if(A.drag&&A.drag.i===i)continue;
-    if(selU&&i!==A.sel&&arCanMerge(A.sel,i)){b.save();b.globalAlpha=.55+.35*Math.sin(t/5);rrect(p.x-14,p.y-17,28,34,5,'#fff3a0',false);b.restore();}
-    if(i===A.sel){rrect(p.x-14,p.y-17,28,34,5,'rgba(255,255,255,.55)',false);}
+    if(selU&&i!==A.sel&&arCanMerge(A.sel,i)){b.save();b.globalAlpha=.55+.35*Math.sin(t/5);if(!arD('tabuleiro_casa_brilhando',p.x-15,p.y-18,30,36))rrect(p.x-14,p.y-17,28,34,5,'#fff3a0',false);b.restore();}
+    if(i===A.sel){if(!arD('tabuleiro_casa_selecionada',p.x-15,p.y-18,30,36))rrect(p.x-14,p.y-17,28,34,5,'rgba(255,255,255,.55)',false);}
     E(p.x,p.y+9,10,3,'rgba(0,0,0,.25)',0,false);const pop=Math.max(0,1-(t-u.born)/12);arDrawMon(u.sp,p.x,p.y-1-pop*4,.3*(1+pop*.3),u.atk>0?'attack':'idle','s',i*.37);
-    const col=ARCOL[arType(u.sp)]||'#fff';rrect(p.x-u.star*2.5-1.5,p.y+11.5,u.star*5+3,5,2.5,'rgba(20,10,40,.75)',false);for(let k=0;k<u.star;k++){const sx=p.x-(u.star-1)*2.5+k*5;E(sx,p.y+14,1.7,1.7,u.star>=5?'#ffd040':col,0,false);}}
+    const col=ARCOL[arType(u.sp)]||'#fff';rrect(p.x-u.star*2.5-1.5,p.y+11.5,u.star*5+3,5,2.5,'rgba(20,10,40,.75)',false);for(let k=0;k<u.star;k++){const sx=p.x-(u.star-1)*2.5+k*5;if(!arD(u.star>=5?'bolinha_estrela_dourada':'bolinha_estrela_comum',sx-2.3,p.y+11.7,4.6,4.6))E(sx,p.y+14,1.7,1.7,u.star>=5?'#ffd040':col,0,false);}}
   if(A.drag&&A.grid[A.drag.i]){const u=A.grid[A.drag.i];arDrawMon(u.sp,A.drag.x,A.drag.y+2,.34,'idle','s',0);}
   /* inimigos */
   const EN=[...A.en].sort((a,b2)=>arPos(G2,a.d).y-arPos(G2,b2.d).y);
@@ -10318,16 +10333,16 @@ function renderArena(){const A=AR;if(!A)return;const G2=arGeo(),t=A.t;
   for(const p of A.parts){b.globalAlpha=Math.max(0,p.life/22);px(p.x,p.y,1.6,1.6,p.col);}b.globalAlpha=1;
   b.restore();
   /* topo */
-  const hg=b.createLinearGradient(0,0,W,0);hg.addColorStop(0,'#5a3ad8');hg.addColorStop(1,'#d83a8a');b.fillStyle=hg;b.fillRect(0,0,W,28);px(0,28,W,1.5,C.yellow);
-  rrect(4,5,26,17,4,'#2a1f5a');T('SAIR',17,9,6,'center',C.white);
+  if(arArtOk()){const hg=b.createLinearGradient(0,0,0,30);hg.addColorStop(0,'rgba(16,10,40,.55)');hg.addColorStop(1,'rgba(16,10,40,0)');b.fillStyle=hg;b.fillRect(0,0,W,30);if(!arD('botao_sair',2,5,30,15))rrect(4,5,26,17,4,'#2a1f5a');T('SAIR',20,9,5.6,'center',C.white,20,C.ink);}else{const hg=b.createLinearGradient(0,0,W,0);hg.addColorStop(0,'#5a3ad8');hg.addColorStop(1,'#d83a8a');b.fillStyle=hg;b.fillRect(0,0,W,28);px(0,28,W,1.5,C.yellow);
+  rrect(4,5,26,17,4,'#2a1f5a');T('SAIR',17,9,6,'center',C.white);}
   T('ARENA',W/2,3,9,'center',C.white,70,C.ink);T(A.goal?`Fase ${A.stgI+1} · onda ${Math.max(1,A.wave)} de ${A.goal}`:`Onda ${Math.max(1,A.wave)} · recorde ${A.best}`,W/2,16,5.5,'center','#ffe8ff');
-  for(let k=0;k<3;k++)T(k<A.lives?'❤':'♡',W-30+k*9,6,7,'center',k<A.lives?'#ff6070':'#806080');
+  for(let k=0;k<3;k++){if(!arD(k<A.lives?'coracao_cheio':'coracao_vazio',W-35+k*10,5,10,10))T(k<A.lives?'❤':'♡',W-30+k*9,6,7,'center',k<A.lives?'#ff6070':'#806080');}
   /* mana e botões */
-  const yB=G2.by+16;rrect(8,yB,50,20,5,'#1a2a5a');T('MANA',33,yB+2,5,'center','#a0c8ff');T(String(Math.floor(A.mana)),33,yB+9,8,'center','#ffffff');
-  const canBuy=A.mana>=A.cost&&A.grid.some(u=>!u);rrect(64,yB-2,W-72,24,6,canBuy?'#3fae5a':'#4a5a4a');if(canBuy){b.save();b.globalAlpha=.25+.2*Math.sin(t/6);rrect(64,yB-2,W-72,24,6,'#ffffff',false);b.restore();}
+  const yB=G2.by+16;if(arD('painel_mana',6,yB-3,54,27)){T('MANA',38,yB+1.5,4.8,'center','#d8e8ff',30);T(String(Math.floor(A.mana)),38,yB+8,8,'center','#ffffff',30,C.ink);}else{rrect(8,yB,50,20,5,'#1a2a5a');T('MANA',33,yB+2,5,'center','#a0c8ff');T(String(Math.floor(A.mana)),33,yB+9,8,'center','#ffffff');}
+  const canBuy=A.mana>=A.cost&&A.grid.some(u=>!u);if(!arD(canBuy?(A.buyT&&performance.now()-A.buyT<160?'botao_chamar_apertado':'botao_chamar_normal'):'botao_chamar_sem_mana',62,yB-4,W-68,28)){rrect(64,yB-2,W-72,24,6,canBuy?'#3fae5a':'#4a5a4a');if(canBuy){b.save();b.globalAlpha=.25+.2*Math.sin(t/6);rrect(64,yB-2,W-72,24,6,'#ffffff',false);b.restore();}}
   T('CHAMAR MONSTRINHO',64+(W-72)/2,yB+1,6.5,'center',C.white,W-80,C.ink);T(`custa ${A.cost} de mana`,64+(W-72)/2,yB+12,5.5,'center','#e8ffe0');
   const yD=yB+28,dw=(W-16)/5;for(let k=0;k<A.deck.length;k++){const sp=A.deck[k],x=8+k*dw,L=A.lv[sp]||0,c=arUpCost(sp),ok=A.mana>=c&&L<5,col=ARCOL[arType(sp)]||'#fff';
-    rrect(x+1,yD,dw-2,44,5,ok?'#3a2f6a':'#2a2448');px(x+3,yD+2,dw-6,2,col);arDrawMon(sp,x+dw/2,yD+18,.2,'idle','s',k);T(`nv ${L+1}`,x+dw/2,yD+26,5,'center','#ffffff');T(L>=5?'MÁX':`⬆ ${c}`,x+dw/2,yD+34,5.5,'center',ok?'#fff3a0':'#9a90b8');}
+    if(arI('cartao_deck_moldura')){b.save();if(!ok)b.globalAlpha=.75;arD('cartao_deck_moldura',x+1,yD-2,dw-2,48);b.restore();px(x+5,yD+2,dw-10,1.5,col);}else{rrect(x+1,yD,dw-2,44,5,ok?'#3a2f6a':'#2a2448');px(x+3,yD+2,dw-6,2,col);}if(arI('cartao_deck_moldura')){arDrawMon(sp,x+dw/2,yD+20,.27,'idle','s',k);T(`nv ${L+1}`,x+dw/2,yD-2+48*.715-2.6,4.8,'center','#ffffff',dw-6);T(L>=5?'MÁX':`⬆ ${c}`,x+dw/2,yD-2+48*.865-2.9,5.4,'center',ok?'#3a2a0a':'#9a8a70',dw-6);}else{arDrawMon(sp,x+dw/2,yD+18,.2,'idle','s',k);T(`nv ${L+1}`,x+dw/2,yD+26,5,'center','#ffffff');T(L>=5?'MÁX':`⬆ ${c}`,x+dw/2,yD+34,5.5,'center',ok?'#fff3a0':'#9a90b8');}}
   T('Toque em 2 iguais com as mesmas estrelas para juntar',W/2,yD+47,4.6,'center','#c8c0e8',W-10);
   /* textos flutuantes e avisos */
   for(const p of A.pops){b.globalAlpha=Math.min(1,p.life/20);T(p.t,p.x,p.y,6,'center',p.col,0,C.ink);}b.globalAlpha=1;
@@ -10345,7 +10360,7 @@ function arTap(x,y){const A=AR;if(!A)return;if(A.result&&A.result.stg){const cy=
   if(A.result){const cy=H*.32;if(x>W/2-50&&x<W/2+50&&y>cy+72&&y<cy+94){const d=A.done;arNew();AR.done=d;return;}if(x>W/2-50&&x<W/2+50&&y>cy+100&&y<cy+122){A.done&&A.done();}return;}
   if(x<32&&y<26){A.done&&A.done();return;}
   const G2=arGeo(),yB=G2.by+16,yD=yB+28,dw=(W-16)/5;
-  if(y>=yB-2&&y<=yB+22&&x>=64){arBuy();return;}
+  if(y>=yB-2&&y<=yB+22&&x>=64){A.buyT=performance.now();arBuy();return;}
   if(y>=yD&&y<=yD+44){const k=Math.floor((x-8)/dw);if(k>=0&&k<A.deck.length)arUpgrade(k);return;}
   const i=arCellAt(x,y);if(i<0){A.sel=-1;return;}
   if(A.sel>=0&&A.sel!==i&&arCanMerge(A.sel,i)){arMerge(A.sel,i);A.sel=-1;return;}

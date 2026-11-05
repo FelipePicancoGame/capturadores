@@ -11586,6 +11586,26 @@ m7Bg=function(I){const t=m7T(),k=t.k,w=1080*k,s=I.naturalHeight/1920,sp=t.sp;b.s
 function m7Rot(r,fn){if(!r||!r[4])return fn();const p=m7P(r[0]+r[2]/2,r[1]+r[3]/2);b.save();b.translate(p[0],p[1]);b.rotate(r[4]*Math.PI/180);b.translate(-p[0],-p[1]);try{fn();}finally{b.restore();}}
 {const _a=m7Box,_b=m7DropNum,_c=m7Mon;m7Box=function(r,...x){return m7Rot(r,()=>_a(r,...x));};m7DropNum=function(r,...x){return m7Rot(r,()=>_b(r,...x));};m7Mon=function(sp,r,...x){return m7Rot(r,()=>_c(sp,r,...x));};}
 
+/* ARINSETO (05/nov, Felipe: "vamos nos poderes do inseto"): ABELHAS.
+   FERROADA: cada picada deixa uma marca no inimigo (até 5); cada marca faz ele levar +6% de dano de TODOS os monstrinhos (fica com abelhinhas em volta).
+   Zumbel pica rápido; Zumbirex pica 2 de uma vez; Zumbitron, a cada 6 picadas, solta um ENXAME que pica todos os inimigos da tela. */
+Object.assign(ARAB,{
+ zumbel:{n:'Ferroada',d:'pica rápido; cada picada faz o inimigo levar +6% de dano (até 5)',col:'#ffd23a',rapido:.75,ferrao:[5,.06]},
+ zumbirex:{n:'Enxame',d:'pica 2 inimigos rápido e deixa marcas de ferroada',col:'#ffc21a',rapido:.8,multi:2,ferrao:[5,.06]},
+ zumbitron:{n:'Colmeia',d:'a cada 6 picadas, um ENXAME pica todos os inimigos',col:'#ffb000',rapido:.8,multi:2,ferrao:[6,.06],enxame:[6,.45,2]}});
+{const _oh=arOnHit;arOnHit=function(A,s,tp,dmg){_oh(A,s,tp,dmg);const ab=s.ab,e=s.tg;if(ab&&ab.ferrao&&e&&e.hp>0){const was=e.sting||0;e.sting=Math.min(ab.ferrao[0],was+1);e.stingM=ab.ferrao[1];e.stingT=360;if(e.sting===ab.ferrao[0]&&was<e.sting)arPop(tp.x,tp.y-20,'FERROADO!','#ffd23a');}};}
+{const _h=arHit;arHit=function(e,dmg,ty,col){if(e&&e.sting>0&&e.stingT>0)dmg*=1+e.sting*(e.stingM||.06);return _h(e,dmg,ty,col);};}
+{const _f=arFire;arFire=function(A,u,i,S,p,tg){_f(A,u,i,S,p,tg);const ab=arAbOf(u);if(!ab||!ab.enxame||!(u.nshot%ab.enxame[0]===0))return;const G2=arGeo(),[,f,st]=ab.enxame;let n=0;
+  for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d);arHit(e,S.dmg*f,'x',ab.col);if(e.hp>0){e.sting=Math.min(ab.ferrao[0],(e.sting||0)+st);e.stingM=ab.ferrao[1];e.stingT=360;}n++;
+    A.bees=(A.bees||[]).concat([{x0:p.x,y0:p.y,x1:q.x,y1:q.y-8,t:22,T:22,o:Math.random()*6}]);}
+  if(n){arPop(p.x,p.y-24,'ENXAME!','#ffd23a');tone([700,760,700,820],.04,'square',.03);}};}
+{const _rt=arRushTick;arRushTick=function(A){_rt(A);for(const e of A.en)if(e.stingT>0){e.stingT--;if(e.stingT<=0)e.sting=0;}if(A.bees){for(const q of A.bees)q.t--;A.bees=A.bees.filter(q=>q.t>0);}};}
+{const _pd=arPlantaDraw;arPlantaDraw=function(A,G2,t){_pd(A,G2,t);
+  for(const e of A.en){if(e.hp<=0||!(e.sting>0)||!(e.stingT>0))continue;const q=arPos(G2,e.d),R=e.boss?13:8,cy=q.y-(e.boss?22:12);
+    for(let k=0;k<e.sting;k++){const a=t/9+k*Math.PI*2/e.sting,bx=q.x+Math.cos(a)*R,by=cy+Math.sin(a)*R*.45;E(bx,by,1.6,1.2,'#ffd23a',0,false);px(bx-.5,by-1.1,.8,2.2,'#3a2a10');b.save();b.globalAlpha=.7;E(bx-.6,by-1.3,.9,.6,'#ffffff',0,false);b.restore();}}
+  for(const q of A.bees||[]){const k=1-q.t/q.T;for(let j=0;j<3;j++){const kk=Math.max(0,Math.min(1,k-j*.08)),x=q.x0+(q.x1-q.x0)*kk+Math.sin(q.o+kk*14+j)*4,y=q.y0+(q.y1-q.y0)*kk+Math.cos(q.o+kk*12+j)*3;E(x,y,1.5,1.1,'#ffd23a',0,false);px(x-.4,y-1,.8,2,'#3a2a10');}}};}
+/* /ARINSETO */
+
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").
    Tela própria da ARENA: deck de 5 no topo, os modos de jogo e a lista de TODOS os monstrinhos (os capturados podem entrar no deck; os não capturados aparecem como sombra).

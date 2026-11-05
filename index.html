@@ -9174,7 +9174,7 @@ async function stageMap(key){const st={key,sel:null,t:0};
     if(j>=0&&j<STGN){if(j>S2.next){tone([300,240],.06,'square',.03);st.lockT={i:j,t:0};continue;}st.sel=j;tone(880,.04);continue;}
     if(j===98&&key==='arena'){await say('A ARENA ainda não tem história. Vença as fases para ganhar cristais e moedas, igual nos outros jogos!');continue;}
     if(j===98){const ch={wall:wallMode,td:towerMode,surv:survMode,exp:async()=>{await fadeTo(1);await expedition();await wait(1);}}[key];await chapterMenu(key,ch);continue;}
-    if(j===97&&key==='arena'){await say('Na ARENA, quem fica mais forte são os monstrinhos do seu time: os 5 mais fortes viram o seu deck. Treine e evolua eles!');continue;}
+    if(j===97&&key==='arena'){await say('Na ARENA, você escolhe os 5 monstrinhos do seu DECK no menu da Arena. Capture mais monstrinhos para ter mais opções!');continue;}
     if(j===97){if(key==='surv')await svMetaShop();else if(key==='wall')await wallCardShop();else await shopMenu(MODEUPS[key]);continue;}
     if(j===100){await stgLaunch(key,st.world*STGN+st.sel);const S3=stgPage(key,st.world);if(S3.next>st.sel)st.sel=S3.next;for(let w=1;w<STGW;w++)if(st.world===w-1&&stgWOpen(key,w)&&st.sel===STGN-1&&!flags['w'+(w+1)+'ok_'+key]){flags['w'+(w+1)+'ok_'+key]=1;saveGame();await say(`MUNDO ${w+1} liberado! Toque em MUNDO ${w+1} lá em cima: cenários novos e inimigos bem mais fortes.`);}continue;}}}
 async function stgLaunch(key,i){flags.emJogo={k:'stg',key,i,t:Date.now()};saveGame();try{return await stgLaunch0(key,i);}finally{delete flags.emJogo;try{__fotoApagar();}catch(e){}try{saveGame();}catch(e){}}}
@@ -10456,6 +10456,92 @@ async function arMpRun(mode,r){const S=r.S;
   await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;saveGame();await fadeTo(0);}
 {let _ok=0;const _iv=setInterval(()=>{try{if(_ok||!/arena/.test(location.hash))return clearInterval(_iv);if(typeof G!=='undefined'&&G.mode==='world'&&!ui.length&&!busy&&party.length){_ok=1;clearInterval(_iv);arenaMode();}}catch(e){}},700);}
 /* /ARENA04NOV */
+/* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").
+   Tela própria da ARENA: deck de 5 no topo, os modos de jogo e a lista de TODOS os monstrinhos (os capturados podem entrar no deck; os não capturados aparecem como sombra).
+   O deck fica salvo em flags.arDeck. Os iniciais (ARSTARTS) sempre podem ser usados. */
+const ARROLE={fogo:[1,46,'Queima em área: acerta os vizinhos'],agua:[.8,40,'Deixa os inimigos lentos'],planta:[.7,44,'Envenena: tira vida aos poucos'],eletrico:[.85,48,'Raio que pula entre inimigos'],rocha:[2.4,80,'Golpe muito forte, mas devagar'],gelo:[.6,46,'Congela: deixa bem lentos'],inseto:[.7,38,'Envenena: tira vida aos poucos'],normal:[.75,26,'Ataca muito rápido'],fantasma:[1,46,'Às vezes dá golpe triplo']};
+function arAllList(){const L=[],S=new Set();for(const s of [...ARSTARTS,...DEXLIST])if(SP[s]&&!S.has(s)){S.add(s);L.push(s);}return L;}
+function arCanUse(sp,own){return ARSTARTS.includes(sp)||dexCaught(sp,own);}
+arDeck=function(){const own=dexOwn(),D=flags.arDeck;if(Array.isArray(D)&&D.length===5&&new Set(D).size===5&&D.every(s=>SP[s]&&arCanUse(s,own)))return D.slice();
+  const seen={},out=[];const P=[...party].sort((a,b)=>b.lv-a.lv);for(const m of P){if(!seen[m.sp]&&SP[m.sp]){seen[m.sp]=1;out.push(m.sp);}if(out.length>=5)break;}
+  for(const s of ARSTARTS){if(out.length>=5)break;if(!seen[s]&&SP[s]){seen[s]=1;out.push(s);}}return out;};
+const ARIMGC={};function arImgUrl(sp){try{const m=typeof MONIMG!=='undefined'&&MONIMG[sp];if(m&&m.complete&&m.naturalWidth)return m.src;}catch(e){}if(ARIMGC[sp])return ARIMGC[sp];try{const c=spr(sp);const u=c.toDataURL?c.toDataURL():c.src;if(u)ARIMGC[sp]=u;return u||'';}catch(e){return '';}}
+function arHubUI(){let el=document.getElementById('arHub');if(el)return el;el=document.createElement('div');el.id='arHub';el.hidden=true;
+  el.innerHTML=`<style>#arHub[hidden],#arHub [hidden]{display:none!important}
+#arHub{position:fixed;inset:0;z-index:8990;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(120% 60% at 50% 0%,#7a2a8a,#2a1450 55%,#140a2e);font-family:'Fredoka','Baloo 2','Trebuchet MS',sans-serif;color:#fff;-webkit-user-select:none;user-select:none}
+#arHub .wr{max-width:430px;margin:0 auto;padding:max(10px,env(safe-area-inset-top)) 12px 120px;box-sizing:border-box}
+#arHub .top{display:flex;align-items:center;gap:8px}#arHub .top h1{flex:1;margin:0;text-align:center;font-size:30px;color:#ffd23f;text-shadow:0 3px 0 #7a2a00,0 0 12px rgba(255,180,60,.5);letter-spacing:2px}
+#arHub .bk{border:0;border-radius:12px;padding:8px 12px;background:#5a3a7a;color:#fff;font:inherit;font-size:15px;box-shadow:0 3px 0 #2a1a40;cursor:pointer;min-width:74px}#arHub .sp{min-width:74px}
+#arHub h3{margin:14px 2px 6px;font-size:17px;color:#ffe8a0;display:flex;justify-content:space-between;align-items:baseline}#arHub h3 small{font-size:12px;color:#d8c0f0;font-weight:normal}
+#arHub .dk{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+#arHub .sl{position:relative;aspect-ratio:3/4;border-radius:12px;background:linear-gradient(#4a2a6a,#2a1848);border:2px solid #f2b632;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;overflow:hidden;cursor:pointer}
+#arHub .sl img,#arHub .cd img{position:absolute;inset:6px 4px 18px;width:calc(100% - 8px);height:calc(100% - 24px);object-fit:contain;image-rendering:auto}
+#arHub .sl .nm,#arHub .cd .nm{position:relative;width:100%;font-size:10.5px;text-align:center;padding:2px 0;background:rgba(0,0,0,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#arHub .ty{position:absolute;top:3px;left:3px;width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(0,0,0,.4)}
+#arHub.troca .sl{animation:arPul .7s infinite alternate;border-color:#fff}@keyframes arPul{from{transform:scale(1)}to{transform:scale(1.06);box-shadow:0 0 14px #ffd23f}}
+#arHub .aviso{margin:8px 0 0;padding:8px;border-radius:10px;background:#ffd23f;color:#3a1a00;text-align:center;font-size:15px}
+#arHub .md{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+#arHub .md button{border:0;border-radius:14px;padding:10px 6px;font:inherit;font-size:17px;color:#fff;cursor:pointer;line-height:1.1}
+#arHub .md button small{display:block;font-size:12px;opacity:.9;margin-top:2px}
+#arHub .ft{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}#arHub .ft::-webkit-scrollbar{display:none}
+#arHub .ft button{flex:0 0 auto;border:2px solid transparent;border-radius:20px;padding:5px 11px;font:inherit;font-size:13px;color:#fff;background:#3a2458;cursor:pointer}#arHub .ft button.on{border-color:#ffd23f;background:#5a3a7a}
+#arHub .gr{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:8px}
+#arHub .cd{position:relative;aspect-ratio:3/4;border-radius:12px;background:linear-gradient(#3e2660,#24143e);border:2px solid #5a3a7a;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;cursor:pointer}
+#arHub .cd.no img{filter:brightness(0) opacity(.45)}#arHub .cd.no .nm{color:#a890c0}#arHub .cd.in{border-color:#ffd23f}
+#arHub .cd .tag{position:absolute;top:3px;right:3px;font-size:9px;background:#ffd23f;color:#3a1a00;border-radius:6px;padding:1px 4px}
+#arHub .sh{position:fixed;left:0;right:0;bottom:0;z-index:2;background:linear-gradient(#5a2a7a,#2a1450);border-top:3px solid #f2b632;border-radius:20px 20px 0 0;padding:14px 16px max(16px,env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.5)}
+#arHub .sh .in2{max-width:400px;margin:0 auto;display:flex;gap:12px;align-items:center}
+#arHub .sh .pic{width:96px;height:96px;flex:0 0 96px;border-radius:14px;background:#24143e;display:flex;align-items:center;justify-content:center}#arHub .sh .pic img{max-width:88px;max-height:88px;object-fit:contain}
+#arHub .sh .pic.no img{filter:brightness(0) opacity(.5)}
+#arHub .sh h4{margin:0;font-size:21px;color:#ffd23f}#arHub .sh .tp{font-size:13px;margin:2px 0 4px}#arHub .sh .fx{font-size:13.5px;color:#f0e2ff;line-height:1.25}
+#arHub .br{display:flex;align-items:center;gap:6px;font-size:12px;margin-top:4px}#arHub .br b{width:58px;font-weight:normal;color:#d8c0f0}#arHub .br i{flex:1;height:8px;border-radius:5px;background:#24143e;overflow:hidden}#arHub .br i u{display:block;height:100%;background:#ffd23f;border-radius:5px}
+#arHub .sh .bt{display:flex;gap:8px;max-width:400px;margin:12px auto 0}#arHub .sh .bt button{flex:1;border:0;border-radius:14px;padding:11px;font:inherit;font-size:16px;color:#fff;background:#2f9f4c;box-shadow:0 4px 0 #1b6a30;cursor:pointer}#arHub .sh .bt button.vm{flex:0 0 90px;background:#6a4a8a;box-shadow:0 4px 0 #3a2458}#arHub .sh .bt button:disabled{background:#5a5070;box-shadow:none;color:#c0b0d0}
+</style><div class="wr"><div class="top"><button class="bk" id="ahVolt">← Voltar</button><h1>ARENA</h1><div class="sp"></div></div>
+<h3>SEU DECK <small>os 5 que vão para o tabuleiro</small></h3><div class="dk" id="ahDeck"></div><div class="aviso" id="ahAviso" hidden></div>
+<h3>JOGAR</h3><div class="md" id="ahModos"></div>
+<h3>TODOS OS MONSTRINHOS <small id="ahCont"></small></h3><div class="ft" id="ahFilt"></div><div class="gr" id="ahGrade"></div></div>
+<div class="sh" id="ahSheet" hidden></div>`;document.body.appendChild(el);return el;}
+function arHub(){return new Promise(res=>{const el=arHubUI(),$=id=>el.querySelector('#'+id);let deck=arDeck(),filt='todos',swap=null;const own=dexOwn(),ALL=arAllList();
+  const save=()=>{flags.arDeck=deck.slice();saveGame();};
+  const tyDot=sp=>`<span class="ty" style="background:${ARCOL[arType(sp)]||'#fff'}"></span>`;
+  function drawDeck(){$('ahDeck').innerHTML=deck.map((s,i)=>`<div class="sl" data-i="${i}">${tyDot(s)}<img src="${arImgUrl(s)}" alt=""><div class="nm">${SP[s].name}</div></div>`).join('');
+    $('ahAviso').hidden=!swap;if(swap)$('ahAviso').textContent=`Toque em quem SAI do deck para ${SP[swap].name} entrar`;el.classList.toggle('troca',!!swap);}
+  function drawModes(){const st=stgState('arena'),f=Math.min(STGT,st.next+1);
+    const M=[['fases','FASES',`fase ${f} de ${STGT}`,'#e0a020','#9a6a00'],['sem','SEM FIM',`recorde: onda ${flags.arenaBest||0}`,'#3fae5a','#1b6a30'],['coop','JUNTOS','2 celulares','#2f78c8','#1a4a8a'],['pvp','UM CONTRA O OUTRO','2 celulares','#d83a3a','#8a1a1a']];
+    $('ahModos').innerHTML=M.map(m=>`<button data-m="${m[0]}" style="background:${m[3]};box-shadow:0 4px 0 ${m[4]}">${m[1]}<small>${m[2]}</small></button>`).join('');}
+  function drawFilt(){const T=['todos',...Object.keys(ARROLE).filter(t=>ALL.some(s=>arType(s)===t))];
+    $('ahFilt').innerHTML=T.map(t=>`<button data-t="${t}" class="${t===filt?'on':''}">${t==='todos'?'Todos':(TYPES[t]||t)}</button>`).join('');}
+  function drawGrid(){const L=ALL.filter(s=>filt==='todos'||arType(s)===filt);const n=ALL.filter(s=>arCanUse(s,own)).length;$('ahCont').textContent=`${n} de ${ALL.length} liberados`;
+    $('ahGrade').innerHTML=L.map(s=>{const ok=arCanUse(s,own),inD=deck.includes(s);return `<div class="cd${ok?'':' no'}${inD?' in':''}" data-s="${s}">${ok?tyDot(s):''}${inD?'<span class="tag">DECK</span>':''}<img src="${arImgUrl(s)}" alt="" loading="lazy"><div class="nm">${ok?SP[s].name:'???'}</div></div>`;}).join('');}
+  function sheet(s){const ok=arCanUse(s,own),ty=arType(s),R=ARROLE[ty]||[1,40,''],inD=deck.includes(s),sh=$('ahSheet');
+    const dmg=Math.min(100,Math.round(R[0]/2.4*100)),vel=Math.round((90-R[1])/64*100);
+    sh.innerHTML=`<div class="in2"><div class="pic${ok?'':' no'}"><img src="${arImgUrl(s)}" alt=""></div><div style="flex:1;min-width:0"><h4>${ok?SP[s].name:'???'}</h4>`+
+      (ok?`<div class="tp" style="color:${ARCOL[ty]}">Tipo ${TYPES[ty]||ty}</div><div class="fx">${R[2]}</div><div class="br"><b>Força</b><i><u style="width:${dmg}%"></u></i></div><div class="br"><b>Rapidez</b><i><u style="width:${vel}%"></u></i></div>`
+        :`<div class="fx">Você ainda não capturou esse monstrinho. Capture ele no mapa para usar na Arena!</div>`)+`</div></div>`+
+      `<div class="bt"><button class="vm" id="ahFech">Fechar</button>${ok?`<button id="ahPor" ${inD?'disabled':''}>${inD?'Já está no deck':'Colocar no deck'}</button>`:''}</div>`;
+    sh.hidden=false;sh.querySelector('#ahFech').onclick=()=>{sh.hidden=true;tone([400],.04);};
+    const p=sh.querySelector('#ahPor');if(p&&!inD)p.onclick=()=>{swap=s;sh.hidden=true;drawDeck();tone([660],.05);el.scrollTo({top:0,behavior:'smooth'});};
+    tone([520],.04);}
+  function all(){drawDeck();drawModes();drawFilt();drawGrid();}
+  el.onclick=e=>{const t=e.target.closest('[data-i],[data-m],[data-t],[data-s],#ahVolt');if(!t)return;
+    if(t.id==='ahVolt'){if(swap){swap=null;drawDeck();return;}close('voltar');return;}
+    if(t.dataset.i!=null){const i=+t.dataset.i;if(swap){deck[i]=swap;swap=null;save();tone([523,659,784],.07);drawDeck();drawGrid();}else sheet(deck[i]);return;}
+    if(t.dataset.m){if(swap){swap=null;drawDeck();}close(t.dataset.m);return;}
+    if(t.dataset.t){filt=t.dataset.t;drawFilt();drawGrid();tone([500],.03);return;}
+    if(t.dataset.s){sheet(t.dataset.s);return;}};
+  function close(v){el.hidden=true;$('ahSheet').hidden=true;el.classList.remove('troca');el.onclick=null;tone([440],.04);res(v);}
+  all();el.hidden=false;el.scrollTop=0;});}
+arenaMode=async function(){if(!party.length){await say('Você precisa de um monstrinho!');return;}
+  if(!flags.arMenuSeen){flags.arMenuSeen=1;saveGame();await say('Novo: o MENU DA ARENA! Lá você vê todos os monstrinhos e escolhe os 5 do seu DECK. Toque num monstrinho e depois em COLOCAR NO DECK.');}
+  while(true){const k=await arHub();if(k==='voltar')return;
+    if(k==='fases'){await stageMap('arena');continue;}
+    if(k==='coop'||k==='pvp'){await arMpLobby(k);continue;}
+    if(k==='sem'){await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();G.mode='arena';await fadeTo(0);
+      if(!flags.arenaSeen){flags.arenaSeen=1;saveGame();await say('ARENA! Os monstrinhos selvagens vão andar pelo caminho em volta do tabuleiro. Não deixe eles chegarem ao portão!');await say('Toque em CHAMAR MONSTRINHO: aparece um dos 5 monstrinhos do seu deck. Junte 2 IGUAIS com as MESMAS estrelas para virar um mais forte.');await say('Embaixo, gaste mana para deixar cada tipo mais forte. A cada 5 ondas vem um CHEFE!');}
+      await new Promise(r=>{AR.done=r;});
+      await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;saveGame();await fadeTo(0);continue;}}};
+/* /ARENAMENU04NOV */
+
 
 function mgPausedNow(){try{const m=G.mode;return (m==='wall'&&WL&&WL.paused)||(m==='td'&&TD&&TD.paused)||(m==='surv'&&SV&&SV.paused);}catch(e){return false;}}
 let MGCFG=0;

@@ -11105,6 +11105,24 @@ function arHeroFace(hx,hy,r){const I=arHeroImg();if(!I)return false;b.save();b.b
   const sw=I.naturalWidth*.8,sh=sw,sx=I.naturalWidth*.12,sy=I.naturalHeight*.02;b.drawImage(I,sx,sy,sw,sh,hx-r*1.05,hy-r*1.02,r*2.1,r*2.1);b.restore();return true;}
 {const _dp=drawPerson;window.__arDP=_dp;}
 
+/* ARTEMPLO (05/nov, Felipe: "mude o background" → "Masmorra/templo"): fundo do estilo AREIA vira um templo/masmorra: blocos grandes de pedra,
+   colunas nas laterais, tochas com fogo piscando e luz quente, chão escurecendo nas bordas. Se o Buchecha mandar ar2_fundo_templo.webp, usa a arte. */
+const ARTPL=new Image();ARTPL.src='blobs/ar2_fundo_templo.webp';
+function arTorch(x,y,t){rrect(x-1.6,y,3.2,9,1,'#4a2a10',false);rrect(x-3,y-1.5,6,2.5,1,'#8a5a20',false);const f=Math.sin(t/4+x)*.8;
+  b.save();b.globalCompositeOperation='lighter';glowAt(x,y-3,30,'255,150,50',.55+.1*Math.sin(t/5+x));b.restore();
+  E(x,y-3.5+f*.3,3,4.6,'#ff7a1a',0,false);E(x,y-3+f*.3,1.9,3,'#ffd040',0,false);E(x,y-2.4,1,1.6,'#fff6c0',0,false);}
+function arSBgTemplo(t){if(ARTPL.complete&&ARTPL.naturalWidth){const s=Math.max(W/ARTPL.naturalWidth,H/ARTPL.naturalHeight);b.drawImage(ARTPL,(W-ARTPL.naturalWidth*s)/2,(H-ARTPL.naturalHeight*s)/2,ARTPL.naturalWidth*s,ARTPL.naturalHeight*s);return;}
+  b.fillStyle='#3a2c24';b.fillRect(0,0,W,H);
+  for(let y=0,r=0;y<H;y+=14,r++){for(let x=-(r%2)*14;x<W;x+=28){const v=((x*7+y*13)%5+5)%5;b.fillStyle=['#6a5240','#624a3a','#725a46','#5e4836','#68503e'][v];b.fillRect(x+.8,y+.8,26.4,12.4);b.fillStyle='rgba(255,230,190,.08)';b.fillRect(x+.8,y+.8,26.4,1.2);b.fillStyle='rgba(0,0,0,.18)';b.fillRect(x+.8,y+12,26.4,1.2);
+    if(v===2){b.fillStyle='rgba(70,110,50,.35)';b.fillRect(x+3,y+11,8,2);}}}
+  /* colunas */
+  for(const cx of [5,W-5]){const g=b.createLinearGradient(cx-6,0,cx+6,0);g.addColorStop(0,'#4a3a2c');g.addColorStop(.5,'#9a8064');g.addColorStop(1,'#4a3a2c');b.fillStyle=g;b.fillRect(cx-6,0,12,H);for(let y=10;y<H;y+=46){b.fillStyle='rgba(0,0,0,.25)';b.fillRect(cx-6,y,12,2);}}
+  /* tochas nas colunas */
+  for(const ty of [H*.13,H*.42,H*.68]){arTorch(13,ty,t);arTorch(W-13,ty,t);}
+  /* sombra nas bordas e luz no meio */
+  const v=b.createRadialGradient(W/2,H*.48,H*.18,W/2,H*.5,H*.75);v.addColorStop(0,'rgba(255,200,120,.08)');v.addColorStop(1,'rgba(10,5,0,.55)');b.fillStyle=v;b.fillRect(0,0,W,H);}
+{const _bg=arSBg;arSBg=function(){if(arSk()==='areia'){arSBgTemplo((AR&&AR.t)||0);return;}_bg();};}
+
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").
    Tela própria da ARENA: deck de 5 no topo, os modos de jogo e a lista de TODOS os monstrinhos (os capturados podem entrar no deck; os não capturados aparecem como sombra).

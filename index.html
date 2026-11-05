@@ -11202,6 +11202,21 @@ Object.assign(ARAB,{
  cascopedra:{n:'Casco de Pedra',d:'vizinhos dão +20% de dano',col:'#988870',foco:1,aura:{spd:0,dmg:.2}}});
 /* /ARROCHA */
 
+/* ARGELO (05/nov, "proximo"): congela (bloco de gelo em volta do inimigo), estilhaço em congelados, Glacimor congela todos a cada 5 ataques */
+Object.assign(ARAB,{
+ flocolino:{n:'Floco de Neve',d:'deixa o inimigo bem lento',col:'#c8f0ff',lento:[.4,90]},
+ nevascao:{n:'Nevasca',d:'neve em volta do alvo que deixa lento e às vezes congela',col:'#a8e0ff',area:[18,.45],lento:[.4,100],congela:[.12,45]},
+ glacimor:{n:'Era do Gelo',d:'a cada 5 ataques, congela todos os inimigos',col:'#88d0ff',area:[16,.4],lento:[.4,100],raios:[5,.5,70,'ERA DO GELO!'],gelo:1},
+ pinguinho:{n:'Escorregão',d:'às vezes congela o inimigo',col:'#bfe8ff',congela:[.18,45]},
+ pinguimperador:{n:'Estilhaço',d:'congela e dá dano dobrado em quem está congelado',col:'#9ad8ff',congela:[.2,55],estilha:1}});
+{const _oh=arOnHit;arOnHit=function(A,s,tp,dmg){const e0=s.tg,ab=s.ab;if(ab.estilha&&e0.hp>0&&e0.ice>0){arHit(e0,dmg,'x',ab.col);arPop(tp.x,tp.y-20,'ESTILHAÇOU!','#d8f4ff');e0.ice=0;e0.frz=0;arBurst(tp.x,tp.y-8,'#d8f4ff',10);_oh(A,s,tp,dmg);return;}
+  _oh(A,s,tp,dmg);
+  if(ab.congela&&e0.hp>0&&!e0.boss&&Math.random()<ab.congela[0]){e0.frz=Math.max(e0.frz||0,ab.congela[1]);e0.ice=e0.frz;arPop(tp.x,tp.y-18,'CONGELADO!','#c8f0ff');}
+  if(ab.gelo&&ab.raios&&s.u&&s.u.nr%ab.raios[0]===0)for(const e of A.en)if(e.hp>0&&e.frz>0)e.ice=e.frz;};}
+{const _pd=arPlantaDraw;arPlantaDraw=function(A,G2,t){_pd(A,G2,t);for(const e of A.en){if(e.hp<=0||!(e.ice>0))continue;e.ice--;if(!(e.frz>0)){e.ice=0;continue;}const q=arPos(G2,e.d),h=e.boss?30:18,w=e.boss?20:13;
+  b.save();b.globalAlpha=.55;rrect(q.x-w/2,q.y-h+1,w,h,3,'#bfeaff',false);b.globalAlpha=.8;b.strokeStyle='#ffffff';b.lineWidth=.8;b.strokeRect(q.x-w/2+.5,q.y-h+1.5,w-1,h-1);px(q.x-w/2+2,q.y-h+3,2,h*.5,'#ffffff');b.restore();}};}
+/* /ARGELO */
+
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").
    Tela própria da ARENA: deck de 5 no topo, os modos de jogo e a lista de TODOS os monstrinhos (os capturados podem entrar no deck; os não capturados aparecem como sombra).

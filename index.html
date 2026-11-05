@@ -10951,29 +10951,51 @@ const ARAB={
  magmorra:{n:'Erupção',d:'poças de lava e, a cada 4 ataques, uma erupção',col:'#ff3000',poca:[34,300,.7,.25],erupcao:[4,34,2.2]},
  brasinha:{n:'Faísca Rápida',d:'ataca muito rápido e queima',col:'#ffb040',rapido:.55,queima:[.25,90]},
  brasalor:{n:'Queimadura',d:'queimadura forte que passa para o vizinho',col:'#ff7a20',rapido:.8,queima:[.6,180],espalha:1},
- dracobrasa:{n:'Sopro do Dragão',d:'sopro que acerta todos perto do alvo e queima',col:'#ff2a00',area:[30,1],queima:[.5,180],espalha:1}
+ dracobrasa:{n:'Sopro do Dragão',d:'sopro que acerta todos perto do alvo e queima',col:'#ff2a00',area:[30,1],queima:[.5,180],espalha:1},
+ /* ÁGUA (05/nov, "ok" para seguir) */
+ marolo:{n:"Jato d'Água",d:'deixa o inimigo lento',col:'#3aa0ff',lento:[.3,90]},
+ maremoto:{n:'Onda',d:'empurra o inimigo para trás e deixa lento',col:'#2a8aff',lento:[.35,100],empurra:10},
+ tsunamor:{n:'Tsunami',d:'empurra e, a cada 5 ataques, um tsunami em todos',col:'#1a6aff',lento:[.4,110],empurra:12,tsunami:[5,25,1]},
+ trovim:{n:'Garoa',d:'acerta 2 inimigos e deixa lentos',col:'#7ac8ff',multi:2,lento:[.2,70]},
+ trovim2:{n:'Chuva Forte',d:'acerta 3 inimigos e deixa bem lentos',col:'#5ab0ff',multi:3,lento:[.35,90]},
+ trovim3:{n:'Tempestade',d:'acerta 4 inimigos, deixa lentos e às vezes prende',col:'#3a90ff',multi:4,lento:[.35,100],bolha:[.15,45]},
+ peixonete:{n:'Bolha',d:'às vezes prende o inimigo numa bolha',col:'#9ae8ff',bolha:[.25,55]},
+ tubarete:{n:'Mordida',d:'atravessa e acerta também o de trás',col:'#2a7ad8',perfura:1},
+ tubarrei:{n:'Redemoinho',d:'redemoinho no caminho que fere e deixa bem lento',col:'#3aa0ff',base:'#0a2a5a',poca:[30,280,.55,.5]},
+ caranguejo:{n:'Pinça',d:'mira no inimigo mais forte; dano extra no chefe',col:'#b8c8d8',foco:1,chefe:.5},
+ caranguerra:{n:'Pinça de Aço',d:'mira no mais forte; dano dobrado no chefe',col:'#a0b0c0',foco:1,chefe:1},
+ pincador:{n:'Esmagar',d:'mira no mais forte; esmaga quem está quase sem vida',col:'#8898a8',foco:1,chefe:1.5,executa:.2}
 };
 function arAbOf(u){return ARAB[u.form||u.sp]||null;}
 function arFire(A,u,i,S,p,tg){const ab=arAbOf(u);if(!ab){A.shots.push({x:p.x,y:p.y-6,tg,dmg:S.dmg,ty:S.ty,col:ARCOL[S.ty]||'#fff',star:u.star,life:90});return;}
   if(ab.rapido)u.cd=Math.max(6,Math.round(u.cd*ab.rapido));
-  u.nshot=(u.nshot||0)+1;const er=ab.erupcao&&u.nshot%ab.erupcao[0]===0;
-  let T=[tg];if(ab.multi){const L=A.en.filter(e=>e.hp>0).sort((a,b)=>b.d-a.d);T=L.slice(0,ab.multi);if(!T.length)T=[tg];}
+  u.nshot=(u.nshot||0)+1;const er=(ab.erupcao&&u.nshot%ab.erupcao[0]===0)||(ab.tsunami&&u.nshot%ab.tsunami[0]===0);
+  let T=[tg];if(ab.foco){let bst=null;for(const e of A.en)if(e.hp>0&&(!bst||e.hp>bst.hp))bst=e;if(bst)T=[bst];}if(ab.multi){const L=A.en.filter(e=>e.hp>0).sort((a,b)=>b.d-a.d);T=L.slice(0,ab.multi);if(!T.length)T=[tg];}
   for(const t of T)A.shots.push({x:p.x,y:p.y-6,tg:t,dmg:S.dmg/(ab.multi?1.6:1),ty:'x',ab,er,col:ab.col,star:u.star+(er?3:0),life:90});}
 function arBurn(e,dps,dur){if(!e||e.hp<=0)return;e.burn=Math.max(e.burn||0,dps);e.burnT=Math.max(e.burnT||0,dur);}
 function arOnHit(A,s,tp,dmg){const ab=s.ab,G2=arGeo();
   if(ab.area){const [r,f]=ab.area;for(const e of A.en){if(e===s.tg||e.hp<=0)continue;const q=arPos(G2,e.d);if(Math.hypot(q.x-tp.x,q.y-tp.y)<r){arHit(e,dmg*f,'x',ab.col);if(ab.queima)arBurn(e,dmg*ab.queima[0]/60,ab.queima[1]);}}
     A.fx=(A.fx||[]).concat([{x:tp.x,y:tp.y-4,r,col:ab.col,t:14,T:14}]);}
   if(ab.queima)arBurn(s.tg,dmg*ab.queima[0]/60,ab.queima[1]);
-  if(ab.poca){const [len,dur,f,sl]=ab.poca;A.zones=(A.zones||[]).filter(z=>z.t>0);if(A.zones.length<14)A.zones.push({d:s.tg.d+len*.35,len,t:dur,T:dur,dps:dmg*f/60,slow:sl,col:ab.col});}
+  if(ab.poca){const [len,dur,f,sl]=ab.poca;A.zones=(A.zones||[]).filter(z=>z.t>0);if(A.zones.length<14)A.zones.push({d:s.tg.d+len*.35,len,t:dur,T:dur,dps:dmg*f/60,slow:sl,col:ab.col,base:ab.base||'#7a1a00'});}
   if(s.er&&ab.erupcao){const [,r,f]=ab.erupcao;for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d);if(Math.hypot(q.x-tp.x,q.y-tp.y)<r)arHit(e,dmg*f,'x',ab.col);}
     A.fx=(A.fx||[]).concat([{x:tp.x,y:tp.y-4,r,col:'#ffd040',t:22,T:22}]);arPop(tp.x,tp.y-26,'ERUPÇÃO!','#ffb040');A.shake=5;tone([140,90],.12,'sawtooth',.06);}
+  const e0=s.tg;
+  if(ab.chefe&&e0.boss&&e0.hp>0)arHit(e0,dmg*ab.chefe,'x',ab.col);
+  if(ab.executa&&!e0.boss&&e0.hp>0&&e0.hp<e0.max*ab.executa){arHit(e0,e0.hp+1,'x',ab.col);arPop(tp.x,tp.y-20,'ESMAGOU!','#bfe8ff');}
+  if(ab.lento&&e0.hp>0){e0.slow=Math.max(e0.slow||0,ab.lento[0]);e0.slowT=Math.max(e0.slowT||0,ab.lento[1]);}
+  if(ab.empurra&&e0.hp>0&&!e0.boss)e0.d=Math.max(0,e0.d-ab.empurra);
+  if(ab.bolha&&e0.hp>0&&Math.random()<ab.bolha[0]){e0.frz=Math.max(e0.frz||0,ab.bolha[1]);A.fx=(A.fx||[]).concat([{x:tp.x,y:tp.y-8,r:9,col:'#9ae8ff',t:ab.bolha[1],T:ab.bolha[1]}]);}
+  if(ab.perfura){const L=A.en.filter(e=>e!==e0&&e.hp>0&&e.d<e0.d).sort((a,b)=>b.d-a.d).slice(0,ab.perfura);for(const e of L){arHit(e,dmg*.7,'x',ab.col);const q=arPos(G2,e.d);arBurst(q.x,q.y-6,ab.col,3);}}
+  if(s.er&&ab.tsunami){const [,push,f]=ab.tsunami;for(const e of A.en){if(e.hp<=0)continue;arHit(e,dmg*f,'x',ab.col);if(!e.boss)e.d=Math.max(0,e.d-push);e.slow=Math.max(e.slow||0,.4);e.slowT=Math.max(e.slowT||0,90);}
+    arPop(W/2,G2.ty+20,'TSUNAMI!','#7ad0ff');A.fx=(A.fx||[]).concat([{x:W/2,y:G2.ty+40,r:90,col:'#3a9aff',t:24,T:24}]);A.shake=5;tone([300,200,150],.1,'sine',.07);}
   if(ab.espalha&&s.tg.hp<=0){let nb=null,nd=60;for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d),dd=Math.hypot(q.x-tp.x,q.y-tp.y);if(dd<nd){nd=dd;nb=e;}}if(nb)arBurn(nb,(s.tg.burn||dmg*.3/60)*1.2,ab.queima?ab.queima[1]:120);}}
 {const _rt=arRushTick;arRushTick=function(A){_rt(A);const G2=arGeo();
   for(const e of A.en){if(e.hp<=0)continue;if(e.burnT>0){e.burnT--;e.hp-=e.burn;if(e.hp<=0){arKill(e,arPos(G2,e.d));continue;}}}
   if(A.zones){for(const z of A.zones){z.t--;for(const e of A.en){if(e.hp<=0)continue;if(Math.abs(e.d-z.d)<z.len/2){e.hp-=z.dps;if(z.slow){e.slow=Math.max(e.slow||0,z.slow);e.slowT=Math.max(e.slowT||0,3);}if(e.hp<=0)arKill(e,arPos(G2,e.d));}}}A.zones=A.zones.filter(z=>z.t>0);}
   if(A.fx){for(const f of A.fx)f.t--;A.fx=A.fx.filter(f=>f.t>0);}};}
 function arAbDraw(A,G2,t){/* poças de lava no caminho e explosões */
-  for(const z of A.zones||[]){const a=Math.min(1,z.t/30);for(let k=-2;k<=2;k++){const q=arPos(G2,Math.max(0,z.d+k*z.len/5));b.save();b.globalAlpha=.55*a;E(q.x,q.y+1,6.5,3.6,'#7a1a00',0,false);b.globalAlpha=.75*a;E(q.x+Math.sin(t/7+k)*1,q.y,5,2.6,z.col,0,false);b.globalAlpha=.6*a;E(q.x-1.5,q.y-.6,2,1,'#ffe080',0,false);b.restore();}}
+  for(const z of A.zones||[]){const a=Math.min(1,z.t/30);for(let k=-2;k<=2;k++){const q=arPos(G2,Math.max(0,z.d+k*z.len/5));b.save();b.globalAlpha=.55*a;E(q.x,q.y+1,6.5,3.6,z.base||'#7a1a00',0,false);b.globalAlpha=.75*a;E(q.x+Math.sin(t/7+k)*1,q.y,5,2.6,z.col,0,false);b.globalAlpha=.6*a;E(q.x-1.5,q.y-.6,2,1,'#ffe080',0,false);b.restore();}}
   for(const f of A.fx||[]){const k=1-f.t/f.T;b.save();b.globalAlpha=(1-k)*.7;b.globalCompositeOperation='lighter';E(f.x,f.y,f.r*(.4+k*.6),f.r*(.4+k*.6)*.7,f.col,0,false);b.restore();}
   for(const e of A.en){if(e.hp<=0||!(e.burnT>0))continue;const q=arPos(G2,e.d);if(Math.floor(t/4)%2)E(q.x+(Math.random()-.5)*4,q.y-12-Math.random()*4,1.4,2,'#ff8a20',0,false);}}
 {const _by=arBuy;arBuy=function(){const n0=AR&&AR.grid.filter(Boolean).length;_by();const A=AR;if(!A)return;const L=A.grid.map((u,i)=>[u,i]).filter(x=>x[0]&&x[0].born===A.t);for(const [u,i] of L){const ab=arAbOf(u);if(ab){A.seenAb=A.seenAb||{};const key=u.form||u.sp;if(!A.seenAb[key]){A.seenAb[key]=1;const p=arCellXY(i);arPop(p.x,p.y-22,`${ab.n}!`,'#ffd8a0');}}}};}

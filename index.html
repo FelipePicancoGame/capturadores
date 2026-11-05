@@ -3219,12 +3219,12 @@ function drawTilesArt3(u){const cf=u.cfg,L=cf.tiles;if(cf.title!=='MENU'||!L||!m
 /* MM2 (03/nov, Felipe aprovou o MENU_MINIJOGOS_v2 do Buchecha): menu de minijogos de madeira clara com flores, posições do MANIFESTO (base 1080x1920) */
 const MM2U={"botao_fechar": "blobs/a398ec42b667b8af92f3f35bb5aef49d.webp", "card_bloqueado": "blobs/8d69ad3ff466832005133f5516812d35.webp", "card_combina": "blobs/cc329e60785f8a46cb0fcd3a5c5cc223.webp", "card_expedicao": "blobs/e33b649e8442fe2dffd79e2ad352b2d1.webp", "card_horda": "blobs/4172304828055f6641663b59d4844bd4.webp", "card_muralha": "blobs/6a2634f319781028383c8bf445050ee2.webp", "card_muralha_dupla": "blobs/56753929d107a8e76e7a66e05ba3651e.webp", "card_torres": "blobs/926a2e667191569b0c2ad5ecab09af63.webp", "painel_minijogos": "blobs/e932462d5eeeb9dcaa6a2cee6d4aeded.webp", "selo_novo": "blobs/ea36f0159a6e7a441b53378629f71c30.webp", "topo_moedas": "blobs/1b593c9c22d1cae3db8983b85fff9e63.webp"},MM2I={};function mm2(k){let i=MM2I[k];if(!i){i=new Image();i.decoding='async';i.src=MM2U[k];MM2I[k]=i;}return i.complete&&i.naturalWidth?i:null;}
 setTimeout(()=>{try{for(const k in MM2U)mm2(k);}catch(e){}},4000);
-/* MMARENA (04/nov, Felipe: "Coloca arena nos mini jogos"): 7 cartões, um pouco menores (×0,82); ARENA na última linha, no meio, desenhado por código com o ícone da Arena */
-const MM2C={'EXPEDIÇÃO':['card_expedicao',176,420],'MURALHA':['card_muralha',560,420],'MURALHA DUPLA':['card_muralha_dupla',176,712],'TORRES':['card_torres',560,712],'HORDA':['card_horda',176,1004],'COMBINA':['card_combina',560,1004],'ARENA':['card_arena',368,1296]};
+/* MMARENA (04/nov, Felipe: "Coloca arena nos mini jogos"): ARENA no lugar da MURALHA DUPLA (que foi para dentro da MURALHA: "Coloca a muralha dupla dentro da muralha"), desenhado por código com o ícone da Arena */
+const MM2C={'EXPEDIÇÃO':['card_expedicao',90,430],'MURALHA':['card_muralha',570,430],'MURALHA DUPLA':['card_muralha_dupla',90,800],'TORRES':['card_torres',90,800],'HORDA':['card_horda',570,800],'COMBINA':['card_combina',90,1170],'ARENA':['card_arena',570,1170]};
 const MMARI=new Image();MMARI.src='blobs/ar_icone_menu_arena.webp';
 function mm2Arena(x,y,w,h){rrect(x+6,y+12,w-6,h-6,30,'rgba(60,30,10,.35)',false);rrect(x,y,w,h,30,'#7a4a1a',false);rrect(x+8,y+8,w-16,h-16,24,'#f8e2a8',false);rrect(x+8,y+8,w-16,(h-16)*.62,24,'#d8483a',false);
   if(MMARI.complete&&MMARI.naturalWidth){const s2=Math.min(150/MMARI.naturalWidth,150/MMARI.naturalHeight);b.drawImage(MMARI,x+w/2-MMARI.naturalWidth*s2/2,y+16,MMARI.naturalWidth*s2,MMARI.naturalHeight*s2);}
-  T('ARENA',x+w/2,y+h*.6,44,'center','#ffffff',w-30,'#5a1a10');}
+  T('ARENA',x+w/2,y+h*.6,50,'center','#ffffff',w-30,'#5a1a10');}
 function drawTilesMini2(u){const cf=u.cfg,L=cf.tiles;if(!L||!String(cf.title||'').startsWith('MINIGAMES'))return false;
  const need=['painel_minijogos','topo_moedas','botao_fechar'].concat(L.filter(it=>MM2C[it.n]&&MM2C[it.n][0]!=='card_arena').map(it=>MM2C[it.n][0]));let ok=true;for(const k of need)if(!mm2(k))ok=false;if(!ok)return false;
  u.t2=(u.t2||0)+1;const t=u.t2,k=Math.min(W/1080,H/1920),ox=(W-1080*k)/2,oy=(H-1920*k)/2,oTX=TX,oTY=TY,oTZ=TZ;
@@ -3234,10 +3234,10 @@ function drawTilesMini2(u){const cf=u.cfg,L=cf.tiles;if(!L||!String(cf.title||''
  {const m=/⚡\s*(\S+)/.exec(cf.title||'');if(m)T('⚡ Energia '+m[1],540,66,44,'center','#ffffff',900,'#0e2219');}
  u.rects=[];
  L.forEach((it,idx)=>{const c=MM2C[it.n];if(!c)return;const key=c[0],x=c[1],y=c[2],sel=idx===u.i,ap=Math.min(1,Math.max(0,(t-idx*1.5)/8));if(ap<=0)return;
-  const sc=(.86+.14*(1-(1-ap)**3))*(sel?1.04+Math.sin(t/6)*.015:1);b.save();b.globalAlpha=ap;b.translate(x+172,y+135);b.scale(sc,sc);b.translate(-(x+172),-(y+135));
-  if(key==='card_arena')mm2Arena(x,y,344,271);else b.drawImage(mm2(key),x,y,344,271);if(it.sub)T(it.sub,x+172,y+214,25,'center',key==='card_arena'?'#4a2a10':'#294729',290);
-  if(it.badge&&mm2('selo_novo'))b.drawImage(mm2('selo_novo'),x+270,y-25,80,80);b.restore();
-  u.rects.push({x:ox+x*k,y:oy+y*k,w:344*k,h:271*k,i:idx});});
+  const sc=(.86+.14*(1-(1-ap)**3))*(sel?1.04+Math.sin(t/6)*.015:1);b.save();b.globalAlpha=ap;b.translate(x+210,y+165);b.scale(sc,sc);b.translate(-(x+210),-(y+165));
+  if(key==='card_arena')mm2Arena(x,y,420,330);else b.drawImage(mm2(key),x,y,420,330);if(it.sub)T(it.sub,x+210,y+262,30,'center',key==='card_arena'?'#4a2a10':'#294729',350);
+  if(it.badge&&mm2('selo_novo'))b.drawImage(mm2('selo_novo'),x+330,y-30,96,96);b.restore();
+  u.rects.push({x:ox+x*k,y:oy+y*k,w:420*k,h:330*k,i:idx});});
  const fi=L.findIndex(it=>it.n==='FECHAR');if(fi>=0){const sc=fi===u.i?1.04:1;b.save();b.translate(540,1755);b.scale(sc,sc);b.drawImage(mm2('botao_fechar'),-210,-75,420,150);b.restore();u.rects.push({x:ox+330*k,y:oy+1680*k,w:420*k,h:150*k,i:fi});}
  b.restore();TX=oTX;TY=oTY;TZ=oTZ;u.boxR={x:0,y:0,w:W,h:H};return true;}
 function drawTiles(u){if(drawTilesMini2(u))return;if(drawTilesArt3(u))return;if(drawTilesArt2(u))return;UKWAIT=null;if(drawTilesArt(u)||ukWaitDraw(u))return;const cf=u.cfg,L=cf.tiles,n=L.length,cols=n>12&&H<300?4:3,tw2=54,gap=5,th=Math.max(36,Math.min(58,Math.floor((H-70)/Math.ceil(n/cols))-gap)),gw=cols*tw2+(cols-1)*gap,x0=Math.round((W-gw)/2),rows=Math.ceil(n/cols),gh=rows*th+(rows-1)*gap,y0=Math.round(Math.max(40,(H-gh)/2+10));
@@ -10600,7 +10600,7 @@ function arStrip(A,G2,y){const co=arCoop(A),h=19,sx=co?36:2,ex=co?W-36:W-2,T2=ar
 function arBanner(A,G2,y){if(A.mp||A.wave===0)return;const bsp=arBossSp(A),P=ARBP[arBossPow(bsp)],nb=arNextBoss(A),bo=A.en.find(e=>e.boss&&e.hp>0),nm=(SP[bsp]&&SP[bsp].name)||'Chefe';
   const txt=bo?`CHEFE ${nm}: ${P.ic} ${P.n}`:nb===0?`Chefe ${nm} nesta onda! ${P.ic}`:`Faltam ${nb} onda${nb>1?'s':''} para o chefe ${nm} ${P.ic}`;
   rrect(10,y,W-20,15,5,bo||nb===0?'rgba(110,15,30,.78)':'rgba(10,25,35,.72)',false);T(txt,W/2,y+4,5.8,'center','#ffffff',W-26,C.ink);}
-function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);else arEntryDraw(A);return;}const G2=arGeo(),t=A.t;b.save();if(A.shake>0)b.translate((Math.random()-.5)*3,(Math.random()-.5)*3);
+function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);else if(A.lobby==='wall')wallHubDraw(A);else arEntryDraw(A);return;}const G2=arGeo(),t=A.t;b.save();if(A.shake>0)b.translate((Math.random()-.5)*3,(Math.random()-.5)*3);
   arSBg();if(arCoop(A))arCoopUnder(A,G2,t);else if(A.mp&&A.mp.mode==='pvp')arPvpUnder(A,G2,t);arSPath(G2,t);arSBoard(G2);
   const selU=A.sel>=0?A.grid[A.sel]:null;
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u||(A.drag&&A.drag.i===i))continue;const p=arCellXY(i),pop=Math.max(0,1-(t-u.born)/12);arSPiece(u,p.x,p.y,(1+pop*.25)*G2.cs/30,t,{glow:selU&&i!==A.sel&&arCanMerge(A.sel,i),sel:i===A.sel,atk:u.atk>0,seed:i*.37});}
@@ -10862,6 +10862,17 @@ function arBottomAreia(A,G2,t){const yP=G2.by+7,hh=H-yP;A.bh=[];
   arPill(cx-14,yP+35,28,12);arDrop(cx-7,yP+41.5,1.7);T(String(A.cost),cx+2,yP+37.6,5.4,'center','#4a2c14',16);
   A.bh.push({x:cx-16,y:cy-16,w:32,h:34,f:()=>{A.buyT=performance.now();arBuy();}});}
 {const _tp=arTap;arTap=function(x,y){const A=AR;if(A&&!A.lobby&&!A.result&&ARSKIN==='areia'&&A.bh){const G2=arGeo();if(y>=G2.by+7){for(const h of A.bh)if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h){h.f();return;}return;}}return _tp(x,y);};}
+
+/* MURALHAHUB (04/nov, Felipe: "Coloca a muralha dupla dentro da muralha. Cria um menu igual criamos pra arena"): MINIJOGOS › MURALHA abre um menu próprio:
+   FASES (mapa de fases da Muralha), MURALHA DUPLA (com um amigo), HISTÓRIA e CARTAS. Usa os cartões do menu de minijogos (arte do Buchecha). */
+function wallHubDraw(A){A.hits=[];arLobbyBgDark();T('MURALHA',W/2,5,11,'center','#ffffff',120,C.ink);E(W-14,11,8,8,'#16242a',0,false);E(W-14,10,7,7,'#e04050',0,false);T('✕',W-14,6,7,'center','#ffffff',0,C.ink);arHit2(W-26,0,26,24,()=>A.pick({k:'x'}));
+  const S=stgState('wall'),wd=Math.floor(S.next/STGN),fs=S.next%STGN,tot=S.stars.reduce((a,x)=>a+x,0),cw=Math.min(W-24,150),chh=cw*330/420,x=(W-cw)/2,y1=24,y2=y1+chh+6;
+  const card=(key,y,sub,k)=>{const I=mm2(key);if(I){b.save();b.imageSmoothingEnabled=true;b.drawImage(I,x,y,cw,chh);b.restore();}else{rrect(x,y,cw,chh,10,'#f8e2a8',false);T(key==='card_muralha'?'MURALHA':'MURALHA DUPLA',W/2,y+chh*.55,9,'center','#294729',cw-20);}
+    T(sub,W/2,y+chh*262/330+.5,5.4,'center','#294729',cw*.8);arHit2(x,y,cw,chh,()=>A.pick({k}));};
+  card('card_muralha',y1,`FASES · Mundo ${wd+1} · Fase ${fs+1} · ★${tot}`,'fases');card('card_muralha_dupla',y2,'com um amigo (2 celulares)','dupla');
+  const yb=y2+chh+8,bw=(W-30)/2;arBtn(10,yb,bw,20,'#4a9aff','#1a5ad8','HISTÓRIA',7);arHit2(10,yb,bw,20,()=>A.pick({k:'hist'}));arBtn(20+bw,yb,bw,20,'#ffd84a','#f08a20','CARTAS',7);arHit2(20+bw,yb,bw,20,()=>A.pick({k:'cartas'}));}
+async function wallHub(){while(true){const r=await arLobbyShow('wall');if(!r||r.k==='x')return;
+  if(r.k==='fases')await stageMap('wall');else if(r.k==='dupla')await duoLobby();else if(r.k==='hist')await chapterMenu('wall',wallMode);else if(r.k==='cartas')await wallCardShop();}}
 
 /* /ARENA04NOV */
 /* ARENAMENU04NOV (04/nov, Felipe: "crie um menu do jogo arena, lá a gente vai poder ver todos os monstrinhos e escolher o deck da gente pra jogar").
@@ -11371,7 +11382,7 @@ function cm31F(im,n,cols,cw,ch,x,y,w,h){const c=n%cols,r=Math.floor(n/cols);b.dr
 
 
 /* atalhos dos mini games: bolinhas no canto esquerdo da tela do mapa */
-const MINIS=[{n:'EXPEDIÇÃO',k:'exp',go:()=>stageMap('exp')},{n:'MURALHA',k:'wall',go:()=>stageMap('wall')},{n:'MURALHA DUPLA',k:'wall',go:()=>duoLobby()},{n:'TORRES',k:'td',go:()=>stageMap('td')},{n:'HORDA',k:'surv',go:()=>stageMap('surv')},{n:'COMBINA',k:'match',go:()=>matchMode()},{n:'ARENA',k:'arena',go:()=>arenaMode()}];
+const MINIS=[{n:'EXPEDIÇÃO',k:'exp',go:()=>stageMap('exp')},{n:'MURALHA',k:'wall',go:()=>wallHub()},{n:'TORRES',k:'td',go:()=>stageMap('td')},{n:'HORDA',k:'surv',go:()=>stageMap('surv')},{n:'COMBINA',k:'match',go:()=>matchMode()},{n:'ARENA',k:'arena',go:()=>arenaMode()}];
 const RAIL=[{n:'MINIGAMES',k:'mini',ic:'exp',col:'#e0a83a',go:()=>minigamesMenu()},{n:'BICICLETA',k:'bike',ic:'bike',col:'#2fb8d8',go:()=>bikeToggle()}];
 async function minigamesMenu(){const subs={'EXPEDIÇÃO':`fase ${flags.expMax||1}`,'MURALHA':'defenda o Vale','MURALHA DUPLA':'com um amigo','TORRES':'defenda o portão','HORDA':'sobreviva!','COMBINA':`fase ${m3St().lv}`,'ARENA':'monte seu time'};
   while(true){const tiles=MINIS.map(m=>({n:m.n,sub:subs[m.n],col:'#e0a83a',badge:(()=>{try{return chapInfo(m.k).out.some(o=>o.done&&!o.got);}catch(e){return false;}})()})).concat([{n:'FECHAR',sub:'voltar',col:'#6a6488'}]);

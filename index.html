@@ -10643,7 +10643,7 @@ function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);
    A estrada ficou mais curta, então no JUNTOS os inimigos andam 30% mais devagar. */
 function arCoop(A){return !!(A&&A.mp&&A.mp.mode==='coop');}
 function arLeg(G2){return G2.by-G2.ty;}
-{const _sp2=arSpawn;arSpawn=function(boss){_sp2(boss);const A=AR;if(A&&A.mp){const e=A.en[A.en.length-1];if(e)e.spd*=.7;}};}
+{const _sp2=arSpawn;arSpawn=function(boss){_sp2(boss);const A=AR;if(A){const e=A.en[A.en.length-1];if(e)e.spd*=.7;}};}
 {const _t=arTarget;arTarget=function(){const own=_t(),A=AR;if(!arCoop(A)||!A.gh)return own;const L=arLeg(arGeo());let g=null;for(const x of A.gh)if(x.hp>0&&x.d>=L&&(!g||x.d>g.d))g=x;if(!g)return own;if(!own)return g;
   /* os dois perto do portão: mira em quem está mais à frente */return g.d>own.d?g:own;};}
 {const _h2=arHit;arHit=function(e,dmg,ty,col){if(e&&e.ghost){if(e.hp<=0)return;e.hp-=dmg;e.hit=6;const A=AR;try{duoEmit(A.mp.S,'ad',{i:e.nid,d:Math.round(dmg*10)/10,t:ty});}catch(_){}
@@ -10676,16 +10676,16 @@ function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,top=25,L=arLeg
 
 /* ARCOOP2 (04/nov, Felipe mandou o print do jogo em dupla: "Assim"): no JUNTOS os DOIS tabuleiros do mesmo tamanho, um em cima do outro (o do parceiro em cima),
    casas 26x26; a sua estrada sobe pela esquerda do seu, a dele desce pela esquerda do dele, e as duas viram a estrada do meio, entre os tabuleiros, até o portão na direita. Faixa da onda no topo. */
-{const _g=arGeo;arGeo=function(){if(!(AR&&AR.mp))return _g();const cs=26,ch=26,cols=5,rows=3,bw=cs*cols,bh=ch*rows,x0=Math.round((W-bw)/2)+3,y0=H-174,lx=9,rx=W-6,ty=y0-15,by=y0+bh+2;
+{const _g=arGeo;arGeo=function(){const mp=!!(AR&&AR.mp),cs=mp?26:28,ch=cs,cols=5,rows=3,bw=cs*cols,bh=ch*rows,x0=mp?32:31,y0=mp?H-174:H-98-bh-2,lx=12,rx=W-9,ty=y0-19,by=y0+bh+2;
   return {cs,ch,cols,rows,bw,bh,x0,y0,lx,rx,ty,by,pts:[[lx,by],[lx,ty],[rx,ty]]};};}
-function arCoopUnder(A,G2,t){const P=A.mp.peer||{},L=arLeg(G2),lx=G2.lx,top=G2.ty-L,dy=(G2.ty-15-G2.bh)-G2.y0;
-  b.save();b.lineCap='round';b.beginPath();b.moveTo(lx,top);b.lineTo(lx,G2.ty);b.strokeStyle='#8a6a40';b.lineWidth=17;b.stroke();b.strokeStyle='#7aa45a';b.lineWidth=15;b.stroke();b.strokeStyle='#ead2a4';b.lineWidth=12;b.stroke();b.setLineDash([.8,6]);b.lineCap='butt';b.strokeStyle='#c9ad7e';b.stroke();b.setLineDash([]);b.restore();arPortal(lx,top,t);
+function arCoopUnder(A,G2,t){const P=A.mp.peer||{},L=arLeg(G2),lx=G2.lx,top=G2.ty-L,dy=(G2.ty-19-G2.bh)-G2.y0;
+  b.save();b.lineCap='round';b.beginPath();b.moveTo(lx,top);b.lineTo(lx,G2.ty);b.strokeStyle='#8a6a40';b.lineWidth=25;b.stroke();b.strokeStyle='#7aa45a';b.lineWidth=23;b.stroke();b.strokeStyle='#ead2a4';b.lineWidth=19.5;b.stroke();b.setLineDash([.8,6]);b.lineCap='butt';b.strokeStyle='#c9ad7e';b.stroke();b.setLineDash([]);b.restore();arPortal(lx,top,t);
   b.save();b.translate(0,dy);arSBoard(G2);for(let i=0;i<15;i++){const u=P.g&&P.g[i];if(!u)continue;const q=arCellXY(i);arSPiece({sp:u[0],star:u[1]},q.x,q.y,G2.cs/30,t,{seed:i});}b.restore();}
-function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,L=arLeg(G2),lx=G2.lx,dy=(G2.ty-15-G2.bh)-G2.y0;
+function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,L=arLeg(G2),lx=G2.lx,dy=(G2.ty-19-G2.bh)-G2.y0;
   for(const g of A.gh||[]){let x,y,dir;if(g.d>=L){const p=arPos(G2,g.d);x=p.x;y=p.y;dir=p.dir;}else{x=lx;y=G2.ty-(L-g.d);dir='s';}
     E(x,y+2,g.boss?10:5,g.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(g.hit>0)b.filter='brightness(1.8)';arDrawMon(g.sp,x,y-(g.boss?16:9),g.sc,'walk',dir,g.id*10);b.restore();
     const bw=g.boss?24:12;px(x-bw/2-.5,y-(g.boss?42:22)-.5,bw+1,3,'#1a0a0a');px(x-bw/2,y-(g.boss?42:22),bw*Math.max(0,g.hp/g.max),2,'#ffb070');}
-  arPill(W/2-40,G2.y0+dy-19,80,13,'#a8d890','#6aa856','#3a6a2a');T(`${(P.n||'PARCEIRO').toUpperCase()} · DANO ${arFmt(P.dm)}`,W/2,G2.y0+dy-15.8,5.4,'center','#1e3a12',72);
+  arPill(W/2-36,G2.y0+dy-10.5,72,11,'#a8d890','#6aa856','#3a6a2a');T(`${(P.n||'PARCEIRO').toUpperCase()} · DANO ${arFmt(P.dm)}`,W/2,G2.y0+dy-8,5,'center','#1e3a12',66);
   T(`você · dano ${arFmt(A.dmgT)}`,W/2+3,G2.y0-10.5,0.01,'center','rgba(0,0,0,0)');
   if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do parceiro…',W/2,H/2-8,6,'center','#ffffff');}}
 
@@ -10796,11 +10796,11 @@ function arSBg(){b.fillStyle='#b8784a';b.fillRect(0,0,W,H);b.save();for(let y=0,
   const v=b.createRadialGradient(W/2,H*.5,H*.25,W/2,H*.5,H*.8);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(60,25,5,.35)');b.fillStyle=v;b.fillRect(0,0,W,H);
   [[3,30,1,.6],[W-3,60,1.1,2.4],[W-2,H*.45,1,2.8],[2,H*.55,.9,.3],[W-4,H*.7,1,2.6],[4,H*.35,.8,.9]].forEach(l=>arLeaf(l[0],l[1],l[2],l[3]));}
 function arSPath(G2,t){const P=G2.pts,go=()=>{b.beginPath();P.forEach((q,i)=>i?b.lineTo(q[0],q[1]):b.moveTo(q[0],q[1]));};b.save();b.lineJoin='round';b.lineCap='round';
-  go();b.strokeStyle='#8a6a40';b.lineWidth=17;b.stroke();go();b.strokeStyle='#7aa45a';b.lineWidth=15;b.stroke();go();b.strokeStyle='#ead2a4';b.lineWidth=12;b.stroke();
-  go();b.setLineDash([.8,6]);b.lineCap='butt';b.strokeStyle='#c9ad7e';b.lineWidth=12;b.stroke();b.setLineDash([]);go();b.strokeStyle='rgba(255,255,255,.25)';b.lineWidth=3;b.stroke();b.restore();
+  go();b.strokeStyle='#8a6a40';b.lineWidth=25;b.stroke();go();b.strokeStyle='#7aa45a';b.lineWidth=23;b.stroke();go();b.strokeStyle='#ead2a4';b.lineWidth=19.5;b.stroke();
+  go();b.setLineDash([.8,7]);b.lineCap='butt';b.strokeStyle='#c9ad7e';b.lineWidth=19.5;b.stroke();b.setLineDash([]);go();b.strokeStyle='rgba(255,255,255,.22)';b.lineWidth=6;b.stroke();b.restore();
   const [sx,sy]=P[0],[gx,gy]=P[P.length-1];arPortal(sx,sy,t);
-  rrect(gx-8,gy-9,15,17,7,'#8a6a40',false);rrect(gx-7,gy-8,13,15,6,'#e8c890',false);rrect(gx-5,gy-5,9,12,4.5,'#3a2410',false);for(let k=0;k<3;k++)px(gx-4+k*3,gy-4,1,11,'#d8a440');}
-function arPortal(x,y,t){E(x,y+1,11,7,'#8a6a40',0,false);E(x,y,10,6.4,'#e0c08e',0,false);E(x,y,7.5,4.6,'#6a1aa8',0,false);b.save();b.globalCompositeOperation='lighter';glowAt(x,y,12,'200,90,255',.5+.15*Math.sin((t||0)/8));b.restore();
+  rrect(gx-10,gy-13,19,25,9,'#8a6a40',false);rrect(gx-9,gy-12,17,23,8,'#e8c890',false);rrect(gx-6.5,gy-8,12,18,6,'#3a2410',false);for(let k=0;k<4;k++)px(gx-5.2+k*3,gy-7,1,16,'#d8a440');}
+function arPortal(x,y,t){E(x,y+1,13,8,'#8a6a40',0,false);E(x,y,12,7.4,'#e0c08e',0,false);E(x,y,9,5.4,'#6a1aa8',0,false);b.save();b.globalCompositeOperation='lighter';glowAt(x,y,12,'200,90,255',.5+.15*Math.sin((t||0)/8));b.restore();
   b.save();b.translate(x,y);b.scale(1,.6);b.rotate((t||0)/14);b.strokeStyle='#f0c8ff';b.lineWidth=1.3;b.beginPath();for(let a=0;a<9;a+=.3){const r=a*.65;a?b.lineTo(Math.cos(a)*r,Math.sin(a)*r):b.moveTo(0,0);}b.stroke();b.restore();}
 function arSBoard(G2){rrect(G2.x0-7,G2.y0-6,G2.bw+14,G2.bh+13,9,'#8a6a40',false);rrect(G2.x0-6.5,G2.y0-6.5,G2.bw+13,G2.bh+12,8.5,'#e8cfa0',false);px(G2.x0-3,G2.y0-5.5,G2.bw+6,1,'rgba(255,255,255,.5)');
   rrect(G2.x0-2.5,G2.y0-2.5,G2.bw+5,G2.bh+5,5,'#4a7a3a',false);

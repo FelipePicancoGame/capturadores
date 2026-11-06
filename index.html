@@ -10365,6 +10365,8 @@ window.__GFX=0;
 {const _bs=bestS;bestS=function(w,h,cap){const s=_bs(w,h,cap);return window.__GFX>=2?Math.min(s,2):window.__GFX>=1?Math.min(s,3):s;};}
 let GFXCAP=3;{const _ss=setScreen;setScreen=function(w,h,cap){GFXCAP=cap||4;return _ss(w,h,cap);};}
 function gfxApply(){const g=gfxLv();if(window.__GFX===g)return;window.__GFX=g;try{const w=W,h=H;W=0;setScreen(w,h,GFXCAP);}catch(e){}}
+/* GRAFICOALTO06NOV (Felipe: 'a qualidade ainda tá ruim'): o aviso de jogo lento tinha baixado o gráfico de vários jogadores (o dele para LEVE). Volta todo mundo para ALTO uma vez. */
+setInterval(()=>{try{if(typeof flags!=='undefined'&&flags&&!flags.gfx06&&typeof saveGame==='function'&&G&&G.mode!=='boot'){flags.gfx06=1;if(flags.gfx){flags.gfx=0;flags.fpsWN=0;}saveGame();}}catch(e){}},2000);
 setInterval(()=>{try{if(typeof flags!=='undefined'&&flags)gfxApply();}catch(e){}},1000);
 /* QUALIDADE06NOV (06/nov, Felipe: "a qualidade do jogo tá uma bosta" / "pq a qualidade das imagens estão ruins?").
    Causa: o jogo desenhava numa tela interna de no máximo 4 pontos por unidade (720 de largura no mapa, 540 nas Torres) e o celular
@@ -12233,7 +12235,7 @@ async function gameCfg(hl){if(MGCFG)return;MGCFG=1;try{try{autoPause();}catch(e)
       const ld=document.getElementById('ldr'),lv=ld&&ld.isConnected&&ld.style.display!=='none'&&getComputedStyle(ld).display!=='none';if(lv)boot=ts;
       const run=!lv&&!document.hidden&&ts-boot>10000&&typeof flags!=='undefined'&&flags&&!(typeof MGCFG!=='undefined'&&MGCFG)&&!(MGMODES[G.mode]&&mgPausedNow())&&!box;
       if(run&&fps<40)low++;else if(!run||fps>=48)low=0;
-      if(low>=2&&gfxLv()<2&&Date.now()-last>60000){low=0;last=Date.now();show(fps);}}}catch(e){}requestAnimationFrame(tick);}
+      /* GRAFICOALTO06NOV: o aviso baixava o gráfico do jogo inteiro (o do Felipe estava em LEVE). Desligado: quem cuida dos quadros/s agora é o ajuste da QUALIDADE06NOV, que nunca fica abaixo do ALTO de antes. */}}catch(e){}requestAnimationFrame(tick);}
   requestAnimationFrame(tick);})();
 /* OFFLINE-BG 03/nov (Felipe): baixa o jogo inteiro aos poucos, em segundo plano, pra jogar sem internet. Android no Wi-Fi: sozinho. iPhone: botão nos AJUSTES. */
 const OFFL={on:0,run:0,tot:0,ok:0,done:false,fail:0,list:null,fin:0};

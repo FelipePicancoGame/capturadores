@@ -10555,7 +10555,7 @@ function arBoxUI(){let el=document.getElementById('arBox');if(el)return el;el=do
 <div id="arEsp" hidden><p>Código da sala:</p><div class="cod" id="arCodTxt"></div><p>Mande esse código pro seu amigo. Começa quando ele entrar.</p></div>
 <div class="av" id="arAv"></div><button class="vm" id="arVoltar">Voltar</button></div>`;document.body.appendChild(el);return el;}
 function arAv(t,r){const a=document.getElementById('arAv');if(a){a.textContent=t||'';a.className='av'+(r?' ruim':'');}}
-async function arMpLobby(mode){if(!duoNoApp()){await say('Jogar a Arena com outra pessoa só funciona no App (o jogo aberto pelo ícone do celular). Os dois precisam abrir pelo App.');return;}
+async function arMpLobby(mode,autoCod){if(!duoNoApp()){await say('Jogar a Arena com outra pessoa só funciona no App (o jogo aberto pelo ícone do celular). Os dois precisam abrir pelo App.');return;}
   const box=arBoxUI();box.hidden=false;const $=id=>document.getElementById(id);$('arIni').hidden=false;$('arEsp').hidden=true;arAv('');$('arCod').value='';
   $('arTit').textContent=mode==='coop'?'ARENA — JUNTOS':'ARENA — UM CONTRA O OUTRO';$('arSub').textContent=mode==='coop'?'Os dois defendem ao mesmo tempo e dividem as 3 vidas.':'Cada um no seu tabuleiro. A cada 8 monstros que você derrota, manda 1 monstro bônus pro outro!';
   let S=null,cancel=null;
@@ -10572,8 +10572,10 @@ async function arMpLobby(mode){if(!duoNoApp()){await say('Jogar a Arena com outr
       cancel=()=>{ok=true;clearInterval(iv);try{S.leave();}catch(e){}};
       setTimeout(()=>{if(!ok){ok=true;clearInterval(iv);arAv('Sala '+cod+' não encontrada. Confira o código.',1);ocup=false;try{S.leave();}catch(e){}}},12000);};
     $('arEntrar').onclick=ent;$('arCod').onkeydown=e=>{if(e.key==='Enter')ent();};
-    $('arVoltar').onclick=()=>{try{cancel&&cancel();}catch(e){}fin(null);};});
-  box.hidden=true;if(!r)return;await arMpRun(mode,r);}
+    $('arVoltar').onclick=()=>{try{cancel&&cancel();}catch(e){}fin(null);};
+    try{arAmgPainel(mode);}catch(e){console.error(e);}
+    if(autoCod){$('arCod').value=autoCod;setTimeout(ent,50);}});
+  box.hidden=true;try{const pn=document.getElementById('arAmg');if(pn)pn.remove();}catch(e){}if(!r)return;await arMpRun(mode,r);}
 async function arMpRun(mode,r){const S=r.S;
   await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();const M=AR.mp={mode,role:r.role,S,peer:{n:r.peerN||''},peerClr:0,waitT:0,sentClr:-1,off:0,last:performance.now()};
   if(r.role==='guest')AR.between=1e9;G.mode='arena';await fadeTo(0);
@@ -14671,7 +14673,7 @@ async function amgAbre(){if(AMG.peer||AMG.abrindo||!duoNoApp()||!party.length)re
 function amgRecebe(c,m){if(!m||typeof m!=='object')return;const quem={tid:parseInt(m.tid,10)||0,nome:String(m.nome||'').slice(0,14)};
   const eu={k:'',tid:flags.tid,nome:String(flags.nome||'').slice(0,14),livre:G.mode==='world'&&!DUOH&&!DUOG};
   if(m.k==='ping'){c.send({...eu,k:'pong'});const a=amgLista().find(x=>x.tid===quem.tid);if(a&&quem.nome)a.nome=quem.nome;return;}
-  if(m.k==='inv'){const cod=String(m.cod||'').toUpperCase().replace(/[^A-Z]/g,'');if(cod.length!==4||!quem.tid)return;c.send({...eu,k:'recebi'});amgConvite(quem,cod);}}
+  if(m.k==='inv'){const cod=String(m.cod||'').toUpperCase().replace(/[^A-Z]/g,'');if(cod.length!==4||!quem.tid)return;c.send({...eu,k:'recebi'});amgConvite(quem,cod,String(m.jogo||''));}}
 /* manda uma mensagem pra caixa de um amigo; responde null se ele não estiver com o jogo aberto */
 async function amgFala(tid,msg,ms=6000){if(!await duoPjsLoad())return null;let p=AMG.peer,tmp=null;
   if(!p){tmp=p=new Peer(window.__DUOPEERCFG||{});const ok=await new Promise(r=>{p.on('open',()=>r(true));p.on('error',()=>r(false));setTimeout(()=>r(false),8000);});if(!ok){try{p.destroy();}catch(e){}return null;}}
@@ -14751,6 +14753,47 @@ async function amgConvidar(tid){const a=amgLista().find(x=>x.tid===tid),nm=(a&&a
   const r=await amgFala(tid,{k:'inv',cod},8000);if(r&&r.k==='recebi'){if(r.nome)amgAdd(tid,r.nome);duoMsg('Convite enviado pra '+((r&&r.nome)||nm)+'! Esperando aceitar…');}
   else duoMsg('Não deu pra entregar o convite. Mande o código '+cod+' pra ele.',1);}
 {const _dl=duoLobby;duoLobby=async function(){setTimeout(()=>{try{amgPainel();}catch(e){console.error(e);}},0);return _dl.apply(this,arguments);};}
+
+/* AMGJOGAR (05/nov, Felipe: "cria a função jogar com amigo ao invés de criar sala ... faz isso pra todos os jogos que funcionam multiplayer"):
+   ARENA JUNTOS / CONTRA ganham a lista de AMIGOS no topo (igual à Muralha em Dupla): toca em CONVIDAR no amigo → o jogo cria a sala sozinho e manda
+   o convite pra ele; ele vê "Fulano te chamou" e, aceitando, entra direto na partida (sem digitar código). O código continua lá embaixo, pra quem quiser. */
+function arAmgPainel(mode){if(!duoNoApp())return;const ini=document.getElementById('arIni');if(!ini)return;let pn=document.getElementById('arAmg');
+  if(!pn){pn=document.createElement('div');pn.id='arAmg';ini.insertBefore(pn,ini.firstChild);}
+  const L=amgLista(),esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  pn.innerHTML=`<style>#arAmg{margin:0 0 10px;padding:10px;border-radius:14px;background:rgba(255,255,255,.1);text-align:left}
+#arAmg h3{margin:0 0 6px;font-size:18px;color:#ffd23f;text-align:center}#arAmg .eu{font-size:13px;color:#f0e2ff;text-align:center;margin:0 0 6px}
+#arAmg .ls{max-height:180px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#arAmg .am{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid rgba(255,255,255,.12)}
+#arAmg .am b{flex:1;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#arAmg .am small{display:block;font-size:11px;color:#c8b8e0;font-weight:400}
+#arAmg .am button{width:auto;margin:0;padding:8px 12px;font-size:15px;background:#2f9f4c;box-shadow:0 3px 0 #1b6a30}
+#arAmg .vz{font-size:14px;color:#f0e2ff;text-align:center;margin:6px 0}
+#arAmg .ad{display:flex;gap:6px;margin-top:8px}#arAmg .ad input{flex:1;font-size:16px;letter-spacing:1px;padding:8px}#arAmg .ad button{width:auto;margin:0;padding:8px 12px;font-size:15px;background:#3f6ae0;box-shadow:0 3px 0 #24409a}
+#arAmg .lk{margin-top:8px;background:#e0a020;box-shadow:0 3px 0 #8a5a10;font-size:15px;padding:9px}
+#arIni>button#arCriar{background:#6a5a8a;box-shadow:0 4px 0 #3a2a5a;font-size:15px;padding:9px}</style>
+<h3>JOGAR COM AMIGO</h3><div class="eu">Seu Nº de amigo: <b>${amgNo()}</b></div>
+<div class="ls">${L.length?L.map(a=>`<div class="am"><b>${esc(a.nome||'Amigo')}<small>Nº ${a.tid}</small></b><button data-t="${a.tid}">Convidar</button></div>`).join(''):'<div class="vz">Você ainda não tem amigos no jogo. Mande o link ou adicione pelo Nº do amigo.</div>'}</div>
+<div class="ad"><input id="arAmgN" inputmode="numeric" maxlength="6" placeholder="Nº do amigo"><button id="arAmgAdd">Adicionar</button></div>
+<button class="lk" id="arAmgLink">Mandar link pro amigo (WhatsApp, mensagem…)</button>
+<p style="margin:10px 0 0;text-align:center;font-size:13px;color:#c8b8e0">ou crie uma sala e passe o código:</p>`;
+  ['pointerdown','pointerup','touchstart','touchend','touchmove','mousedown','mouseup','click','keydown','keyup'].forEach(ev=>pn.addEventListener(ev,e=>e.stopPropagation()));
+  pn.querySelectorAll('.am button').forEach(bt=>bt.onclick=()=>arAmgConvidar(mode,parseInt(bt.dataset.t,10)));
+  pn.querySelector('#arAmgAdd').onclick=()=>{const v=parseInt((pn.querySelector('#arAmgN').value||'').replace(/\D/g,''),10);if(!v){arAv('Digite o Nº do amigo.',1);return;}if(v===amgNo()){arAv('Esse é o seu Nº 😄',1);return;}amgAdd(v,'');arAv('Amigo adicionado!');arAmgPainel(mode);};
+  pn.querySelector('#arAmgLink').onclick=()=>{try{amgShare();}catch(e){}};}
+async function arAmgConvidar(mode,tid){const a=amgLista().find(x=>x.tid===tid),nm=(a&&a.nome)||('Nº '+tid);
+  arAv('Chamando '+nm+'…');const r0=await amgFala(tid,{k:'ping'},5000);if(!r0||r0.k!=='pong'){arAv(nm+' não está com o App aberto no mapa agora. Peça pra ele abrir o jogo e tente de novo.',1);return;}
+  if(r0.livre===false){arAv(nm+' está no meio de outra coisa no jogo. Tente de novo daqui a pouco.',1);return;}
+  document.getElementById('arCriar').click();let cod='';for(let i=0;i<60&&!cod;i++){await new Promise(r=>setTimeout(r,250));const t=(document.getElementById('arCodTxt')||{}).textContent||'';if(/^[A-Z]{4}$/.test(t))cod=t;}
+  if(!cod){arAv('A sala não abriu. Tente de novo.',1);return;}
+  const r=await amgFala(tid,{k:'inv',cod,jogo:'arena-'+mode},8000);if(r&&r.k==='recebi'){if(r.nome)amgAdd(tid,r.nome);arAv('Convite enviado pra '+((r&&r.nome)||nm)+'! Esperando aceitar…');}
+  else arAv('Não deu pra entregar o convite. Mande o código '+cod+' pra ele.',1);}
+/* quem recebe: convite da ARENA entra direto na partida */
+let ARINVP=null;
+{const _c=amgConvite;amgConvite=function(quem,cod,jogo){_c(quem,cod);const m=/^arena-(coop|pvp)$/.exec(jogo||'');if(!m)return;const el=document.getElementById('amgInv');if(!el)return;
+  const sim=el.querySelector('#amgSim');if(!sim)return;const b2=el.querySelector('b');if(b2)b2.textContent=(quem.nome||'Um jogador')+' · ARENA '+(m[1]==='coop'?'JUNTOS':'CONTRA');
+  sim.onclick=()=>{el.hidden=true;el.innerHTML='';amgAdd(quem.tid,quem.nome);ARINVP={mode:m[1],cod};arInvTenta();};};}
+function arInvTenta(){const P=ARINVP;if(!P)return;if(typeof G!=='undefined'&&G.mode==='world'&&party.length&&!ui.some(u=>u.type!=='dialog'&&!u.say)){ARINVP=null;while(ui.length&&(ui[ui.length-1].type==='dialog'||ui[ui.length-1].say)){const u=ui.pop();try{u.res&&u.res();}catch(e){}}arMpLobby(P.mode,P.cod);return;}
+  if(!arInvTenta.t){arInvTenta.t=setInterval(()=>{if(!ARINVP){clearInterval(arInvTenta.t);arInvTenta.t=0;return;}arInvTenta();},700);}}
+/* /AMGJOGAR */
 /* DUORES (02/nov, Felipe: "colocar todas as minhas opções na barra de baixo; pra trocar é só arrastar lá pra cima; cada um controla as duas plataformas dele"):
    na Muralha em Dupla, a metade da barra que era das cartas do parceiro vira a RESERVA de quem está jogando (os outros monstrinhos da equipe dele).
    Arrastar um da reserva até um lugar seu (ou até a carta dele) troca. O dono troca na hora; o parceiro pede ao dono pela sala. */

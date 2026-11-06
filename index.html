@@ -15346,6 +15346,36 @@ setInterval(()=>{try{if(DUO_HASHOK||!/dupla/.test(location.hash||''))return;
 /* ajuda pros testes automáticos (só leitura + ponto de toque de uma carta) */
 try{window.__DUO={menu:()=>run(()=>minigamesMenu()),get H(){return DUOH;},get G(){return DUOG;},get OW(){return DUO_OW;},as:(p,f)=>duoAs(p,f),pwLv:t=>pwLv(t),get flags(){return flags;},snapLen(){const s=WL&&WL.duo?duoSnap(WL):null;return s?JSON.stringify(s).length:-1;},CT:DUO_CT,cardPt(i){const w=WL;if(!w)return null;const d=w.defs[i];if(!d)return null;const OY=Math.max(0,H-320)-wK();let x=d.x,y=310;if(murUI()){const r=murLU('c'+(d._mk!=null?d._mk:i));if(r){x=r.x+r.w/2;y=r.y+r.h/2;}}y+=OY;const cr=cv.getBoundingClientRect();return [cr.left+x*cr.width/W,cr.top+y*cr.height/H];},wallPt(x,y){const OY=Math.max(0,H-320)-wK(),cr=cv.getBoundingClientRect();return [cr.left+x*cr.width/W,cr.top+(y+OY)*cr.height/H];}};}catch(e){}
 
+/* TELAPRONTA06NOV (06/nov, Felipe: "telas duplas: abre uma tela antes, depois abre outra"; report 134 batalha antiga antes da nova).
+   Causa: ao abrir uma tela, a arte nova ainda está carregando (ou saiu da memória pelo SOLTAR ARTE) e o jogo desenhava a versão antiga
+   feita por código até a arte chegar. Agora, logo depois de trocar de tela, o quadro que ainda tem arte carregando NÃO vai pra tela:
+   continua aparecendo o quadro anterior (ou o escuro da transição) até a tela nova estar completa (no máximo 1,5 s). Mesma arte, mesma qualidade.
+   Desligar: #notelapronta */
+(function(){try{if(/notelapronta/.test(location.hash))return;
+  const P=HTMLImageElement.prototype,dC=Object.getOwnPropertyDescriptor(P,'complete'),dN=Object.getOwnPropertyDescriptor(P,'naturalWidth'),dS=Object.getOwnPropertyDescriptor(P,'src');
+  if(!dC||!dC.get||!dN||!dN.get)return;
+  const ART=/(^|\/)(blobs|assets)\/[^?#]+\.(webp|png|jpe?g|gif|svg)/i;let MISS=0,NH=0,NM=0;
+  const art=im=>{try{if(im.__pkw)return true;const s=im.__rel?im.__rel.src:(dS&&dS.get?dS.get.call(im):im.src);return !!s&&(ART.test(s)||s.startsWith('data:image'));}catch(_){return false;}};
+  const pend=im=>im.__lazy||im.__pkw||!dC.get.call(im);
+  Object.defineProperty(P,'complete',{configurable:true,enumerable:true,get(){const v=dC.get.call(this);if((this.__lazy||this.__pkw||!v)&&art(this))MISS=1;return v;}});
+  Object.defineProperty(P,'naturalWidth',{configurable:true,enumerable:true,get(){const v=dN.get.call(this);if(!v&&pend(this)&&art(this))MISS=1;return v;}});
+  for(const k of ['width','height']){const d=Object.getOwnPropertyDescriptor(P,k);if(d&&d.get)Object.defineProperty(P,k,{configurable:true,enumerable:true,get(){const v=d.get.call(this);if(!v&&pend(this)&&art(this))MISS=1;return v;},set(v){d.set.call(this,v);}});}
+  const C=CanvasRenderingContext2D.prototype,di=C.drawImage;
+  C.drawImage=function(im){if(im&&im instanceof HTMLImageElement&&pend(im)&&art(im))MISS=1;return di.apply(this,arguments);};
+  let KEY='',T0=0,HOLD=0;
+  const key=()=>{let k=G.mode+(B?'b':'');try{for(const u of ui)if(u.type!=='dialog')k+='|'+(u.cfg?Object.keys(u.cfg).join(','):u.type);}catch(_){}
+    return k+(REVEAL?'R':'')+(EVOA?'E':'')+(EGGA?'H':'');};
+  window.__telaPronta=()=>({seguradas:NH,telas:NM});
+  const _p=present;
+  present=function(){const t=performance.now(),m=MISS;MISS=0;let k='';try{k=key();}catch(_){}
+    if(k!==KEY){const first=!KEY;KEY=k;if(!first&&G.mode!=='title'&&G.mode!=='boot'){HOLD=1;T0=t;NM++;}}
+    if(HOLD){if(!m||t-T0>1500)HOLD=0;
+      else{NH++;const tr=FX.trans>0||FX.transOpen>0||FX.fade>0;texts=[];
+        if(!tr)return;/* fica o quadro anterior */
+        b.save();b.setTransform(1,0,0,1,0,0);b.globalAlpha=1;b.fillStyle='#0d0f1c';b.fillRect(0,0,buf.width,buf.height);b.restore();}}
+    return _p.apply(this,arguments);};
+}catch(e){}})();
+/* /TELAPRONTA06NOV */
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

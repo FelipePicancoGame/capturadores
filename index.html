@@ -11957,6 +11957,39 @@ function pv6Foe(sp,x,y,boss,dir,seed,hp){E(x,y+2,boss?10:5,boss?3:2,'rgba(0,0,0,
   m6T([vn[0]+vn[2]*.1,vn[1]+vn[3]*.15,vn[2]*.8,vn[3]*.65],`VOCÊ · DANO ${arFmt(A.dmgT)}`,'#fff3df','#0d4a3a');
   if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do parceiro…',W/2,H/2-8,6,'center','#ffffff');}};}
 /* /ARCOOP6 */
+/* ARCOOPUM (06/nov, Felipe: "o jogo junto tava com mapa de dupla um contra o outro… não tava nós dois junto"; "meus monstros estão atacando mobs dos inimigos";
+   "não vejo meu parceiro atacando os mobs do lado dele"): no JUNTOS agora é UMA ESTRADA SÓ para os dois.
+   Cada inimigo sai do portal de cima, contorna o tabuleiro de cima, entra na porta, sai no portal de baixo e contorna o tabuleiro de baixo até o portão.
+   (Na tela de cada um, o tabuleiro dele fica embaixo; então os inimigos de cada um passam primeiro pelo parceiro e depois por ele.)
+   Cada jogador só ataca os inimigos que estão passando pelo PRÓPRIO tabuleiro (os dele e os do parceiro); o parceiro ataca os do lado dele, e você vê. */
+function arUm(){try{return !!(AR&&AR.mp&&AR.mp.mode==='coop'&&!AR.lobby&&pvp6());}catch(e){return false;}}
+function arUmPts(){const V=m6s().pvp;return {T:V.rpath.map(q=>m7P(q[0],q[1])),B:V.path.map(q=>m7P(q[0],q[1]))};}
+function arUmLen(P){let L=0;for(let i=1;i<P.length;i++)L+=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);return L;}
+function arUmAt(P,r){for(let i=1;i<P.length;i++){const [ax,ay]=P[i-1],[bx,by]=P[i],L=Math.hypot(bx-ax,by-ay);if(r<=L||i===P.length-1){const f=L?Math.max(0,Math.min(1,r/L)):0,dx=bx-ax,dy=by-ay;
+  return {x:ax+dx*f,y:ay+dy*f,dir:Math.abs(dx)>=Math.abs(dy)?(dx>0?'e':'w'):(dy<0?'n':'s')};}r-=L;}const q=P[P.length-1];return {x:q[0],y:q[1],dir:'s'};}
+function arUmLT(){const U=arUmPts();return {U,Lt:arUmLen(U.T),Lb:arUmLen(U.B)};}
+{const _pl=arPathLen;arPathLen=function(G2){if(!arUm())return _pl(G2);const K=arUmLT();return K.Lt+K.Lb;};}
+{const _ap=arPos;arPos=function(G2,d){if(!arUm())return _ap(G2,d);const K=arUmLT();return d<K.Lt?arUmAt(K.U.T,d):arUmAt(K.U.B,d-K.Lt);};}
+/* inimigo do parceiro (posição dele pd) -> posição na minha estrada: a 1ª metade dele é o MEU tabuleiro (embaixo), a 2ª é o dele (em cima) */
+function arUmMap(pd){const K=arUmLT();return pd<K.Lt?K.Lt+pd/K.Lt*K.Lb:(pd-K.Lt)/K.Lb*K.Lt;}
+{const _g=arGhosts;arGhosts=function(A){if(!arUm())return _g(A);const P=A.mp.peer||{},PL=arPathLen(arGeo()),old={};for(const g of A.gh||[])old[g.nid]=g;const out=[];
+  for(const q of P.q||[]){if(q[3]==null)continue;const pd=q[0]/1000*PL,g=old[q[3]],hp=(q[4]==null?100:q[4]),spd=(q[5]||0)/1000;
+    if(g){if(Math.abs(g.pd-pd)>30)g.pd=pd;else g.pd+=(pd-g.pd)*.25;g.spd=spd;g.hp=Math.min(g.hp,hp);g.boss=!!q[2];g.d=arUmMap(g.pd);out.push(g);}
+    else out.push({ghost:1,nid:q[3],sp:q[1],boss:!!q[2],pd,d:arUmMap(pd),hp,max:100,spd,slow:0,hit:0,id:q[3]*.13,sc:q[2]?.5:.28});}
+  A.gh=out;};}
+{const _u=arRushTick;arRushTick=function(A){if(!arUm())return _u(A);const gh=A.gh;A.gh=null;try{_u(A);}finally{A.gh=gh;}
+  if(A.gh){const PL=arPathLen(arGeo());for(const g of A.gh){g.pd+=g.spd;g.d=arUmMap(g.pd);if(g.hit>0)g.hit--;}A.gh=A.gh.filter(g=>g.hp>0&&g.pd<PL);}};}
+/* mira: só o que passa pelo MEU tabuleiro (d >= Lt), o mais adiantado */
+{const _t=arTarget;arTarget=function(){if(!arUm())return _t();const A=AR,Lt=arUmLT().Lt;let best=null;
+  for(const e of A.en)if(e.hp>0&&e.d>=Lt&&(!best||e.d>best.d))best=e;for(const g of A.gh||[])if(g.hp>0&&g.d>=Lt&&(!best||g.d>best.d))best=g;return best;};}
+/* desenho: inimigos do parceiro onde eles estão de verdade; os monstrinhos dele atacam os que estão no tabuleiro de cima */
+{const _c=arCoopUnder;arCoopUnder=function(A,G2,t){if(!arUm())return _c(A,G2,t);const Lt=arUmLT().Lt,foes=[];
+  for(const g of A.gh||[]){const q=arPos(G2,g.d);if(g.d<Lt)foes.push(q);b.save();if(g.hit>0)b.filter='brightness(1.8)';pv6Foe(g.sp,q.x,q.y,g.boss,q.dir,g.id*10,g.hp/g.max*100);b.restore();}
+  for(const e of A.en)if(e.hp>0&&e.d<Lt)foes.push(arPos(G2,e.d));
+  pv6Partner(A,t,foes);};}
+/* velocidade: a estrada agora tem os dois tabuleiros (o dobro); anda no ritmo normal da Arena (antes era 70% pra estrada curta) */
+{const _sp=arSpawn;arSpawn=function(boss){_sp(boss);const A=AR;if(arUm()&&A){const e=A.en[A.en.length-1];if(e&&!e._um){e._um=1;e.spd*=1.25;}}};}
+/* /ARCOOPUM */
 /* ARDANOFIM (06/nov, Felipe: 'coloque estatística final de dano'): cada tiro lembra de qual monstrinho saiu; no fim da partida da Arena,
    ao tocar em SAIR, aparece a ESTATÍSTICA (quem bateu mais, %, dano) e, no JUNTOS/CONTRA, quanto você e o outro deram no total. */
 var AR_CUR=null;

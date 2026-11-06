@@ -65,7 +65,7 @@ window.CVEN=window.CVEN||{};window.CVENT=window.CVENT||[];
     const go2=()=>{try{walk(document.body);new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){DONE.delete(m.target);walk(m.target);}else for(const c of m.addedNodes)walk(c);}}).observe(document.body,{childList:true,subtree:true,characterData:true});}catch(e){}};
     if(document.body)go2();else addEventListener('DOMContentLoaded',go2);}
 })();
-function cvSetLang(l){try{localStorage.setItem('cv.lang',l);}catch(e){}try{const u=new URL(location.href);u.searchParams.delete('lang');u.hash=(u.hash||'').replace(/(^#|-)en(?=$|-)/,'');location.replace(u.toString());}catch(e){location.reload();}}
+function cvSetLang(l){try{localStorage.setItem('cv.lang',l);}catch(e){}try{const u=new URL(location.href),h0=u.hash||'';u.searchParams.delete('lang');u.hash=h0.replace(/(^#|-)en(?=$|-)/,'');const nu=u.toString();if(nu.split('#')[0]===location.href.split('#')[0]){if(u.hash!==h0)history.replaceState(null,'',nu);location.reload();}else location.replace(nu);}catch(e){location.reload();}}
 /* 05/nov: Felipe pediu que o idioma só troque em AJUSTES (sem botão na tela inicial) */
 /* /I18N */
 
@@ -1852,9 +1852,9 @@ function drawCfgArt(u){const ks=['cfg_fundo','cartao_opcao','seletor_personagem'
   {const w=520,h=w*206/857,x=(941-w)/2,y=1415;card(I.botao_voltar,x,y,w,h,8);txt('VOLTAR',x+w*.58,y+h/2+4,52,'center',TC,260);}
   b.restore();return true;}
 async function cfgMenu(){while(true){const sOn=!flags.sfxOff,fOn=!flags.fxOff;
-  const mOn=musOn(),L=[`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${fOn?'LIGADO':'DESLIGADO'}`,`PERSONAGEM: ${flags.hero==='menina'?'MENINA':'MENINO'}`,'SALVAR AGORA','CARREGAR JOGO','VER A HISTÓRIA','VER TUTORIAIS','VOLTAR',`NARRAÇÃO: ${!flags.narraOff?'LIGADA':'DESLIGADA'}`,offLabel()];
+  const mOn=musOn(),L=[`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${fOn?'LIGADO':'DESLIGADO'}`,`PERSONAGEM: ${flags.hero==='menina'?'MENINA':'MENINO'}`,'SALVAR AGORA','CARREGAR JOGO','VER A HISTÓRIA','VER TUTORIAIS','VOLTAR',`NARRAÇÃO: ${!flags.narraOff?'LIGADA':'DESLIGADA'}`,offLabel(),window.CVLANG==='en'?'🌐 LANGUAGE: ENGLISH':'🌐 IDIOMA: PORTUGUÊS'];
   /* 27/out (Felipe): mesmo estilo do Caderno com adesivo (balão de destaque + tirinhas de papel com fita) */
-  const j=await choose(L,{cfgart:1,cadAsk:{q:'CONFIGURAÇÕES — toque pra ligar ou desligar',nf:cfgMenu.open?1:0,cols:[mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',fOn?'#1f7a3a':'#8a2f2f',flags.hero==='menina'?'#a8326e':'#2f5fa8','#154c5e','#154c5e','#154c5e','#7a4fb0','#6a4a2a',!flags.narraOff?'#1f7a3a':'#8a2f2f','#1f6a7a']}});cfgMenu.open=1;
+  const j=await choose(L,{cfgart:1,cadAsk:{q:'CONFIGURAÇÕES — toque pra ligar ou desligar',nf:cfgMenu.open?1:0,cols:[mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',fOn?'#1f7a3a':'#8a2f2f',flags.hero==='menina'?'#a8326e':'#2f5fa8','#154c5e','#154c5e','#154c5e','#7a4fb0','#6a4a2a',!flags.narraOff?'#1f7a3a':'#8a2f2f','#1f6a7a','#2f5fa8']}});cfgMenu.open=1;if(j===11){cvSetLang(window.CVLANG==='en'?'pt':'en');return;}
   if(j===0){flags.music=!musOn();saveGame();try{tone([660,880],.06);}catch(e){}continue;}
   if(j===1){flags.sfxOff=!flags.sfxOff;saveGame();if(!flags.sfxOff)try{tone([660,880],.06);}catch(e){}continue;}
   if(j===2){flags.fxOff=!flags.fxOff;saveGame();continue;}
@@ -14984,4 +14984,8 @@ setTimeout(start,2500);
 <script>/* versão app: guarda os arquivos no aparelho (abre sem internet depois da primeira vez) */
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
 </script>
+<script>/* LANGBTN (05/nov, Felipe: "como mudo de língua?" / "não tem essa opção no meu jogo"): botão 🌐 na tela inicial */
+(function(){let el=null;function mk(){el=document.createElement('button');el.id='cvLangBtn';el.style.cssText='position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;padding:8px 12px;border-radius:12px;border:2px solid #fff3df;background:#2f5fa8;color:#fff;font:700 15px system-ui,sans-serif;box-shadow:0 3px 0 rgba(0,0,0,.35);display:none';
+  el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();try{cvSetLang(window.CVLANG==='en'?'pt':'en');}catch(_){}});document.body.appendChild(el);}
+ setInterval(()=>{try{if(!el){if(!document.body)return;mk();}const t=window.__GM&&window.__GM()==='title';el.textContent=window.CVLANG==='en'?'🌐 Português':'🌐 English';el.style.display=t?'block':'none';}catch(_){}},400);})();</script>
 </body></html>

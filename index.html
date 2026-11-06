@@ -11864,6 +11864,20 @@ function pv6At(pts,f){let Lt=0;const seg=[];for(let i=1;i<pts.length;i++){const 
   m6T([vn[0]+vn[2]*.1,vn[1]+vn[3]*.15,vn[2]*.8,vn[3]*.65],`VOCÊ · DANO ${arFmt(A.dmgT)}`,win?'#fff3df':'#ffe0d0','#0d4a3a');
   if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do oponente…',W/2,H/2-8,6,'center','#ffffff');}};}
 /* /ARPVP6 */
+/* ARREP0511 (05/nov, reports do Felipe):
+   1) "o informativo não tenha borda e fique escrito em cima da faixa": nos estilos desenhados o aviso do chefe vira só TEXTO na faixa de papel (sem pílula).
+   2) "nas cartas aparecem bordas escuras": tira o retângulo escuro por cima das cartas sem mana (só o número do custo fica apagadinho).
+   3) "os monstrinhos andam na diagonal em vez de pra cima e pra baixo": o caminho fica reto (as laterais exatamente na vertical, o topo na horizontal)
+      e a direção do bichinho segue o lado que ele mais anda (nunca de lado subindo). */
+{const _bn=arBanner;arBanner=function(A,G2,y){if(!m7m()||A.wave===0)return _bn(A,G2,y);if(A.mp&&!pvp6())return;const S=M7L.solo,r=S.aviso;if(!r)return _bn(A,G2,y);
+  const bsp=arBossSp(A),P=ARBP[arBossPow(bsp)],nb=arNextBoss(A),bo=A.en.find(e=>e.boss&&e.hp>0),nm=(SP[bsp]&&SP[bsp].name)||'Chefe',hot=bo||nb===0;
+  const txt=bo?`CHEFE ${nm}: ${P.ic} ${P.n}`:nb===0?`Chefe ${nm} nesta onda! ${P.ic}`:`Faltam ${nb} onda${nb>1?'s':''} para o chefe ${nm} ${P.ic}`;
+  m7F(txt,r[0]+r[2]/2,r[1]+r[3]*.5,Math.min(r[3]*.34,44),hot?'#a8261c':'#3d2a1c',r[2]*.84);};}
+{const _rr=rrect;rrect=function(x,y,w,h,rad,col,...o){if(col==='#3a2a1a'&&m7m())return;return _rr(x,y,w,h,rad,col,...o);};}
+{const _g=arGeo;arGeo=function(){const G=_g();if(!m7m()||!G||!G.pts||G.pts.length<4)return G;const p=G.pts.map(q=>[q[0],q[1]]);p[1][0]=p[0][0];p[2][0]=p[3][0];p[2][1]=p[1][1];G.pts=p;G.lx=p[0][0];G.rx=p[2][0];G.ty=p[1][1];return G;};}
+{const _ap=arPos;arPos=function(G2,d){if(!m7m())return _ap(G2,d);let r=d;const P=G2.pts;for(let i=1;i<P.length;i++){const [ax,ay]=P[i-1],[bx,by]=P[i],L=Math.hypot(bx-ax,by-ay);if(r<=L){const f=L?r/L:0,dx=bx-ax,dy=by-ay;return {x:ax+dx*f,y:ay+dy*f,dir:Math.abs(dx)>=Math.abs(dy)?(dx>0?'e':'w'):(dy<0?'n':'s')};}r-=L;}const p=P[P.length-1];return {x:p[0],y:p[1],dir:'s'};};}
+/* /ARREP0511 */
+
 
 
 

@@ -14234,7 +14234,7 @@ function jogSp(t){const k=String(t||'').toLowerCase().replace(/\s+/g,'');if(!k)r
     return '·'+[so,g,L].filter(Boolean).join('·');}catch(_){return '';}};
 })();
 function jogDados(){if(!flags.tid)flags.tid=10000+Math.floor(Math.random()*89999);const all=[...party,...(storage||[])];
-  return {id:String(flags.tid),nome:flags.nome||'',heroi:flags.hero||'',nivel:all.reduce((a,m)=>Math.max(a,m.lv||0),0),mons:all.length,dex:Object.keys(flags.dex||{}).length,moedas:flags.coins||0,cristais:gems(),horas:Math.round((flags.playT||0)/360)/10,ver:(window.__APPVER||''),onde:((/github/.test(location.host)?'App':'Claude')+'·abriu '+(flags.sess||0)+(window.__fpsResumo?__fpsResumo():'')).slice(0,40)};}
+  return {id:String(flags.tid),nome:flags.nome||'',heroi:flags.hero||'',nivel:all.reduce((a,m)=>Math.max(a,m.lv||0),0),mons:all.length,dex:Object.keys(flags.dex||{}).length,moedas:flags.coins||0,cristais:gems(),horas:Math.round((flags.playT||0)/36)/100,ver:(window.__APPVER||''),onde:((/github/.test(location.host)?'App':'Claude')+'·abriu '+(flags.sess||0)+(window.__fpsResumo?__fpsResumo():'')).slice(0,40)};}
 async function jogPost(o){if(!JOGURL)return null;const r=await fetch(JOGURL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)});return r.ok?r.json():null;}
 let JOGPEND=[],JOGT=0,JOGRUN=false;
 async function jogSync(){if(!JOGURL||JOGRUN||!G.mode||G.mode==='title')return;/* HORASFIX (06/nov, Felipe: 'faz uma estimativa baseada no FPS de hoje e adiciona ao contador'): as horas antigas foram contadas por quadros

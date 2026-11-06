@@ -11802,6 +11802,11 @@ function arCardArt(sp){if(!ARCART.has(sp))return null;let i=ARCI[sp];if(!i){try{
 {const _mm=m7Mon;m7Mon=function(sp,r,...x){const I=arCardArt(sp);if(!I)return _mm(sp,r,...x);
   m7Rot(r,()=>{const q=m7R(r),s=Math.min(q.w/I.naturalWidth,q.h/I.naturalHeight),w=I.naturalWidth*s,h=I.naturalHeight*s;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(I,q.x+(q.w-w)/2,q.y+(q.h-h)/2,w,h);b.restore();});};}
 /* /ARCARTAART */
+/* SEMATELIE (05/nov, Felipe: "esquece essa do ateliê, use as outras"): o Ateliê sai da Arena; o padrão vira OUTONO e o 🎨 passa só pelas 5 naturais (e depois Jardim, Pedra, Areia). */
+M6X.outono='primavera';M6X.primavera='luar';M6X.luar='rio';M6X.rio='estufa';M6X.estufa='jardim';M6X.jardim='pedra';M6X.pedra='areia';M6X.areia='outono';M6X.atelie='outono';
+{const _sk=arSk;arSk=function(){const s=_sk();if(s==='atelie'){try{if(flags)flags.arSkin='outono';}catch(e){}return 'outono';}return s;};}
+/* /SEMATELIE */
+
 
 
 

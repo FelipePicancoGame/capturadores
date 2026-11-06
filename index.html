@@ -11822,6 +11822,27 @@ function arvPose(u){if(!u||!u.vAtk)return 0;const ph=performance.now()-u.vAtk;if
   const z=92*sc,cx=x+Math.cos(ang)*off,cy=y+4*sc+Math.sin(ang)*off;
   b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.translate(cx,cy);b.rotate(ang-ARVHOME);b.drawImage(I,-z/2,-z/2,z,z);b.restore();};}
 /* /ARVISTA */
+/* M6CORTE (05/nov, reports do Felipe: "as laterais estão com edição pra completar a tela" / "o botão de chamar fica com uma marca escura"):
+   1) celular MAIS CURTO que o desenho (iPhone com a barra do Safari, 393x793): o desenho ocupa a largura toda (igual ao Montador) e some uma
+      faixa do CÉU (acima do aviso do chefe; na entrada, acima do SEU TIME) — sem laterais esticadas.
+   2) CHAMAR sem retângulo escuro/branco por cima da seta: sem mana, só a palavra CHAMAR fica apagadinha; ao tocar, a seta "pula" um pouco. */
+function m6Cut(){const L=m6s();if(AR&&AR.lobby){const M=L.menu;return [128,M.seutime?M.seutime[1]-10:M.heroi[1]-130];}return [128,L.solo.aviso[1]-10];}
+/* some a faixa logo ABAIXO da barra do topo (céu liso), não no meio do cenário */
+m7T=function(){let k=W/1080,ox=0,ex=H-2340*k,sp=m7Sp();if(ex<0){const [c0,c1]=m6Cut(),av=Math.max(0,c1-c0),need=-ex/k;
+    if(need>av){k=H/(2340-av);ex=-av*k;ox=(W-1080*k)/2;sp=c1;}else sp=c0+need;}return {k,ox,oy:0,ex,sp};};
+m7Bg=function(I){const t=m7T(),k=t.k,w=1080*k,s=I.naturalHeight/2340,sp=t.sp;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';
+  if(t.ox>0){b.drawImage(I,0,0,3,I.naturalHeight,0,0,t.ox+1,H);b.drawImage(I,I.naturalWidth-3,0,3,I.naturalHeight,t.ox+w-1,0,t.ox+1,H);}
+  if(t.ex>=0){b.drawImage(I,0,0,I.naturalWidth,sp*s,t.ox,0,w,sp*k+.5);if(t.ex>0)b.drawImage(I,0,(sp-3)*s,I.naturalWidth,3*s,t.ox,sp*k,w,t.ex+.5);b.drawImage(I,0,sp*s,I.naturalWidth,(2340-sp)*s,t.ox,sp*k+t.ex,w,(2340-sp)*k);}
+  else{const top=sp+t.ex/k;b.drawImage(I,0,0,I.naturalWidth,top*s,t.ox,0,w,top*k+.5);b.drawImage(I,0,sp*s,I.naturalWidth,(2340-sp)*s,t.ox,top*k,w,(2340-sp)*k);}
+  b.restore();};
+{const _rr=rrect;let skip=0;const _bb=arBottomM7;arBottomM7=function(A,G2,t){const S=M7L.solo,C=S.chamar,Q=m7R([C[0]+C[2]*.03,C[1]+C[3]*.12,C[2]*.86,C[3]*.76]),can=A.mana>=A.cost&&A.grid.some(u=>!u);
+  rrect=function(x,y,w,h,...r){if(Math.abs(x-Q.x)<.5&&Math.abs(y-Q.y)<.5&&Math.abs(w-Q.w)<.5)return;return _rr(x,y,w,h,...r);};
+  const dn=A.buyT&&performance.now()-A.buyT<160;
+  const _t=m6T;m6T=function(r,s,...x){if(s==='CHAMAR'&&!can){b.save();b.globalAlpha=.55;try{return _t(r,s,...x);}finally{b.restore();}}return _t(r,s,...x);};
+  try{if(dn){const p=m7P(C[0]+C[2]/2,C[1]+C[3]/2);b.save();b.translate(p[0],p[1]);b.scale(.97,.97);b.translate(-p[0],-p[1]);}
+    return _bb(A,G2,t);}finally{if(dn)b.restore();rrect=_rr;m6T=_t;}};}
+/* /M6CORTE */
+
 
 
 

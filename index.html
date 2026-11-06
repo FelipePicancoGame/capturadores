@@ -9884,6 +9884,7 @@ function update(){frame++;if(frame%60===0&&party.length&&G.mode!=='title')flags.
   if(B){if(B.blinkE>0)B.blinkE--;if(B.blinkP>0)B.blinkP--;}
   if(TUTP&&G.mode!=='world'&&G.mode!=='battle')return;
   if(G.mode==='exp'&&EXP&&!ui.length){if(document.getElementById('rpBox')||document.getElementById('sdBox'))return;/* EXPPAUSA (04/nov, Felipe): a Expedição para enquanto o 🐞 está aberto */expUpdate();if(EXP&&flags.expFast&&!EXP.fuse&&!EXP.petNew)expUpdate();return;}
+  if((G.mode==='td'||G.mode==='surv'||(G.mode==='wall'&&WL&&!WL.duo&&!WL.duoG))&&(document.getElementById('rpBox')||document.getElementById('sdBox')))return;/* BUGPAUSA2 (05/nov, Felipe: 'bota pra pausar quando for reportar'): Torres, Horda e Muralha também param com o 🐞 aberto */
   if(G.mode==='td'&&TD){if(!ui.length)tdUpdate();return;}
   if(G.mode==='surv'&&SV){if(!ui.length)svUpdate();return;}
   if((G.mode==='match'||G.mode==='math'||(G.mode==='arena'&&!(AR&&AR.mp)))&&(document.getElementById('rpBox')||document.getElementById('sdBox')))return;/* BUGPAUSA (05/nov, report): o jogo para enquanto o 🐞 está aberto */if(G.mode==='match'&&M3){if(!ui.length)matchUpdate();return;}if(G.mode==='math'&&MT){if(!ui.length)mtUpdate();return;}if(G.mode==='arena'&&AR){if(!ui.length)arUpdate();return;}
@@ -10449,8 +10450,8 @@ function renderArena(){const A=AR;if(!A)return;if(window.ARSTY!==0){arRender2();
   if(A.drag&&A.grid[A.drag.i]){const u=A.grid[A.drag.i];arDrawMon(u.sp,A.drag.x,A.drag.y+2,.34,'idle','s',0);}
   /* inimigos */
   const EN=[...A.en].sort((a,b2)=>arPos(G2,a.d).y-arPos(G2,b2.d).y);
-  for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';arDrawMon(e.sp,p.x,p.y-(e.boss?16:9),e.sc,'walk',p.dir,e.id*10);b.restore();
-    const bw=e.boss?24:12,bx=p.x-bw/2,by=p.y-(e.boss?42:22);px(bx,by,bw,2,'#2a0a0a');px(bx,by,bw*Math.max(0,e.hp/e.max),2,e.boss?'#ff4040':e.poison>0&&e.poisonT>0?'#7ae04a':'#ff7070');if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
+  for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';arDrawMon(e.sp,p.x,p.y-arEY(e.sp,e.boss),arES(e.sp,e.sc,e.boss),'walk',p.dir,e.id*10);b.restore();
+    const bw=e.boss?24:12,bx=p.x-bw/2,by=p.y-arEB(e.sp,e.boss);px(bx,by,bw,2,'#2a0a0a');px(bx,by,bw*Math.max(0,e.hp/e.max),2,e.boss?'#ff4040':e.poison>0&&e.poisonT>0?'#7ae04a':'#ff7070');if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
   /* tiros */
   for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
   if(A.zaps)for(const z of A.zaps){b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);const mx=(z.x1+z.x2)/2+(Math.random()-.5)*6,my=(z.y1+z.y2)/2+(Math.random()-.5)*6;b.lineTo(mx,my);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}
@@ -10575,7 +10576,7 @@ async function arMpLobby(mode,autoCod){if(!duoNoApp()){await say('Jogar a Arena 
       let ok=false;const pay={m:mode,n:String(flags.nome||'').slice(0,12)};const iv=setInterval(()=>{if(!ok)duoEmit(S,'aj',pay);},1200);duoEmit(S,'aj',pay);
       S.on('ah',m=>{if(m.isMe||m.sameTab||ok)return;const d=m.data||{};if(d.err){ok=true;clearInterval(iv);arAv('Essa sala é do outro modo ('+(d.m==='coop'?'JUNTOS':'CONTRA')+'). Entrem os dois no mesmo.',1);ocup=false;try{S.leave();}catch(e){}return;}ok=true;clearInterval(iv);fin({role:'guest',S,peerN:d.n});});
       cancel=()=>{ok=true;clearInterval(iv);try{S.leave();}catch(e){}};
-      setTimeout(()=>{if(!ok){ok=true;clearInterval(iv);arAv('Sala '+cod+' não encontrada. Confira o código.',1);ocup=false;try{S.leave();}catch(e){}}},12000);};
+      setTimeout(()=>{if(!ok){ok=true;clearInterval(iv);arAv('Sala '+cod+' não encontrada. Confira o código.',1);ocup=false;try{S.leave();}catch(e){}}},30000);/* 05/nov report 'aceita o convite mas dá não encontrado': celular em outra rede demora mais pra achar a sala */setTimeout(()=>{if(!ok)arAv('Procurando a sala '+cod+'… (pode levar alguns segundos)');},8000);};
     $('arEntrar').onclick=ent;$('arCod').onkeydown=e=>{if(e.key==='Enter')ent();};
     $('arVoltar').onclick=()=>{try{cancel&&cancel();}catch(e){}fin(null);};
     try{arAmgPainel(mode);}catch(e){console.error(e);}
@@ -10727,8 +10728,8 @@ function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u||(A.drag&&A.drag.i===i))continue;const p=arCellXY(i),pop=Math.max(0,1-(t-u.born)/12);arSPiece(u,p.x,p.y,(1+pop*.25)*G2.cs/30,t,{glow:selU&&i!==A.sel&&arCanMerge(A.sel,i),sel:i===A.sel,atk:u.atk>0,seed:i*.37});}
   arAuraDraw(A,G2,t);if(A.drag&&A.grid[A.drag.i])arSPiece(A.grid[A.drag.i],A.drag.x,A.drag.y,1.12*G2.cs/30,t,{sel:1});
   const EN=[...A.en].sort((a,b2)=>arPos(G2,a.d).y-arPos(G2,b2.d).y);
-  for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';arDrawMon(e.sp,p.x,p.y-(e.boss?16:9),e.sc,'walk',p.dir,e.id*10);b.restore();
-    const by=p.y-(e.boss?42:22);arHpBar(p.x,by,e.hp/e.max,e.boss,e.poison>0&&e.poisonT>0?'#7ae04a':e.burnT>0?'#ff9a30':null);if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
+  for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';arDrawMon(e.sp,p.x,p.y-arEY(e.sp,e.boss),arES(e.sp,e.sc,e.boss),'walk',p.dir,e.id*10);b.restore();
+    const by=p.y-arEB(e.sp,e.boss);arHpBar(p.x,by,e.hp/e.max,e.boss,e.poison>0&&e.poisonT>0?'#7ae04a':e.burnT>0?'#ff9a30':null);if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
   for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
   if(A.zaps)for(const z of A.zaps){b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);b.lineTo((z.x1+z.x2)/2+(Math.random()-.5)*6,(z.y1+z.y2)/2+(Math.random()-.5)*6);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}
   for(const p of A.parts){b.globalAlpha=Math.max(0,p.life/22);px(p.x,p.y,1.6,1.6,p.col);}b.globalAlpha=1;b.restore();
@@ -10795,8 +10796,8 @@ function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,top=25,L=arLeg
     for(let i=0;i<15;i++){const u=P.g&&P.g[i];if(!u)continue;const q=arCellXY(i);arSPiece({sp:u[0],star:u[1]},q.x,q.y,1,t,{seed:i});}b.restore();}catch(e){try{b.restore();}catch(_){}}T=_T;
   /* inimigos do parceiro (fantasmas) */
   for(const g of A.gh||[]){let x,y,dir;if(g.d>=L){const p=arPos(G2,g.d);x=p.x;y=p.y;dir=p.dir;}else{x=lx;y=G2.ty-(L-g.d)*ky;dir='s';}
-    E(x,y+2,g.boss?10:5,g.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(g.hit>0)b.filter='brightness(1.8)';arDrawMon(g.sp,x,y-(g.boss?16:9),g.sc,'walk',dir,g.id*10);b.restore();
-    arHpBar(x,y-(g.boss?42:22),g.hp/g.max,g.boss,'#ffb070');}
+    E(x,y+2,g.boss?10:5,g.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(g.hit>0)b.filter='brightness(1.8)';arDrawMon(g.sp,x,y-arEY(g.sp,g.boss),arES(g.sp,g.sc,g.boss),'walk',dir,g.id*10);b.restore();
+    arHpBar(x,y-arEB(g.sp,g.boss),g.hp/g.max,g.boss,'#ffb070');}
   T(`Parceiro: ${P.n||'…'}  ❤ dividido`,W/2+6,top+4+(G2.bh+12)*k+1,4.8,'center','#e0fff8',W-30,C.ink);
   T(`dano ${arFmt(P.dm)} · você ${arFmt(A.dmgT)}`,W-6,top+1,4.6,'right','#ffe8a0',60,C.ink);
   if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do parceiro…',W/2,H/2-8,6,'center','#ffffff');}}
@@ -10810,8 +10811,8 @@ function arCoopUnder(A,G2,t){const P=A.mp.peer||{},L=arLeg(G2),lx=G2.lx,top=G2.t
   b.save();b.translate(0,dy);arSBoard(G2);for(let i=0;i<15;i++){const u=P.g&&P.g[i];if(!u)continue;const q=arCellXY(i);arSPiece({sp:u[0],star:u[1]},q.x,q.y,G2.cs/30,t,{seed:i});}b.restore();}
 function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,L=arLeg(G2),lx=G2.lx,dy=(G2.ty-19-G2.bh)-G2.y0;
   for(const g of A.gh||[]){let x,y,dir;if(g.d>=L){const p=arPos(G2,g.d);x=p.x;y=p.y;dir=p.dir;}else{x=lx;y=G2.ty-(L-g.d);dir='s';}
-    E(x,y+2,g.boss?10:5,g.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(g.hit>0)b.filter='brightness(1.8)';arDrawMon(g.sp,x,y-(g.boss?16:9),g.sc,'walk',dir,g.id*10);b.restore();
-    arHpBar(x,y-(g.boss?42:22),g.hp/g.max,g.boss,'#ffb070');}
+    E(x,y+2,g.boss?10:5,g.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(g.hit>0)b.filter='brightness(1.8)';arDrawMon(g.sp,x,y-arEY(g.sp,g.boss),arES(g.sp,g.sc,g.boss),'walk',dir,g.id*10);b.restore();
+    arHpBar(x,y-arEB(g.sp,g.boss),g.hp/g.max,g.boss,'#ffb070');}
   arPill(W/2-36,G2.y0+dy-10.5,72,11,'#a8d890','#6aa856','#3a6a2a');T(`${(P.n||'PARCEIRO').toUpperCase()} · DANO ${arFmt(P.dm)}`,W/2,G2.y0+dy-8,5,'center','#1e3a12',66);
   T(`você · dano ${arFmt(A.dmgT)}`,W/2+3,G2.y0-10.5,0.01,'center','rgba(0,0,0,0)');
   if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do parceiro…',W/2,H/2-8,6,'center','#ffffff');}}
@@ -11829,6 +11830,11 @@ function arvPose(u){if(!u||!u.vAtk)return 0;const ph=performance.now()-u.vAtk;if
   const z=92*sc,cx=x+Math.cos(ang)*off,cy=y+4*sc+Math.sin(ang)*off;
   b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.translate(cx,cy);b.rotate(ang-ARVHOME);b.drawImage(I,-z/2,-z/2,z,z);b.restore();};}
 /* /ARVISTA */
+/* DESTRAVA (05/nov, reports Gabi 'Travou' e Felipe 'travou quando saí da arena em dupla'): se no mapa o jogo ficar 'ocupado' sem nenhuma janela aberta por mais de 15 s, solta o toque */
+{let bz=0;setInterval(()=>{try{if(typeof G==='undefined'||G.mode!=='world'||!busy||ui.length||document.getElementById('nomeBox')||document.querySelector('#arBox:not([hidden]),#duoBox:not([hidden]),#convO,#rpBox,#sdBox')){bz=0;return;}if(++bz>=15){bz=0;busy=false;try{__EV&&__EV('destravou mapa');}catch(_){}}}catch(e){}},1000);}
+
+/* ARBOSS (05/nov, report: 'Boss está andando fora da estrada'): inimigo com arte vista de cima fica no meio da estrada e no tamanho certo (chefe no máx. ~1,4 casa) */function arEY(sp,bo){return ARV.has(sp)?3:(bo?16:9);}function arES(sp,sc,bo){return ARV.has(sp)?Math.min(sc,bo?.42:.3):sc;}function arEB(sp,bo){return ARV.has(sp)?(bo?25:17):(bo?42:22);}
+
 /* ARPRE (05/nov, Felipe: 'pq o jogo dela tá assim?' — a Arena abriu sem a arte, com a parede de tijolo): a arte da Arena começa a baixar já no mapa, e figura que falhou tenta de novo sozinha */
 setInterval(()=>{try{if(typeof G==='undefined'||G.mode!=='world'||ARPRE.ok)return;const s=arSk();const a=m6img(s,'menu'),b2=m6img(s,'solo');if(a&&b2)ARPRE.ok=1;}catch(e){}},5000);const ARPRE={ok:0};
 
@@ -11868,7 +11874,7 @@ function pv6At(pts,f){let Lt=0;const seg=[];for(let i=1;i<pts.length;i++){const 
 {const _u=arPvpUnder;arPvpUnder=function(A,G2,t){if(!pvp6())return _u(A,G2,t);const P=A.mp.peer||{},V=m6s().pvp,k=m7T().k,R=V.rtab,cw=R[2]/5,ch=R[3]/3;
   for(let i=0;i<15;i++){const u=P.g&&P.g[i];if(!u)continue;const c=i%5,r=2-Math.floor(i/5),p=m7P(R[0]+(c+.5)*cw,R[1]+(r+.5)*ch);arSPiece({sp:u[0],star:u[1]},p[0],p[1],cw*k/30,t,{seed:i});}
   const pts=V.rpath.map(q=>m7P(q[0],q[1]));
-  for(const e of P.q||[]){const q=pv6At(pts,e[0]/1000);E(q.x,q.y+2,e[2]?10:5,e[2]?3:2,'rgba(0,0,0,.3)',0,false);arDrawMon(e[1],q.x,q.y-(e[2]?16:9),e[2]?.5:.28,'walk',q.dir,e[0]);if(e[4]!=null)arHpBar(q.x,q.y-(e[2]?42:22),e[4]/100,!!e[2]);}};}
+  for(const e of P.q||[]){const q=pv6At(pts,e[0]/1000);E(q.x,q.y+2,e[2]?10:5,e[2]?3:2,'rgba(0,0,0,.3)',0,false);arDrawMon(e[1],q.x,q.y-arEY(e[1],e[2]),arES(e[1],e[2]?.5:.28,e[2]),'walk',q.dir,e[0]);if(e[4]!=null)arHpBar(q.x,q.y-arEB(e[1],e[2]),e[4]/100,!!e[2]);}};}
 {const _d=arPvpDraw;arPvpDraw=function(A){if(!pvp6())return _d(A);const M=A.mp,P=M.peer||{},V=m6s().pvp,rn=V.rnome,vn=V.vnome,win=(A.dmgT||0)>=(P.dm||0);
   m6T([rn[0]+rn[2]*.1,rn[1]+rn[3]*.18,rn[2]*.8,rn[3]*.6],`${(P.n||'RIVAL').toUpperCase()} · DANO ${arFmt(P.dm)}`,'#fff3df','#7a2416');
   m6T([vn[0]+vn[2]*.1,vn[1]+vn[3]*.15,vn[2]*.8,vn[3]*.65],`VOCÊ · DANO ${arFmt(A.dmgT)}`,win?'#fff3df':'#ffe0d0','#0d4a3a');
@@ -11887,6 +11893,31 @@ function pv6At(pts,f){let Lt=0;const seg=[];for(let i=1;i<pts.length;i++){const 
 {const _g=arGeo;arGeo=function(){const G=_g();if(!m7m()||!G||!G.pts||G.pts.length<4)return G;const p=G.pts.map(q=>[q[0],q[1]]);p[1][0]=p[0][0];p[2][0]=p[3][0];p[2][1]=p[1][1];G.pts=p;G.lx=p[0][0];G.rx=p[2][0];G.ty=p[1][1];return G;};}
 {const _ap=arPos;arPos=function(G2,d){if(!m7m())return _ap(G2,d);let r=d;const P=G2.pts;for(let i=1;i<P.length;i++){const [ax,ay]=P[i-1],[bx,by]=P[i],L=Math.hypot(bx-ax,by-ay);if(r<=L){const f=L?r/L:0,dx=bx-ax,dy=by-ay;return {x:ax+dx*f,y:ay+dy*f,dir:Math.abs(dx)>=Math.abs(dy)?(dx>0?'e':'w'):(dy<0?'n':'s')};}r-=L;}const p=P[P.length-1];return {x:p[0],y:p[1],dir:'s'};};}
 /* /ARREP0511 */
+/* ARCOOP6 (05/nov, reports do Felipe: "não está com a arte que eu enviei, a estrada está errada" no JUNTOS e "eu não vejo os monstrinhos dela atacando"):
+   o JUNTOS usa a mesma tela desenhada do CONTRA (tabuleiro do parceiro em cima com a estrada dele, o seu embaixo).
+   Os monstrinhos do outro agora atacam: cada um conta os próprios ataques e manda junto; do lado de cá ele vira, dá o bote e solta o tirinho. */
+pvp6=function(){try{return !!(AR&&AR.mp&&(AR.mp.mode==='pvp'||AR.mp.mode==='coop')&&!AR.lobby&&m7()&&m6s().pvp);}catch(e){return false;}};
+{const _f=arFire;arFire=function(A,u,i,S,p,tg){try{if(u)u.fc=((u.fc||0)+1)%100;}catch(e){}return _f(A,u,i,S,p,tg);};}
+{const _s=arMpSnap;arMpSnap=function(A){const _e=duoEmit;duoEmit=function(S,k,d){try{if(k==='as'&&d&&A&&A.grid)d.f=A.grid.map(u=>u?(u.fc||0):0);}catch(e){}return _e(S,k,d);};try{return _s(A);}finally{duoEmit=_e;}};}
+let PV6U=[],PV6S=[];
+function pv6Partner(A,t,foes){const P=A.mp.peer||{},V=m6s().pvp,k=m7T().k,R=V.rtab,cw=R[2]/5,ch=R[3]/3,F=P.f||[];
+  for(let i=0;i<15;i++){const u=P.g&&P.g[i];if(!u){PV6U[i]=null;continue;}const c=i%5,r=2-Math.floor(i/5),p=m7P(R[0]+(c+.5)*cw,R[1]+(r+.5)*ch);
+    let o=PV6U[i];if(!o||o.sp!==u[0]){o=PV6U[i]={sp:u[0],star:u[1],fc:F[i]||0};}o.star=u[1];
+    if((F[i]||0)!==o.fc){o.fc=F[i]||0;let best=null,bd=1e9;for(const q of foes){const d=Math.hypot(q.x-p[0],q.y-p[1]);if(d<bd){bd=d;best=q;}}
+      if(best){o.vTgt=Math.atan2(best.y-p[1],best.x-p[0]);o.vAtk=performance.now();o.atk=8;if(PV6S.length<40)PV6S.push({x:p[0],y:p[1],tx:best.x,ty:best.y,t:0,col:ARCOL[arType(u[0])]||'#fff'});}}
+    if(o.atk>0)o.atk--;arSPiece(o,p[0],p[1],cw*k/30,t,{seed:i});}
+  PV6S=PV6S.filter(s=>s.t<12);for(const s of PV6S){s.t++;const f=s.t/12,x=s.x+(s.tx-s.x)*f,y=s.y+(s.ty-s.y)*f;E(x,y,2.2,2.2,s.col,0,false);E(x,y,1,1,'#ffffff',0,false);}}
+function pv6Foe(sp,x,y,boss,dir,seed,hp){E(x,y+2,boss?10:5,boss?3:2,'rgba(0,0,0,.3)',0,false);arDrawMon(sp,x,y-arEY(sp,boss),arES(sp,boss?.5:.28,boss),'walk',dir,seed);if(hp!=null)arHpBar(x,y-arEB(sp,boss),hp/100,!!boss);}
+{const _u=arPvpUnder;arPvpUnder=function(A,G2,t){if(!pvp6())return _u(A,G2,t);const P=A.mp.peer||{},V=m6s().pvp,pts=V.rpath.map(q=>m7P(q[0],q[1])),foes=[];
+  for(const e of P.q||[]){const q=pv6At(pts,e[0]/1000);foes.push(q);pv6Foe(e[1],q.x,q.y,e[2],q.dir,e[0],e[4]);}pv6Partner(A,t,foes);};}
+{const _c=arCoopUnder;arCoopUnder=function(A,G2,t){if(!pvp6())return _c(A,G2,t);const V=m6s().pvp,pts=V.rpath.map(q=>m7P(q[0],q[1])),PL=arPathLen(arGeo()),foes=[];
+  for(const g of A.gh||[]){const q=pv6At(pts,g.d/PL);foes.push(q);b.save();if(g.hit>0)b.filter='brightness(1.8)';pv6Foe(g.sp,q.x,q.y,g.boss,q.dir,g.id*10,g.hp/g.max*100);b.restore();}pv6Partner(A,t,foes);};}
+{const _d=arCoopDraw;arCoopDraw=function(A){if(!pvp6())return _d(A);const M=A.mp,P=M.peer||{},V=m6s().pvp,rn=V.rnome,vn=V.vnome;
+  m6T([rn[0]+rn[2]*.1,rn[1]+rn[3]*.18,rn[2]*.8,rn[3]*.6],`${(P.n||'PARCEIRO').toUpperCase()} · DANO ${arFmt(P.dm)}`,'#fff3df','#0d4a3a');
+  m6T([vn[0]+vn[2]*.1,vn[1]+vn[3]*.15,vn[2]*.8,vn[3]*.65],`VOCÊ · DANO ${arFmt(A.dmgT)}`,'#fff3df','#0d4a3a');
+  if(M.off>90){rrect(W/2-60,H/2-14,120,24,6,'rgba(120,20,30,.9)',false);T('Sem sinal do parceiro…',W/2,H/2-8,6,'center','#ffffff');}};}
+/* /ARCOOP6 */
+
 
 
 

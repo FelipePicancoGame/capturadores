@@ -11795,6 +11795,14 @@ arEntryM7=function(A){const t=A.t,M=M7L.menu;A.hits=[];arSBg();
   if(A.msg&&A.msg.t>0){A.msg.t--;rrect(14,H/2-12,W-28,24,7,'rgba(60,40,20,.94)',false);T(A.msg.s,W/2,H/2-6,5.6,'center','#ffffff',W-34);}};
 {const _tp=arTap;arTap=function(x,y){const A=AR;if(A&&!A.lobby&&!A.result&&m7m()){const S=M7L.solo,q=m7R(m6U(S.sair,[S.sair[0]-30,S.sair[1]-20,S.sair[2]+60,S.sair[3]+40]));if(x>=q.x&&x<=q.x+q.w&&y>=q.y&&y<=q.y+q.h){A.done&&A.done();return;}}return _tp(x,y);};}
 /* /AR6PECAS */
+/* ARCARTAART (05/nov, Felipe: "agora vamos colocar as imagens dos monstrinhos nas cartas"): arte das cartas do Buchecha (CARTAS_ARENA_ATELIE_v1),
+   fundo creme tirado, desenhada dentro da peça 'imagem' das cartas (partida e entrada) nos 6 estilos. Quem ainda não tem arte usa o monstrinho do jogo. */
+const ARCART=new Set(["assombro", "auroril", "aurorion", "brasalor", "brasinha", "brotim", "cabritao", "cabrito", "cacauzinho", "caranguejo", "caranguerra", "carneirao", "cascal", "choquinho", "cogumelao", "cogumelim", "cogumestre", "cordilhao", "corujarca", "corujito", "dracobrasa", "espectron", "fagulho", "flocolino", "florabela", "floraia", "florestao", "florina", "furacao", "glacimor", "infernalho", "lesmagma", "marolo", "mentora", "nevascao", "nevoar", "noctavio", "pedregao", "pedrisco", "peixonete", "pincador", "pinguimperador", "pinguinho", "pipiu", "psiquara", "psiuto", "ratangao", "ratorrei", "rochedo", "sombrale", "sombrin", "tempestor", "trovim", "trovim2", "trovim3", "tubarete", "tubarrei", "ventania", "zumbel", "zumbitron"]),ARCI={};
+function arCardArt(sp){if(!ARCART.has(sp))return null;let i=ARCI[sp];if(!i){try{i=new Image();i.decoding='async';i.src='blobs/arc_'+sp+'.webp';ARCI[sp]=i;}catch(e){return null;}}return i.complete&&i.naturalWidth?i:null;}
+{const _mm=m7Mon;m7Mon=function(sp,r,...x){const I=arCardArt(sp);if(!I)return _mm(sp,r,...x);
+  m7Rot(r,()=>{const q=m7R(r),s=Math.min(q.w/I.naturalWidth,q.h/I.naturalHeight),w=I.naturalWidth*s,h=I.naturalHeight*s;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(I,q.x+(q.w-w)/2,q.y+(q.h-h)/2,w,h);b.restore();});};}
+/* /ARCARTAART */
+
 
 
 

@@ -446,7 +446,7 @@ window.CVNovasHistoriasDados={"versao": 1, "status": "PROPOSTAS_NOVAS_EM_COPIA_D
    ou espera o onload. Mesmos arquivos, mesma qualidade; no máximo uma fração de segundo na 1ª vez. Desligar: #nolazy */
 (function(){try{if(/nolazy|nounload/.test(location.hash))return;const P=HTMLImageElement.prototype,dS=Object.getOwnPropertyDescriptor(P,'src');if(!dS||!dS.set)return;
   const ART=/(^|\/)(blobs|assets)\/[^?#]+\.(webp|png|jpe?g|gif|svg)(\?|#|$)/i;let ADI=0,LOAD=0;
-  const wake=im=>{if(im&&im.__lazy&&im.__rel){im.__lazy=0;const r=im.__rel;im.__rel=null;im.__reg=0;dS.set.call(im,r.src);LOAD++;}};/* sem __inner/__reg: o SOLTAR ARTE passa a cuidar dela */
+  const wake=(im,pr)=>{if(im&&im.__lazy&&im.__rel){im.__lazy=0;const r=im.__rel;im.__rel=null;im.__reg=0;try{if(!/nopri/.test(location.hash))im.fetchPriority=pr==='low'?'low':'high';}catch(_){}dS.set.call(im,r.src);LOAD++;}};/* FILAARTE07NOV: a arte que a tela pediu agora vem na frente; a de segundo plano, por último *//* sem __inner/__reg: o SOLTAR ARTE passa a cuidar dela */
   window.__lazyInfo=()=>({adiadas:ADI,carregadas:LOAD});window.__lazyWake=wake;
   Object.defineProperty(P,'src',{configurable:true,enumerable:true,get:dS.get,set(v){
     if(this.__inner&&this.__lazy){this.__lazy=0;this.__reg=0;LOAD++;this.__inner=0;try{return dS.set.call(this,v);}finally{this.__inner=1;}}
@@ -12263,7 +12263,7 @@ async function offScan(){const c=await caches.open('cv-arte-1');const ks=await c
 async function offRun(){if(OFFL.run||!offApp()||!navigator.serviceWorker.controller)return;OFFL.run=1;OFFL.fail=0;
   try{try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});}catch(e){}
     const need=await offScan();let i=0;const nap=ms=>new Promise(r=>setTimeout(r,ms));
-    const busy=()=>document.hidden||!navigator.onLine||!offOk()||(MGMODES[G.mode]&&!mgPausedNow());
+    const busy=()=>document.hidden||!navigator.onLine||!offOk()||(MGMODES[G.mode]&&!mgPausedNow())||!!(window.__artBusy&&__artBusy());
     const worker=async()=>{while(i<need.length&&OFFL.on&&OFFL.fail<30){if(busy()){await nap(2000);continue;}
       const p=need[i++];try{const r=await fetch(p);if(r.ok){await r.arrayBuffer();OFFL.ok++;}else OFFL.fail++;}catch(e){if(navigator.onLine)OFFL.fail++;}
       await nap(80);}};
@@ -12280,6 +12280,16 @@ async function offMenu(){if(!offApp()){await say('Jogar sem internet só funcion
   if(OFFL.run&&OFFL.on){const j=await choose(['CONTINUAR BAIXANDO','PAUSAR'],{cadAsk:{q:`Baixando o jogo pra jogar sem internet: ${offPct()}%. Continua sozinho enquanto você joga.`,nf:1,cols:['#1f7a3a','#8a2f2f']}});if(j===1){OFFL.on=0;offSet(0);}return;}
   const j=await choose(['BAIXAR AGORA','AGORA NÃO'],{cadAsk:{q:`Baixar o jogo inteiro (uns 300 MB) pra jogar sem internet? Use no Wi-Fi. Já tem ${offPct()}%.`,nf:1,cols:['#1f7a3a','#8a2f2f']}});
   if(j===0){offSet(1);OFFL.on=1;OFFL.fin=0;offRun();await say('Começou! O jogo vai baixando aos poucos enquanto você joga. Dá pra ver quanto falta aqui nos AJUSTES.');}}
+
+/* OFFPERGUNTA07NOV (07/nov, Felipe: 'o jogo demora muito para carregar as telas'): como os outros jogos, oferece UMA vez baixar o jogo inteiro
+   (no Android com Wi-Fi já baixa sozinho). Com tudo no celular, as telas não esperam a internet. Se disser DEPOIS, pergunta de novo em 3 dias. */
+{let _t0=0;setInterval(()=>{try{if(!offApp()||!navigator.serviceWorker||!navigator.serviceWorker.controller||OFFL.done||OFFL.on||offPref()!==null)return;
+    if(!(typeof G!=='undefined'&&G.mode==='world'&&!ui.length&&!busy&&party.length&&flags&&flags.tutDone)){_t0=0;return;}
+    if(!_t0){_t0=performance.now();return;}if(performance.now()-_t0<45000)return;
+    let last=0;try{last=+localStorage.getItem('cv-offask')||0;}catch(e){}if(Date.now()-last<3*864e5)return;
+    try{localStorage.setItem('cv-offask',String(Date.now()));}catch(e){}_t0=0;
+    (async()=>{const en=window.CVLANG==='en';busy=true;let j=1;try{j=await choose(en?['DOWNLOAD NOW','LATER']:['BAIXAR AGORA','DEPOIS'],{cadAsk:{q:en?'Faster screens? Download the whole game to your phone (about 300 MB, best on Wi-Fi). It downloads while you play.':'Telas mais rápidas? Baixe o jogo todo no celular (uns 300 MB, melhor no Wi-Fi). Ele baixa enquanto você joga.',nf:1,cols:['#1f7a3a','#8a2f2f']}});}finally{busy=false;}
+      if(j===0){offSet(1);OFFL.on=1;OFFL.fin=0;offRun();}})();}catch(e){}},5000);}
 
 /* /AJUSTES NOS MINIJOGOS */
 
@@ -15452,12 +15462,13 @@ try{window.__DUO={menu:()=>run(()=>minigamesMenu()),get H(){return DUOH;},get G(
   for(const k of ['width','height']){const d=Object.getOwnPropertyDescriptor(P,k);if(d&&d.get)Object.defineProperty(P,k,{configurable:true,enumerable:true,get(){const v=d.get.call(this);if(!v&&pend(this)&&art(this))MISS=1;return v;},set(v){d.set.call(this,v);}});}
   const C=CanvasRenderingContext2D.prototype,di=C.drawImage;
   C.drawImage=function(im){if(im&&im instanceof HTMLImageElement&&pend(im)&&art(im))MISS=1;return di.apply(this,arguments);};
-  let KEY='',T0=0,HOLD=0;
+  let KEY='',T0=0,HOLD=0,LMT=0;
   const key=()=>{let k=G.mode+(B?'b':'');try{for(const u of ui)if(u.type!=='dialog')k+='|'+(u.cfg?Object.keys(u.cfg).join(','):u.type);}catch(_){}
     return k+(REVEAL?'R':'')+(EVOA?'E':'')+(EGGA?'H':'');};
   let ULT=0;window.__telaPronta=()=>({seguradas:NH,telas:NM,ultimaEspera:Math.round(ULT)});
   const _p=present;
-  present=function(){const t=performance.now(),m=MISS;MISS=0;let k='';try{k=key();}catch(_){}
+  window.__artBusy=()=>!!HOLD||performance.now()-LMT<500;
+  present=function(){const t=performance.now(),m=MISS;MISS=0;window.__lastMiss=m;if(m)LMT=t;let k='';try{k=key();}catch(_){}
     if(k!==KEY){const first=!KEY;KEY=k;if(!first&&G.mode!=='title'&&G.mode!=='boot'){HOLD=1;T0=t;NM++;}}
     if(HOLD){if(!m||t-T0>1500){HOLD=0;ULT=t-T0;}
       else{NH++;const tr=FX.trans>0||FX.transOpen>0||FX.fade>0;texts=[];
@@ -15478,7 +15489,7 @@ try{window.__DUO={menu:()=>run(()=>minigamesMenu()),get H(){return DUOH;},get G(
   const norm=s=>{try{s=String(s||'');const o=location.href.replace(/[^/]*([?#].*)?$/,'');if(s.startsWith(o))s=s.slice(o.length);return s.replace(/^\.\//,'');}catch(_){return '';}};
   /* 1) baixar antes */
   const DONE=new Set(),Q=[];let busy=0,NB=0;
-  const pump=()=>{while(busy<3&&Q.length){const u=Q.shift();if(DONE.has(u))continue;DONE.add(u);busy++;
+  const pump=()=>{/* FILAARTE07NOV: enquanto a tela de agora ainda espera arte, não começa download de segundo plano */if(window.__artBusy&&__artBusy()&&!/nopri/.test(location.hash)){if(!pump.t)pump.t=setTimeout(()=>{pump.t=0;pump();},250);return;}while(busy<3&&Q.length){const u=Q.shift();if(DONE.has(u))continue;DONE.add(u);busy++;
       fetch(u,{priority:'low'}).then(r=>r.ok?r.blob():0).then(()=>{NB++;}).catch(()=>{DONE.delete(u);}).finally(()=>{busy--;setTimeout(pump,30);});}};
   /* o que vale para a tela de agora entra na FRENTE da fila */
   const warm=(list,front)=>{const n=list.filter(u=>!DONE.has(u));if(front){const s=new Set(n);for(let i=Q.length-1;i>=0;i--)if(s.has(Q[i]))Q.splice(i,1);Q.unshift(...n);}else for(const u of n)if(!Q.includes(u))Q.push(u);pump();};
@@ -15488,7 +15499,7 @@ try{window.__DUO={menu:()=>run(()=>minigamesMenu()),get H(){return DUOH;},get G(
     try{if(window.__LZ)for(const [k,w] of window.__LZ){const im=w.deref();if(im)IDX.set(norm(k),im);else window.__LZ.delete(k);}}catch(_){}
     try{for(const im of (window.__ALLIMG?__ALLIMG():[]))if(im){const s=norm(im.src);if(s&&!IDX.has(s))IDX.set(s,im);}}catch(_){}return IDX;};
   let KEEP=[];const KEEPK=new Set();let NA=0;
-  const open1=im=>{try{if(im.__lazy&&window.__lazyWake)__lazyWake(im);void im.complete;/* volta se o SOLTAR tinha tirado */im.__lt=performance.now();
+  const open1=im=>{try{if(im.__lazy&&window.__lazyWake)__lazyWake(im,'low');void im.complete;/* volta se o SOLTAR tinha tirado */im.__lt=performance.now();
       if(im.decode&&!im.__predec){im.__predec=1;im.decode().catch(()=>0).finally(()=>{im.__predec=0;});}NA++;}catch(_){}};
   const hold=(ims)=>{KEEP=ims;for(const im of ims)open1(im);};
   setInterval(()=>{try{const t=performance.now();for(const im of KEEP)if(im&&!im.__rel)im.__lt=t;}catch(_){}},2000);
@@ -15499,8 +15510,12 @@ try{window.__DUO={menu:()=>run(()=>minigamesMenu()),get H(){return DUOH;},get G(
       return Object.keys(best).sort((a,b)=>best[a]-best[b]);}catch(_){return [];}};
   const mapIms=mp=>{try{return mapArtKeys(mp).map(k=>ASI[k]).filter(Boolean);}catch(_){return [];}};
   const mapUrls=mp=>mapIms(mp).map(im=>norm(im.__rel?im.__rel.src:im.getAttribute('src')||im.src)).filter(Boolean);
-  const SK={wall:'g:wall',td:'g:td',surv:'g:surv',exp:'g:exp'};
+  const SK={wall:'g:wall',td:'g:td',surv:'g:surv',exp:'g:exp',match:'g:match',arena:'g:arena'};
   let CTX='',VZ='',NC=0;
+  /* FILAARTE07NOV: ao ENTRAR num minijogo, acorda de uma vez toda a arte que ele desenha (em paralelo, na frente da fila), em vez de ir descobrindo quadro a quadro */
+  const GM={wall:'Dg:wall',td:'Dg:td',surv:'Dg:surv',exp:'Dg:exp',match:'Dg:match',arena:'Dg:arena',battle:'Dg:battle'};let LM='';
+  setInterval(()=>{try{const md=(typeof B!=='undefined'&&B)?'battle':G.mode;if(md===LM)return;LM=md;const k=GM[md];if(!k)return;
+      for(const im of byUrl(L(k))){try{if(im.__lazy&&window.__lazyWake)__lazyWake(im,'high');void im.complete;im.__lt=performance.now();if(im.decode&&!im.__predec){im.__predec=1;im.decode().catch(()=>0).finally(()=>{im.__predec=0;});}}catch(_){}}}catch(_){}},60);
   window.__preInfo=()=>({contexto:CTX,baixados:NB,fila:Q.length,abertas:NA,seguradas:KEEP.length,trocas:NC});
   setInterval(()=>{try{const md=G.mode;let top=null;for(let i=ui.length-1;i>=0;i--){if(ui[i].type!=='dialog'){top=ui[i];break;}}
       const cf=top&&top.cfg||{},tt=String(cf.title||'');let c='';

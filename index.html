@@ -1925,12 +1925,14 @@ function narVoz(){try{const vs=speechSynthesis.getVoices()||[];const pt=vs.filte
 function narLimpa(t){return String(t||'').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}️‍▸◂►◄•★☆]/gu,' ').replace(/Nº\s*/g,'número ').replace(/\s+/g,' ').trim();}
 /* NARRA3 (03/nov, Felipe: "cadê a narração?" no iPhone): o iPhone bloqueia a voz que não nasce de um toque e perde a fala dada logo depois de um cancel.
    Agora: fala na hora (sem espera), só cancela se algo estiver tocando, guarda a fala atual e, enquanto o iPhone não liberar, o próximo toque fala a frase atual de dentro do toque. Erros vão pro 🐞. */
-function narFala(txt,quem){try{if(!NAR.on())return;const t=narLimpa(txt);NAR.curT=t;NAR.curQ=quem||'';try{if(speechSynthesis.speaking||speechSynthesis.pending)speechSynthesis.cancel();}catch(e){}if(!t)return;
+function narFala(txt,quem){try{if(!NAR.on())return;const t=narLimpa(txt);NAR.curT=t;NAR.curQ=quem||'';NAR.curAt=performance.now();NAR.curOk=0;try{if(speechSynthesis.speaking||speechSynthesis.pending){NAR.ownC=performance.now();speechSynthesis.cancel();}}catch(e){}if(!t)return;
   const u=new SpeechSynthesisUtterance(t);const EN=window.CVLANG==='en';u.lang=EN?'en-US':'pt-BR';if(EN){NAR.vozE=NAR.vozE||narVozEn();if(NAR.vozE)u.voice=NAR.vozE;}else{NAR.voz=NAR.voz||narVoz();if(NAR.voz)u.voice=NAR.voz;}
   let pi=1.05,ra=1.0;const q=String(quem||'');if(/V[óo] Ip[êe]|Vov[óô]|Velh|Morador|Ancião/i.test(q)){pi=.85;ra=.93;}else if(q){let h=0;for(const c of q)h=(h*31+c.charCodeAt(0))|0;pi=.95+((Math.abs(h)%5)*.07);}
-  u.pitch=pi;u.rate=ra;u.onstart=()=>{if(!NAR.st){NAR.st=1;try{window.__EV&&__EV('narração ok');}catch(e){}}};u.onerror=e=>{try{window.__EV&&__EV('narração erro '+(e&&e.error||''));}catch(_){}};NAR.u=u;try{speechSynthesis.resume();}catch(e){}speechSynthesis.speak(u);}catch(e){try{window.__EV&&__EV('narração falhou '+String(e).slice(0,40));}catch(_){}}}
+  u.pitch=pi;u.rate=ra;u.onstart=()=>{NAR.curOk=1;if(!NAR.st){NAR.st=1;try{window.__EV&&__EV('narração ok');}catch(e){}}};u.onerror=e=>{try{window.__EV&&__EV('narração erro '+(e&&e.error||''));}catch(_){}
+    /* NARRAFIX07NOV (R178 'a música cortou a narração'): se a fala foi cortada por fora (não pelo jogo), lê de novo uma vez */
+    try{const er=e&&e.error;if((er==='canceled'||er==='interrupted')&&NAR.u===u&&NAR.curT===t&&NAR.rtT!==t&&performance.now()-(NAR.ownC||0)>350){NAR.rtT=t;setTimeout(()=>{if(NAR.curT===t&&!speechSynthesis.speaking)narFala(t,quem);},180);}}catch(_){}};NAR.u=u;try{speechSynthesis.resume();}catch(e){}speechSynthesis.speak(u);}catch(e){try{window.__EV&&__EV('narração falhou '+String(e).slice(0,40));}catch(_){}}}
 /* NARRAVOZES07NOV (R150 'primeiros slides sem áudio'): no iPhone as vozes chegam alguns segundos depois de abrir; quando chegam, lê de novo a fala que está na tela */
-try{speechSynthesis.addEventListener('voiceschanged',()=>{try{NAR.voz=null;NAR.vozE=null;if(NAR.curT&&NAR.on()&&!speechSynthesis.speaking&&!speechSynthesis.pending)narFala(NAR.curT,NAR.curQ);}catch(e){}});}catch(e){}
+try{speechSynthesis.addEventListener('voiceschanged',()=>{try{NAR.voz=null;NAR.vozE=null;/* R177: só relê se a fala é de agora (até 2,5 s) e ainda não começou — antes relia falas velhas e parecia atrasada */if(NAR.curT&&!NAR.curOk&&performance.now()-(NAR.curAt||0)<2500&&NAR.on()&&!speechSynthesis.speaking&&!speechSynthesis.pending)narFala(NAR.curT,NAR.curQ);}catch(e){}});}catch(e){}
 function narPara(){try{if('speechSynthesis' in window)speechSynthesis.cancel();}catch(e){}}
 window.narFala=narFala;window.narPara=narPara;
 /* VOZIA (03/nov, Felipe testou ElevenLabs: Luciano = herói, Roberta = heroína, Cirilo = morador, Will = narrador): introdução do Capítulo 1 com voz de verdade. Fala sem áudio cai na voz do celular. */
@@ -10235,7 +10237,7 @@ async function enPainel(){while(true){const e=enSt(),day=qDay(),usd=flags.enGem&
     E.loja.bt.addEventListener('pointerdown',()=>{E.loja.im.src=LJU.loja_btn_on;});for(const ev of ['pointerup','pointerleave','pointercancel'])E.loja.bt.addEventListener(ev,()=>{E.loja.im.src=LJU.loja_btn;});
     setInterval(()=>{try{const v=enSt().v<EN.COST?LJU.en_placa_vazia:LJU.en_placa;if(E.en.im.getAttribute('src')!==v)E.en.im.src=v;
       for(const o of [E.en,E.loja]){const h=parseFloat(o.bt.style.height)||0,n=(o.tx.textContent.length>5?h*.27:h*.33)+'px';if(h&&o.tx.style.fontSize!==n)o.tx.style.fontSize=n;}}catch(_){}},300);}catch(_){}
-  const _l=cadLayout;cadLayout=function(){_l();try{const r=cadFrame(),k=CAD.k,cx=r.left+r.width/2,T=r.top;const pl=(o,x,y,w,h)=>{o.bt.style.left=(cx+(x-470.5)*k)+'px';o.bt.style.top=(T+y*k)+'px';o.bt.style.width=w*k+'px';o.bt.style.height=h*k+'px';o.ic.style.fontSize=46*k*w/195+'px';o.tx.style.fontSize=36*k*w/195+'px';};
+  const _l=cadLayout;cadLayout=function(){_l();try{const r=cadFrame(),k=CAD.k,cx=r.left+r.width/2,T=r.top;const land=r.width>r.height*1.2,pl=(o,x,y,w,h)=>{o.bt.style.left=(land?r.left+x*k:cx+(x-470.5)*k)+'px';o.bt.style.top=(T+y*k)+'px';o.bt.style.width=w*k+'px';o.bt.style.height=h*k+'px';o.ic.style.fontSize=46*k*w/195+'px';o.tx.style.fontSize=36*k*w/195+'px';};
     pl(E.en,...CADLAY.en);pl(E.loja,...CADLAY.loja);}catch(_){}};cadLayout();
   setInterval(()=>{try{const e=enSt(),low=e.v<EN.COST,s=low?`${e.v} · ${enFmt(enNext())}`:`${e.v}/${EN.MAX}`;if(E.en.tx.textContent!==s)E.en.tx.textContent=s;E.en.tx.style.color=low?'#c23b3b':'#154c5e';const bd=document.getElementById('enBadge');if(bd)bd.style.display='none';}catch(_){}},500);
   }catch(x){setTimeout(go,800);}};setTimeout(go,500);})();
@@ -14155,7 +14157,7 @@ function cadFrame(){const s=document.getElementById('stage'),r=s?s.getBoundingCl
 function cadLayout(){if(!CAD.ready||!CAD.E)return;const r=cadFrame(),k=Math.min(r.width/941,r.height/2048),E=CAD.E;CAD.k=k;
   const VH=document.documentElement.clientHeight,cx=r.left+r.width/2,L=r.left,T=r.top,R=r.left+r.width,B=r.top+r.height;
   const put=(e,x,y,w,h)=>{e.style.left=x+'px';e.style.top=y+'px';e.style.width=w+'px';e.style.height=h+'px';};
-  const tl=(e,x,y,w,h)=>put(e,L+x*k,T+y*k,w*k,h*k),tr=(e,x,y,w,h)=>put(e,R-(941-x)*k,T+y*k,w*k,h*k),tc=(e,x,y,w,h)=>put(e,cx+(x-470.5)*k,T+y*k,w*k,h*k),br=(e,x,y,w,h)=>put(e,R-(941-x)*k,B-(2048-y)*k,w*k,h*k);
+  const tl=(e,x,y,w,h)=>put(e,L+x*k,T+y*k,w*k,h*k),tr=(e,x,y,w,h)=>put(e,R-(941-x)*k,T+y*k,w*k,h*k),tc=(e,x,y,w,h)=>(r.width>r.height*1.2)?put(e,L+x*k,T+y*k,w*k,h*k)/* MAPADEITADO07NOV (R175): celular deitado — os ícones do meio vão pro canto de cima à esquerda, sem cobrir o mapa */:put(e,cx+(x-470.5)*k,T+y*k,w*k,h*k),br=(e,x,y,w,h)=>put(e,R-(941-x)*k,B-(2048-y)*k,w*k,h*k);
   const CL=CADLAY;tl(E.fechar,...CL.fechar);tr(E.menu,...CL.menu);if(E.cfg)tr(E.cfg,...CL.cfg);CAD.vq=[];
   for(let i=0;i<3;i++){const [x,y,w,h]=CL['s'+i],q=w/195,v=h/90;CAD.vq[i]=q;tc(E.saldo[i],x,y,w,h);tc(E.ico[i],x+8*q,y+12*v,64*q,64*v);tc(E.val[i],x+82*q,y+20*v,96*q,55*v);E.val[i].style.textAlign='center';}
   tc(E.mini,...CL.mini);tc(E.bike,...CL.bike);if(E.conv){tc(E.conv,...(CL.conv||[50,680,160,160]));const lb=E.conv.querySelector('.cvl');if(lb)lb.style.fontSize=30*k+'px';}
@@ -15554,6 +15556,12 @@ try{window.__DUO={menu:()=>run(()=>minigamesMenu()),get H(){return DUOH;},get G(
     }catch(_){}},500);
 }catch(e){}})();
 /* /PRECARGA06NOV */
+/* TDCHEFE07NOV (R181, Felipe: 'não dá pra ver o Boss'): nas Torres o chefe nasce no alto do caminho, escondido embaixo do placar de cima.
+   Enquanto ele estiver ali, aparece logo abaixo do placar um aviso '▲ CHEFE' na direção dele, com a vida. */
+{const _r=renderTD;renderTD=function(){_r.apply(this,arguments);try{if(!TDW||!TDL||!TD||typeof tdwP!=='function'||ui.length||TD.cards)return;const L=TDL,r=tdwP(L,'onda'),hb=r.y+r.h+3,t=TD.t||0;
+  for(const e of TD.foes||[]){if(!e||!e.boss||e.dead||!(e.hp>0))continue;const sx=L.ox+e.x*L.f,sy=L.oy+e.y*L.f;if(sy>hb+26)continue;
+    const bx=Math.max(26,Math.min(W-26,sx)),by=hb+Math.sin(t/6)*1.5;b.save();rrect(bx-24,by,48,15,7,'rgba(170,20,34,.94)',false);b.restore();
+    T(window.CVLANG==='en'?'▲ BOSS':'▲ CHEFE',bx,by+2.5,6.6,'center','#ffffff',44,C.ink);const p=Math.max(0,Math.min(1,e.hp/e.max));px(bx-19,by+11,38,2.2,'#3a1010');px(bx-19,by+11,38*p,2.2,'#ffd04a');}}catch(e){}};}
 /* ARPODERTXT07NOV (R163, Felipe: 'ter uma descrição melhor do poder de cada monstrinho'): ao tocar num monstrinho do tabuleiro aparece
    o nome do poder e uma explicação simples do que ele faz (montada a partir dos números do próprio poder). */
 function arAbTxt(ab){const en=window.CVLANG==='en',o=[],pc=v=>Math.round(v*100)+'%',sg=t=>Math.max(1,Math.round(t/60))+'s',A=v=>Array.isArray(v)?v:null;

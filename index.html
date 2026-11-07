@@ -2666,7 +2666,7 @@ const ARENAS={brisa:{n:'Capitão Marés',look:'capitao',t:'Água',md:'Medalha On
 async function arenaChallenge(city){const A=ARENAS[city||G.map],bx=P.x,by=P.y;const back=()=>{if(city)return;try{placeAt(bx,by+1,'down');}catch(e){}};if(!A){back();return;}const _gm=G.map;
   const key='arena_'+(city||G.map),won=!!(flags[key]),today=(typeof qDay==='function')?qDay():0;
   await say(`ARENA — Desafiante: ${A.n}, especialista em ${A.t}.`);
-  {const c=city||G.map,PV=ARPROVA[c];if(!won&&PV&&!flags['prova_'+c]){await say(`${A.n}: Antes de lutar comigo, passe na PROVA DA ARENA: ${PV[3]}!`);back();const ok=await msGame(PV[0],PV[1],PV[2]);if(!ok){await say(`${A.n}: Não foi dessa vez. Treine e volte quando quiser!`);return;}flags['prova_'+c]=1;saveGame();await say(`${A.n}: Você passou na prova! Agora é comigo!`);}}
+  {const c=city||G.map,PV=ARPROVA[c];/* PROVAFEITA06NOV (Laura: 'manda eu fazer a missão que eu já fiz'): a missão do porto JÁ É a Horda do porto, e a de Lunária já são as Torres da lua — vale como prova */try{const MSP={brisa:'porto',lunaria:'lunaria'};if(PV&&!flags['prova_'+c]&&MSP[c]&&msSt(MSP[c])===2){flags['prova_'+c]=1;saveGame();}}catch(_){}if(!won&&PV&&!flags['prova_'+c]){await say(`${A.n}: Antes de lutar comigo, passe na PROVA DA ARENA: ${PV[3]}!`);back();const ok=await msGame(PV[0],PV[1],PV[2]);if(!ok){await say(`${A.n}: Não foi dessa vez. Treine e volte quando quiser!`);return;}flags['prova_'+c]=1;saveGame();await say(`${A.n}: Você passou na prova! Agora é comigo!`);}}
   if(won&&flags[key+'_d']===today){await say(`${A.n}: Já lutamos hoje! Volte amanhã pra revanche.`);back();return;}
   const lv=Math.max(10,teamAvg()+(won?2:1)),team=A.team.filter(k=>SP[k]).map((k,i)=>mk(k,lv-2+i*2));if(!team.length){back();return;}
   back();

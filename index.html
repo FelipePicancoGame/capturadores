@@ -15232,7 +15232,7 @@ function duoSnap(w){const R=Math.round,H0=w.duo;for(const e of w.foes)if(!e._id)
   const foes=w.foes.filter(e=>!e.dead).sort((a,c2)=>(c2.boss?999:0)+c2.y-a.y-(a.boss?999:0));
   s.f=foes.slice(0,70).map(e=>[e._id,e.sp,R(e.x),R(e.y),R(e.hp),R(e.max),(DUO_KIND.indexOf(e.boss?'boss':e.kind)&7)|(e.elite?8:0)|(e.archer?16:0)|(e.stun>0?32:0)|(e.slow>0?64:0)|(e.root>0?128:0)|(e.burn>0?256:0)|(e.frz>0?512:0)|(e.enr?1024:0)|(e.flip?2048:0)|(e.curse>0?4096:0),e.atk|0,e.hit|0,e.acd|0,R(e.shield||0)]);
   let js=JSON.stringify(s);const fx=[];let fl=0;
-  for(const f of w.fx){if(!DUO_FXOK.has(f.k)||f.t<0)continue;const o=duoFxPlain(f),j=JSON.stringify(o).length;if(j>760||js.length+fl+j>3700)continue;/* 06/nov: explosões (boom) e respingos (splash) passavam de 420 e nunca chegavam no parceiro — ele não via o especial acertar */fl+=j+1;fx.push(o);}
+  for(const f of w.fx){if(!DUO_FXOK.has(f.k)||f.t<0)continue;if(!f._fid)f._fid=(w._fxn=(w._fxn||0)+1);/* DUOLISO06NOV: cada efeito com número, pra o parceiro continuar o MESMO efeito em vez de recomeçar */const o=duoFxPlain(f),j=JSON.stringify(o).length;if(j>760||js.length+fl+j>3700)continue;/* 06/nov: explosões (boom) e respingos (splash) passavam de 420 e nunca chegavam no parceiro — ele não via o especial acertar */fl+=j+1;fx.push(o);}
   if(fx.length)s.x=fx;js=JSON.stringify(s);while(js.length>4000&&s.f.length>10){s.f.length=Math.floor(s.f.length*.8);js=JSON.stringify(s);}
   return js.length<=4000?s:null;}
 /* ---------- PARCEIRO ---------- */
@@ -15257,26 +15257,42 @@ function duoApply(s){const G0=DUOG,w=WL;if(!G0||!w||!w.duoG||!s||!Array.isArray(
   const old=new Map(w.foes.map(e=>[e._id,e])),nf=[];
   for(const a of (s.f||[])){const [id,sp,x,y,hp,max,bits,atk,hit,acd,sh]=a;if(typeof sp!=='string'||!SP[sp.replace('*','')])continue;let e=old.get(id);const ty=M(y);
     if(e)old.delete(id);else{e={_id:id,sp,x,y:ty,hp,max,kind:DUO_KIND[bits&7]||'norm',boss:(bits&7)===4,age:0,wob:(id*1.7)%6,flip:!!(bits&2048),atk:0,hit:0,burn:0,slow:0,root:0,stun:0,shield:0,spd:.3,curse:0};fApply(e,true);}
-    e.tx=x;e.ty=ty;e.hp=hp;e.max=max||1;e.elite=!!(bits&8);e.archer=!!(bits&16);e.stun=bits&32?20:0;e.slow=bits&64?20:0;e.root=bits&128?20:0;e.burn=bits&256?30:0;e.frz=bits&512?10:0;e.enr=!!(bits&1024);e.curse=bits&4096?20:0;e.atk=atk;e.hit=Math.max(e.hit||0,hit);e.acd=acd;e.shield=sh;nf.push(e);}
+    {const nowT=performance.now();if(e.tx!=null&&e._st){const fr=Math.max(1,Math.min(20,(nowT-e._st)/16.7));e.vxs=Math.max(-3,Math.min(3,(x-e._sx)/fr));e.vys=Math.max(-3,Math.min(3,(ty-e._sy)/fr));}e._st=nowT;e._sx=x;e._sy=ty;}e.tx=x;e.ty=ty;e.hp=hp;e.max=max||1;e.elite=!!(bits&8);e.archer=!!(bits&16);e.stun=bits&32?20:0;e.slow=bits&64?20:0;e.root=bits&128?20:0;e.burn=bits&256?30:0;e.frz=bits&512?10:0;e.enr=!!(bits&1024);e.curse=bits&4096?20:0;e.atk=atk;e.hit=Math.max(e.hit||0,hit);e.acd=acd;e.shield=sh;nf.push(e);}
   for(const e of old.values())w.dying.push({sp:e.sp,x:e.x,y:e.y,sc:eSc(e),flip:e.flip,t:0,col:'#ffffff'});w.foes=nf;
   w.thief=s.th?{x:s.th[0],y:M(s.th[1]),hp:s.th[2],max:s.th[3],dir:s.th[4],hit:s.th[5],t:0}:null;
   w.barrels=(s.br||[]).map(q=>({x:q[0],y:M(q[1]),t:q[2],seed:q[3]/100}));
-  if(s.ct)w.cat={cd:s.ct[0],arm:s.ct[1],aim:s.ct[2]/100,msgT:0,shots:s.ct[3].map(q=>({x0:q[0],y0:M(q[1]),x1:q[2],y1:M(q[3]),t:q[4],dur:q[5],rot:q[4]*.35}))};
-  w.meteors=(s.mt||[]).map(m=>({tx:m[0],ty:M(m[1]),t:m[2]}));w.lobs=(s.lb||[]).map(L=>({x0:L[0],y0:M(L[1]),x1:L[2],y1:M(L[3]),t:L[4],dur:L[5],col:L[6]||'#c8b89a',type:L[7]||null,flat:!!L[8],rot:0}));
+  if(s.ct){const os=new Map(((w.cat&&w.cat.shots)||[]).map(q=>[q.x0+','+Math.round(q.y0)+','+q.x1,q]));w.cat={cd:s.ct[0],arm:s.ct[1],aim:s.ct[2]/100,msgT:0,shots:s.ct[3].map(q=>{const n={x0:q[0],y0:M(q[1]),x1:q[2],y1:M(q[3]),t:q[4],dur:q[5],rot:q[4]*.35};const o=os.get(n.x0+','+Math.round(n.y0)+','+n.x1);if(o&&o.t>=n.t&&o.t-n.t<=10){n.t=o.t;n.rot=o.rot;}return n;})};}
+  {const kt=(o,n)=>{if(o&&o.t>=n.t&&o.t-n.t<=10)n.t=o.t;return n;};const om=new Map((w.meteors||[]).map(m=>[m.tx+','+Math.round(m.ty),m])),ol=new Map((w.lobs||[]).map(L=>[L.x0+','+Math.round(L.y0)+','+L.x1+','+Math.round(L.y1),L]));
+  w.meteors=(s.mt||[]).map(m=>{const n={tx:m[0],ty:M(m[1]),t:m[2]};return kt(om.get(n.tx+','+Math.round(n.ty)),n);});
+  w.lobs=(s.lb||[]).map(L=>{const n={x0:L[0],y0:M(L[1]),x1:L[2],y1:M(L[3]),t:L[4],dur:L[5],col:L[6]||'#c8b89a',type:L[7]||null,flat:!!L[8],rot:0};const o=ol.get(n.x0+','+Math.round(n.y0)+','+n.x1+','+Math.round(n.y1));if(o)n.rot=o.rot;return kt(o,n);});}
   w.storm=s.sm!=null?(w.storm||{t:s.sm,next:999}):null;if(w.storm)w.storm.t=s.sm;w.theme=s.th2||null;if(s.wt){w._wtW=w.wave;w._wt=Object.fromEntries(s.wt);}
   {const cp=Array.isArray(s.cp)?s.cp:null;w.duoCp=cp;if(cp)G0.phQ=Math.max(G0.phQ|0,cp[2]|0);
    if(w.cards&&((!w.duoCardsOn&&(w.cards.q|0)<=(G0.phQ|0))||(cp&&cp[1]&&(w.cards.q|0)<=(cp[2]|0))))w.cards=null;}
   w.pops=w.pops.filter(p=>p.loc).concat((s.p||[]).map(p=>({x:p[0],y:M(p[1]),t:p[2],col:p[3],size:p[4],life:p[5],vy:p[6]})));
-  w.fx.length=0;for(const f of (s.x||[])){if(!f||!DUO_FXOK.has(f.k))continue;for(const k of ['y','y0','y1','y2','ty','sy'])if(typeof f[k]==='number')f[k]=M(f[k]);if(Array.isArray(f.pts))f.pts=f.pts.map(p=>Array.isArray(p)?[p[0],M(p[1])]:p);w.fx.push(f);}}
+  /* DUOLISO06NOV (Felipe: 'no celular da Gabi o poder anda de lado / frame a frame'): antes cada foto (8 por segundo) APAGAVA os efeitos e punha de novo onde estavam
+   naquele instante — o poder parava entre as fotos e voltava pra trás quando a foto chegava atrasada. Agora o mesmo efeito continua andando sozinho aqui
+   e a foto só corrige de leve (ou de vez, se ficou muito longe). */
+  {const prev=new Map();for(const f of w.fx)if(f._fid)prev.set(f._fid,f);const nx=[];
+   for(const f of (s.x||[])){if(!f||!DUO_FXOK.has(f.k))continue;for(const k of ['y','y0','y1','y2','ty','sy'])if(typeof f[k]==='number')f[k]=M(f[k]);if(Array.isArray(f.pts))f.pts=f.pts.map(p=>Array.isArray(p)?[p[0],M(p[1])]:p);
+     const o=f._fid?prev.get(f._fid):null;if(!o){nx.push(f);continue;}prev.delete(f._fid);
+     const lt=o.t|0,st=f.t|0,px=o.x,py=o.y;for(const k in f)o[k]=f[k];
+     if(lt>=st&&lt-st<=10)o.t=lt;/* o daqui já andou um pouco à frente da foto: continua de onde está */
+     if(typeof px==='number'&&typeof f.x==='number'){const ahead=(lt-st)>0?(lt-st):0;
+       if(o.k==='lob'){}else if(o.k!=='shot'){const nowT=performance.now();if(o._st){const fr=Math.max(1,Math.min(20,(nowT-o._st)/16.7));o._vx=Math.max(-8,Math.min(8,(f.x-o._sx)/fr));o._vy=Math.max(-8,Math.min(8,(f.y-o._sy)/fr));}o._st=nowT;o._sx=f.x;o._sy=f.y;}
+       if(o.k==='lob'){o.x=px;o.y=py;}/* a bomba anda pelo próprio tempo, igual no anfitrião */
+       else{const vx=o.k==='shot'?(f.vx||0):(o._vx||0),vy=o.k==='shot'?(f.vy||0):(o._vy||0),tx=f.x+vx*ahead,ty=f.y+vy*ahead;
+       if(Math.abs(tx-px)>40||Math.abs(ty-py)>40){o.x=tx;o.y=ty;}else{o.x=px+(tx-px)*.3;o.y=py+(ty-py)*.3;}}}
+     nx.push(o);}
+   w.fx=nx;}}
 function duoGuestStep(){const w=WL,G0=DUOG;if(!w||!G0)return;w.t++;
-  for(const e of w.foes){if(e.tx==null)continue;const dx=e.tx-e.x,dy=e.ty-e.y;if(Math.abs(dx)>40||Math.abs(dy)>40){e.x=e.tx;e.y=e.ty;}else{e.x+=dx*.22;e.y+=dy*.22;}e.age=(e.age||0)+1;if(e.hit>0)e.hit--;}
+  for(const e of w.foes){if(e.tx==null)continue;if(e.vxs!=null&&e._st&&performance.now()-e._st<400){e.tx+=e.vxs;e.ty+=e.vys;}const dx=e.tx-e.x,dy=e.ty-e.y;if(Math.abs(dx)>40||Math.abs(dy)>40){e.x=e.tx;e.y=e.ty;}else{e.x+=dx*.22;e.y+=dy*.22;}e.age=(e.age||0)+1;if(e.hit>0)e.hit--;}
   for(const p of w.pops){p.y+=p.vy;p.vy=Math.min(.25,p.vy+.07);p.life--;}w.pops=w.pops.filter(p=>p.life>0);
   for(const p of w.parts){p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.life--;p.rot+=.15;}w.parts=w.parts.filter(p=>p.life>0);
   if(!REDUCED&&w.t%45===0)w.parts.push({x:Math.random()*180,y:-4,vx:.35,vy:.45,life:420,max:420,col:'#8fd06a',size:2,grav:0,kind:'leaf',rot:0});
   for(const q of w.dying)q.t++;w.dying=w.dying.filter(q=>q.t<22);for(const z of w.zaps)z.life--;w.zaps=w.zaps.filter(z=>z.life>0);
   for(const d of w.defs){if(d.fire>0)d.fire--;if(d.lvT>0)d.lvT--;if(d.castT>0)d.castT--;if(d.throwT>0)d.throwT--;if(d.charge>=100&&!REDUCED&&w.t%7===0)w.parts.push({x:d.x+(Math.random()*16-8),y:d.y+6,vx:0,vy:-.6,life:26,max:26,col:spCol(d.sp),size:1.6,grav:0,kind:'spark',rot:0});}
   if(w.shake>0)w.shake--;if(w.flash>0)w.flash=Math.max(0,w.flash-.04);if(w.banner&&--w.banner.t<=0)w.banner=null;if(w.ult)w.ult.t++;
-  for(const f of w.fx){f.t++;if(f.k==='shot'){f.x+=f.vx||0;f.y+=f.vy||0;}}for(let i=w.fx.length-1;i>=0;i--){const f=w.fx[i];if(f.dur&&f.t>f.dur+1)w.fx.splice(i,1);}
+  for(const f of w.fx){f.t++;if(f.k==='shot'){f.x+=f.vx||0;f.y+=f.vy||0;}else if(f.k==='lob'&&f.dur&&typeof f.x0==='number'){if(f.t>=0){const p=Math.min(1,f.t/f.dur);f.x=lerp(f.x0,f.x1,p);f.y=lerp(f.y0,f.y1,p)-Math.sin(Math.PI*p)*(f.h||30);}}else if(f._vx!=null&&f._st&&performance.now()-f._st<400&&typeof f.x==='number'){f.x+=f._vx;f.y+=f._vy;}}for(let i=w.fx.length-1;i>=0;i--){const f=w.fx[i];if(f.dur&&f.t>f.dur+1)w.fx.splice(i,1);}
   if(w.thief){w.thief.t++;w.thief.x+=w.thief.dir*.55;if(w.thief.hit>0)w.thief.hit--;}
   if(w.cat)for(const q of w.cat.shots){if(q.t<q.dur)q.t++;q.rot+=.35;}for(const m of w.meteors)m.t++;for(const L of w.lobs)if(L.t<L.dur)L.t++;
   G0.lag=performance.now()-(G0.lastT||0)>5000;}

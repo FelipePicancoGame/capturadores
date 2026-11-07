@@ -1929,6 +1929,8 @@ function narFala(txt,quem){try{if(!NAR.on())return;const t=narLimpa(txt);NAR.cur
   const u=new SpeechSynthesisUtterance(t);const EN=window.CVLANG==='en';u.lang=EN?'en-US':'pt-BR';if(EN){NAR.vozE=NAR.vozE||narVozEn();if(NAR.vozE)u.voice=NAR.vozE;}else{NAR.voz=NAR.voz||narVoz();if(NAR.voz)u.voice=NAR.voz;}
   let pi=1.05,ra=1.0;const q=String(quem||'');if(/V[óo] Ip[êe]|Vov[óô]|Velh|Morador|Ancião/i.test(q)){pi=.85;ra=.93;}else if(q){let h=0;for(const c of q)h=(h*31+c.charCodeAt(0))|0;pi=.95+((Math.abs(h)%5)*.07);}
   u.pitch=pi;u.rate=ra;u.onstart=()=>{if(!NAR.st){NAR.st=1;try{window.__EV&&__EV('narração ok');}catch(e){}}};u.onerror=e=>{try{window.__EV&&__EV('narração erro '+(e&&e.error||''));}catch(_){}};NAR.u=u;try{speechSynthesis.resume();}catch(e){}speechSynthesis.speak(u);}catch(e){try{window.__EV&&__EV('narração falhou '+String(e).slice(0,40));}catch(_){}}}
+/* NARRAVOZES07NOV (R150 'primeiros slides sem áudio'): no iPhone as vozes chegam alguns segundos depois de abrir; quando chegam, lê de novo a fala que está na tela */
+try{speechSynthesis.addEventListener('voiceschanged',()=>{try{NAR.voz=null;NAR.vozE=null;if(NAR.curT&&NAR.on()&&!speechSynthesis.speaking&&!speechSynthesis.pending)narFala(NAR.curT,NAR.curQ);}catch(e){}});}catch(e){}
 function narPara(){try{if('speechSynthesis' in window)speechSynthesis.cancel();}catch(e){}}
 window.narFala=narFala;window.narPara=narPara;
 /* VOZIA (03/nov, Felipe testou ElevenLabs: Luciano = herói, Roberta = heroína, Cirilo = morador, Will = narrador): introdução do Capítulo 1 com voz de verdade. Fala sem áudio cai na voz do celular. */
@@ -9734,7 +9736,8 @@ let MGLAST=null;
 /* PONTOS DE TREINO (22/10): sempre o suficiente pra subir 1 nível a cada 5 partidas, baseado no monstrinho mais forte da equipe */
 function mgTrainPts(){const lv=Math.min(49,Math.max(1,...party.map(m=>m.lv)));return Math.max(1,Math.ceil(((lv+1)**3-lv**3)/5));}
 /* ESTATÍSTICA DA PARTIDA (todas as fases da Muralha, Torres e Horda): quem bateu mais, quanto e a % do dano */
-async function mgStatsShow(){if(!MGLAST||!MGLAST.out.length)return;const st={t:0,L:MGLAST.out.slice().sort((a,c)=>c.d-a.d),pts:MGLAST.pts};await choose(['x'],{mgstats:st});}
+let DUOSTATS=null;/* DUOSTATS07NOV: na Muralha em dupla, embaixo da estatística vem o total de cada um */
+async function mgStatsShow(){if(!MGLAST||!MGLAST.out.length){DUOSTATS=null;return;}const st={t:0,L:MGLAST.out.slice().sort((a,c)=>c.d-a.d),pts:MGLAST.pts};if(DUOSTATS){const en=window.CVLANG==='en',f=n=>Math.round(n||0).toLocaleString(en?'en-US':'pt-BR');st.foot=`${en?'You':'Você'} ${f(DUOSTATS.me)}  ·  ${String(DUOSTATS.pn||(en?'Partner':'Parceiro')).slice(0,12)} ${f(DUOSTATS.pa)}`;DUOSTATS=null;}await choose(['x'],{mgstats:st});}
 function drawMgStats(u){const st=u.cfg.mgstats;st.t++;const t=st.t,L=st.L,ap=Math.min(1,t/10),tot=L.reduce((a,o)=>a+o.d,0)||1;u.rects=[];u.boxR=null;
   b.fillStyle=`rgba(8,6,24,${.88*ap})`;b.fillRect(0,0,W,H);if(ap<1)return;
   const rh=34,cw=Math.min(W-12,176),ch=58+L.length*rh+40,cx=(W-cw)/2,cy=Math.max(8,(H-ch)/2);
@@ -14375,10 +14378,16 @@ async function rpOpen(){if(document.getElementById('rpBox'))return;const shot=aw
    <p style="color:#1d7a3a;font-weight:bold">💎 Achou um problema de verdade? Quando ele for corrigido, você ganha 1 cristal!</p>
    <div class="ims"><div id="rpI1">${shot?'<img alt="Tela do jogo">':'sem foto da tela'}</div><div id="rpI2">nenhum print anexado</div></div>
    <button class="at" id="rpAt" type="button">📷 Anexar um print</button><input id="rpF" type="file" accept="image/*" hidden>
-   <p style="margin-top:8px">O que aconteceu?</p><textarea id="rpT" maxlength="1500" placeholder="Ex.: na Muralha, o botão de especial não funcionou depois da onda 3"></textarea>
+   <p style="margin-top:8px">O que aconteceu?</p>${(window.SpeechRecognition||window.webkitSpeechRecognition)?'<button class="at" id="rpMic" type="button" style="margin-bottom:6px">🎤 Falar em vez de escrever</button>':''}<textarea id="rpT" maxlength="1500" placeholder="Ex.: na Muralha, o botão de especial não funcionou depois da onda 3"></textarea>
    <div class="msg" id="rpM"></div><div class="bt"><button class="no" id="rpC" type="button">Cancelar</button><button class="ok" id="rpS" type="button">Enviar</button></div></div>`;
   ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click','keydown','keyup'].forEach(ev=>box.addEventListener(ev,e=>e.stopPropagation()));
   document.body.appendChild(box);if(shot)box.querySelector('#rpI1 img').src=shot;
+  /* DITAR07NOV (R140, Felipe: 'coloca função ditar aqui pra eu falar e ele escrever'): o 🎤 escuta e escreve no campo */
+  try{const mb=box.querySelector('#rpMic'),SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(mb&&SR){let rec=null;const ta=box.querySelector('#rpT');
+    mb.onclick=()=>{if(rec){try{rec.stop();}catch(e){}return;}rec=new SR();rec.lang=window.CVLANG==='en'?'en-US':'pt-BR';rec.interimResults=true;rec.continuous=true;const base=ta.value?ta.value.replace(/\s*$/,' '):'';let fin='';
+      rec.onresult=e=>{let tmp='';for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)fin+=r[0].transcript+' ';else tmp+=r[0].transcript;}ta.value=(base+fin+tmp).slice(0,1500);};
+      rec.onend=()=>{rec=null;mb.textContent='🎤 Falar em vez de escrever';mb.style.background='';};rec.onerror=()=>{try{rec&&rec.stop();}catch(e){}};
+      try{rec.start();mb.textContent='⏹ Parar (estou ouvindo…)';mb.style.background='#ffd6d6';}catch(e){rec=null;}};}}catch(e){}
   try{const pp=box.querySelector('.pp p');if(pp)pp.classList.add('p0');const ta=box.querySelector('#rpT'),vv=window.visualViewport,fit=()=>{if(!vv||!box.isConnected)return;box.style.top=vv.offsetTop+'px';box.style.height=vv.height+'px';box.style.bottom='auto';};
     ta.addEventListener('focus',()=>{box.classList.add('typing');fit();setTimeout(()=>{fit();ta.scrollIntoView({block:'center'});},350);});
     ta.addEventListener('blur',()=>{setTimeout(()=>{if(document.activeElement!==ta){box.classList.remove('typing');box.style.top='';box.style.height='';box.style.bottom='';}},250);});
@@ -15224,7 +15233,7 @@ function duoHostAct(H0,a){const w=WL;if(a.k==='hb'){H0.gAuto=!!a.auto;H0.ack=1;r
   if(a.k==='swap'){const i=a.i|0,d=w.defs[i],m=duoDes(a.m);if(!d||d._ow!==1||!m)return;const ok=(H0.gres||[]).find(q=>q.sp===m.sp&&q.lv===m.lv)&&!w.defs.some(q=>q._ow===1&&q!==d&&q.sp===m.sp&&q.m.lv===m.lv);if(!ok)return;duoSwapDo(w,i,m);return;}
   if(a.k==='ult'){const i=a.i|0;if(i>=H0.hm.length&&i<w.defs.length){wSpecial(i);try{const s=duoSnap(w);if(s)duoEmit(H0.S,'mds',s);}catch(e){}}}
   else if(a.k==='tap'){const x=+a.x,y=+a.y;if(!isFinite(x)||!isFinite(y)||x<-20||x>200||y<-400||y>400)return;duoAs(1,()=>{if(wThiefTap(x,y))return;if(wBarrelTap(x,y))return;wCatTap(x,y);});}}
-function duoHostEnd(res){const H0=DUOH,w=WL;if(!H0||!w)return;H0.ended=true;const d={res,wave:w.wave,kills:w.kills};[0,400,900].forEach(ms=>setTimeout(()=>duoEmit(H0.S,'mdr',d),ms));}
+function duoHostEnd(res){const H0=DUOH,w=WL;if(!H0||!w)return;H0.ended=true;const d={res,wave:w.wave,kills:w.kills};/* DUOSTATS07NOV (R159/R173): manda o dano de cada um pro parceiro */try{const D=(w.ctx&&w.ctx.dmg)||new Map();let me=0,pa=0;const gl=[];for(const [k,v] of D){if(!k||!k.sp||!(v>0))continue;if(party.includes(k))me+=v;else{pa+=v;gl.push([k.sp,k.lv|0,Math.round(v)]);}}d.dm=[Math.round(me),Math.round(pa)];d.gl=gl.slice(0,6);DUOSTATS={me,pa,pn:H0.gnome||''};}catch(e){}[0,400,900].forEach(ms=>setTimeout(()=>duoEmit(H0.S,'mdr',d),ms));}
 /* toque no especial: na dupla o dono só solta os dele (0-1); os do parceiro (2-3) só o parceiro solta */
 function wTapSp(i){const w=WL;if(w&&w.duo&&i>=w.duo.hm.length){const d=w.defs[i];if(d)wPop(d.x,d.y-30,'É DO PARCEIRO','#9fd0ff',7);return;}wSpecial(i);}
 /* foto da partida (≤4KB): cabeçalho, defensores, inimigos (com id fixo), e enfeites pequenos; se passar do limite, corta efeitos e depois inimigos de trás */
@@ -15336,6 +15345,7 @@ async function duoGuestRun(r){const wel=r.wel,mons=wel.mons.map(duoDes).filter(B
   WL.cards=null;WL.duoCardsOn=false;WL.duoOff=false;WL.duoPaused=false;G0.lag=false;
   const res=R.res,wv=R.wave|0;
   if(R.me)await say('Você saiu da partida em dupla.');else if(res==='win'){WL.flash=1;await say('VITÓRIA EM DUPLA! A muralha resistiu às 10 ondas!');}else if(res==='lose')await say(`A muralha caiu na onda ${wv}... Boa defesa em dupla! (${R.kills|0} inimigos derrotados)`);else await say('O dono da sala encerrou a partida.');
+  try{if(!R.me&&Array.isArray(R.gl)&&R.gl.length){const out=R.gl.map(([sp,lv,d])=>({m:party.find(p=>p.sp===sp)||mk(sp,lv|0||1),sh:0,g:null,d:d|0,cl:null}));MGLAST={out,pts:null};const dm=R.dm||[0,0];DUOSTATS={me:dm[1],pa:dm[0],pn:(r.wel&&r.wel.nome)||''};await mgStatsShow();}}catch(e){console.warn(e);}
   try{r.S.leave();}catch(e){}DUOG=null;await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';WL=null;await fadeTo(0);}
 /* ---------- ETAPA 2: lugares, status e cartas de cada jogador ---------- */
 /* lugares: dono na metade esquerda, parceiro na direita, sempre do meio pra ponta (1º do dono no 1, 2º no 0; 1º do parceiro no 2, 2º no 3).
@@ -15539,6 +15549,25 @@ try{window.__DUO={menu:()=>run(()=>minigamesMenu()),get H(){return DUOH;},get G(
     }catch(_){}},500);
 }catch(e){}})();
 /* /PRECARGA06NOV */
+/* ARPODERTXT07NOV (R163, Felipe: 'ter uma descrição melhor do poder de cada monstrinho'): ao tocar num monstrinho do tabuleiro aparece
+   o nome do poder e uma explicação simples do que ele faz (montada a partir dos números do próprio poder). */
+function arAbTxt(ab){const en=window.CVLANG==='en',o=[],pc=v=>Math.round(v*100)+'%',sg=t=>Math.max(1,Math.round(t/60))+'s',A=v=>Array.isArray(v)?v:null;
+  if(ab.d)o.push(String(ab.d).replace(/^./,c=>c.toUpperCase())+'.');
+  if(A(ab.area))o.push(en?'The blast also hits nearby enemies.':'A explosão também acerta quem está perto.');if(A(ab.poca))o.push(en?'Leaves a hot puddle that hurts whoever steps on it.':'Deixa uma poça no chão que machuca quem passa.');
+  if(ab.multi>1)o.push(en?`Hits ${ab.multi} enemies at once.`:`Acerta ${ab.multi} inimigos de uma vez.`);
+  if(A(ab.queima))o.push(en?`Burns for ${sg(ab.queima[1])}.`:`Queima por ${sg(ab.queima[1])}.`);
+  if(A(ab.lento))o.push(en?`Slows by ${pc(ab.lento[0])} for ${sg(ab.lento[1])}.`:`Deixa ${pc(ab.lento[0])} mais lento por ${sg(ab.lento[1])}.`);
+  if(ab.rapido)o.push(en?'Attacks faster.':'Ataca mais rápido.');if(ab.empurra)o.push(en?'Pushes enemies back.':'Empurra o inimigo pra trás.');
+  if(ab.foco)o.push(en?'Aims at the strongest.':'Mira no inimigo mais forte.');if(ab.chefe)o.push(en?`+${pc(ab.chefe)} damage on bosses.`:`+${pc(ab.chefe)} de dano no chefe.`);
+  if(ab.executa)o.push(en?`Finishes enemies under ${pc(ab.executa)} HP.`:`Derrota na hora quem tem menos de ${pc(ab.executa)} de vida.`);if(ab.perfura)o.push(en?'Goes through enemies.':'O tiro atravessa os inimigos.');
+  for(const [k,pt,enT] of [['bolha','prende numa bolha','traps in a bubble'],['raiz','prende com raízes','roots in place'],['paralisa','paralisa','stuns'],['congela','congela','freezes'],['crit','dá golpe crítico','lands a critical hit'],['medo','assusta e faz voltar','scares them back'],['mana','dá mana extra','gives extra mana']])
+    if(A(ab[k]))o.push(en?`${pc(ab[k][0])} chance: ${enT}.`:`${pc(ab[k][0])} de chance: ${pt}.`);
+  if(ab.aura)o.push(en?'Helps the monsters next to it.':'Ajuda os monstrinhos do lado.');
+  for(const k of ['erupcao','tsunami','raios'])if(A(ab[k])&&ab[k][0]>1){o.push(en?`Every ${ab[k][0]} attacks: a special blast.`:`A cada ${ab[k][0]} ataques: um golpe especial.`);break;}
+  return o.join(' ');}
+{const _r=renderArena;renderArena=function(){_r.apply(this,arguments);try{const A=AR;if(!A||A.result||A.lobby||A.drag||!(A.sel>=0))return;const u=A.grid[A.sel];if(!u)return;const ab=arAbOf(u);if(!ab)return;
+  const p=arCellXY(A.sel),ls=wrap(arAbTxt(ab),W-30,5.4).slice(0,4),h=14+ls.length*7,y=Math.max(4,p.y-26-h);b.save();rrect(8,y,W-16,h,6,'rgba(20,12,40,.92)',false);b.restore();
+  T(ab.n,W/2,y+3.5,6.6,'center','#ffd8a0',W-24,C.ink);ls.forEach((l,i)=>T(l,W/2,y+12+i*7,5.4,'center','#ffffff',W-24));}catch(e){}};}
 /* ARLOCKSTEP07NOV (06/nov, Felipe: 'pode fazer a reforma e arrumar um jeito de conferir e corrigir caso eles começarem a desgrudar'):
    ARENA JUNTOS / UM CONTRA O OUTRO em LOCKSTEP (como o Rush Royale): os dois celulares rodam a MESMA partida inteira (o seu tabuleiro e o do parceiro),
    com a mesma sorte (semente) e a mesma tela virtual (180x390). Pela internet só vão os TOQUES (chamar, juntar, mover, poder, evoluir carta),

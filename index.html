@@ -10525,7 +10525,7 @@ function arTap(x,y){const A=AR;if(!A)return;if(A.result&&A.result.stg){const cy=
 function arDragInit(){if(window.__ardrag)return;window.__ardrag=1;
   stage.addEventListener('pointerdown',e=>{if(G.mode!=='arena'||!AR||ui.length||AR.result)return;const [x,y]=toCanvas(e),i=arCellAt(x,y);if(i>=0&&AR.grid[i])AR.drag={i,x,y,x0:x,y0:y,id:e.pointerId,moved:false};});
   stage.addEventListener('pointermove',e=>{const D=AR&&AR.drag;if(!D||e.pointerId!==D.id)return;const [x,y]=toCanvas(e);D.x=x;D.y=y;if(Math.hypot(x-D.x0,y-D.y0)>6)D.moved=true;});
-  const up=e=>{const D=AR&&AR.drag;if(!D||e.pointerId!==D.id)return;AR.drag=null;if(!D.moved)return;const [x,y]=toCanvas(e),j=arCellAt(x,y);if(j>=0&&arCanMerge(D.i,j))arMerge(D.i,j);else if(j>=0&&j!==D.i&&!AR.grid[j]){AR.grid[j]=AR.grid[D.i];AR.grid[D.i]=null;}AR.sel=-1;AR.dragEnd=performance.now();};
+  const up=e=>{const D=AR&&AR.drag;if(!D||e.pointerId!==D.id)return;AR.drag=null;if(!D.moved)return;const [x,y]=toCanvas(e),j=arCellAt(x,y);if(j>=0&&arCanMerge(D.i,j))arMerge(D.i,j);else if(j>=0&&j!==D.i&&!AR.grid[j]){arMove(D.i,j);}AR.sel=-1;AR.dragEnd=performance.now();};
   stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',e=>{if(AR)AR.drag=null;});}
 async function arenaMode(){if(!party.length){await say('Você precisa de um monstrinho!');return;}
   const k=await choose(['FASES','SEM FIM (recorde)','JUNTOS (2 celulares)','UM CONTRA O OUTRO','VOLTAR'],{cadAsk:{q:'ARENA — como você quer jogar?',nf:1,cols:['#e0a020','#3fae5a','#2f78c8','#d83a3a','#6a6488']}});
@@ -15519,6 +15519,115 @@ try{window.__DUO={menu:()=>run(()=>minigamesMenu()),get H(){return DUOH;},get G(
     }catch(_){}},500);
 }catch(e){}})();
 /* /PRECARGA06NOV */
+/* ARLOCKSTEP07NOV (06/nov, Felipe: 'pode fazer a reforma e arrumar um jeito de conferir e corrigir caso eles começarem a desgrudar'):
+   ARENA JUNTOS / UM CONTRA O OUTRO em LOCKSTEP (como o Rush Royale): os dois celulares rodam a MESMA partida inteira (o seu tabuleiro e o do parceiro),
+   com a mesma sorte (semente) e a mesma tela virtual (180x390). Pela internet só vão os TOQUES (chamar, juntar, mover, poder, evoluir carta),
+   marcados para acontecer ~150 ms depois nos dois celulares ao mesmo tempo. Assim o parceiro aparece liso, sem pulos.
+   CONFERE: a cada meio segundo os dois comparam uma "impressão digital" do jogo. Se desgrudar, o celular de quem criou a sala manda o jogo
+   inteiro e o outro se acerta na hora. Celular com versão antiga: joga do jeito antigo. Desliga com #semls. */
+function arMove(i,j){const A=AR;if(!A||!A.grid[i]||A.grid[j]||i===j)return;A.grid[j]=A.grid[i];A.grid[i]=null;}
+(function(){
+const LSV=1,TK=1000/60,DL=9,HV=390,CHK=30;
+let X=null;window.__LSX=()=>X;
+const LSKIP=new Set(['mp','done','sel','drag','dragEnd','buyT','hits','bh','resHits','parts','pops','dn','scroll','_pv6t','_stH','_stD','result']);
+function rngOf(A){return function(){let t=(A._rs=(A._rs+0x6D2B79F5)|0);t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};}
+function lsSer(A){const en=A.en||[],idx=new Map(en.map((e,i)=>[e,i])),seen=new Set();
+  const w=(v,inEn)=>{if(v===null)return null;const ty=typeof v;if(ty==='function'||ty==='undefined'||ty==='symbol')return undefined;if(ty==='number')return isFinite(v)?v:{__n:String(v)};if(ty!=='object')return v;
+    if(!inEn&&idx.has(v))return {__e:idx.get(v)};const tn=Object.prototype.toString.call(v);if(tn!=='[object Object]'&&tn!=='[object Array]')return undefined;if(seen.has(v))return undefined;seen.add(v);let r;
+    if(Array.isArray(v))r=v.map(x=>{const y=w(x,false);return y===undefined?null:y;});else{r={};for(const k in v){if(k==='vAtk'||k==='vTgt'||k==='vAng')continue;const y=w(v[k],false);if(y!==undefined)r[k]=y;}}seen.delete(v);return r;};
+  const o={};for(const k in A){if(LSKIP.has(k))continue;if(k==='en'){o.en=en.map(e=>w(e,true));continue;}const y=w(A[k],false);if(y!==undefined)o[k]=y;}return JSON.stringify(o);}
+function lsDeser(j){const o=JSON.parse(j),en=o.en||(o.en=[]);const fx=v=>{if(!v||typeof v!=='object')return v;if(Array.isArray(v)){for(let i=0;i<v.length;i++)v[i]=fx(v[i]);return v;}if('__e' in v)return en[v.__e]||null;if('__n' in v)return Number(v.__n);for(const k in v)v[k]=fx(v[k]);return v;};
+  for(const k in o){if(k==='en'){for(const e of en)if(e)for(const kk in e)e[kk]=fx(e[kk]);}else o[k]=fx(o[k]);}return o;}
+function lsInit(A){A.pops=A.pops||[];A.parts=A.parts||[];A.shots=A.shots||[];A.en=A.en||[];A.dn=A.dn||[];}
+function lsApply(A,o){const keep={};for(const k of LSKIP)if(k in A)keep[k]=A[k];for(const k of Object.keys(A))delete A[k];Object.assign(A,o,keep);lsInit(A);}
+function lsHash(A){let s=[A.t,Math.round((A.mana||0)*10),A.lives,A.wave,A.kills,A.cost,A.spawnLeft,A.between,A._rs,A.over?1:0].join(',');
+  for(const e of A.en||[])s+='|'+e.sp+','+Math.round((e.d||0)*10)+','+Math.round((e.hp||0)*10);for(const u of A.grid||[])s+='|'+(u?(u.form||u.sp)+u.star:'-');
+  let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function lsFix(t,d,n){if(t==='as'&&d)d.n=String(n||'').slice(0,12);return d;}
+let PILL=null;function lsPill(txt){try{if(!txt){if(PILL)PILL.style.display='none';return;}if(!PILL){PILL=document.createElement('div');PILL.style.cssText="position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 64px);transform:translateX(-50%);z-index:9400;background:rgba(20,12,40,.86);color:#fff;font:600 15px 'Fredoka',system-ui,sans-serif;padding:7px 16px;border-radius:999px;pointer-events:none;box-shadow:0 3px 10px rgba(0,0,0,.4)";document.body.appendChild(PILL);}PILL.textContent=txt;PILL.style.display='block';}catch(e){}}
+const H2={as:m=>{const M=AR.mp;M.peer=Object.assign(M.peer,m.data||{});arGhosts(AR);},
+  aw:m=>{if(AR.over)return;const w=(m.data||{}).w|0;if(w>AR.wave){AR.wave=w-1;arStartWave();}},
+  ac:m=>{const M=AR.mp;M.peerClr=Math.max(M.peerClr,(m.data||{}).w|0);},
+  al:m=>{if(AR.over)return;AR.lives-=(m.data||{}).n|0;AR.shake=8;arPop(W/2,arGeo().ty-30,'O parceiro deixou passar!','#ff9090');if(AR.lives<=0)arEnd('coop');},
+  ab:m=>{if(AR.over)return;arMpSpawnBonus((m.data||{}).hp|0||100);},
+  ad:m=>{if(AR.over)return;arCoopDmg(m.data||{});},
+  ax:m=>{if(AR.over)return;arEnd(X&&X.mode0==='pvp'?'peerlost':'coop');}};
+function lsSend(x,force){if(x.left&&!force)return;const now=performance.now();if(!force&&now-(x.lsT||0)<33)return;x.lsT=now;const u=Math.max(x.uSent||0,x.T+DL-1);x.uSent=u;x.out=x.out.filter(a=>a.s>x.pack);
+  try{x.S.emit('li',{u,a:x.out.map(a=>[a.s,a.t,a.a,a.x]),k:x.ack,h:x.hq});}catch(e){}}
+function lsAct(type,...args){const x=X;if(!x||x.mode!=='ls'||!x.my||x.my.over)return;const t=Math.max(x.T+DL,(x.uSent||0)+1),a={s:++x.seq,t,p:x.mi,a:type,x:args};x.acts.push(a);x.out.push(a);lsSend(x,true);}
+function lsMine(){return !!(X&&X.mode==='ls'&&!X.inTick&&AR&&AR===X.my);}
+function lsDo(a){switch(a.a){case 'b':arBuy();break;case 'm':arMerge(a.x[0],a.x[1]);break;case 'v':arMove(a.x[0],a.x[1]);break;case 'u':arUpgrade(a.x[0]);break;case 'h':arHeroUse();break;
+  case 'c':{const A=AR;A._lsc=A._lsc||{};A._lsc[a.x[0]]=a.x[1]|0;break;}}}
+function lsTick(x){const n=++x.T,R=Math.random,F=flags,TN=tone;x.rnd0=R;x.inTick=true;
+  try{for(let i=0;i<2;i++){const A=x.sims[i];if(A.over){x.q[i].length=0;continue;}AR=A;x.cur=A;Math.random=x.rf[i];const mine=A===x.my;if(!mine){flags=x.fro;tone=function(){};}
+      try{const inb=x.q[i];x.q[i]=[];const HH=mine?x.H:H2;for(const [t,d] of inb){if(A.over)break;const h=HH[t];if(h)try{h({data:d,isMe:false,sameTab:false});}catch(e){console.error(e);}}
+        const L=x.acts.filter(a=>a.t===n&&a.p===i).sort((p,q)=>p.s-q.s);for(const a of L){if(A.over)break;try{lsDo(a);}catch(e){console.error(e);}}
+        if(!A.over){A.speed=1;x.upd();}if(AR===A&&!A.over)arMpSnap(A);}
+      finally{flags=F;tone=TN;}}}
+  finally{AR=x.my;Math.random=R;x.inTick=false;x.cur=null;}
+  if(n%CHK===0)lsCheck(x,n);if(n%120===0)x.acts=x.acts.filter(a=>a.t>n-300);}
+function lsCmp(x,n,a,b){x.ph.delete(n);x.cd.add(n);if(x.cd.size>200)x.cd.delete(x.cd.values().next().value);if(a[1]===b[0]&&a[2]===b[1]){x.ok++;return;}x.bad++;x.badT=n;if(x.role==='host')lsResync(x);}
+function lsCheck(x,n){const h=[n,lsHash(x.sims[0]),lsHash(x.sims[1])];x.hm.set(n,h);if(x.hm.size>80)x.hm.delete(x.hm.keys().next().value);x.hq=[h].concat(x.hq).slice(0,3);const p=x.ph.get(n);if(p)lsCmp(x,n,h,p);}
+function lsPeerHash(x,h){if(!Array.isArray(h))return;const n=h[0]|0;if(n<=(x.rsT||0)||x.cd.has(n))return;if(x.ph.has(n))return;const m=x.hm.get(n);if(m){x.ph.set(n,[h[1],h[2]]);lsCmp(x,n,m,[h[1],h[2]]);}else if(n>x.T)x.ph.set(n,[h[1],h[2]]);}
+function lsSerM(M){const o={};for(const k in M){if(k==='S'||k==='last'||k==='off'||typeof M[k]==='function')continue;o[k]=M[k];}return JSON.stringify(o);}
+function lsResync(x){const now=performance.now();if(now-(x.lastRs||0)<1500)return;x.lastRs=now;x.rs++;x.rsT=x.T;
+  try{x.S.emit('lr',{id:++x.rid,t:x.T,s:[lsSer(x.sims[0]),lsSer(x.sims[1])],m:[lsSerM(x.sims[0].mp),lsSerM(x.sims[1].mp)],q:JSON.stringify(x.q)});}catch(e){console.error(e);}}
+function lsGotRs(x,d){if(x.mode!=='ls'||x.role==='host'||!d||(d.id|0)<=x.rid0)return;x.rid0=d.id|0;
+  try{for(let i=0;i<2;i++){const A=x.sims[i],M=A.mp;lsApply(A,lsDeser(d.s[i]));A.mp=M;Object.assign(M,JSON.parse(d.m[i]));}x.q=JSON.parse(d.q);x.T=d.t|0;x.acc=0;x.hm.clear();x.ph.clear();x.cd.clear();x.hq=[];x.rsT=x.T;x.rsGot++;}catch(e){console.error('lsGotRs',e);}}
+function lsGotLi(x,d){x.gotLi=1;const now=performance.now();if(x.M)x.M.last=now;
+  for(const q of d.a||[]){const s=q[0]|0;if(s<=x.ack||x.rcv.has(s))continue;x.rcv.add(s);if(x.mode==='ls'&&(q[1]|0)<=x.T)x.late=(x.late||0)+1;x.acts.push({s,t:q[1]|0,p:x.pi,a:q[2],x:q[3]||[]});}
+  while(x.rcv.has(x.ack+1)){x.rcv.delete(x.ack+1);x.ack++;}x.peerU=Math.max(x.peerU,d.u|0);x.pack=Math.max(x.pack,d.k|0);if(x.mode==='ls')for(const h of d.h||[])lsPeerHash(x,h);}
+function lsFrame(x){const now=performance.now();x.acc+=Math.min(250,now-(x.lf||now));x.lf=now;if(x.peerU-x.T>DL+4)x.acc+=TK*.25;if(x.acc>TK*12)x.acc=TK*12;
+  if(x.my&&!x.my.over&&++x.cp%30===0){try{for(const sp of x.my.deck||[]){const l=x.cardLv(sp);if(((x.my._lsc||{})[sp]|0||1)!==l&&x.clq[sp]!==l){x.clq[sp]=l;lsAct('c',sp,l);}}}catch(e){}}
+  let k=0;while(x.acc>=TK&&k<12&&x.my&&!x.my.over){if(x.T+1>x.peerU){if(!x.stall)x.stall=now;break;}x.stall=0;lsTick(x);x.acc-=TK;k++;}
+  lsSend(x,false);lsPill(x.stall&&now-x.stall>700&&!x.my.over?(window.CVLANG==='en'?'Waiting for your partner…':'Esperando o parceiro…'):null);}
+function lsLegacy(x){if(x.mode==='legacy')return;x.mode='legacy';x.scr=false;lsPill(null);try{portraitScreen();}catch(e){}
+  const B=x.buf,O=x.obuf;x.buf=[];x.obuf=[];for(const [fn,m] of B)try{fn(m);}catch(e){}for(const [t,d] of O)try{x.S.emit(t,d);}catch(e){}try{x.S.emit('lx',{});}catch(e){}}
+function lsHello(x){if(X!==x||x.mode!=='pend'||x.st)return;const A=AR;if(!A||!A.mp||A.mp.S!==x.S2){setTimeout(()=>lsHello(x),300);return;}
+  x.M=A.mp;x.my=A;const lc={},lp={};try{for(const sp of A.deck||[])lc[sp]=x.cardLv(sp);for(const k in (flags.arCard||{}))lc[k]=x.cardLv(k);}catch(e){}try{for(const m of party)if(m&&m.sp)lp[m.sp]=Math.max(lp[m.sp]||0,m.lv|0);}catch(e){}
+  A._lsc=lc;A._lsp=lp;if(x.role==='host')x.seed=(Math.random()*2147483647)|0;try{x.sk=arSk();}catch(e){x.sk=null;}x.st=lsSer(A);
+  const pay={v:LSV,r:x.role,st:x.st,seed:x.seed,sk:x.sk,n:x.me};const snd=()=>{try{x.S.emit('ls0',pay);}catch(e){}};snd();
+  const iv=setInterval(()=>{if(X!==x||x.gotLi||x.mode==='legacy'||performance.now()-x.t0>15000){clearInterval(iv);return;}snd();},500);lsTryStart(x);}
+function lsGot0(x,d){if(x.mode==='legacy'){try{x.S.emit('lx',{});}catch(e){}return;}if((d.v|0)!==LSV){lsLegacy(x);return;}if(x.p0)return;x.p0=d;lsTryStart(x);}
+function lsTryStart(x){if(x.mode!=='pend'||!x.st||!x.p0)return;const hd=x.role==='host'?{seed:x.seed,sk:x.sk}:{seed:x.p0.seed,sk:x.p0.sk};if(hd.seed==null){lsLegacy(x);return;}
+  lsApply(x.my,lsDeser(x.st));x.my.mp=x.M;const fakeP={emit:(t,d)=>{if(x.inTick&&x.cur===x.pr)x.q[x.mi].push([t,lsFix(t,d,x.pn)]);},on(){},leave(){},presence(){}};
+  const P=lsDeser(x.p0.st);P.mp={mode:x.mode0,role:x.role==='host'?'guest':'host',S:fakeP,peer:{n:x.me},peerClr:0,waitT:0,sentClr:-1,off:0,last:performance.now()};P.done=null;P.sel=-1;P.drag=null;lsInit(P);
+  x.pr=P;if(x.p0.n)x.pn=String(x.p0.n).slice(0,12);x.sims=x.mi===0?[x.my,x.pr]:[x.pr,x.my];x.sims[0]._rs=(hd.seed|0)||1;x.sims[1]._rs=((hd.seed^0x5bd1e995)|0)||7;x.rf=[rngOf(x.sims[0]),rngOf(x.sims[1])];
+  x.skin=hd.sk;x.q=[[],[]];x.fro=new Proxy(flags,{set(){return true;},deleteProperty(){return true;},defineProperty(){return true;}});x.buf=[];x.obuf=[];x.lf=performance.now();x.acc=0;x.mode='ls';
+  try{portraitScreen();}catch(e){}lsSend(x,true);}
+function lsEmitMine(x,t,d){if(x.mode==='legacy')return x.S.emit(t,d);if(x.mode==='ls'){if(x.inTick&&x.cur===x.my)x.q[x.pi].push([t,lsFix(t,d,x.me)]);return;}if(x.mode==='pend')x.obuf.push([t,d]);}
+function lsOn(x,t,fn){x.H[t]=fn;x.S.on(t,m=>{if(X!==x)return;if(x.mode==='legacy')fn(m);else if(x.mode==='pend')x.buf.push([fn,m]);});if(t==='ax')setTimeout(()=>lsHello(x),0);}
+function lsLeave(x){if(x.left)return;x.left=1;lsPill(null);const ls=x.mode==='ls';if(ls){if(x.my&&!x.my.over){try{x.S.emit('lq',{});}catch(e){}}lsSend(x,true);x.mode='dead';}
+  setTimeout(()=>{try{x.S.leave();}catch(e){}},ls?500:0);}
+/* ganchos */
+{const _u=arUpdate;arUpdate=function(){const x=X;if(x&&AR&&AR.mp&&AR.mp.S===x.S2&&x.mode!=='legacy'&&x.mode!=='dead'){x.upd=x.upd||_u;if(x.mode==='ls')lsFrame(x);else lsPill(performance.now()-x.t0>1500?(window.CVLANG==='en'?'Syncing…':'Sincronizando…'):null);return;}return _u.apply(this,arguments);};}
+{const _r=arMpRun;arMpRun=async function(mode,r){if(/semls/.test(location.hash||'')||!r||!r.S)return _r.apply(this,arguments);const S=r.S;
+  const x=X={mode:'pend',mode0:mode,role:r.role,mi:r.role==='host'?0:1,pi:r.role==='host'?1:0,S,H:{},buf:[],obuf:[],scr:true,pn:String(r.peerN||'').slice(0,12),me:String((flags&&flags.nome)||'').slice(0,12),
+    acts:[],out:[],seq:0,ack:0,rcv:new Set(),pack:0,peerU:-1,T:0,acc:0,cp:0,hm:new Map(),ph:new Map(),cd:new Set(),hq:[],ok:0,bad:0,rs:0,rsGot:0,rid:0,rid0:0,clq:{},t0:performance.now(),cardLv:x0=>CLV(x0)};
+  x.S2={emit:(t,d)=>lsEmitMine(x,t,d),on:(t,fn)=>lsOn(x,t,fn),leave:()=>lsLeave(x),presence:()=>{}};
+  const ok=m=>X===x&&m&&!m.isMe&&!m.sameTab;
+  S.on('ls0',m=>{if(ok(m))lsGot0(x,m.data||{});});S.on('li',m=>{if(ok(m)&&x.mode!=='legacy')lsGotLi(x,m.data||{});});S.on('lr',m=>{if(ok(m))lsGotRs(x,m.data);});
+  S.on('lx',m=>{if(ok(m)&&x.mode!=='legacy'&&x.mode!=='dead')lsLegacy(x);});S.on('lq',m=>{if(ok(m)&&x.mode==='ls'&&AR===x.my&&!AR.over){try{arEnd('peergone');}catch(e){}}});
+  setTimeout(()=>{if(X===x&&x.mode==='pend')lsLegacy(x);},6000);
+  try{return await _r.call(this,mode,Object.assign({},r,{S:x.S2}));}finally{if(X===x)X=null;lsPill(null);}};}
+{const _p=portraitScreen;portraitScreen=function(){if(X&&X.scr&&X.mode!=='legacy'){const land=innerWidth>innerHeight;document.body.classList.toggle('rotp',land);setScreen(180,HV,window.__m3hq?6:3);return;}return _p.apply(this,arguments);};}
+{const _k=arSk;arSk=function(){if(X&&(X.mode==='ls'||X.mode==='dead')&&X.skin)return X.skin;return _k.apply(this,arguments);};}
+const CLV=arCardLv;{arCardLv=function(sp){if(X&&X.inTick&&AR&&AR._lsc)return Math.max(1,AR._lsc[sp]|0||1);return CLV(sp);};}
+{const _l=arSpLv;arSpLv=function(sp){if(X&&X.inTick&&AR&&AR._lsp)return AR._lsp[sp]|0;return _l(sp);};}
+{const _s=arMpSnap;arMpSnap=function(A){if(X&&X.mode!=='legacy'&&X.mode!=='dead'&&!X.inTick&&A&&A.mp&&A.mp.S===X.S2)return;return _s.apply(this,arguments);};}
+function lsPeerEnd(why){const A=AR,M=A.mp;if(A.over)return;A.over=true;if(why!=='peerlost'&&why!=='peergone')try{M.S.emit('ax',{lost:1,w:A.wave});}catch(e){}A.result={mp:1,mode:M.mode};}
+{const _e=arEnd;arEnd=function(why){if(X&&X.inTick&&AR&&AR===X.pr)return lsPeerEnd(why);return _e.apply(this,arguments);};}
+{const _m=arMpEnd;arMpEnd=function(why){if(X&&X.inTick&&AR&&AR===X.pr)return lsPeerEnd(why);return _m.apply(this,arguments);};}
+{const _b=arBurst;arBurst=function(){if(X&&X.inTick){const R=Math.random;Math.random=X.rnd0;try{return _b.apply(this,arguments);}finally{Math.random=R;}}return _b.apply(this,arguments);};}
+/* toques: no lockstep viram "pedidos" marcados para daqui a ~150 ms */
+{const _f=arBuy;arBuy=function(){if(lsMine()){if(!AR.over)lsAct('b');return;}return _f.apply(this,arguments);};}
+{const _f=arMerge;arMerge=function(a,b){if(lsMine()){const ok=arCanMerge(a,b);if(ok)lsAct('m',a,b);return ok;}return _f.apply(this,arguments);};}
+{const _f=arMove;arMove=function(i,j){if(lsMine()){lsAct('v',i,j);return;}return _f.apply(this,arguments);};}
+{const _f=arUpgrade;arUpgrade=function(k){if(lsMine()){lsAct('u',k);return;}return _f.apply(this,arguments);};}
+{const _f=arHeroUse;arHeroUse=function(){if(lsMine()){lsAct('h');return;}return _f.apply(this,arguments);};}
+})();
+/* /ARLOCKSTEP07NOV */
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

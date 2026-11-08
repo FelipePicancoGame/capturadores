@@ -9275,7 +9275,7 @@ async function stgLaunch0(key,i){const bio=BIOMES[Math.floor(i/3)%BIOMES.length]
   const R=STGRES;STGRES=null;if(!R)return;const A=stgArr(key),old=A[i]||0;
   if(R.win){const first=!old,ns=Math.max(old,R.stars||1);A[i]=ns;const g=(first?3+(typeof WD!=='undefined'?WD:0)+(i%3===2?10:0):ecoRep())+(ns===3&&old<3?3:0);ecoWeek();const _g0=0,c=first?12+3*i:3+Math.floor(i/2);addGems(g);flags.coins=(flags.coins||0)+c;if(first&&i%5===4)essAdd(1,'chefe vencido');saveGame();
     tone([523,659,784,1047],.08);await say(`${first?'FASE CONCLUÍDA!':'Fase repetida!'} ${g?`+${g} cristal 💎 e `:''}+${c} moedas.${first&&i<STGT-1?' A próxima fase foi liberada no mapa!':''}`);}
-  else await say('Não foi dessa vez! Dá pra tentar de novo quantas vezes quiser (e repetir fases já vencidas pra ganhar mais).');
+  else{await say('Não foi dessa vez! Dá pra tentar de novo quantas vezes quiser (e repetir fases já vencidas pra ganhar mais).');try{await tioDica(key,i);}catch(e){}}
   if(R.win&&R.stars>=3&&Math.random()<.01)flags.pendCatch={sp:rgnSpecies(bio),lv:Math.max(5,teamAvg()-1)};await rareCatchPending();}
 const SMAPTEX={};function smapTex(bio){if(SMAPTEX[bio.k])return SMAPTEX[bio.k];{const GI=chaoImg(bio.k);if(GI)return SMAPTEX[bio.k]=GI;}try{const c=bioRecolor(bakeSvGround(),bio);SMAPTEX[bio.k]=c;return c;}catch(e){return null;}}
 /* MAPA DE FASES COM ROLAGEM: trilha subindo pelas regiões, todas as fases numeradas */
@@ -15975,6 +15975,23 @@ setTimeout(()=>{try{['cfg_fundo','cartao_opcao','botao_voltar','interruptor_liga
 {const DONE={};const _m=monAnimDraw;monAnimDraw=function(sp,act,...r){try{if(act==='walk'){const base=String(sp).replace('*','');if(/^(rochedo|pedrisco)$/.test(base)&&!DONE[base]){DONE[base]=1;
     for(const k of Object.keys(MONANIMSRC))if(k===base||k.startsWith(base+'@')){const W=MONANIMSRC[k].walk;if(W)W.fps=Math.max(W.fps||8,15);try{const o=MONANIM[k];if(o&&o.walk)o.walk.fps=Math.max(o.walk.fps||8,15);}catch(e){}}}}}catch(e){}return _m(sp,act,...r);};}
 /* /PEDRAPASSO */
+
+/* DIFICULDADE08NOV (Felipe: "tô no level 31 e a fase é 52; com melhorias e tudo eu tenho que NÃO conseguir. Tenho que estar um pouquinho acima, 20 levels é muito"):
+   do Mundo 2 em diante, na Muralha, se o seu time está mais de 5 níveis abaixo dos inimigos da fase, cada nível a menos deixa os inimigos 8% mais fortes (vida).
+   Com o time no nível certo nada muda. E quando perde, o Tio Felipe aparece com dicas de como melhorar. */
+function stgFoeLv(i){return Math.min(52,Math.max(2,Math.round(WBAL[0]+i*WBAL[1]+Math.floor(i/5))));}
+function wGapK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss)||!WL||STG.i<15)return 1;const g=stgFoeLv(STG.i)+3-(WL.avg||1);return g>5?Math.pow(1.08,g-5):1;}catch(e){return 1;}}
+{const _ws=wSpawn;wSpawn=function(){const w=WL,n0=w?w.foes.length:0;const r=_ws.apply(this,arguments);try{const k=wGapK();if(k>1&&WL)for(let j=n0;j<WL.foes.length;j++){const e=WL.foes[j];if(e.gk)continue;e.gk=1;e.max=Math.round(e.max*k);e.hp=Math.round(e.hp*k);if(e.shield)e.shield=Math.round(e.shield*k);}}catch(e){}return r;};}
+async function tioDica(key,i){const T=[],avg=teamAvg();
+  if(key==='wall'){const lv=stgFoeLv(i)+3;if(lv-avg>5)T.push(`Tio Felipe: Os inimigos dessa fase estão no nível ${lv} e o seu time no nível ${avg}. Primeiro fique mais forte: Expedição, batalhas no mato alto e Doces Mágicos dão nível!`);}
+  const D=['Tio Felipe: Escolha monstrinhos de tipo FORTE contra os inimigos dessa fase. Fogo contra planta, água contra fogo... cada tipo tem o seu ponto fraco!',
+    'Tio Felipe: Na LOJA, em PODERES, você deixa cada tipo de monstrinho mais forte. Vale muito a pena!',
+    'Tio Felipe: Use o ESPECIAL quando a barrinha do monstrinho encher. Guarde pros momentos de aperto!',
+    'Tio Felipe: Nas cartas do meio da partida, escolha as que ajudam o seu melhor monstrinho. Foco no mais forte!',
+    'Tio Felipe: Repetir fases que você já venceu dá moedas e cristais pra melhorar o time. Treino é assim mesmo: um pouquinho por dia!'];
+  for(let k=0;k<2;k++){const j=Math.floor(Math.random()*D.length);T.push(D.splice(j,1)[0]);}
+  for(const t of T)await say(t);}
+/* /DIFICULDADE08NOV */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

@@ -6145,7 +6145,7 @@ function renderWall0(){const w=WL,t=w.t,sh=w.shake?((w.shake%4<2)?1:-1):0;
   bCutin(w.ctx);
   if(w.cards){texts=[];const cs=w.cards;cs.t++;if(cs.t===1800&&!w.paused)setTimeout(()=>{try{if(WL&&WL.cards===cs)wPick(cs.i);}catch(e){}},0);b.fillStyle='rgba(10,8,28,.82)';b.fillRect(0,-WOY,W,H+WOY);
     T(`ONDA ${w.wave} VENCIDA!`,90,14,11,'center',C.yellow,170,C.ink);{const TH=w.nextTheme&&WTHEME[w.nextTheme];if(TH){rrect(6,23,168,27,7,'rgba(200,40,60,.85)',false);T(`PRÓXIMA: ${TH.n}`,90,25,7.6,'center',C.white,160,C.ink);T(TH.d,90,34.5,5.8,'center','#ffe0e6',160);T('Cartas com ✓ ajudam nessa onda!',90,42,5.4,'center','#fff3a0',160);}else T(cs.leg?'✦ CARTA LENDÁRIA APARECEU! ✦':'Escolha uma carta',90,40,8,'center',cs.leg?hueC(t,0,75):C.white,170,cs.leg?C.ink:null);}
-    cs.opts.forEach((cd,i)=>{const sel=i===cs.i,x=4+i*58,y=68-(sel?Math.min(10,(cs.selT=(cs.selI===i?(cs.selT||0)+1:(cs.selI=i,0)))*2):0)+Math.max(0,20-cs.t*2)*(i+1),cw=54,ch=128,rc=RAR[cd.r];
+    cs.opts.forEach((cd,i)=>{const sel=i===cs.i,x=4+i*(cs.opts.length>3?44:58),y=68-(sel?Math.min(10,(cs.selT=(cs.selI===i?(cs.selT||0)+1:(cs.selI=i,0)))*2):0)+Math.max(0,20-cs.t*2)*(i+1),cw=(cs.opts.length>3?41:54),ch=128,rc=RAR[cd.r];
       const C2I=asImg('cd2_'+Math.min(3,cd.r));if(C2I){const ch2=cw*2.58,y2=y-4,ccx=x+cw/2,pcy=y2+ch2*.31;
         if(cd.r===3){b.save();b.globalCompositeOperation='lighter';glowAt(ccx,y2+ch2/2,58+Math.sin(t/6)*5,'255,170,60',.4);b.restore();}
         if(sel){b.save();b.globalCompositeOperation='lighter';glowAt(ccx,y2+ch2/2,50,hex2rgb(rc).join(','),.6);b.restore();}
@@ -6159,7 +6159,7 @@ function renderWall0(){const w=WL,t=w.t,sh=w.shake?((w.shake%4<2)?1:-1):0;
         T(cd.n,ccx,y2+ch2*.475,6.6,'center',C.white,cw-10,C.ink);
         wrap(cd.d,cw-11,5.6).slice(0,7).forEach((l,k)=>T(l,ccx,y2+ch2*.575+k*6.6,5.6,'center','#4a3a2a',cw-10));
         T(lv?`NV ${lv}→${lv+1}`:(cd.noLv?'NA HORA':'NOVA!'),ccx,y2+ch2+1.5,6,'center',lv?'#9ec0ff':'#ff8a7a',cw-4,C.ink);
-        T(RARN[cd.r],ccx,Math.max(y2-7,51.5),5.6,'center',rc,cw,C.ink);
+        if(!cd.mcTag||w.duo||w.duoG)T(RARN[cd.r],ccx,Math.max(y2-7,51.5),5.6,'center',rc,cw,C.ink);
         if(cd.rec){rrect(x+cw-14,y2-2,16,10,5,'#2f9f4c',false);T('✓',x+cw-6,y2-1,7.5,'center',C.white,16,C.ink);}if(sel){const pu=.6+.4*Math.sin(t/4);b.save();b.lineWidth=2.4;b.strokeStyle=`rgba(255,226,60,${pu})`;b.beginPath();b.roundRect?b.roundRect(x-2,y2-3,cw+4,ch2+6,7):b.rect(x-2,y2-3,cw+4,ch2+6);b.stroke();b.restore();T('▼',ccx,y2-16+Math.sin(t/5)*1.5,9,'center','#ffe23c',20,C.ink);}return;}
       const CI=asImg('cd_'+Math.min(3,cd.r));if(CI){const ch2=cw*CI.naturalHeight/CI.naturalWidth,y2=y+8,ccx=x+cw/2,ccy=y2+ch2*.285,cr=cw*.255;
         if(cd.r===3){b.save();b.globalCompositeOperation='lighter';glowAt(ccx,y2+ch2/2,52+Math.sin(t/6)*5,'255,170,60',.4);b.restore();}
@@ -6173,7 +6173,7 @@ function renderWall0(){const w=WL,t=w.t,sh=w.shake?((w.shake%4<2)?1:-1):0;
         if(cd.mon!=null&&cd.ic)drawIcon(cd.ic,x+cw-9,y2+ch2*.44,.34);
         T(wrap(cd.n,cw-6,6.5)[0]||cd.n,ccx,y2+ch2*.5,6.5,'center',C.white,cw-8,C.ink);
         wrap(cd.d,cw-10,5.2).slice(0,4).forEach((l,k)=>T(l,ccx,y2+ch2*.665+k*6,5.2,'center','#4a3a2a',cw-9));
-        T(RARN[cd.r],ccx,Math.max(y2-7,51.5),5.6,'center',rc,cw,C.ink);
+        if(!cd.mcTag||w.duo||w.duoG)T(RARN[cd.r],ccx,Math.max(y2-7,51.5),5.6,'center',rc,cw,C.ink);
         if(cd.rec){rrect(x+cw-18,y2-3,20,10,5,'#2f9f4c',false);T('✓',x+cw-8,y2-2,7.5,'center',C.white,18,C.ink);}
         const lv=WL.lv[cd.key||cd.id]||0;T(cd.noLv?'NA HORA':lv?`NV ${lv} → ${lv+1}`:'NOVA!',ccx,y2+ch2+3,6.5,'center',lv?'#9ec0ff':'#ff8a7a',cw-4,C.ink);return;}
       if(cd.r===3){b.save();b.translate(x+cw/2,y+ch/2);b.rotate(t/40);for(let q=0;q<10;q++){b.rotate(Math.PI/5);b.fillStyle=`hsla(${(q*36+t*3)%360},95%,70%,.16)`;b.beginPath();b.moveTo(0,0);b.lineTo(-8,-110);b.lineTo(8,-110);b.closePath();b.fill();}b.restore();b.save();b.globalCompositeOperation='lighter';glowAt(x+cw/2,y+ch/2,60+Math.sin(t/6)*6,'255,120,230',.45);b.restore();}
@@ -6193,12 +6193,13 @@ function renderWall0(){const w=WL,t=w.t,sh=w.shake?((w.shake%4<2)?1:-1):0;
       wrap(cd.d,cw-8,6).slice(0,4).forEach((l,k)=>T(l,x+cw/2,y+82+k*8,6,'center','#5a5470',cw-6));
       if(cd.rec){rrect(x+cw-20,y-4,22,11,5,'#2f9f4c',false);T('✓',x+cw-9,y-3,8,'center',C.white,20,C.ink);}
       const lv=WL.lv[cd.key||cd.id]||0;T(cd.noLv?'NA HORA':lv?`NV ${lv} → ${lv+1}`:'NOVA!',x+cw/2,y+ch-13,6.5,'center',lv?'#2f4a9e':'#c23b3b',cw-8);});
-    {const EB=asImg('ui_bt_dourado'),pu=Math.sin(t/8)*.6;if(EB)nineBt(EB,22,213-pu,104,22);else{px(20,213,108,22,C.ink);px(21,214,106,20,'#f2b632');}T('ESCOLHER',74,219-pu,9.5,'center',C.white,96,C.ink);const ok=(w.rr||0)>0;(pillArt(130,214,44,20,ok?'#3f6ae0':'#8a8aa0')||rrect(130,214,44,20,7,ok?'#3f6ae0':'#8a8aa0'));T(ok?'TROCAR':'—',152,217.5,6.6,'center',C.white,40,C.ink);if(ok)T('grátis',152,225.5,4.8,'center','#e0ecff',40);}
-    {const left=Math.max(0,Math.ceil((1800-cs.t)/60));T(`Toque numa carta e em ESCOLHER · sozinho em ${left}s`,90,238.5,6,'center',left<=10?'#ffb0a0':'#c8c4e8',172);}
+    {const EB=asImg('ui_bt_dourado'),pu=Math.sin(t/8)*.6;if(EB)nineBt(EB,22,213-pu,104,22);else{px(20,213,108,22,C.ink);px(21,214,106,20,'#f2b632');}T('ESCOLHER',74,219-pu,9.5,'center',C.white,96,C.ink);const ok=(w.rr||0)>0;(pillArt(130,214,44,20,ok?'#3f6ae0':(w.duo||w.duoG)?'#8a8aa0':'#7a3ad8')||rrect(130,214,44,20,7,ok?'#3f6ae0':(w.duo||w.duoG)?'#8a8aa0':'#7a3ad8'));T((ok||!(w.duo||w.duoG))?'TROCAR':'—',152,217.5,6.6,'center',C.white,40,C.ink);if(ok)T('grátis',152,225.5,4.8,'center','#e0ecff',40);else if(!(w.duo||w.duoG))T('5💎',152,225.5,4.8,'center','#f0e0ff',40);}
+    {const left=Math.max(0,Math.ceil((1800-cs.t)/60));if(w.duo||w.duoG)T(`Toque numa carta e em ESCOLHER · sozinho em ${left}s`,90,238.5,6,'center',left<=10?'#ffb0a0':'#c8c4e8',172);else T(`sozinho em ${left}s`,74,229.2,4.4,'center',left<=10?'#ffb0a0':'#5a3a08',96);}
     {const tg=cs.opts[cs.i]?cardTargets(cs.opts[cs.i]):[];T('NÍVEL NA MURALHA',90,249,6.5,'center',C.yellow,172);
       w.defs.forEach((d,i)=>{const x=d.x,y=280,up=tg.includes(i),tc=spCol(d.sp);if(up){b.save();b.globalCompositeOperation='lighter';glowAt(x,y,20,hex2rgb(tc).join(','),.6);b.restore();}
         E(x,y+8,9,2.4,'rgba(0,0,0,.4)',0,false);drawMon(d.sp,x,y-(up?Math.abs(Math.sin(t/6))*3:0),.34);rrect(x-14,y+12,28,10,4,tc,false);
         T(up?`Nv ${d.wl}→${d.wl+1}`:`Nv ${d.wl}`,x,y+13.5,6,'center',C.white,26,C.ink);if(up)T('▲',x+12,y-14,8,'center',C.yellow,12,C.ink);});}}
+  if(w.cards){try{mcDrawCardsUI(w,t);}catch(e){}}
   if(w.paused){texts=[];b.fillStyle='rgba(10,8,28,.78)';b.fillRect(0,-WOY,W,H+WOY);T('PAUSADO',90,100,14,'center',C.white,170,C.ink);
     ['Continuar','Desistir'].forEach((s2,i)=>{const y=134+i*30,on=w.paused.i===i,BI=asImg(i?'ui_bt_vermelho':'ui_bt_verde');if(BI){if(on){b.save();b.globalCompositeOperation='lighter';glowAt(90,y+12,60,'255,220,120',.35);b.restore();}nineBt(BI,38,y,104,24);}else{px(40,y,100,24,C.ink);px(41,y+1,98,22,on?'#f2b632':'#3a3560');}T(s2,90,y+7.8,9,'center',C.white,92,C.ink);});}}
 async function wallMode(){if(!party.length)return;try{murPreload();}catch(e){}await fadeTo(1);/* MURESPERA08NOV (Felipe: 'apareceu uma arte de código antes do jogo carregar'): com a tela escura, espera o fundo e a muralha pintados carregarem (até 6 s) */try{const t0=performance.now();while(performance.now()-t0<6000){const k=WBGkey();if(!k||(asImg(k)&&asImg('wl_cv_wall')))break;await new Promise(r=>setTimeout(r,100));}}catch(e){}
@@ -15499,6 +15500,106 @@ wUpdate=function(){try{return DUO_O.wUpdate.apply(this,arguments);}finally{DUO_O
 /* fim da onda: as 3 cartas de cada um ao mesmo tempo (o dono vê as dele na tela normal de cartas; as do parceiro vão pela sala) */
 wOffer=function(){const w=WL;if(w&&w.duoG){duoGRr();return;}if(w&&w.duo){if(w.duo.cp)duoReroll(w,DUO_OW,true);else duoOfferAll(w);return;}return DUO_O.wOffer.apply(this,arguments);};
 wPick=function(i){const w=WL;if(w&&w.duoG){duoGPick(i);return;}if(w&&w.duo){duoPick(w,DUO_OW,i);return;}return DUO_O.wPick.apply(this,arguments);};
+/* MURCARTAS08NOV (08/nov, Felipe: "as cartas têm que ser importantes; se pegar a combinação errada perde; a pessoa tenta de novo com outras cartas,
+   tenta a sorte de uma épica/lendária; no futuro vender trocar/levar mais cartas por cristais"). Escolhas dele: "os dois juntos", "tirar a ajuda de tudo",
+   "já agora, com preços".
+   1) CONJUNTOS: cada carta tem um grupo (ATAQUE, ÁREA, CONTROLE, MURALHA ou o ELEMENTO do monstrinho). 3 do mesmo grupo liga um bônus forte; 5 liga o máximo.
+      Pegar carta de tudo quanto é grupo deixa a muralha fraca.
+   2) ONDAS COM TEMA pedem a carta certa: com uma carta ✓ contra o tema a onda vem mais fraca; sem ela, vem mais forte.
+   3) Os inimigos crescem mais a cada onda (+11% em vez de +7,5%): sem conjunto, a partir da onda 6–7 a muralha cai.
+   4) Melhoria permanente das cartas (🎟 Fichas) vale o dobro.
+   5) Sem ajuda automática no modo livre (antes a dificuldade baixava quando a muralha estava perdendo).
+   6) Cristais na escolha: TROCAR (1 grátis, depois 5💎), +1 CARTA (4ª opção, 10💎), LEVAR 2 (pega 2 das opções, 15💎). Não vale na Muralha em Dupla. */
+const MCT={ATAQUE:{n:'ATAQUE',c:'#e0503a',ids:['mdmg','mspd','mmulti','mcharge','dmg','spd','multi','fury','crit','critd','sniper','exec','first','hunt','energy','overcharge','titan','starfall','focus','nraio']},
+  AREA:{n:'ÁREA',c:'#e0a020',ids:['mpierce','mrng','pierce','splash','bounce','meteor','chain','swarm','rng','burn','nmirror']},
+  CONTROLE:{n:'CONTROLE',c:'#3a8ae0',ids:['slow','root','stun','roar','lama','curse','nice','nbarr']},
+  MURALHA:{n:'MURALHA',c:'#3faa4a',ids:['hp','fix','regen','bulwark','spike','thornwall','vamp','lanche','crystal','phoenix','nspike']}};
+const MCTB={ATAQUE:['+30% de dano em todos','+60% de dano em todos'],AREA:['+1 ricochete e explosão maior','+1 meteoro e +20% de dano'],CONTROLE:['inimigos 20% mais lentos','inimigos 35% mais lentos'],MURALHA:['muralha leva 30% menos dano','muralha leva 50% menos dano e se conserta'],EL:['+80% de dano desse tipo e +10% em todos','+150% de dano desse tipo e +25% em todos']};
+const MCTYN={fogo:'FOGO',agua:'ÁGUA',planta:'PLANTA',eletrico:'RAIO',rocha:'PEDRA',gelo:'GELO',inseto:'INSETO',normal:'NORMAL',fantasma:'FANTASMA'};
+function mcBase(id){return String(id||'').split('#')[0];}
+/* grupo de uma carta: monstrinho e carta de tipo vão pro ELEMENTO; o resto pelo MCT */
+function mcTag(cd,w){try{const id=mcBase(cd.key||cd.id);if(cd.mon!=null&&w.defs[cd.mon]&&/^m(dmg|spd|multi|charge|pierce|rng)$/.test(id)){return 'EL:'+SP[w.defs[cd.mon].sp].type;}
+  if(cd.need)return 'EL:'+cd.need;for(const k in MCT)if(MCT[k].ids.includes(id))return k;}catch(e){}return null;}
+function mcTagName(tg){if(!tg)return '';if(tg.startsWith('EL:'))return MCTYN[tg.slice(3)]||tg.slice(3).toUpperCase();return MCT[tg]?MCT[tg].n:tg;}
+function mcTagCol(tg){if(!tg)return '#888';if(tg.startsWith('EL:'))return TYPECOL[tg.slice(3)]||'#c08040';return MCT[tg]?MCT[tg].c:'#888';}
+function mcCount(w,tg){return (w.mcN&&w.mcN[tg])||0;}
+/* liga o bônus do conjunto quando chega em 3 e em 5 */
+function mcApply(w,tg,lvl){const el=tg.startsWith('EL:')?tg.slice(3):null;
+  if(el){const k=lvl===1?1.8:2.5/1.8;for(const d of w.defs)if(SP[d.sp].type===el)d.mDmg*=k;w.mDmg*=lvl===1?1.1:1.25/1.1;}
+  else if(tg==='ATAQUE')w.mDmg*=lvl===1?1.3:1.6/1.3;
+  else if(tg==='AREA'){if(lvl===1){w.bounce++;w.splash++;}else{w.meteor++;w.mDmg*=1.2;}}
+  else if(tg==='CONTROLE'){w.mcSlow=lvl===1?.8:.65;for(const e of w.foes)if(!e.dead&&!e._mcs){e.spd*=w.mcSlow;e._mcs=w.mcSlow;}else if(!e.dead&&e._mcs&&e._mcs!==w.mcSlow){e.spd*=w.mcSlow/e._mcs;e._mcs=w.mcSlow;}}
+  else if(tg==='MURALHA'){w.mcArmor=lvl===1?.7:.5;if(lvl===2){w.regen+=2;w.wall=Math.min(w.wallMax,w.wall+Math.round(w.wallMax*.25));}}
+  const txt=(el?MCTB.EL:MCTB[tg])[lvl-1];w.banner={t:130,text:`CONJUNTO ${mcTagName(tg)} ${lvl===1?'3':'5'}!`,sub:txt};try{tone([523,659,784,1047,1319],.08);}catch(e){}}
+function mcCounted(w,cd){const tg=mcTag(cd,w);if(!tg)return;w.mcN=w.mcN||{};w.mcL=w.mcL||{};w.mcN[tg]=(w.mcN[tg]||0)+1;const n=w.mcN[tg],lv=n>=5?2:n>=3?1:0;
+  while((w.mcL[tg]||0)<lv){w.mcL[tg]=(w.mcL[tg]||0)+1;mcApply(w,tg,w.mcL[tg]);}}
+/* tem carta contra o tema? (as cartas de monstrinho contam como a global: mmulti = multi …) */
+const MCALIAS={mmulti:'multi',mspd:'spd',mdmg:'dmg',mpierce:'pierce',mrng:'rng'};
+function mcHasCounter(w,th){const TH=WTHEME[th];if(!TH)return false;for(const k in (w.lv||{})){if(!w.lv[k])continue;const b2=mcBase(k);if(TH.counter.includes(b2)||TH.counter.includes(MCALIAS[b2]))return true;}return false;}
+/* — escolha das cartas — */
+const MC_O={wOffer,wPick,wSpawn,wWallDmg};
+function mcPrice(k){return {troca:5,mais:10,dois:15}[k];}
+wOffer=function(){const w=WL;MC_O.wOffer.apply(this,arguments);try{if(!w||!w.cards||w.duo||w.duoG)return;const cs=w.cards;
+    /* o conjunto que a pessoa está montando aparece com frequência: se ela já tem carta de um grupo, 1 das opções é desse grupo (as outras seguem sorteadas) */
+    try{const N=w.mcN||{},tops=Object.keys(N).filter(k=>N[k]>0&&N[k]<5).sort((a,b2)=>N[b2]-N[a]);const tg0=tops.length&&Math.random()<.75?tops[Math.random()<.7?0:Math.min(1,tops.length-1)]:null;
+      if(tg0&&!cs.opts.some(o=>mcTag(o,w)===tg0)){const keep=w.cards;let pool=[];for(let k=0;k<6&&pool.length===0;k++){w.cards=null;MC_O.wOffer();pool=((w.cards&&w.cards.opts)||[]).filter(o=>mcTag(o,w)===tg0&&!keep.opts.some(q=>(q.key||q.id)===(o.key||o.id)));}w.cards=keep;
+        if(pool.length){let j=keep.opts.findIndex(o=>!o.rec&&o.r<3);if(j<0)j=keep.opts.length-1;keep.opts[j]=pool[0];}}}catch(_){}
+    for(const o of cs.opts){const tg=mcTag(o,w);if(!tg)continue;const n=mcCount(w,tg)+1,nx=n<=3?3:5;o.mcTag=tg;
+      }}catch(e){}};
+function mcApplyCard(w,cd){/* mesmo efeito do ESCOLHER, sem passar de onda (pro LEVAR 2) */cd.f(w);wcuBonus(cd,w);
+  for(const di of cardTargets(cd)){const d=w.defs[di];d.wl++;d.mDmg*=1.05;d.lvT=50;wPop(d.x,d.y-32,`NÍVEL ${d.wl}!`,C.yellow,9);}
+  if(!cd.noLv)w.lv[cd.key||cd.id]=(w.lv[cd.key||cd.id]||0)+1;if(!w.owned.some(o=>(o.key||o.id)===(cd.key||cd.id)))w.owned.push(cd);mcCounted(w,cd);}
+wPick=function(i){const w=WL;if(!w||!w.cards||w.duo||w.duoG)return MC_O.wPick.apply(this,arguments);const cs=w.cards,cd=cs.opts[i];if(!cd)return;
+  if(cs.dois&&!cs.doisFeito){cs.doisFeito=1;mcApplyCard(w,cd);cs.opts.splice(i,1);cs.i=0;part(90,130,RAR[cd.r],24,{sp:3,life:30,grav:.04,size:2});try{tone([523,784],.06);}catch(e){}return;}
+  mcCounted(w,cd);return MC_O.wPick.apply(this,arguments);};
+/* compra com cristais */
+function mcBuy(k){const w=WL;if(!w||!w.cards||w.duo||w.duoG)return;const cs=w.cards,p=mcPrice(k);
+  if(k==='troca'&&(w.rr||0)>0){w.rr--;w.cards=null;wOffer();try{tone([523,784],.06);}catch(e){}return;}
+  if(k==='mais'&&(cs.mais||cs.opts.length>=4))return;if(k==='dois'&&cs.dois)return;
+  if(gems()<p){try{tone([300,240],.06,'square',.03);}catch(e){}wPop(90,200,`Faltam ${p-gems()}💎`,'#ff9a8a',9);return;}
+  flags.gems=gems()-p;saveGame();try{tone([880,1175,1568],.06);}catch(e){}
+  if(k==='troca'){w.cards=null;wOffer();return;}
+  if(k==='dois'){cs.dois=1;wPop(90,200,'Escolha 2 cartas!',C.yellow,10);return;}
+  if(k==='mais'){cs.mais=1;/* mais uma opção do mesmo sorteio */const keep=w.cards;w.cards=null;MC_O.wOffer();const extra=(w.cards&&w.cards.opts||[]).find(o=>!keep.opts.some(q=>(q.key||q.id)===(o.key||o.id)));w.cards=keep;
+    if(extra){const tg=mcTag(extra,w);if(tg){const n=mcCount(w,tg)+1,nx=n<=3?3:5;extra.mcTag=tg;}keep.opts.push(extra);keep.i=keep.opts.length-1;}}}
+/* — ondas com tema: com carta contra = mais fraca; sem = mais forte — */
+wSpawn=function(){const w=WL;const n0=w?w.foes.length:0;const r=MC_O.wSpawn.apply(this,arguments);try{if(!w||w.duo||w.duoG)return r;const e=w.foes[w.foes.length-1];if(!e||w.foes.length===n0||e._mc)return r;e._mc=1;
+    /* inimigos crescem mais a cada onda nas fases (cartas fazem falta): +11% por onda em vez de +7,5% */
+    if(STG&&STG.mode==='wall'&&!STG.first&&w.wave>1){const k=Math.pow(1.11/1.075,w.wave-1);e.max=e.hp=Math.round(e.hp*k);if(e.shield)e.shield=Math.round(e.shield*k);}
+    if(w.mcSlow){e.spd*=w.mcSlow;e._mcs=w.mcSlow;}
+    const th=w.theme;if(th&&!e.boss){const has=w.mcHas;if(th==='enxame'){if(has){e.max=e.hp=Math.max(1,Math.round(e.hp*.8));}}
+      else if(th==='blindado'){if(has){if(Math.random()<.5)e.armorW=0;}else{e.max=e.hp=Math.round(e.hp*1.3);}}
+      else if(th==='voador'){if(has){if(Math.random()<.5)e.wdodge=0;}else{e.max=e.hp=Math.round(e.hp*1.3);}}
+      else if(th==='veloz'){if(has){e.spd/=1.2;}else{e.spd*=1.2;}}
+      else if(th==='cerco'){if(has){if(e.archer&&Math.random()<.5)e.archer=0;}else if(!e.archer&&Math.random()<.25&&e.kind!=='tank'){e.archer=1;e.aStop=172+Math.random()*28;e.acd=60+Math.floor(Math.random()*90);}}}}catch(er){}return r;};
+/* muralha com o conjunto MURALHA leva menos dano */
+wWallDmg=function(e,mult){const v=MC_O.wWallDmg.apply(this,arguments);const w=WL;if(!w||!w.mcArmor)return v;const x=v*w.mcArmor,f=Math.floor(x);return f+(Math.random()<x-f?1:0);};
+/* começo de cada onda: avisa se tem carta contra o tema; no modo livre não ajusta mais a dificuldade */
+(function(){const P=wPick;wPick=function(i){const w=WL;const before=w&&w.wave;const dd=w&&w.dda;const r=P.apply(this,arguments);try{if(w&&w.wave!==before&&!w.duo&&!w.duoG){
+      if(!(STG&&STG.mode==='wall'))w.dda=dd;/* sem ajuda automática */
+      w.mcHas=w.theme?mcHasCounter(w,w.theme):false;if(w.theme&&w.banner)w.banner.sub=w.mcHas?'✓ Você tem carta contra: onda mais fraca!':'✗ Sem carta contra: onda mais forte!';
+      if(w.theme==='enxame'&&!w.mcHas)w.toSpawn=Math.round(w.toSpawn*1.25);}}catch(e){}return r;};})();
+/* melhoria permanente das cartas vale o dobro */
+(function(){const B0=wcuBonus;wcuBonus=function(cd,w){try{const L=wcuLv(cd.id);if(!L||cd.mon!=null)return;const B2=WCU_B[cd.id];if(B2)B2[1](w,L*2);else w.mDmg*=1+.06*L;}catch(e){}};
+  const T0=wcuBonusTxt;wcuBonusTxt=function(c){const s=T0(c);return s.replace(/(\d+(?:,\d+)?)/,m=>{const v=parseFloat(m.replace(',','.'))*2;return String(Math.round(v*10)/10).replace('.',',');});};})();
+/* desenho dos botões de cristais e da etiqueta do conjunto (por cima da tela de cartas) */
+function mcDrawCardsUI(w,t){const cs=w.cards;if(!cs||w.duo||w.duoG)return;
+  /* etiqueta do grupo em cada carta */
+  const pitch=cs.opts.length>3?44:58,cw=cs.opts.length>3?41:54;
+  cs.opts.forEach((cd,i)=>{if(!cd.mcTag)return;const x=4+i*pitch,n=mcCount(w,cd.mcTag)+1,nx=n<=3?3:5,col=mcTagCol(cd.mcTag),liga=n===3||n===5;
+    rrect(x,55,cw,11,5,RAR[cd.r],false);rrect(x+1,56,cw-2,9,4,col,false);T(`${mcTagName(cd.mcTag)} ${Math.min(n,nx)}/${nx}${liga?' LIGA!':''}`,x+cw/2,57.2,5,'center',liga?C.yellow:C.white,cw-4,C.ink);if(liga&&(t>>3)%2)T('★',x+cw-4,52,7,'center',C.yellow,10,C.ink);});
+  /* botões: +1 CARTA e LEVAR 2 (a TROCAR já existe no lugar dela) */
+  const g=gems(),y=237,bh=11;const B=[['mais',`+1 CARTA · ${mcPrice('mais')}💎`,8,80,!(cs.mais||cs.opts.length>=4)],['dois',cs.dois?(cs.doisFeito?'LEVOU 2 ✓':'ESCOLHA 2!'):`LEVAR 2 · ${mcPrice('dois')}💎`,92,80,!cs.dois]];
+  w._mcHits=[];for(const [k,txt,x,bw,on] of B){const can=on&&g>=mcPrice(k);rrect(x,y,bw,bh,5,on?(can?'#7a3ad8':'#5a5070'):'#2f9f4c',false);T(txt,x+bw/2,y+2.4,5.6,'center',C.white,bw-4,C.ink);if(on)w._mcHits.push([k,x,y,bw,bh]);}
+  T(`💎 ${g}`,174,4,6.5,'right','#e8d8ff',40,C.ink);}
+/* toques: cartas com 4 opções e os botões novos */
+(function(){const P=wTap;wTap=function(x,y){const w=WL;if(w&&w.cards&&!w.duo&&!w.duoG){const cs=w.cards;
+    for(const [k,bx,by,bw,bh] of (w._mcHits||[]))if(x>=bx&&x<=bx+bw&&y>=by-2&&y<=by+bh+2){mcBuy(k);return;}
+    if(y>=210&&y<=237&&x>=128&&x<=176&&!((w.rr||0)>0)){mcBuy('troca');return;}
+    if(cs.opts.length>3&&y>=56&&y<=209){const i=Math.floor((x-4)/44);if(i>=0&&i<cs.opts.length)cs.i=i;return;}}
+  return P.apply(this,arguments);};})();
+/* /MURCARTAS08NOV */
+
 function duoOfferFor(w,p){const all=w.defs,sub=all.filter(d=>d._ow===p),pc=DUO_OW,keep=w.cards;DUO_OW=p;w.defs=sub;
   try{DUO_O.wOffer();const cs=w.cards;if(cs){for(const o of cs.opts)if(o.mon!=null)o.mon=all.indexOf(sub[o.mon]);cs.ow=p;cs.q=++w.duo.cseq;}return cs;}
   finally{w.defs=all;DUO_OW=pc;w.cards=keep;}}

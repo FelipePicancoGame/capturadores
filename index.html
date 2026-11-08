@@ -5943,7 +5943,7 @@ function murMonDraw(d,i,oy,sx,sy){const I=murImg('n_'+String(d.sp).replace('*','
 /* ATKANIM (02/nov, Felipe: "adiciona postura de ataque e ataques nos jogos"): na Muralha os monstrinhos de costas usam as animações do Buchecha —
    parados ficam na postura de ataque (pronto) e, quando atiram, fazem o golpe inteiro. Quem não tem animação continua com a arte parada. */
 function atkAnimT(d,w){const now=performance.now();const f=d.fire||0;if(f>3&&d._aF!==2){d._aT=now;d._aF=2;}if(f<=0&&d._aF===2)d._aF=0;return d._aT?now-d._aT:1e9;}
-{const _mmd=murMonDraw;murMonDraw=function(d,i,oy,sx,sy){try{if(!REDUCED){const base=String(d.sp).replace('*',''),S=MONANIM[base+'@costas'],I=murImg('n_'+base),r=murLW('m'+(d._mk!=null?d._mk:Math.min(3,i)));
+{const _mmd=murMonDraw;murMonDraw=function(d,i,oy,sx,sy){try{if(!REDUCED){if(String(d.sp).replace('*','')==='ratonga')throw 0;/* RATOFIXO08NOV (Felipe: 'arte do rato fica mudando e está com arte antiga'): a animação de costas da Ratonga é a antiga; na Muralha fica só a arte nova */const base=String(d.sp).replace('*',''),S=MONANIM[base+'@costas'],I=murImg('n_'+base),r=murLW('m'+(d._mk!=null?d._mk:Math.min(3,i)));
     const ref=S&&(S.idle&&S.idle.ok?S.idle:S.attack&&S.attack.ok?S.attack:null);
     if(S&&ref&&I&&r){const k=Math.min(r.w/I.naturalWidth,r.h/I.naturalHeight),dh=I.naturalHeight*k,st=(typeof MONIMGST!=='undefined'&&MONIMGST[base])||1,mw=[0,46,54,62][st]*1.1*monK(base)*monSP(base),mh=[0,42,50,58][st]*1.1*monK(base)*monSP(base),scA=Math.min(mw/ref.bw,mh/ref.bh),sc=dh/Math.max(1,ref.bh*scA);
       const el=atkAnimT(d),A=S.attack&&S.attack.ok?S.attack:null,fps=(A&&(A.fps||MONANIMFPS.attack))||14,dur=A?A.n/fps*1000:0,act=A&&el<dur?'attack':'idle',fix=act==='attack'?Math.floor(el*fps/1000):undefined;
@@ -8708,7 +8708,7 @@ async function m3End(){const S=M3,st=m3Stars(),P=m3St(),win=S.won;let coins=0;
   if(win){coins=Math.min(150,25+Math.round(S.score/40));flags.coins=(flags.coins||0)+coins;P.stars[S.lv]=Math.max(P.stars[S.lv]||0,st);if(S.lv>=P.lv)P.lv=S.lv+1;}
   P.best[S.lv]=Math.max(P.best[S.lv]||0,S.score);saveGame();await new Promise(r=>setTimeout(r,500));
   const q=win?`Fase ${S.lv} completa! ${'⭐'.repeat(Math.max(1,st))}  ${S.score} pontos${S.bonus?` (bônus ${S.bonus} pelas jogadas que sobraram)`:''}  +${coins} moedas`:`Acabaram as jogadas! ${S.L.type==='collect'?'Faltou juntar os monstrinhos.':S.L.type==='ice'?(()=>{const n=S.ice.reduce((a,row)=>a+row.filter(v=>v).length,0);return `Ainda ${n===1?'ficou 1 pedra':'ficaram '+n+' pedras'} de gelo no tabuleiro (as que brilham em vermelho).`;})():`Você fez ${S.score} de ${S.goal} pontos.`}`;
-  const j=await choose(win?['PRÓXIMA FASE','SAIR']:['TENTAR DE NOVO','SAIR'],{cadAsk:{q,nf:1,cols:['#1f7a3a','#8a2f2f']},noCancel:true});
+  const j=await (()=>{const p=choose(win?['PRÓXIMA FASE','SAIR']:['TENTAR DE NOVO','SAIR'],{cadAsk:{q:win?q+' · Próxima fase já já…':q,nf:1,cols:['#1f7a3a','#8a2f2f'],auto:win?1:0},noCancel:true});/* AUTOPROX08NOV (Francisco: 'avançar automaticamente pro próximo nível quando atingir a meta') */if(win)setTimeout(()=>{try{const u=ui[ui.length-1];if(u&&u.cfg&&u.cfg.cadAsk&&u.cfg.cadAsk.auto){ui.pop();u.res(0);}}catch(e){}},4000);return p;})();
   if(j===0){if(!(await enPay())){const d=S.done;S.done=null;if(d)d();return;}m3New(win?S.lv+1:S.lv);m3Intro();return;}const d=S.done;S.done=null;if(d)d();}
 function m3Intro(){const L=M3.L;M3.banner={t:0,txt:L.type==='collect'?'JUNTE OS MONSTRINHOS!':L.type==='ice'?'QUEBRE TODO O GELO!':'FAÇA OS PONTOS!'};}
 async function matchMode(){if(!party.length){await say('Você precisa de um monstrinho!');return;}const P=m3St();m3Swipe();
@@ -8982,7 +8982,7 @@ const M3P4=['RAJADA DE FOGO!','JATO D’ÁGUA!','CHICOTE DE CIPÓ!','PEDRA ROLAN
    O especial de 4 solta a magia do monstrinho dele quando explode. E o jogo ficou mais fácil. */
 {const _b=m3Blast;m3Blast=function(cells,born,label){const S=M3;_b(cells,born,label);if(!S||!S.pend)return;const C=S.cols;
   for(const id of S.pend.kill){const r=Math.floor(id/C),c=id%C,q=S.g[r][c];if(q&&(q.sp===1||q.sp===2))try{m3Shot4([r,c],q.sp===2,q.c);}catch(e){}}};}
-function m3TapSpecial(r,c){const S=M3,q=m3Cell(r,c);if(!S||S.phase!=='idle'||!q||!q.sp)return false;S.sel=null;S.idle=0;S.combo=0;
+function m3TapSpecial(r,c){const S=M3,q=m3Cell(r,c);if(!S||S.phase!=='idle'||!q||!q.sp)return false;if(S.moves<=0)return false;S.sel=null;S.idle=0;S.combo=0;S.moves--;/* ESPGASTA08NOV (Francisco: 'dá pra ficar explodindo sem gastar tentativa'): tocar numa peça especial gasta 1 jogada */
   if(q.sp===3){const cnt=[0,0,0,0,0,0];for(const row of S.g)for(const p of row)if(p&&!p.sp)cnt[p.c]++;const k=cnt.indexOf(Math.max(...cnt)),L=[[r,c]];q.sp=0;for(let y=0;y<S.rows;y++)for(let x=0;x<S.cols;x++)if(S.g[y][x]&&S.g[y][x].c===k)L.push([y,x]);m3Blast(L,[],'ESTRELA!');}
   else m3Blast([[r,c]],[],q.sp===4?'BOMBA!':M3P4[q.c]);
   try{tone([523,784],.05);}catch(e){}return true;}
@@ -16422,6 +16422,12 @@ tioShow=function(lines){return new Promise(res=>{try{if(!lines||!lines.length)re
   setTimeout(()=>{sp.classList.remove('vira');anim('acenar',false,()=>{if(!ok){ok=true;show();}});bl.classList.add('on');setTimeout(()=>{if(!ok){ok=true;show();}},1500);},2450);
   }catch(e){res();}});};
 /* /TIOANIM08NOV */
+
+/* GUARDADUPLA08NOV (Felipe: 'pra ele ajudar como se fosse dupla'): na 1ª Muralha os monstrinhos do Guarda Bento aparecem marcados como parceiro, igual na Muralha em Dupla */
+{const _rw=renderWall;renderWall=function(){_rw.apply(this,arguments);try{const w=WL;if(!w||w.duo||w.duoG||w.cards||w.paused)return;if(!w.defs.some(d=>d.m&&d.m.guarda))return;const OY=Math.max(0,H-320)-wK(),t=w.t;
+  w.defs.forEach((d,i)=>{const g=!!(d.m&&d.m.guarda),col=g?'#3f6ae0':'#2fb855';b.save();b.beginPath();b.ellipse(d.x,d.y+OY+10,15,4.6,0,0,Math.PI*2);b.lineWidth=1.4;b.strokeStyle=col;b.globalAlpha=.75+.25*Math.sin(t/8+i);b.stroke();b.restore();
+    let y=d.y+OY-48;try{if(murUI()){const r=murLU('c'+(d._mk!=null?d._mk:i));if(r)y=r.y+OY-10;const v=murLU('vida');if(v)y=Math.min(y,v.y+OY-8);}}catch(e){}duoPill(d.x,y,g?'GUARDA BENTO':'VOCÊ',col);});}catch(e){}};}
+/* /GUARDADUPLA08NOV */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

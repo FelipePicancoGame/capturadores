@@ -9285,12 +9285,12 @@ async function stageMap(key){const st={key,sel:null,t:0};
     if(j===97){if(key==='surv')await svMetaShop();else if(key==='wall')await wallCardShop();else await shopMenu(MODEUPS[key]);continue;}
     if(j===100){await stgLaunch(key,st.world*STGN+st.sel);const S3=stgPage(key,st.world);if(S3.next>st.sel)st.sel=S3.next;for(let w=1;w<STGW;w++)if(st.world===w-1&&stgWOpen(key,w)&&st.sel===STGN-1&&!flags['w'+(w+1)+'ok_'+key]){flags['w'+(w+1)+'ok_'+key]=1;saveGame();await say(`MUNDO ${w+1} liberado! Toque em MUNDO ${w+1} lá em cima: cenários novos e inimigos bem mais fortes.`);}continue;}}}
 async function stgLaunch(key,i){flags.emJogo={k:'stg',key,i,t:Date.now()};saveGame();try{return await stgLaunch0(key,i);}finally{delete flags.emJogo;try{__fotoApagar();}catch(e){}try{saveGame();}catch(e){}}}
-async function stgLaunch0(key,i){const bio=BIOMES[Math.floor(i/3)%BIOMES.length];
+async function stgLaunch0(key,i){const bio=key==='wall'?murBioI(i):BIOMES[Math.floor(i/3)%BIOMES.length];
   if(key==='exp'){const m0=flags.expMax||1;flags.expStage=Math.min(i+1,m0);await fadeTo(1);await expedition();await wait(1);const m1=flags.expMax||1;if(m1>m0){let g=0;for(let k=m0;k<m1;k++){g+=3+(k%5===0?10:0);ecoWeek();}if(g)addGems(g);saveGame();await say(`Fase nova liberada no mapa!${g?` +${g} ${g>1?'cristais':'cristal'} 💎`:''}`);}await rareCatchPending();return;}
   await bioTipShow(key,bio);STG={mode:key,i,bio,mult:.85+Math.min(i,15)*.1+Math.max(0,i-15)*.06};STGRES=null;
   try{await ({wall:wallMode,td:towerMode,surv:survMode,arena:arenaStage})[key]();}finally{STG=null;}
   const R=STGRES;STGRES=null;if(!R)return;const A=stgArr(key),old=A[i]||0;
-  if(R.win){const first=!old,ns=Math.max(old,R.stars||1);A[i]=ns;const g=(first?3+(typeof WD!=='undefined'?WD:0)+(i%3===2?10:0):ecoRep())+(ns===3&&old<3?3:0);ecoWeek();const _g0=0,c=first?12+3*i:3+Math.floor(i/2);addGems(g);flags.coins=(flags.coins||0)+c;if(first&&i%5===4)essAdd(1,'chefe vencido');saveGame();
+  if(R.win){const first=!old,ns=Math.max(old,R.stars||1);A[i]=ns;const g=(first?3+(typeof WD!=='undefined'?WD:0)+((key==='wall'?i%5===4:i%3===2)?10:0):ecoRep())+(ns===3&&old<3?3:0);ecoWeek();const _g0=0,c=first?12+3*i:3+Math.floor(i/2);addGems(g);flags.coins=(flags.coins||0)+c;if(first&&i%5===4)essAdd(1,'chefe vencido');saveGame();
     tone([523,659,784,1047],.08);await say(`${first?'FASE CONCLUÍDA!':'Fase repetida!'} ${g?`+${g} cristal 💎 e `:''}+${c} moedas.${first&&i<STGT-1?' A próxima fase foi liberada no mapa!':''}`);}
   else{await say('Não foi dessa vez! Dá pra tentar de novo quantas vezes quiser (e repetir fases já vencidas pra ganhar mais).');try{await tioDica(key,i);}catch(e){}}
   if(R.win&&R.stars>=3&&Math.random()<.01)flags.pendCatch={sp:rgnSpecies(bio),lv:Math.max(5,teamAvg()-1)};await rareCatchPending();}
@@ -9361,7 +9361,7 @@ function smapScroll(u,st,t,key,top,bot){{const _I=asImg('smap_bg_campo');if(_I)S
 function drawStageMap(u){if(u.cfg.smap.key==='wall'&&mfReady())return drawStageMapMF(u);const st=u.cfg.smap;st.t++;const t=st.t,key=st.key,WD=st.world||0,OFF=WD*STGN,S2=stgPage(key,WD),SA=stgState(key),top=48,bot=H-80,rh=(bot-top)/5;u.rects=[];u.boxR=null;
   px(0,0,W,H,'#1c1636');
   const MAPI=null;/* 18/10: Muralha também usa o mapa de rolagem */if(MAPI){const sc=Math.max(W/MAPI.naturalWidth,(bot-top)/MAPI.naturalHeight),iw=MAPI.naturalWidth*sc,ih=MAPI.naturalHeight*sc;b.save();b.imageSmoothingEnabled=true;b.drawImage(MAPI,(W-iw)/2,top+(bot-top-ih)/2,iw,ih);b.restore();}
-  if(!MAPI){smapScroll(u,st,t,key,top,bot);}else{
+  if(!MAPI){(key==='wall'?murMapScroll:smapScroll)(u,st,t,key,top,bot);}else{
   for(let r=0;r<5;r++){const bio=BIOMES[WD*5+r],y0=bot-(r+1)*rh;if(MAPI){T(bio.n,W-4,y0+2,5.4,'right','rgba(255,255,255,.85)',W/2,'rgba(0,0,0,.45)');continue;}
     const tex=smapTex(bio),wv=x=>Math.sin(x/17+r*2.1)*2.6+Math.sin(x/7+r)*1.2;
     b.save();b.beginPath();b.moveTo(0,y0+rh+(r?6:0));if(r)for(let x=0;x<=W;x+=4)b.lineTo(x,y0+rh+4+wv(x));else b.lineTo(W,y0+rh);b.lineTo(W,y0+(r===4?0:-1));b.lineTo(0,y0+(r===4?0:-1));b.closePath();
@@ -9397,8 +9397,8 @@ function drawStageMap(u){if(u.cfg.smap.key==='wall'&&mfReady())return drawStageM
   {const bx=6,by=33,bw2=W-12,sw=bw2/STGW;rrect(bx,by,bw2,13,6.5,'rgba(16,12,40,.85)',false);for(let k=0;k<STGW;k++){const on=WD===k,op=stgWOpen(key,k),x=bx+1+k*sw,ww=sw-2;((on&&pillArt(x,by+1,ww,11,['#3fae5a','#c23b6a','#7a4ad8'][k]))||rrect(x,by+1,ww,11,5.5,on?['#3fae5a','#c23b6a','#7a4ad8'][k]:'rgba(255,255,255,.08)',false));T(op?`MUNDO ${k+1}`:`MUNDO ${k+1} 🔒`,x+ww/2,by+3,5.4,'center',on?C.white:op?'#c8c4e8':'#7a76a0',ww-4,on?C.ink:null);u.rects.push({x,y:by,w:ww,h:13,i:900+k});}}
   dCoin(W-50,9,.7);T(String(flags.coins||0),W-45,4.5,7,'left',C.yellow,40,C.ink);drawCrystal(W-50,22,.42);T(String(gems()),W-45,18,7,'left','#e0c8ff',40,C.ink);
   /* painel */
-  const py=H-78,i=st.sel,gi=OFF+i,bio=BIOMES[WD*5+Math.floor(i/3)],stars=S2.stars[i];rrect(4,py,W-8,52,9,'rgba(16,12,40,.92)',false);b.beginPath();if(b.roundRect){b.roundRect(4,py,W-8,52,9);b.lineWidth=1.2;b.strokeStyle=I.col;b.stroke();}
-  T(`FASE ${gi+1} · ${bio.n}${i%3===2?' · CHEFE':''}${WD?['',' · DIFÍCIL',' · LENDÁRIO'][WD]:''}`,10,py+4,7.2,'left',WD?'#ffb4c8':C.white,W-80);T(stgObjTxt(key,gi),10,py+15,6,'left','#e8e4ff',W-82);
+  const py=H-78,i=st.sel,gi=OFF+i,bio=key==='wall'?murBioI(gi):BIOMES[WD*5+Math.floor(i/3)],stars=S2.stars[i];rrect(4,py,W-8,52,9,'rgba(16,12,40,.92)',false);b.beginPath();if(b.roundRect){b.roundRect(4,py,W-8,52,9);b.lineWidth=1.2;b.strokeStyle=I.col;b.stroke();}
+  T(`FASE ${gi+1} · ${bio.n}${(key==='wall'?i%5===4:i%3===2)?' · CHEFE':''}${WD?['',' · DIFÍCIL',' · LENDÁRIO'][WD]:''}`,10,py+4,7.2,'left',WD?'#ffb4c8':C.white,W-80);T(stgObjTxt(key,gi),10,py+15,6,'left','#e8e4ff',W-82);
   if(key==='exp')T(stars?'Já vencida: repita pra treinar e juntar moedas':`1ª vez: +3 💎${gi%5===4?' +10 💎 do chefe':''} e libera a próxima`,10,py+25,5.4,'left','#fff3c8',W-80);
   else T(stars?`Repetir: +${6+gi} moedas e +1 💎 (até 5 por dia)`:`1ª vez: +${3+WD+(i%3===2?10:0)} 💎 (+3 com 3★) e +${30+6*gi} moedas`,10,py+25,5.2,'left','#fff3c8',W-84);
   for(let s3=0;s3<3;s3++)star5(14+s3*8,py+40,3.4,s3<stars?C.yellow:'rgba(255,255,255,.3)');
@@ -14525,7 +14525,7 @@ setTimeout(()=>{try{for(const k in MFART)mfI(k);}catch(e){}},500);
 function mfReady(){return ['fundo_cabecalho','titulo','painel_fase','jogar','voltar','historia','cartas','aba_ativa','aba_normal','aba_trancada','saldo_moedas','saldo_cristais','selo_fase','estrela_vazia','estrela_cheia'].every(k=>mfI(k));}
 function drawStageMapMF(u){const st=u.cfg.smap;st.t++;const t=st.t,key=st.key,WD=st.world||0,OFF=WD*STGN,S2=stgPage(key,WD),SA=stgState(key);u.rects=[];u.boxR=null;
   const s=W/1080,HL=H/s,top=350*s,bot=H-610*s,yb=y=>(y+HL-1920)*s;
-  px(0,0,W,H,'#27124e');{const _I=asImg('smap_bg_campo');if(_I)SMSP=Math.max(38,W*_I.naturalHeight/_I.naturalWidth/3);if(st.mfS!==SMSP+'|'+H){st.mfS=SMSP+'|'+H;st.scroll=null;}}smapScroll(u,st,t,key,top,bot);
+  px(0,0,W,H,'#27124e');{const _I=asImg('smap_bg_campo');if(_I)SMSP=Math.max(38,W*_I.naturalHeight/_I.naturalWidth/3);if(st.mfS!==SMSP+'|'+H){st.mfS=SMSP+'|'+H;st.scroll=null;}}(key==='wall'?murMapScroll:smapScroll)(u,st,t,key,top,bot);
   const im=(k,x,y,w,h,foot)=>{const I=mfI(k);if(!I)return;b.save();b.imageSmoothingEnabled=true;b.drawImage(I,x*s,foot?yb(y):y*s,w*s,h*s);b.restore();};
   const tx=(str,x,y,fp,col,foot,maxw,sh)=>{const sz=fp*s;T(str,x*s,(foot?yb(y):y*s)-sz*.55,sz,'center',col,maxw?maxw*s:0,sh||null);};
   /* topo */
@@ -14537,7 +14537,7 @@ function drawStageMapMF(u){const st=u.cfg.smap;st.t++;const t=st.t,key=st.key,WD
   for(let k=0;k<STGW;k++){const on=WD===k,op=stgWOpen(key,k),x=10+k*360;im(on?'aba_ativa':op?'aba_normal':'aba_trancada',x,230,340,110);
     tx(`MUNDO ${k+1}`,x+(op?170:148),289,35,op?'#fff8e2':'#c9c2d4',0,250,'#2a0f45');u.rects.push({x:x*s,y:230*s,w:340*s,h:110*s,i:900+k});}
   /* painel da fase */
-  const i=st.sel,gi=OFF+i,bio=BIOMES[WD*5+Math.floor(i/3)],stars=S2.stars[i],boss=i%3===2;
+  const i=st.sel,gi=OFF+i,bio=key==='wall'?murBioI(gi):BIOMES[WD*5+Math.floor(i/3)],stars=S2.stars[i],boss=key==='wall'?murBoss(gi):i%3===2;
   im('painel_fase',20,1310,1040,280,1);im('selo_fase',66,1346,210,65,1);tx(`FASE ${gi+1}`,171,1379,29,'#fff7df',1,190,'#2a0f45');
   tx(bio.n+(WD?['',' · DIFÍCIL',' · LENDÁRIO'][WD]:''),boss?558:620,1379,47,'#321746',1,boss?520:700);
   if(boss){im('selo_chefe',850,1346,175,64,1);tx('CHEFE',956,1378,25,'#fff7df',1,150,'#5a0f1a');}
@@ -14551,6 +14551,57 @@ function drawStageMapMF(u){const st=u.cfg.smap;st.t++;const t=st.t,key=st.key,WD
   [['voltar','VOLTAR',99,10],['historia','HISTÓRIA',98,370],['cartas',key==='wall'?'CARTAS':'MELHORIAS',97,730]].forEach(([k,l,id,x])=>{im(k,x,1800,340,110,1);tx(l,x+(k==='voltar'?209:k==='historia'?214:217),1855,31,'#fff8e8',1,200,'#1a0f30');u.rects.push({x:x*s,y:yb(1800),w:340*s,h:110*s,i:id});});
   if(modeBuyN(key)>0)im('notificacao',1010,1795,48,48,1);}
 /* /MFKIT */
+/* MURMAPA08NOV (Felipe 08/nov, escolheu "1"): MURALHA com 5 FASES POR CENÁRIO, como a arte do Buchecha.
+   9 cenários x 5 fases = 45 (3 cenários por mundo); a 5ª de cada cenário é a do CHEFE (+10 💎, essência, pico da dificuldade SERRA08NOV).
+   Ordem: Bosque de Outono (fases 1–5, arte aprovada 08/nov), Campo, Chuva | Montanha, Gelo, Vulcão | Praia, Deserto, Pântano.
+   Mapa de fases da Muralha em FAIXAS verticais de 887x1774 (uma por cenário, de baixo pra cima; entrada/saída da estrada no centro das bordas).
+   Faixa com arte (MMSTRIP): fundo limpo + plataformas do kit nos rects do POSICOES.json; número, brilho, estrelas e cadeado por código.
+   Cenário ainda sem faixa: fundo smap_bg_* repetido + estrada desenhada + as mesmas plataformas, até o Buchecha entregar. */
+const MURBIO=['outono','campo','chuva','montanha','gelo','vulcao','praia','deserto','pantano'];
+function murBioI(i){const k=MURBIO[Math.floor(i/5)%MURBIO.length];return BIOMES.find(q=>q.k===k)||BIOMES[0];}
+function murBoss(i){return i%5===4;}
+let MMWALLON=0;{const _sm=smMon;smMon=function(g){if(MMWALLON){const L=SMMON[murBioI(g).k]||SMMON.campo,p=g%5,sp=L[p===4?2:p%2];return SP[sp]?sp:(SP[L[0]]?L[0]:null);}return _sm(g);};}
+const MMPOS=[{"img":"plataforma_01","r":[523,1287,210,158],"q":[541,1298,176,139],"lb":[628,1336],"ls":47,"cd":[609,1368,38,38],"es":[[574,1370,35,35],[610,1370,35,35],[646,1370,35,35]],"br":[538,1286,180,110]},{"img":"plataforma_02","r":[128,1080,204,149],"q":[146,1093,165,126],"lb":[232,1128],"ls":47,"cd":[213,1157,38,38],"es":[[178,1159,35,35],[214,1159,35,35],[250,1159,35,35]],"br":[142,1078,180,110]},{"img":"plataforma_03","r":[512,839,218,157],"q":[536,855,175,135],"lb":[620,896],"ls":47,"cd":[601,929,38,38],"es":[[566,931,35,35],[602,931,35,35],[638,931,35,35]],"br":[530,846,180,110]},{"img":"plataforma_04","r":[119,673,177,136],"q":[136,687,149,105],"lb":[210,715],"ls":47,"cd":[191,741,38,38],"es":[[156,743,35,35],[192,743,35,35],[228,743,35,35]],"br":[120,665,180,110]},{"img":"portal_chefe_05","r":[483,153,312,314],"q":[515,170,259,286],"lb":[649,354],"ls":33,"cd":[629,389,38,38],"es":[[594,391,35,35],[630,391,35,35],[666,391,35,35]],"br":[559,304,180,110]}],MMSTRIP={outono:'assets/mapa_muralha/outono/'},MMKIT='assets/mapa_muralha/outono/',MMI={};
+const MMROAD=[[440,1774],[455,1560],[405,1380],[370,1200],[420,1030],[455,860],[400,700],[360,540],[390,380],[440,200],[440,0]];
+function mmI(p){let I=MMI[p];if(!I){I=new Image();I.decoding='async';I.src=p;MMI[p]=I;}return I.complete&&I.naturalWidth?I:null;}
+function mmRoadX(y){for(let j=1;j<MMROAD.length;j++){const [x0,y0]=MMROAD[j-1],[x1,y1]=MMROAD[j];if(y<=y0&&y>=y1)return x0+(x1-x0)*(y0-y)/(y0-y1||1);}return 440;}
+function murMapScroll(u,st,t,key,top,bot){MMWALLON=1;try{murMapScroll0(u,st,t,top,bot);}finally{MMWALLON=0;}}
+function murMapScroll0(u,st,t,top,bot){const key='wall';const SA=stgState(key),VH=bot-top,k=W/887,SH=1774*k,GAP=40,NS=Math.ceil(STGT/5),TOT=NS*SH+(STGW-1)*GAP,maxS=Math.max(0,TOT-VH);
+  const sB=r=>r*SH+Math.floor(r/3)*GAP,nY=g=>{const P=MMPOS[g%5];return sB(Math.floor(g/5))+(1774-(P.r[1]+P.r[3]/2))*k;};
+  const Tc=(s3,x,y,...a)=>{if(y>top+1&&y<bot-6)T(s3,x,y,...a);};
+  if(st.scroll==null){const g=(st.world||0)*STGN+(st.sel||0);st.scroll=Math.max(0,Math.min(maxS,nY(g)-VH*.42));}
+  if(st.goW!=null){const g=st.goW*STGN+(st.goW===Math.floor(SA.next/STGN)?SA.next%STGN:0),tg=Math.max(0,Math.min(maxS,nY(g)-VH*.42));st.scroll+=(tg-st.scroll)*.18;if(Math.abs(tg-st.scroll)<1)st.goW=null;}
+  if(!st.drag){st.scroll+=st.vs||0;st.vs=(st.vs||0)*.9;if(Math.abs(st.vs)<.05)st.vs=0;}
+  if(st.scroll<0){st.scroll*=.7;st.vs=0;}if(st.scroll>maxS){st.scroll=maxS+(st.scroll-maxS)*.7;st.vs=0;}
+  const S0=st.scroll,sy=cy=>bot-(cy-S0),selG=(st.world||0)*STGN+(st.sel||0);
+  b.save();b.beginPath();b.rect(0,top,W,VH);b.clip();px(0,top,W,VH,'#1d2a14');b.imageSmoothingEnabled=true;
+  for(let r=0;r<NS;r++){const yB=sy(sB(r)),yT=yB-SH;if(yB<top-4||yT>bot+4)continue;const bio=murBioI(r*5),Y=v=>yT+v*k,X=v=>v*k,base=MMSTRIP[bio.k],F=base&&mmI(base+'fundo.webp');
+    if(F)b.drawImage(F,0,yT-.4,W,SH+.8);
+    else{const BG=asImg('smap_bg_'+bio.k);if(BG){const th=W*BG.naturalHeight/BG.naturalWidth;for(let y=yB;y>yT-th;y-=th)b.drawImage(BG,0,y-th-.3,W,th+.6);}else px(0,yT,W,SH,bio.band[1]);
+      const rd=(lw,col)=>{b.lineCap='round';b.lineJoin='round';b.lineWidth=lw;b.strokeStyle=col;b.beginPath();b.moveTo(X(MMROAD[0][0]),Y(MMROAD[0][1]));for(let j=1;j<MMROAD.length-1;j++){const [x0,y0]=MMROAD[j],[x1,y1]=MMROAD[j+1];b.quadraticCurveTo(X(x0),Y(y0),X((x0+x1)/2),Y((y0+y1)/2));}{const L=MMROAD[MMROAD.length-1];b.lineTo(X(L[0]),Y(L[1]));}
+        MMPOS.forEach(P=>{const cx=P.r[0]+P.r[2]/2,cy=P.r[1]+P.r[3]*.6;b.moveTo(X(mmRoadX(cy)),Y(cy));b.lineTo(X(cx),Y(cy));});b.stroke();};
+      rd(118*k,'rgba(70,46,20,.55)');rd(96*k,'#d9b170');}
+    if(F)for(let p=0;p<5;p++){const g=r*5+p;if(g>=STGT)break;const P=MMPOS[p],I=mmI(base+P.img+'.webp');if(I)b.drawImage(I,X(P.r[0]),Y(P.r[1]),P.r[2]*k,P.r[3]*k);}}
+  for(let w=1;w<STGW;w++){const yy=sy(sB(w*3)-GAP/2);if(yy<top-30||yy>bot+30)continue;const op=stgWOpen(key,w),col=['#3fae5a','#c23b6a','#7a4ad8'][w];
+    px(0,yy-GAP/2,W,GAP,'#120c22');poly([[W/2-62,yy-8],[W/2+62,yy-8],[W/2+70,yy],[W/2+62,yy+8],[W/2-62,yy+8],[W/2-70,yy]],col);Tc(`MUNDO ${w+1} · ${['','DIFÍCIL','LENDÁRIO'][w]}${op?'':' 🔒'}`,W/2,yy-4.5,7,'center',C.white,130,C.ink);}
+  const ES=MMKIT;
+  for(let g=0;g<STGT;g++){const r=Math.floor(g/5),P=MMPOS[g%5],yT=sy(sB(r))-SH,Y=v=>yT+v*k,X=v=>v*k;if(Y(P.r[1]+P.r[3])<top-10||Y(P.r[1])>bot+10)continue;
+    const w=Math.floor(g/STGN),boss=murBoss(g),locked=g>SA.next||!stgWOpen(key,w),cur=g===SA.next&&!locked,stars=SA.stars[g],sel=g===selG,bk=murBioI(g).k,ART=!!(MMSTRIP[bk]&&mmI(MMSTRIP[bk]+'fundo.webp'));
+    if(!ART){const x=X(P.r[0]+P.r[2]/2),y=Y(P.r[1]+P.r[3]*.55),rr=boss?14:12,pl=cur?1+Math.sin(t/7)*.06:1;if(cur){b.save();b.globalCompositeOperation='lighter';glowAt(x,y,26,'140,255,140',.55);b.restore();}
+      if(!smArtNode(g,x,y,rr,pl,boss,locked,stars,t)){E(x,y,rr+2,rr+2,locked?'#2a2640':'#fff3d0');E(x,y,rr,rr,locked?'#4a4660':stars?(boss?'#e0a020':'#3fae5a'):boss?'#c23b3b':'#4f74d6');}}
+    if(cur&&ART){const BR=mmI(ES+'brilho_fase_atual.webp');if(BR){b.save();b.globalAlpha=.7+.3*Math.sin(t/7);b.drawImage(BR,X(P.br[0]),Y(P.br[1]),P.br[2]*k,P.br[3]*k);b.restore();}}
+    if(sel&&!cur){b.save();b.globalCompositeOperation='lighter';glowAt(X(P.lb[0]),Y(P.lb[1]),26,'255,230,120',.5);b.restore();}
+    if(locked&&ART){const CI=mmI(ES+'cadeado.webp');if(CI)b.drawImage(CI,X(P.cd[0]),Y(P.cd[1]),P.cd[2]*k,P.cd[3]*k);}
+    else if(stars&&!locked)P.es.forEach((e,s3)=>{const SI=mmI(ES+(s3<stars?'estrela_cheia':'estrela_vazia')+'.webp');if(SI)b.drawImage(SI,X(e[0]),Y(e[1]),e[2]*k,e[3]*k);});
+    Tc(boss?`${g+1} · CHEFE`:String(g+1),X(P.lb[0]),Y(P.lb[1])-P.ls*k*.55,P.ls*k,'center',locked?'#d9d2c4':'#fffaf0',boss?150*k:120*k,'#3a2410');
+    if(st.lockT&&st.lockT.g===g&&st.lockT.t++<30)Tc('trancada!',X(P.lb[0]),Y(P.r[1])-6,5.6,'center','#ff8a9a',40,C.ink);
+    {const q=P.q,y=Y(q[1]);if(y+q[3]*k>top&&y<bot)u.rects.push({x:X(q[0]),y:Math.max(top,y),w:q[2]*k,h:Math.min(bot,y+q[3]*k)-Math.max(top,y),i:2000+g});}}
+  {const m=party[0],r=Math.floor(selG/5),P=MMPOS[selG%5],yT=sy(sB(r))-SH;if(m){const x=(P.r[0]+P.r[2]/2)*k,y=yT+P.r[1]*k+6;if(y>top-20&&y<bot+20){const hop=Math.abs(Math.sin(t/8))*4;drawMon(monKey(m),x,y-hop,.36);}}}
+  {const fg=b.createLinearGradient(0,top,0,top+14);fg.addColorStop(0,'rgba(10,6,24,.6)');fg.addColorStop(1,'rgba(10,6,24,0)');b.fillStyle=fg;b.fillRect(0,top,W,14);const fb=b.createLinearGradient(0,bot-14,0,bot);fb.addColorStop(0,'rgba(10,6,24,0)');fb.addColorStop(1,'rgba(10,6,24,.6)');b.fillStyle=fb;b.fillRect(0,bot-14,W,14);}
+  {const fr=Math.max(0,Math.min(1,S0/Math.max(1,maxS))),bh=Math.max(14,VH*VH/TOT),by2=top+(VH-bh)*(1-fr);rrect(W-3.5,by2,2.5,bh,1.2,'rgba(255,255,255,.35)',false);}
+  b.restore();}
+/* /MURMAPA08NOV */
+
 /* ===== TUTORIAL (29/out, Felipe): o parceiro ensina cada parte do jogo uma vez, com mãozinha, luz no alvo e balão de caderno.
    Passo "info": toca pra continuar (o jogo pausa). Passo "faça": a mãozinha mostra o gesto e o jogo espera você fazer (ou OK).
    Mãozinha, onda do toque, seta e moldura dourada: arte do Buchecha (TUTORIAL_29out, entregue 30/out). Vê flags.tut[chave]. */

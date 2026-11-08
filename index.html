@@ -1949,6 +1949,21 @@ function vozToca(t){try{if(window.CVLANG==='en')return false;/* VOZINGLES07NOV (
   const k=String(t||'').toLowerCase().normalize('NFD').replace(/[^a-z]/g,'');const e=VOZIA.find(x=>k.startsWith(x[0]));if(!e)return false;
   const u=window.C1GEN==='menina'?e[2]:e[1];if(u==null)return false;try{speechSynthesis.cancel();}catch(_){}vozPara();if(!u)return true;
   const a=vozA();let s1=u;if(e[0]==='naoepossivelque'&&!VZ.nar&&VZN){VZ.nar=1;s1=VZN;VZ.next=u;}a.src=s1;a.currentTime=0;const p=a.play();if(p&&p.catch)p.catch(()=>{VZ.pend=s1;VZ.pendT=performance.now();});return true;}catch(err){return false;}}
+/* VOZPED (08/nov, Felipe: "terminar todas em pt"): falas com número ou nome que muda são montadas com pedaços gravados
+   (frase fixa + nome do monstrinho/lugar + número por extenso), tocados em sequência. Se faltar algum pedaço, usa a voz do celular. */
+const VOZP={};
+function vozNum(n){const U=['zero','um','dois','três','quatro','cinco','seis','sete','oito','nove','dez','onze','doze','treze','catorze','quinze','dezesseis','dezessete','dezoito','dezenove'],D=['','','vinte','trinta','quarenta','cinquenta','sessenta','setenta','oitenta','noventa'],C=['','cento','duzentos','trezentos','quatrocentos','quinhentos','seiscentos','setecentos','oitocentos','novecentos'];
+  const b=n=>n<20?U[n]:n<100?D[(n/10)|0]+(n%10?' e '+U[n%10]:''):n===100?'cem':C[(n/100)|0]+(n%100?' e '+b(n%100):'');
+  if(n<1000)return b(n);const m=(n/1000)|0,r=n%1000,w=m===1?'mil':b(m)+' mil';return r?w+((r<100||r%100===0)?' e ':' ')+b(r):w;}
+function vozNorm(t){t=String(t||'').replace(/(\d+)\s*\/\s*(\d+)/g,'$1 de $2').replace(/(\d+)\s*%/g,'$1 por cento').replace(/\d+/g,d=>d.length<7?vozNum(+d):d);
+  return t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]+/g,' ').trim();}
+function vozPed(t){const w=vozNorm(t).split(' ').filter(Boolean);if(!w.length)return null;const out=[];let i=0;
+  while(i<w.length){let ok=0;for(let j=Math.min(w.length,i+40);j>i;j--){const u=VOZP[w.slice(i,j).join(' ')];if(u){out.push(u);i=j;ok=1;break;}}if(!ok)return null;}
+  return out;}
+function vozFila(L){try{speechSynthesis.cancel();}catch(_){}vozPara();const a=vozA();VZ.fila=L.slice(1);if(!VZ.filaOk){VZ.filaOk=1;a.addEventListener('ended',()=>{if(VZ.fila&&VZ.fila.length&&!VZ.next){const n=VZ.fila.shift();a.src=n;a.play().catch(()=>{VZ.pend=n;});}});}
+  a.src=L[0];a.currentTime=0;const p=a.play();if(p&&p.catch)p.catch(()=>{VZ.pend=L[0];VZ.pendT=performance.now();});return true;}
+vozPara=(function(f){return function(){VZ.fila=null;return f();};})(vozPara);window.VOZP=VOZP;window.vozPed=vozPed;window.vozNorm=vozNorm;
+vozToca=(function(f){return function(t){if(f(t))return true;try{if(window.CVLANG==='en'||!Object.keys(VOZP).length)return false;const mt=/^([^:]{1,20}):\s(.*)$/s.exec(String(t||''));const L=vozPed(t)||(mt&&vozPed(mt[2]));if(L&&L.length)return vozFila(L);}catch(e){}return false;};})(vozToca);
 narFala=(function(f){return function(t,q){if(NAR.on()&&vozToca(t))return;vozPara();return f(t,q);};})(narFala);
 narPara=(function(f){return function(){vozPara();return f();};})(narPara);
 window.narFala=narFala;window.narPara=narPara;

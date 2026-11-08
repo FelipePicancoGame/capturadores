@@ -15872,6 +15872,14 @@ function arCT(sp,i,R2,L,c,ok){try{const ty=(SP[sp]||{}).type,k=({rocha:'pedra',e
   return true;}catch(e){return false;}}
 /* /CARTATIPO08NOV */
 
+/* FOGO5TODOS08NOV (R174): Poder de Fogo Nv5 'Acerta 2 inimigos' só valia pra quem solta bola de fogo (Fagulho/Brasalor);
+   o Fornalho (lança-chamas) não acertava o 2º. Agora TODO monstrinho de fogo, no Nv5, solta também uma bola no 2º inimigo.
+   O poder é do TIPO (fica pra sempre, mesmo quando o monstrinho evolui). */
+{const _bf=bFire;bFire=function(C2,s,tg){const r=_bf(C2,s,tg);try{const ty=SP[s.sp]?SP[s.sp].type:s.type;if(ty==='fogo'&&pwLv('fogo')>=5&&!s._x2){const B2=behOf(s.sp,lvOf(s));
+    if(B2.k!=='blast'){const ex=bNear(C2,tg.x,tg.y,150,tg).sort((a,c2)=>Math.hypot(a.x-s.x,a.y-s.y)-Math.hypot(c2.x-s.x,c2.y-s.y))[0];
+      if(ex)C2.fx.push({k:'delay',t:-6,run:()=>{if(!ex.dead)bFireball(C2,{...s,_x2:1,dmg:s.dmg*.6,tier:5},Math.atan2(ex.y-s.y,ex.x-s.x),(s.pw||1)*.85,true);}});}}}catch(e){}return r;};}
+/* /FOGO5TODOS08NOV */
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

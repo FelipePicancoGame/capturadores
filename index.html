@@ -15998,7 +15998,7 @@ setTimeout(()=>{try{['cfg_fundo','cartao_opcao','botao_voltar','interruptor_liga
    do Mundo 2 em diante, na Muralha, se o seu time está mais de 5 níveis abaixo dos inimigos da fase, cada nível a menos deixa os inimigos 4% mais fortes (vida), no máximo o dobro (Felipe: 'desafiador, mas não impossível; aumento pequeno').
    Com o time no nível certo nada muda. E quando perde, o Tio Felipe aparece com dicas de como melhorar. */
 function stgFoeLv(i){return Math.min(52,Math.max(2,Math.round(WBAL[0]+i*WBAL[1]+Math.floor(i/5))));}
-function wGapK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss)||!WL||STG.i<15)return 1;const g=stgFoeLv(STG.i)+3-(WL.avg||1);return g>5?Math.min(2,Math.pow(1.04,g-5)):1;}catch(e){return 1;}}
+function wGapK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss)||!WL||STG.i<15)return 1;const g=stgFoeLv(STG.i)+3-(WL.avg||1);return g>5?Math.min(3,Math.pow(1.06,g-5)):1;}catch(e){return 1;}}
 {const _ws=wSpawn;wSpawn=function(){const w=WL,n0=w?w.foes.length:0;const r=_ws.apply(this,arguments);try{const k=wGapK();if(k>1&&WL)for(let j=n0;j<WL.foes.length;j++){const e=WL.foes[j];if(e.gk)continue;e.gk=1;e.max=Math.round(e.max*k);e.hp=Math.round(e.hp*k);if(e.shield)e.shield=Math.round(e.shield*k);}}catch(e){}return r;};}
 /* TIOQUANDO (08/nov, Felipe: "não aparece sempre que perder; entra quando perder 3 vezes ou quando a diferença de força for muito grande, e explica"):
    o Tio Felipe só entra na 3ª derrota seguida na mesma fase, ou quando o time está muito mais fraco que a fase (8+ níveis abaixo). */
@@ -16074,6 +16074,14 @@ const LOOKKEY=new Map();try{for(const k in LOOKS)LOOKKEY.set(LOOKS[k],k);}catch(
  setInterval(KEEP2,3000);setTimeout(KEEP2,1000);}
 {const _dm=drawMenu;drawMenu=function(u){try{const cf=u.cfg||{};if((cf.cfgart||cf.gcart)&&!u.__artOk){const ok=cf.gcart?drawGcArt(u):drawCfgArt(u);if(ok){u.__artOk=1;return;}u.__w0=u.__w0||performance.now();if(performance.now()-u.__w0<4000){b.save();b.fillStyle='rgba(10,8,28,.55)';b.fillRect(0,0,W,H);b.restore();u.rects=[];return;}}}catch(e){}return _dm(u);};}
 /* /SEMCODIGO2 */
+
+/* DDA08NOV (Felipe: "terminei mais um jogo da muralha, continua fácil"): dificuldade que se ADAPTA ao jogador, como nos jogos grandes.
+   Cada vitória fácil na Muralha (muralha com 75%+ de vida) deixa as próximas fases 12% mais fortes; vitória apertada mantém; derrota alivia 8%.
+   Fica entre 0,85x e 3x e vale pra todas as fases de Muralha. Assim quem tem muitas melhorias recebe desafio de verdade e quem está começando não trava. */
+function wDdaK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss))return 1;return Math.max(.85,Math.min(3,flags.wDda||1));}catch(e){return 1;}}
+{const _ws=wSpawn;wSpawn=function(){const w=WL,n0=w?w.foes.length:0;const r=_ws.apply(this,arguments);try{const k=wDdaK();if(k!==1&&WL)for(let j=n0;j<WL.foes.length;j++){const e=WL.foes[j];if(e.dk)continue;e.dk=1;e.max=Math.round(e.max*k);e.hp=Math.round(e.hp*k);if(e.shield)e.shield=Math.round(e.shield*k);}}catch(e){}return r;};}
+{const _sr=showResult;showResult=async function(R2){try{if(R2&&R2.key==='wall'&&STG&&STG.mode==='wall'&&!STG.miss&&WL){const wf=WL.wallMax?WL.wall/WL.wallMax:0;let d=flags.wDda||1;if(R2.win)d*=wf>=.75?1.12:wf>=.4?1.04:1;else d*=.92;flags.wDda=Math.max(.85,Math.min(3,Math.round(d*1000)/1000));try{__EV('muralha dda '+flags.wDda);}catch(_){}}}catch(e){}return _sr.apply(this,arguments);};}
+/* /DDA08NOV */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

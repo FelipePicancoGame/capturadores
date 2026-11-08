@@ -15855,7 +15855,7 @@ function sfxVolNode(){if(!window.__sv||window.__sv.context!==ACX){window.__sv=AC
     el.addEventListener('pointerdown',e=>e.stopPropagation(),true);el.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
     el.querySelectorAll('input').forEach(i=>{i.addEventListener('input',()=>{const k=i.dataset.k;flags[k]=+i.value;upd();try{if(ACX){musVolNode();sfxVolNode();}}catch(e){}if(k==='volS'){try{const n=performance.now();if(!el._t||n-el._t>180){el._t=n;tone([660,880],.05);}}catch(e){}}});i.addEventListener('change',()=>{try{saveGame();}catch(e){}});});
     document.body.appendChild(el);}
-  function upd(){if(!el)return;el.querySelectorAll('input').forEach(i=>{const v=flags[i.dataset.k]!=null?flags[i.dataset.k]:100;if(document.activeElement!==i)i.value=v;el.querySelector(`[data-v="${i.dataset.k}"]`).textContent=Math.round(v)+'%';});}
+  /* VOLFIX (08/nov, Felipe: 'o ajuste de som não está funcionando'): a régua de Ícones nova não tem data-k e fazia esta função dar erro antes de aplicar o volume */function upd(){if(!el)return;el.querySelectorAll('input[data-k]').forEach(i=>{const v=flags[i.dataset.k]!=null?flags[i.dataset.k]:100;if(document.activeElement!==i)i.value=v;el.querySelector(`[data-v="${i.dataset.k}"]`).textContent=Math.round(v)+'%';});}
   setInterval(()=>{try{const top=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null,c=top&&top.cfg,show=!!(c&&(c.cfgart||(c.cadAsk&&/AJUSTES|CONFIGURA/.test(String(c.cadAsk.q||'')))));
     if(show){if(!el)mk();if(el.style.display!=='block'){el.style.display='block';upd();}}else if(el&&el.style.display!=='none')el.style.display='none';}catch(e){}},200);})();
 

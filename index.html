@@ -16289,6 +16289,39 @@ const VOZPERTOC={};function vozPerto(k){if(!k||k.length<24)return null;if(k in V
   rrect(x0-6,yy-5.5,n*gap+4,11,5.5,'rgba(20,20,60,.45)',false);B.foes.forEach((q,i)=>{b.save();if(q.hp<=0)b.globalAlpha=.3;try{drawItemIcon('ball',x0+i*gap,yy,s2);}catch(e){}b.restore();});}}catch(e){}return r;};}
 /* /fix9 */
 
+/* TIOANIM08NOV (Buchecha: TIO_FELIPE_ANIM partes 1-3): o Tio Felipe agora é animado — anda de lado até o meio, acena, fala mexendo a boca,
+   pensa nas dicas, comemora e entrega o presente. Quadros de 384x384 lado a lado (pivô no pé). Rostinho do balão muda: falando, pensando, feliz. */
+let TIOA={andar_lado:['assets/tio/andar_lado.webp',8,10],parado:['assets/tio/parado.webp',6,6],falar:['assets/tio/falar.webp',6,8],acenar:['assets/tio/acenar.webp',8,8],
+  comemorar:['assets/tio/comemorar.webp',8,8],entregar_presente:['assets/tio/entregar_presente.webp',8,8],pensando:['assets/tio/pensando.webp',6,8]},
+  TIOR={falando:'assets/tio/rosto_falando.webp',feliz:'assets/tio/rosto_feliz.webp',pensando:'assets/tio/rosto_pensando.webp'};
+setTimeout(()=>{try{for(const k in TIOA){const i=new Image();i.src=TIOA[k][0];}for(const k in TIOR){const i=new Image();i.src=TIOR[k];}}catch(e){}},5000);
+tioShow=function(lines){return new Promise(res=>{try{if(!lines||!lines.length)return res();try{autoPause();}catch(e){}
+  if(!document.getElementById('tioCss2')){const st=document.createElement('style');st.id='tioCss2';st.textContent=`#tioL{position:fixed;inset:0;z-index:10050;background:rgba(10,12,30,0);transition:background .5s;touch-action:none;font-family:CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif}
+#tioL.on{background:rgba(10,12,30,.6)}#tioL .tw{position:absolute;bottom:calc(150px + env(safe-area-inset-bottom,0px));left:115%;transform:translateX(-50%);width:min(78vw,360px);aspect-ratio:1;transition:left 2.4s linear}#tioL .tw.chega{left:50%}
+#tioL .sp{width:100%;height:100%;background-repeat:no-repeat;background-size:auto 100%;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}#tioL .sp.vira{transform:scaleX(-1)}
+@keyframes tioRun{from{background-position-x:0%}to{background-position-x:100%}}
+#tioL .bl{position:absolute;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);opacity:0;transition:all .35s;width:min(94vw,440px);background:#fffaf0;border:3px solid #154c5e;border-radius:18px;padding:12px 14px 10px 92px;box-sizing:border-box;box-shadow:0 6px 0 rgba(0,0,0,.35);min-height:96px}
+#tioL .bl.on{opacity:1;transform:translateX(-50%) translateY(0)}#tioL .bl .rs{position:absolute;left:8px;top:-26px;width:78px;height:78px;border-radius:50%;background:#2fb5a0 center/112% no-repeat;border:3px solid #fff3c8;box-shadow:0 3px 0 rgba(0,0,0,.3)}
+#tioL .bl .nm{font-weight:800;color:#a8361f;font-size:15px;letter-spacing:.5px}#tioL .bl .ms{color:#154c5e;font-weight:700;font-size:16px;line-height:1.3;margin:4px 0 8px}#tioL .bl .ft{display:flex;justify-content:space-between;align-items:center}#tioL .bl .dt{color:#7a8a8a;font-size:13px}
+#tioL .bl button{font:800 16px CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif;background:#1f7a3a;color:#fff;border:2px solid #13562a;border-radius:12px;padding:7px 16px}`;document.head.appendChild(st);}
+  const gift=/🎁/.test(lines[0]||'');
+  const L=document.createElement('div');L.id='tioL';L.innerHTML=`<div class="tw"><div class="sp vira"></div></div><div class="bl"><div class="rs"></div><div class="nm">TIO FELIPE</div><div class="ms"></div><div class="ft"><span class="dt"></span><button type="button">OK ▶</button></div></div>`;
+  ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click'].forEach(ev=>L.addEventListener(ev,e=>e.stopPropagation()));document.body.appendChild(L);
+  const tw=L.querySelector('.tw'),sp=L.querySelector('.sp'),bl=L.querySelector('.bl'),rs=L.querySelector('.rs'),ms=L.querySelector('.ms'),dt=L.querySelector('.dt'),bt=L.querySelector('button');let i=0,ok=false,tm=0;
+  /* toca uma animação; loop=false segura o último quadro e chama depois() */
+  const anim=(k,loop=true,depois)=>{const a=TIOA[k];if(!a)return;const [src,n,fps]=a;clearTimeout(tm);sp.style.animation='none';sp.style.backgroundImage=`url(${src})`;sp.style.backgroundSize=`${n*100}% 100%`;sp.style.backgroundPositionX='0%';void sp.offsetWidth;
+    sp.style.animation=`tioRun ${n/fps}s steps(${n-1},jump-none) ${loop?'infinite':'1 forwards'}`;if(!loop&&depois)tm=setTimeout(depois,n/fps*1000+250);};
+  const rosto=k=>{rs.style.backgroundImage=`url(${TIOR[k]})`;};
+  const falaAnim=()=>{const t=String(lines[i]||'');if(gift&&(/especial: um monstrinho|PRESENTE/.test(t))){rosto('feliz');anim('entregar_presente',false);}else if(!gift&&i===0){rosto('pensando');anim('pensando',false,()=>anim('falar'));}else{rosto('falando');anim('falar');}};
+  const show=()=>{ms.innerHTML=lines[i];dt.textContent=(i+1)+'/'+lines.length;bt.textContent=i===lines.length-1?'Vamos lá! ▶':'OK ▶';falaAnim();try{if(!flags.narraOff&&typeof narFala==='function')narFala(lines[i],'');}catch(e){}};
+  const fim=()=>{try{if(typeof narPara==='function')narPara();}catch(e){}rosto('feliz');anim(gift?'comemorar':'acenar',false);setTimeout(()=>{L.classList.remove('on');bl.classList.remove('on');setTimeout(()=>{try{clearTimeout(tm);L.remove();}catch(e){}res();},380);},700);};
+  bt.addEventListener('click',()=>{if(!ok)return;try{tone([660,880],.04);}catch(e){}i++;if(i>=lines.length){ok=false;return fim();}show();});
+  rosto(gift?'feliz':'falando');anim('andar_lado');
+  requestAnimationFrame(()=>{L.classList.add('on');requestAnimationFrame(()=>tw.classList.add('chega'));});
+  setTimeout(()=>{sp.classList.remove('vira');anim('acenar',false,()=>{if(!ok){ok=true;show();}});bl.classList.add('on');setTimeout(()=>{if(!ok){ok=true;show();}},1500);},2450);
+  }catch(e){res();}});};
+/* /TIOANIM08NOV */
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

@@ -16045,6 +16045,17 @@ const SAW=[.88,.94,1,1.06,1.18];function sawK(){try{if(!STG||STG.miss||STG.i==nu
 for(const nm of ['towerMode','survMode']){try{const f=eval(nm);const g=async function(){try{if(STG&&!STG.sawd&&!STG.miss&&STG.mode!=='wall'){STG.sawd=1;STG.mult*=sawK();}}catch(e){}return f.apply(this,arguments);};eval(nm+'=g');}catch(e){}}
 /* /SERRA08NOV */
 
+/* CENAS08NOV (Buchecha, 08/nov; Felipe: 'a Nina tem que mudar na missão animada também'): cenas das missões com a Nina nova e o Tonho novo */
+try{Object.assign(MSARTU,{"nina_dex": "blobs/b4dfeb639ba980f59947b7ab6965d1aa.webp", "ratonga_ferida": "blobs/0c3fe98787f5b38c061d04e3b53ed3fc.webp", "avalanche": "blobs/4250125f16886f47888ab2131993e1c4.webp", "cabrito": "blobs/948f2b95f0057b8fb624d5729b7241e2.webp", "mirante_vista": "blobs/3860be5cf49abdac5d671a0d64f81f3d.webp", "tonho_serra": "blobs/dca7d6f1848cea4628de5a9798537257.webp"});}catch(e){}
+/* /CENAS08NOV */
+
+/* LUNARIA08NOV (R151/R180, Buchecha: Lunária expandida v2): nas Torres, em celular comprido, sobrava fundo escuro e esticado em cima e dos lados.
+   Agora atrás do campo vai a pintura expandida (1181x2172, o fundo original encaixa em 120,500), sem esticar e sem escurecer. */
+const LUNEX={u:'blobs/2f3e0315478c4cad2dd7fcef4e41c765.webp',ox:120,oy:500,w:1181,h:2172};let LUNEXI=null;
+{const _b=tdB31Back;tdB31Back=function(){try{if(!(B31.on&&TDC05ON&&b31Ok(B31.bg)))return _b();if(!LUNEXI){LUNEXI=new Image();LUNEXI.decoding='async';LUNEXI.src=LUNEX.u;}if(!(LUNEXI.complete&&LUNEXI.naturalWidth))return _b();
+  const L=b31Lay(),s=L.s,x=L.ox-LUNEX.ox*s,y=L.oy-LUNEX.oy*s,w=LUNEX.w*s,h=LUNEX.h*s;if(x>0||y>0||x+w<W||y+h<H)_b();b.drawImage(LUNEXI,x,y,w,h);return true;}catch(e){return _b();}};}
+/* /LUNARIA08NOV */
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

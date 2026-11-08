@@ -16510,9 +16510,36 @@ function arEntry13(A){if(!n13Tela('are'))return false;const t=A.t;A.hits=[];
   msg13(A);return true;}
 {const _e=arEntryDraw;arEntryDraw=function(A){if(arEntry13(A))return;_e(A);};}
 
+/* CARTAS LOTE 08 (Brotim, Maremoto e Cordilhão: recortadas da prévia do lote 08) */try{['brotim','maremoto','cordilhao'].forEach(x=>ILUSET.add(x));}catch(e){}
 /* RATODANO08NOV (Felipe: 'Rato quando toma dano vira o rato antigo'): na Muralha a Ratonga não usa as animações antigas nem quando apanha */
 {const _dmf=drawMonFx;drawMonFx=function(sp){if(G&&G.mode==='wall'&&String(sp||'').replace('*','')==='ratonga'){const keep={};for(const k of ['ratonga','ratonga@costas','ratonga@e','ratonga@w'])if(MONANIM[k]){keep[k]=MONANIM[k];delete MONANIM[k];}try{return _dmf.apply(this,arguments);}finally{Object.assign(MONANIM,keep);}}return _dmf.apply(this,arguments);};}
 /* /TELAS13_08NOV */
+
+/* INGLES08NOV (Felipe, R245/R246: 'Cartas estão com descrição em português' / 'Batalha está em português'):
+   1) texto quebrado em linhas era traduzido linha por linha (não achava a frase) → traduz a frase inteira antes de quebrar;
+   2) nomes de golpes, avisos da batalha e da escolha de cartas da Muralha que faltavam;
+   3) botões da batalha que vêm com o texto desenhado na arte (MOCHILA/TROCAR/FUGIR/ÁGIL/FORTE) ganham o texto em inglês por cima. */
+if(window.CVLANG==='en'){
+  {const _wr=wrap;wrap=function(s,...a){try{s=tr(String(s));}catch(e){}return _wr(s,...a);};}
+  const D2={'Tipos iguais':'Same types','Vantagem!':'Advantage!','Desvantagem':'Disadvantage','NOVA!':'NEW!','NA HORA':'INSTANT','TROCAR':'SWAP','grátis':'free','LEVOU 2 ✓':'TOOK 2 ✓','ESCOLHA 2!':'PICK 2!','PLANTA':'PLANT',
+    'Investida':'Tackle','Rosnar':'Growl','Brasa':'Ember','Labareda':'Blaze','Folha Afiada':'Razor Leaf','Chicote':'Whip','Bicada':'Peck','Mordida':'Bite','Picada':'Sting','Pedrada':'Rock Throw','Desabamento':'Rockslide','Choque':'Shock','Sombra':'Shadow',
+    'Bola Sombria':'Shadow Ball','Rasante':'Swoop','Redemoinho':'Whirlwind','Rolo Flamejante':'Flame Roll','Bolhas':'Bubbles','Semente':'Seed','Rabada':'Tail Slap','Zumbido':'Buzz','Rola-Pedra':'Rock Roll','Susto':'Scare','Raio Aurora':'Aurora Beam','Nevasca':'Blizzard'};
+  try{for(const k in D2)if(!window.CVEN[k])window.CVEN[k]=D2[k];}catch(e){}
+  const RX=[[/^⬇ ataque dele −(\d+)%$/,m=>`⬇ its attack −${m[1]}%`],[/^(.+) selvagem apareceu!$/,m=>`A wild ${tr(m[1])} appeared!`],[/^(.+) selvagem STARTS!$/,m=>`Wild ${tr(m[1])} STARTS!`],
+    [/^(.+) selvagem · VEL (\d+) · (\d+%)$/,m=>`Wild ${tr(m[1])} · SPD ${m[2]} · ${m[3]}`],[/^(.+) · VEL (\d+) · (\d+%)$/,m=>`${tr(m[1])} · SPD ${m[2]} · ${m[3]}`],[/^(.+) selvagem$/,m=>`Wild ${tr(m[1])}`],
+    [/^Vai, (.+)!$/,m=>`Go, ${m[1]}!`],[/^(⚡ )?(.+) 1º$/,m=>`${m[1]||''}${m[2]} 1st`],[/^Nv (\d+)$/,m=>`Lv ${m[1]}`],[/^NV (\d+) ?→ ?(\d+)$/,m=>`LV ${m[1]} → ${m[2]}`],
+    [/^Nv (\d+\/\d+): ([\s\S]*)$/,m=>`Lv ${m[1]}: ${tr(m[2])}`],[/^\+1 CARTA · (.*)$/,m=>`+1 CARD · ${m[1]}`],[/^LEVAR 2 · (.*)$/,m=>`TAKE 2 · ${m[1]}`],
+    [/^A muralha recupera \+?([\d.,]+) de vida por segundo$/,m=>`The wall recovers +${m[1].replace(',','.')} HP per second`],[/^([A-ZÀ-Ú]+) (\d+\/\d+)( LIGA!)?$/,m=>`${tr(m[1])} ${m[2]}${m[3]?' ON!':''}`]];
+  const _tr=window.tr,C2=new Map();
+  window.tr=function(s){const r=_tr(s);if(s==null||r!==s)return r;const k=String(s);let v=C2.get(k);if(v!==undefined)return v;v=k;for(const [re,f] of RX){const m=re.exec(k);if(m){try{v=f(m);}catch(e){}break;}}if(C2.size<20000)C2.set(k,v);return v;};
+  /* botões com texto na arte */
+  const V4EN={mochila:['BAG',.40,.43,.95,.12,.88,'#13185a',null],fugir:['RUN',.40,.43,.95,.12,.88,'#13185a',null],trocar:['SWITCH',.41,.45,.95,.12,.88,'#13185a',null],
+    agil:['QUICK',.27,.30,.81,.15,.85,'#ffffff','#0b3a4a'],forte:['STRONG',.27,.30,.81,.15,.85,'#ffffff','#6a2a08']};
+  {const _v=V4d;V4d=function(k,q){_v(k,q);const e=V4EN[k],r=V4R[k];if(!e||!r||!q)return;try{const [lb,sl,c0,c1,y0,y1,col,ink]=e;b.save();b.imageSmoothingEnabled=true;
+    b.drawImage(V4I,r[0]+sl*r[2],r[1]+y0*r[3],2,(y1-y0)*r[3],q[0]+c0*q[2],q[1]+y0*q[3],(c1-c0)*q[2],(y1-y0)*q[3]);b.restore();
+    const sz=q[3]*.27;T(lb,q[0]+(c0+c1)/2*q[2],q[1]+q[3]/2-sz*.5,sz,'center',col,(c1-c0)*q[2]-2,ink);}catch(e){}};}
+}
+/* /INGLES08NOV */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

@@ -6216,7 +6216,7 @@ async function wallMode(){if(!party.length)return;try{murPreload();}catch(e){}aw
     waveD:270+Math.max(0,H-320),waveL:100,waveC:[90,120],t:()=>WL.t,flash:v=>{WL.flash=Math.max(WL.flash,v);},allies:()=>WL.defs,moveFwd:(e,a)=>{if(e.y<MSTOP())e.y=Math.min(MSTOP()-1,e.y+a);},quakeR:999,allyPop:(a,txt,col)=>wPop(a.x,a.y-30,txt,col,7)};
   if(WL.duo)duoHostInit(WL);wBarrelSpawn(1);G.mode='wall';await fadeTo(0);
   if(!flags.wallSeen2){flags.wallSeen2=true;flags.wallCatSeen=true;flags.wallBarrel=true;flags.wallSeen3=true;/* 29/out: o tutorial com mãozinha ensina */}
-  if(!flags.wallCatSeen&&!DUOH){flags.wallCatSeen=true;await say('Novidade: CATAPULTA no meio da muralha! Quando ela brilhar, toque em qualquer lugar do campo pra lançar uma pedra gigante que esmaga e atordoa os inimigos.');}
+  if(false&&!flags.wallCatSeen&&!DUOH){flags.wallCatSeen=true;await say('Novidade: CATAPULTA no meio da muralha! Quando ela brilhar, toque em qualquer lugar do campo pra lançar uma pedra gigante que esmaga e atordoa os inimigos.');}
   if(!flags.wallBarrel&&!DUOH){flags.wallBarrel=true;await say('Novidade: BARRIS EXPLOSIVOS caem no campo! Quando os inimigos passarem perto e o barril brilhar, TOQUE nele pra explodir tudo em volta.');}
   if(!flags.wallSeen3&&!DUOH){flags.wallSeen3=true;await say('Novidade: agora cada monstrinho tem o próprio ESPECIAL e um NÍVEL na muralha. Cartas dele ou do tipo dele sobem o nível!');}
   try{__fotoAplicar('wall',WL);}catch(e){}const res=await new Promise(r=>{WL.done=r;WL.running=true;});WL.running=false;WL.banner=null;WL.bossIntro=null;if(DUOH){try{duoHostEnd(res);}catch(e){console.error(e);}}
@@ -15538,7 +15538,7 @@ const MCALIAS={mmulti:'multi',mspd:'spd',mdmg:'dmg',mpierce:'pierce',mrng:'rng'}
 function mcHasCounter(w,th){const TH=WTHEME[th];if(!TH)return false;for(const k in (w.lv||{})){if(!w.lv[k])continue;const b2=mcBase(k);if(TH.counter.includes(b2)||TH.counter.includes(MCALIAS[b2]))return true;}return false;}
 /* — escolha das cartas — */
 const MC_O={wOffer,wPick,wSpawn,wWallDmg};
-function mcPrice(k){return {troca:5,mais:10,dois:15}[k];}
+function mcPrice(k){if(k==='tres'){let n=3;try{n=WL.cards.opts.length;}catch(e){}return n>3?35:25;}return {troca:5,mais:10,dois:15}[k];}
 wOffer=function(){const w=WL;MC_O.wOffer.apply(this,arguments);try{if(!w||!w.cards||w.duo||w.duoG)return;const cs=w.cards;
     /* o conjunto que a pessoa está montando aparece com frequência: se ela já tem carta de um grupo, 1 das opções é desse grupo (as outras seguem sorteadas) */
     try{const N=w.mcN||{},tops=Object.keys(N).filter(k=>N[k]>0&&N[k]<5).sort((a,b2)=>N[b2]-N[a]);const tg0=tops.length&&Math.random()<.75?tops[Math.random()<.7?0:Math.min(1,tops.length-1)]:null;
@@ -15555,11 +15555,11 @@ wPick=function(i){const w=WL;if(!w||!w.cards||w.duo||w.duoG)return MC_O.wPick.ap
 /* compra com cristais */
 function mcBuy(k){const w=WL;if(!w||!w.cards||w.duo||w.duoG)return;const cs=w.cards,p=mcPrice(k);
   if(k==='troca'&&(w.rr||0)>0){w.rr--;w.cards=null;wOffer();try{tone([523,784],.06);}catch(e){}return;}
-  if(k==='mais'&&(cs.mais||cs.opts.length>=4))return;if(k==='dois'&&cs.dois)return;
+  if(k==='mais'&&(cs.mais||cs.opts.length>=4))return;if(k==='dois'&&cs.dois)return;if(k==='tres'&&cs.dois)return;
   if(gems()<p){try{tone([300,240],.06,'square',.03);}catch(e){}wPop(90,200,`Faltam ${p-gems()}💎`,'#ff9a8a',9);return;}
   flags.gems=gems()-p;saveGame();try{tone([880,1175,1568],.06);}catch(e){}
   if(k==='troca'){w.cards=null;wOffer();return;}
-  if(k==='dois'){cs.dois=1;wPop(90,200,'Escolha 2 cartas!',C.yellow,10);return;}
+  if(k==='dois'){cs.dois=1;wPop(90,200,'Escolha 2 cartas!',C.yellow,10);return;}if(k==='tres'){cs.dois=1;cs.doisFeito=1;const L=cs.opts.slice();for(let j=0;j<L.length-1;j++){try{mcApplyCard(w,L[j]);}catch(e){}}cs.opts=[L[L.length-1]];cs.i=0;wPop(90,200,'Levou todas as cartas!',C.yellow,10);try{part(90,130,'#ffd23f',30,{sp:3,life:30,grav:.04,size:2});}catch(e){}setTimeout(()=>{try{if(WL===w&&w.cards===cs)wPick(0);}catch(e){}},350);return;}
   if(k==='mais'){cs.mais=1;/* mais uma opção do mesmo sorteio */const keep=w.cards;w.cards=null;MC_O.wOffer();const extra=(w.cards&&w.cards.opts||[]).find(o=>!keep.opts.some(q=>(q.key||q.id)===(o.key||o.id)));w.cards=keep;
     if(extra){const tg=mcTag(extra,w);if(tg){const n=mcCount(w,tg)+1,nx=n<=3?3:5;extra.mcTag=tg;}keep.opts.push(extra);keep.i=keep.opts.length-1;}}}
 /* — ondas com tema: com carta contra = mais fraca; sem = mais forte — */
@@ -15589,7 +15589,7 @@ function mcDrawCardsUI(w,t){const cs=w.cards;if(!cs||w.duo||w.duoG)return;
   cs.opts.forEach((cd,i)=>{if(!cd.mcTag)return;const x=4+i*pitch,n=mcCount(w,cd.mcTag)+1,nx=n<=3?3:5,col=mcTagCol(cd.mcTag),liga=n===3||n===5;
     rrect(x,55,cw,11,5,RAR[cd.r],false);rrect(x+1,56,cw-2,9,4,col,false);T(`${mcTagName(cd.mcTag)} ${Math.min(n,nx)}/${nx}${liga?' LIGA!':''}`,x+cw/2,57.2,5,'center',liga?C.yellow:C.white,cw-4,C.ink);if(liga&&(t>>3)%2)T('★',x+cw-4,52,7,'center',C.yellow,10,C.ink);});
   /* botões: +1 CARTA e LEVAR 2 (a TROCAR já existe no lugar dela) */
-  const g=gems(),y=237,bh=11;const B=[['mais',`+1 CARTA · ${mcPrice('mais')}💎`,8,80,!(cs.mais||cs.opts.length>=4)],['dois',cs.dois?(cs.doisFeito?'LEVOU 2 ✓':'ESCOLHA 2!'):`LEVAR 2 · ${mcPrice('dois')}💎`,92,80,!cs.dois]];
+  const g=gems(),y=237,bh=11;const B=[['mais',`+1 CARTA · ${mcPrice('mais')}💎`,5,55,!(cs.mais||cs.opts.length>=4)],['dois',cs.dois?(cs.doisFeito?'LEVOU 2 ✓':'ESCOLHA 2!'):`LEVAR 2 · ${mcPrice('dois')}💎`,63,55,!cs.dois],['tres',`TODAS · ${mcPrice('tres')}💎`,121,55,!cs.dois]];/* TODAS08NOV (Felipe: 'coloca a opção de pegar as 3 cartas por custo de cristais') */
   w._mcHits=[];for(const [k,txt,x,bw,on] of B){const can=on&&g>=mcPrice(k);rrect(x,y,bw,bh,5,on?(can?'#7a3ad8':'#5a5070'):'#2f9f4c',false);T(txt,x+bw/2,y+2.4,5.6,'center',C.white,bw-4,C.ink);if(on)w._mcHits.push([k,x,y,bw,bh]);}
   T(`💎 ${g}`,174,4,6.5,'right','#e8d8ff',40,C.ink);}
 /* toques: cartas com 4 opções e os botões novos */
@@ -16513,6 +16513,13 @@ function arEntry13(A){if(!n13Tela('are'))return false;const t=A.t;A.hits=[];
 /* CARTAS LOTE 08 (Brotim, Maremoto e Cordilhão: recortadas da prévia do lote 08) */try{['brotim','maremoto','cordilhao'].forEach(x=>ILUSET.add(x));}catch(e){}
 /* RATODANO08NOV (Felipe: 'Rato quando toma dano vira o rato antigo'): na Muralha a Ratonga não usa as animações antigas nem quando apanha */
 {const _dmf=drawMonFx;drawMonFx=function(sp){if(G&&G.mode==='wall'&&String(sp||'').replace('*','')==='ratonga'){const keep={};for(const k of ['ratonga','ratonga@costas','ratonga@e','ratonga@w'])if(MONANIM[k]){keep[k]=MONANIM[k];delete MONANIM[k];}try{return _dmf.apply(this,arguments);}finally{Object.assign(MONANIM,keep);}}return _dmf.apply(this,arguments);};}
+/* SEMCATAPULTA2_08NOV (Felipe: 'tira a catapulta da muralha e refaz a dificuldade por isso'): a catapulta saiu de vez (não aparece, não atira, não avisa).
+   Ela dava ~1 pedrada em área a cada 13 s (≈3x o dano médio de um monstrinho + atordoar). Pra compensar, os monstrinhos da Muralha batem 15% mais forte
+   e os chefes ficam 8% menos resistentes. */
+wCatTap=function(){return false;};wCatStep=function(){};wCatDraw=function(){};
+{const _wd=wDmg;wDmg=function(d){return _wd.apply(this,arguments)*1.15;};}
+{const _wh=wHit;wHit=function(e,dm){try{if(e&&e.boss&&WL&&!WL.duo)arguments[1]=dm*1.087;}catch(_){}return _wh.apply(this,arguments);};}
+/* /SEMCATAPULTA2_08NOV */
 /* /TELAS13_08NOV */
 
 /* INGLES08NOV (Felipe, R245/R246: 'Cartas estão com descrição em português' / 'Batalha está em português'):
@@ -16521,14 +16528,14 @@ function arEntry13(A){if(!n13Tela('are'))return false;const t=A.t;A.hits=[];
    3) botões da batalha que vêm com o texto desenhado na arte (MOCHILA/TROCAR/FUGIR/ÁGIL/FORTE) ganham o texto em inglês por cima. */
 if(window.CVLANG==='en'){
   {const _wr=wrap;wrap=function(s,...a){try{s=tr(String(s));}catch(e){}return _wr(s,...a);};}
-  const D2={'Tipos iguais':'Same types','Vantagem!':'Advantage!','Desvantagem':'Disadvantage','NOVA!':'NEW!','NA HORA':'INSTANT','TROCAR':'SWAP','grátis':'free','LEVOU 2 ✓':'TOOK 2 ✓','ESCOLHA 2!':'PICK 2!','PLANTA':'PLANT',
+  const D2={'Tipos iguais':'Same types','Vantagem!':'Advantage!','Desvantagem':'Disadvantage','NOVA!':'NEW!','NA HORA':'INSTANT','TROCAR':'SWAP','grátis':'free','LEVOU 2 ✓':'TOOK 2 ✓','Levou todas as cartas!':'Took all the cards!','Escolha 2 cartas!':'Pick 2 cards!','ESCOLHA 2!':'PICK 2!','PLANTA':'PLANT',
     'Investida':'Tackle','Rosnar':'Growl','Brasa':'Ember','Labareda':'Blaze','Folha Afiada':'Razor Leaf','Chicote':'Whip','Bicada':'Peck','Mordida':'Bite','Picada':'Sting','Pedrada':'Rock Throw','Desabamento':'Rockslide','Choque':'Shock','Sombra':'Shadow',
     'Bola Sombria':'Shadow Ball','Rasante':'Swoop','Redemoinho':'Whirlwind','Rolo Flamejante':'Flame Roll','Bolhas':'Bubbles','Semente':'Seed','Rabada':'Tail Slap','Zumbido':'Buzz','Rola-Pedra':'Rock Roll','Susto':'Scare','Raio Aurora':'Aurora Beam','Nevasca':'Blizzard'};
   try{for(const k in D2)if(!window.CVEN[k])window.CVEN[k]=D2[k];}catch(e){}
   const RX=[[/^⬇ ataque dele −(\d+)%$/,m=>`⬇ its attack −${m[1]}%`],[/^(.+) selvagem apareceu!$/,m=>`A wild ${tr(m[1])} appeared!`],[/^(.+) selvagem STARTS!$/,m=>`Wild ${tr(m[1])} STARTS!`],
     [/^(.+) selvagem · VEL (\d+) · (\d+%)$/,m=>`Wild ${tr(m[1])} · SPD ${m[2]} · ${m[3]}`],[/^(.+) · VEL (\d+) · (\d+%)$/,m=>`${tr(m[1])} · SPD ${m[2]} · ${m[3]}`],[/^(.+) selvagem$/,m=>`Wild ${tr(m[1])}`],
     [/^Vai, (.+)!$/,m=>`Go, ${m[1]}!`],[/^(⚡ )?(.+) 1º$/,m=>`${m[1]||''}${m[2]} 1st`],[/^Nv (\d+)$/,m=>`Lv ${m[1]}`],[/^NV (\d+) ?→ ?(\d+)$/,m=>`LV ${m[1]} → ${m[2]}`],
-    [/^Nv (\d+\/\d+): ([\s\S]*)$/,m=>`Lv ${m[1]}: ${tr(m[2])}`],[/^\+1 CARTA · (.*)$/,m=>`+1 CARD · ${m[1]}`],[/^LEVAR 2 · (.*)$/,m=>`TAKE 2 · ${m[1]}`],
+    [/^Nv (\d+\/\d+): ([\s\S]*)$/,m=>`Lv ${m[1]}: ${tr(m[2])}`],[/^\+1 CARTA · (.*)$/,m=>`+1 CARD · ${m[1]}`],[/^LEVAR 2 · (.*)$/,m=>`TAKE 2 · ${m[1]}`],[/^TODAS · (.*)$/,m=>`ALL · ${m[1]}`],
     [/^A muralha recupera \+?([\d.,]+) de vida por segundo$/,m=>`The wall recovers +${m[1].replace(',','.')} HP per second`],[/^([A-ZÀ-Ú]+) (\d+\/\d+)( LIGA!)?$/,m=>`${tr(m[1])} ${m[2]}${m[3]?' ON!':''}`]];
   const _tr=window.tr,C2=new Map();
   window.tr=function(s){const r=_tr(s);if(s==null||r!==s)return r;const k=String(s);let v=C2.get(k);if(v!==undefined)return v;v=k;for(const [re,f] of RX){const m=re.exec(k);if(m){try{v=f(m);}catch(e){}break;}}if(C2.size<20000)C2.set(k,v);return v;};

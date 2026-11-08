@@ -15997,8 +15997,13 @@ setTimeout(()=>{try{['cfg_fundo','cartao_opcao','botao_voltar','interruptor_liga
 function stgFoeLv(i){return Math.min(52,Math.max(2,Math.round(WBAL[0]+i*WBAL[1]+Math.floor(i/5))));}
 function wGapK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss)||!WL||STG.i<15)return 1;const g=stgFoeLv(STG.i)+3-(WL.avg||1);return g>5?Math.min(2,Math.pow(1.04,g-5)):1;}catch(e){return 1;}}
 {const _ws=wSpawn;wSpawn=function(){const w=WL,n0=w?w.foes.length:0;const r=_ws.apply(this,arguments);try{const k=wGapK();if(k>1&&WL)for(let j=n0;j<WL.foes.length;j++){const e=WL.foes[j];if(e.gk)continue;e.gk=1;e.max=Math.round(e.max*k);e.hp=Math.round(e.hp*k);if(e.shield)e.shield=Math.round(e.shield*k);}}catch(e){}return r;};}
-async function tioDica(key,i){const T=[],avg=teamAvg();
-  if(key==='wall'){const lv=stgFoeLv(i)+3;if(lv-avg>5)T.push(`Tio Felipe: Os inimigos dessa fase estão no nível ${lv} e o seu time no nível ${avg}. Primeiro fique mais forte: Expedição, batalhas no mato alto e Doces Mágicos dão nível!`);}
+/* TIOQUANDO (08/nov, Felipe: "não aparece sempre que perder; entra quando perder 3 vezes ou quando a diferença de força for muito grande, e explica"):
+   o Tio Felipe só entra na 3ª derrota seguida na mesma fase, ou quando o time está muito mais fraco que a fase (8+ níveis abaixo). */
+async function tioDica(key,i){const T=[],avg=teamAvg();flags.tioL=flags.tioL||{};const id=key+':'+i,n=(flags.tioL[id]||0)+1;flags.tioL[id]=n;
+  let gap=0;try{if(key==='wall')gap=stgFoeLv(i)+3-avg;else gap=Math.round(1.5+i*1.75+Math.floor(i/5))-avg;}catch(e){}
+  if(n<3&&gap<8){try{saveGame();}catch(e){}return;}flags.tioL[id]=0;try{saveGame();}catch(e){}
+  if(n>=3&&gap<8)T.push(`Tio Felipe: Ei, vi que essa fase tá difícil! Já são ${n} tentativas. Calma, faz parte do treino. Bora ver o que dá pra melhorar?`);
+  if(gap>=8)T.push(`Tio Felipe: Opa, para tudo! Os inimigos dessa fase estão uns ${gap} níveis acima do seu time (nível ${avg}). Assim fica muito pesado! Primeiro fique mais forte: Expedição, batalhas no mato alto e Doces Mágicos dão nível!`);
   const D=['Tio Felipe: Escolha monstrinhos de tipo FORTE contra os inimigos dessa fase. Fogo contra planta, água contra fogo... cada tipo tem o seu ponto fraco!',
     'Tio Felipe: Na LOJA, em PODERES, você deixa cada tipo de monstrinho mais forte. Vale muito a pena!',
     'Tio Felipe: Use o ESPECIAL quando a barrinha do monstrinho encher. Guarde pros momentos de aperto!',

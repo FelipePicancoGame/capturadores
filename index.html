@@ -9278,6 +9278,7 @@ async function stageMap(key){const st={key,sel:null,t:0};
     if(j>=2000&&j<2000+STGT){const g=j-2000,w=Math.floor(g/STGN),SA=stgState(key);if(g>SA.next||!stgWOpen(key,w)){tone([300,240],.06,'square',.03);st.lockT={g,t:0};continue;}st.world=w;st.sel=g%STGN;tone(880,.04);continue;}
     if(j>=900&&j<900+STGW){const w=j-900;st.goW=w;if(w===st.world)continue;if(!stgWOpen(key,w)){tone([300,240],.06,'square',.03);await say(`O MUNDO ${w+1} abre quando você vencer as 15 fases do Mundo ${w}!`);continue;}st.world=w;st.sel=null;tone([660,880],.05);continue;}
     if(j<0||j===99)return;
+    if(j===96){st.info=!st.info;tone(660,.03);continue;}if(j===95){try{window.cvSetLang(window.CVLANG==='en'?'pt':'en');}catch(e){}continue;}
     if(j>=0&&j<STGN){if(j>S2.next){tone([300,240],.06,'square',.03);st.lockT={i:j,t:0};continue;}st.sel=j;tone(880,.04);continue;}
     if(j===98&&key==='arena'){await say('A ARENA ainda não tem história. Vença as fases para ganhar cristais e moedas, igual nos outros jogos!');continue;}
     if(j===98){const ch={wall:wallMode,td:towerMode,surv:survMode,exp:async()=>{await fadeTo(1);await expedition();await wait(1);}}[key];await chapterMenu(key,ch);continue;}
@@ -16192,6 +16193,78 @@ function mmRegOk(){return MMRIMG.length===9;}
   {const fr=Math.max(0,Math.min(1,S0/Math.max(1,maxS))),bh=Math.max(14,VH*VH/TOT),by2=top+(VH-bh)*(1-fr);rrect(W-3.5,by2,2.5,bh,1.2,'rgba(255,255,255,.35)',false);}
   b.restore();};}
 /* /REGIOES08NOV */
+/* ATLAS08NOV — "Atlas de Bolso" (modelo escolhido pelo Felipe, arte do Buchecha): mapa da Muralha em tela cheia, um mundo por vez (3 regiões),
+   placa MURALHA + progresso + voltar + idioma no topo, bandeiras dos mundos à esquerda, rodapé com História, painel da fase (toque = detalhes), JOGAR e Cartas. */
+let ATP='assets/mapa_muralha/atlas/';
+const ATK=['placa_muralha','estrela_progresso','trilho_progresso','voltar','idioma','historia','cartas','painel_fase','jogar','mundo_ativo','mundo_inativo','cadeado_mundo','cadeado','estrela_cheia','estrela_vazia','brilho_fase_atual'];
+function atI(k){return mmI(ATP+k+'.webp');}
+function atReady(){return ATK.every(k=>atI(k));}
+setTimeout(()=>{try{ATK.forEach(atI);for(let n=1;n<=9;n++)atI('mini'+n);}catch(e){}},2500);
+function murAtlasScroll(u,st,t,top,bot,WD){const key='wall',SA=stgState(key),VH=bot-top,k=W/887,SH=1774*k,TOT=3*SH,maxS=Math.max(0,TOT-VH),R0=WD*3;
+  const PF=g=>MMREG[Math.floor(g/5)%9][g%5],nY=g=>(Math.floor(g/5)-R0)*SH+(1774-PF(g)[1])*k;
+  const uiT=95*k,uiB=H-(1774-1600)*k;
+  const Tc=(s3,x,y,...a)=>{if(y>uiT-4&&y<uiB-16)T(s3,x,y,...a);};
+  if(st.scroll==null){const g=WD*STGN+(st.sel||0);st.scroll=Math.max(0,Math.min(maxS,nY(g)-(uiB-uiT)*.5-(H-uiB)));}
+  st.goW=null;
+  if(!st.drag){st.scroll+=st.vs||0;st.vs=(st.vs||0)*.9;if(Math.abs(st.vs)<.05)st.vs=0;}
+  if(st.scroll<0){st.scroll*=.7;st.vs=0;}if(st.scroll>maxS){st.scroll=maxS+(st.scroll-maxS)*.7;st.vs=0;}
+  const S0=st.scroll,sy=cy=>bot-(cy-S0),selG=WD*STGN+(st.sel||0),ES=MMKIT;
+  b.save();b.beginPath();b.rect(0,top,W,VH);b.clip();b.imageSmoothingEnabled=true;
+  for(let q=0;q<3;q++){const r=R0+q,yB=sy(q*SH),yT=yB-SH;const F=mmI(MMRIMG[r%9]);if(yB<top-4||yT>bot+4)continue;
+    if(F)b.drawImage(F,0,yT-.4,W,SH+.8);else{px(0,yT,W,SH,murBioI(r*5).band[1]);Tc('carregando…',W/2,yT+SH/2,7,'center','rgba(255,255,255,.6)',120);}}
+  for(let g=WD*STGN;g<(WD+1)*STGN;g++){const q=Math.floor(g/5)-R0,P=PF(g),yT=sy(q*SH)-SH,Y=v=>yT+v*k,X=v=>v*k;if(Y(P[7]+P[9])<top-10||Y(P[7]-40)>bot+10)continue;
+    const boss=!!P[10],locked=g>SA.next||!stgWOpen(key,WD),cur=g===SA.next&&!locked,stars=SA.stars[g],sel=g===selG;
+    if(cur){const BR=atI('brilho_fase_atual'),bw=(boss?230:180),bh=bw*110/180;if(BR){b.save();b.globalAlpha=.7+.3*Math.sin(t/7);b.drawImage(BR,X(P[4]-bw/2),Y(P[5]-bh/2),bw*k,bh*k);b.restore();}}
+    if(sel&&!cur){b.save();b.globalCompositeOperation='lighter';glowAt(X(P[0]),Y(P[1]),boss?34:26,'255,230,120',.5);b.restore();}
+    if(locked){const CI=atI('cadeado'),cs=boss?46:38;if(CI)b.drawImage(CI,X(P[2]-cs/2),Y(P[3]-cs/2),cs*k,cs*k);}
+    else if(stars)for(let s3=0;s3<3;s3++){const SI=atI(s3<stars?'estrela_cheia':'estrela_vazia'),ss=boss?46:40;if(SI)b.drawImage(SI,X(P[2]-ss*1.5+s3*ss),Y(P[3]-ss/2),ss*k,ss*k);}
+    const n=g%STGN+1,ls=boss?38:46,ly=locked||stars?P[1]-6:P[1]+8;
+    Tc(boss?`${n} · CHEFE`:String(n),X(P[0]),Y(ly)-ls*k*.55,ls*k,'center',locked?'#d9d2c4':'#fffaf0',boss?190*k:110*k,'#3e2418');
+    if(st.lockT&&st.lockT.g===g&&st.lockT.t++<30)Tc('trancada!',X(P[0]),Y(P[7])-8,5.6,'center','#ff8a9a',40,C.ink);
+    {const qy=Y(P[7]-20),qh=(P[9]+30)*k,y0=Math.max(X(P[6]-10)<130*k?330*k:uiT,qy),y1=Math.min(uiB,qy+qh);if(y1>y0+4)u.rects.push({x:X(P[6]-10),y:y0,w:(P[8]+20)*k,h:y1-y0,i:2000+g});}}
+  {const m=party[0],P=PF(selG),q=Math.floor(selG/5)-R0,yT=sy(q*SH)-SH;if(m){const x=P[0]*k,y=yT+(P[7]+4)*k;if(y>top-20&&y<bot+20){const hop=Math.abs(Math.sin(t/8))*4;drawMon(monKey(m),x,y-hop,.36);}}}
+  {const fr=Math.max(0,Math.min(1,S0/Math.max(1,maxS))),bh=Math.max(14,(uiB-uiT)*VH/TOT),by2=uiT+(uiB-uiT-bh)*(1-fr);rrect(W-3.5,by2,2.5,bh,1.2,'rgba(255,255,255,.35)',false);}
+  b.restore();}
+function drawStageMapAtlas(u){const st=u.cfg.smap;st.t++;const t=st.t,key=st.key,WD=st.world||0,SA=stgState(key),gi=WD*STGN+(st.sel||0);u.rects=[];u.boxR=null;
+  const s=W/887,yb=y=>y*s+(H-1774*s);
+  px(0,0,W,H,'#1d2a14');if(st.atW!==WD){st.atW=WD;st.scroll=null;st.info=false;}if(st.infoG!==gi){st.infoG=gi;st.info=false;}
+  MMWALLON=1;try{murAtlasScroll(u,st,t,0,H,WD);}finally{MMWALLON=0;}
+  const R=(r,bt)=>[r[0]*s,bt?yb(r[1]):r[1]*s,r[2]*s,r[3]*s];
+  const im=(k,r,bt)=>{const I=atI(k);if(!I)return;const q=R(r,bt);b.drawImage(I,q[0],q[1],q[2],q[3]);};
+  const tx=(str,r,bt,fp,col,sh,al)=>{const q=R(r,bt);T(str,al==='left'?q[0]:q[0]+q[2]/2,q[1]+q[3]/2-fp*s*.55,fp*s,al||'center',col,q[2],sh||null);};
+  b.save();b.imageSmoothingEnabled=true;
+  {const g0=b.createLinearGradient(0,0,0,110*s);g0.addColorStop(0,'rgba(10,6,24,.45)');g0.addColorStop(1,'rgba(10,6,24,0)');b.fillStyle=g0;b.fillRect(0,0,W,110*s);
+   const g1=b.createLinearGradient(0,yb(1560),0,H);g1.addColorStop(0,'rgba(10,6,24,0)');g1.addColorStop(1,'rgba(10,6,24,.5)');b.fillStyle=g1;b.fillRect(0,yb(1560),W,H-yb(1560));}
+  /* topo */
+  im('placa_muralha',[15,1,267,90]);tx('MURALHA',[92,18,171,53],0,38,'#451d12');
+  im('estrela_progresso',[339,10,49,49]);const done=SA.stars.filter(v=>v>0).length;tx(`${done}/${STGT}`,[394,12,72,44],0,30,'#fff8e2','#1a0f08');
+  im('trilho_progresso',[475,21,184,29]);{const fr=done/STGT,q=R([482,27,167*fr,16]);if(fr>0){const gg=b.createLinearGradient(0,q[1],0,q[1]+q[3]);gg.addColorStop(0,'#fff384');gg.addColorStop(1,'#f2a309');rrect(q[0],q[1],Math.max(q[3],q[2]),q[3],q[3]/2,gg,false);}}
+  im('voltar',[725,5,68,68]);u.rects.push({x:715*s,y:0,w:85*s,h:80*s,i:99});
+  im('idioma',[805,4,68,68]);u.rects.push({x:800*s,y:0,w:87*s,h:80*s,i:95});
+  /* bandeiras dos mundos */
+  [[0,105,126,75],[0,180,126,75],[0,250,126,75]].forEach((r,k)=>{const on=WD===k,op=stgWOpen(key,k),rr=on?r:[r[0],r[1],r[2],70];im(on?'mundo_ativo':'mundo_inativo',rr);const q=R(rr);
+    const iy=op?.16:.03,ih=op?.56:.57;T((window.CVLANG==='en'?'World ':'Mundo ')+(k+1),q[0]+q[2]*.55,q[1]+q[3]*(iy+ih/2)-21*s*.55,21*s,'center','#fff8e2',q[2]*.8,'#1a0f08');
+    if(!op){const LI=atI('cadeado_mundo');if(LI){const lw=q[2]*.2,lh=q[3]*.42;b.drawImage(LI,q[0]+q[2]*.44,q[1]+q[3]*(1-.13)-lh,lw,lh);}}
+    u.rects.push({x:q[0],y:q[1],w:q[2],h:q[3],i:900+k});});
+  /* rodapé */
+  const stars=SA.stars[gi]||0,boss=murBoss(gi),bio=murBioI(gi),n=(st.sel||0)+1;
+  im('historia',[47,1651,84,84],1);u.rects.push({x:40*s,y:yb(1640),w:100*s,h:110*s,i:98});
+  im('cartas',[757,1651,85,85],1);u.rects.push({x:748*s,y:yb(1640),w:105*s,h:110*s,i:97});if(typeof modeBuyN==='function'&&modeBuyN(key)>0)E(830*s,yb(1660),9*s,9*s,'#e8352e');
+  im('painel_fase',[172,1644,548,100],1);{const MI=atI('mini'+(Math.floor(gi/5)%9+1));if(MI){const q=R([206,1654,94,74],1);b.drawImage(MI,q[0],q[1],q[2],q[3]);}}
+  tx((window.CVLANG==='en'?'Stage ':'Fase ')+n,[313,1666,149,54],1,40,'#512014');u.rects.push({x:172*s,y:yb(1644),w:368*s,h:100*s,i:96});
+  {const pl=1+Math.sin(t/6)*.03,q=R([540,1609,164,161],1),cx=q[0]+q[2]/2,cy=q[1]+q[3]/2;b.save();b.translate(cx,cy);b.scale(pl,pl);b.translate(-cx,-cy);im('jogar',[540,1609,164,161],1);b.restore();
+   tx(stars?'REPETIR':'JOGAR',[549,1652,145,68],1,stars?24:29,'#fff8e8','#042405');u.rects.push({x:q[0],y:q[1],w:q[2],h:q[3],i:100});}
+  /* detalhes (toque no painel) */
+  if(st.info){const x0=W*.1,w0=W*.8,h0=128*s*1.25,y0=yb(1630)-h0;rrect(x0,y0,w0,h0,14*s,'#f6e1ae',false);b.lineWidth=2;b.strokeStyle='#9f6224';b.beginPath();if(b.roundRect){b.roundRect(x0,y0,w0,h0,14*s);b.stroke();}
+    const L=(str,yy,fp,col)=>T(str,x0+16*s,y0+yy*s,fp*s,'left','#47251c',w0-32*s,null);
+    L(`${window.CVLANG==='en'?'World':'Mundo'} ${WD+1} · ${window.CVLANG==='en'?'Stage':'Fase'} ${n}${boss?' · CHEFE':''}`,14,30);L(bio.n,50,26);
+    L(stgObjTxt(key,gi),82,24);L(stars?`Repetir: +${3+Math.floor(gi/2)} moedas`:`1ª vez: +${3+WD+(boss?10:0)} 💎 e +${12+3*gi} moedas`,112,24);
+    for(let k3=0;k3<3;k3++){const SI=atI(k3<stars?'estrela_cheia':'estrela_vazia');if(SI)b.drawImage(SI,x0+w0-(3-k3)*40*s-12*s,y0+12*s,36*s,36*s);}
+    T('✕',x0+w0-14*s,y0+h0-34*s,22*s,'center','#572315');u.rects.push({x:x0,y:y0,w:w0,h:h0,i:96});}
+  b.restore();}
+{const _dsm=drawStageMap;drawStageMap=function(u){const st=u.cfg.smap;if(st.key==='wall'&&typeof mmRegOk==='function'&&mmRegOk()){if(atReady())return drawStageMapAtlas(u);if((st.atWait=(st.atWait||0)+1)<240){px(0,0,W,H,'#1d2a14');u.rects=[{x:0,y:0,w:W,h:40,i:99}];T('carregando…',W/2,H/2,8,'center','rgba(255,255,255,.7)',120);return;}}return _dsm(u);};}
+/* /ATLAS08NOV */
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

@@ -14451,7 +14451,7 @@ async function jogEntrega(){if(!JOGPEND.length)return;const got=flags.rwGot=flag
     const sp=jogSp(p.mon);got.push(p.k);feitos.push(p.k);saveGame();
     try{tone([523,659,784,1047],.09);}catch(_){}
     /* PRESENTETIO (08/nov, Felipe: "manda com o tio Felipe na tela e uma apresentação legal"): o Tio Felipe entra andando e entrega o presente */
-    {const sp0=jogSp(p.mon),T0=[`🎁 Olha quem chegou! Trouxe um PRESENTE pra você!`];if(p.msg)T0.push(p.msg);if(sp0&&SP[sp0])T0.push(`Esse aqui é especial: um <b>${SP[sp0].name}</b> pra entrar no seu time! Cuida bem dele, hein? 💪`);if(L.length)T0.push(`E ainda tem mais: ${L.join(', ')}. Aproveita!`);
+    {const sp0=jogSp(p.mon),T0=[`🎁 Olha quem chegou! Trouxe um PRESENTE pra você!`];if(p.msg)T0.push(p.msg);if(sp0&&SP[sp0])T0.push('Esse aqui é especial: um monstrinho novo pra entrar no seu time! Cuida bem dele, hein? 💪');if(L.length)T0.push(`E ainda tem mais: ${L.join(', ')}. Aproveita!`);
      try{if(typeof tioShow==='function')await tioShow(T0);else{for(const t of T0)await say(t);}}catch(_){for(const t of T0)await say(t);}}
     if(sp){const where=grantMon(sp,Math.max(5,Math.min(50,+p.monLv||5)));saveGame();await revealMon(sp,where);}}
   if(feitos.length){saveGame();try{await jogPost({acao:'recebi',id:String(flags.tid),nome:flags.nome||'',ks:feitos});}catch(_){}}}
@@ -16005,8 +16005,8 @@ function wGapK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss)||!WL||STG.i<15)retu
 async function tioDica(key,i){const T=[],avg=teamAvg();flags.tioL=flags.tioL||{};const id=key+':'+i,n=(flags.tioL[id]||0)+1;flags.tioL[id]=n;
   let gap=0;try{if(key==='wall')gap=stgFoeLv(i)+3-avg;else gap=Math.round(1.5+i*1.75+Math.floor(i/5))-avg;}catch(e){}
   if(n<3&&gap<8){try{saveGame();}catch(e){}return;}flags.tioL[id]=0;try{saveGame();}catch(e){}
-  if(n>=3&&gap<8)T.push(`Tio Felipe: Ei, vi que essa fase tá difícil! Já são ${n} tentativas. Calma, faz parte do treino. Bora ver o que dá pra melhorar?`);
-  if(gap>=8)T.push(`Tio Felipe: Opa, para tudo! Os inimigos dessa fase estão uns ${gap} níveis acima do seu time (nível ${avg}). Assim fica muito pesado! Primeiro fique mais forte: Expedição, batalhas no mato alto e Doces Mágicos dão nível!`);
+  if(n>=3&&gap<8)T.push('Tio Felipe: Ei, vi que essa fase tá difícil! Já foram várias tentativas. Calma, faz parte do treino. Bora ver o que dá pra melhorar?');
+  if(gap>=8)T.push('Tio Felipe: Opa, para tudo! Os inimigos dessa fase estão muito mais fortes que o seu time. Assim fica muito pesado! Primeiro fique mais forte: Expedição, batalhas no mato alto e Doces Mágicos dão nível!');
   const D=['Tio Felipe: Escolha monstrinhos de tipo FORTE contra os inimigos dessa fase. Fogo contra planta, água contra fogo... cada tipo tem o seu ponto fraco!',
     'Tio Felipe: Na LOJA, em PODERES, você deixa cada tipo de monstrinho mais forte. Vale muito a pena!',
     'Tio Felipe: Use o ESPECIAL quando a barrinha do monstrinho encher. Guarde pros momentos de aperto!',

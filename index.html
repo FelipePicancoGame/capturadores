@@ -14448,8 +14448,9 @@ async function jogEntrega(){if(!JOGPEND.length)return;const got=flags.rwGot=flag
     for(const part of String(p.itens||'').split(/[,;]+/)){const m=part.trim().match(/^([^:=\d]+?)\s*[:=x]?\s*(\d+)?$/i);if(!m)continue;const key=JOGITEM[m[1].toLowerCase().replace(/\s+/g,'')];const n=Math.max(1,Math.min(99,+m[2]||1));if(!key)continue;bag[key]=(bag[key]||0)+n;L.push(`${n} ${itemName(key)}`);}
     const sp=jogSp(p.mon);got.push(p.k);feitos.push(p.k);saveGame();
     try{tone([523,659,784,1047],.09);}catch(_){}
-    await say(`🎁 Presente do Felipe!${p.msg?' '+p.msg:''}`);
-    if(L.length)await say(`Você recebeu: ${L.join(', ')}.`);
+    /* PRESENTETIO (08/nov, Felipe: "manda com o tio Felipe na tela e uma apresentação legal"): o Tio Felipe entra andando e entrega o presente */
+    {const sp0=jogSp(p.mon),T0=[`🎁 Olha quem chegou! Trouxe um PRESENTE pra você!`];if(p.msg)T0.push(p.msg);if(sp0&&SP[sp0])T0.push(`Esse aqui é especial: um <b>${SP[sp0].name}</b> pra entrar no seu time! Cuida bem dele, hein? 💪`);if(L.length)T0.push(`E ainda tem mais: ${L.join(', ')}. Aproveita!`);
+     try{if(typeof tioShow==='function')await tioShow(T0);else{for(const t of T0)await say(t);}}catch(_){for(const t of T0)await say(t);}}
     if(sp){const where=grantMon(sp,Math.max(5,Math.min(50,+p.monLv||5)));saveGame();await revealMon(sp,where);}}
   if(feitos.length){saveGame();try{await jogPost({acao:'recebi',id:String(flags.tid),nome:flags.nome||'',ks:feitos});}catch(_){}}}
 /* CONVITE (05/nov, Felipe: "manda criar um refer pra enviar pelo WhatsApp e ganhar brindes; quem entrar pela referência ganha cristais de bônus" · "pode dar 50 cristais"):

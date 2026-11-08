@@ -16083,6 +16083,14 @@ function wDdaK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss))return 1;return Mat
 {const _sr=showResult;showResult=async function(R2){try{if(R2&&R2.key==='wall'&&STG&&STG.mode==='wall'&&!STG.miss&&WL){const wf=WL.wallMax?WL.wall/WL.wallMax:0;let d=flags.wDda||1;if(R2.win)d*=wf>=.75?1.12:wf>=.4?1.04:1;/* Felipe 08/nov: perder NUNCA deixa mais fácil */flags.wDda=Math.max(1,Math.min(3,Math.round(d*1000)/1000));try{__EV('muralha dda '+flags.wDda);}catch(_){}}}catch(e){}return _sr.apply(this,arguments);};}
 /* /DDA08NOV */
 
+/* FASECERTA (08/nov, Felipe: "me coloca na fase onde eu deveria estar"): presente especial da planilha que ajusta o progresso das fases.
+   Na coluna Itens: fase_wall:15 (ou fase_td:N / fase_surv:N) → as fases a partir da N+1 voltam a ficar por fazer (as N primeiras continuam vencidas)
+   e a dificuldade adaptativa volta ao normal. */
+{const _je=jogEntrega;jogEntrega=async function(){try{for(const p of JOGPEND){const it=String(p.itens||'');const re=/fase_(wall|td|surv):(\d+)/gi;let m,hit=0;
+  while((m=re.exec(it))){const key=m[1].toLowerCase(),n=Math.max(0,Math.min(STGT,+m[2]));const A=stgArr(key);A.length=Math.min(A.length,n);if(key==='wall')flags.wDda=1;hit=1;try{__EV('fase ajustada '+key+' '+n);}catch(_){}}
+  if(hit){p.itens=it.replace(re,'').replace(/^[\s,;]+|[\s,;]+$/g,'');saveGame();}}}catch(e){}return _je.apply(this,arguments);};}
+/* /FASECERTA */
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

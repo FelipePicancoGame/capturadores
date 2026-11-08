@@ -1894,7 +1894,7 @@ function drawCadAsk(u){const Q=DLGI&&DLGI.destaque,O=CADOP;if(!Q||!O.complete||!
     b.save();b.translate(x+ow/2,y+oh/2);b.scale(pl,pl);b.drawImage(O,-ow/2,-oh/2,ow,oh);/* 30/out: o texto cabe dentro da etiqueta (diminui a letra; se ainda não couber, aperta) */{const av=ow*.47;let fz=oh*.42;b.font=`800 ${fz}px CadBaloo, Fredoka, Arial, sans-serif`;let mw=b.measureText(u.opts[k]).width;if(mw>av){fz=Math.max(oh*.27,fz*av/mw);b.font=`800 ${fz}px CadBaloo, Fredoka, Arial, sans-serif`;mw=b.measureText(u.opts[k]).width;}b.fillStyle=cf.cols?(cf.cols[k]||'#154c5e'):k===0?'#1f7a3a':'#8a2f2f';b.save();b.translate(ow*.025,oh*.04);if(mw>av)b.scale(av/mw,1);b.fillText(u.opts[k],0,0);b.restore();}b.restore();}
   b.restore();return true;}
 
-function LSM(m){try{const n=((flags.ls||{})[m]||0);return 1-Math.min(.2,.08*n);}catch(e){return 1;}}
+/* SEMALIVIO (08/nov, Felipe: 'a fase nunca fica mais fácil de perder; a pessoa tem que jogar pra conseguir'): antes cada derrota tirava até 20% da vida dos inimigos */function LSM(m){return 1;}
 function hasSave(){try{return !!localStorage.getItem(SAVE);}catch(e){return false;}}
 /* LOADSEGURO (02/nov, aviso da Gabi: "Continuar não funciona"): antes, qualquer pedacinho estranho no salvo (um monstrinho que não existe, um mapa que mudou de nome)
    fazia o Continuar não fazer nada, sem aviso. Agora pula o pedaço ruim, guarda o motivo nos avisos do 🐞 e só desiste se não sobrar nenhum monstrinho. */
@@ -5541,7 +5541,7 @@ function wOffer(){const w=WL;if(w.rr==null)w.rr=1;const cands=[];w.nextTheme=wNe
 function wPick(i){const w=WL,cd=w.cards.opts[i];if(!cd)return;if(w.duo)duoCardF(w,cd);else{cd.f(w);wcuBonus(cd,w);}
   for(const di of cardTargets(cd)){const d=w.defs[di];d.wl++;d.mDmg*=1.05;d.lvT=50;part(d.x,d.y-6,C.yellow,1,{kind:'ring',sp:0,life:28,grav:0});part(d.x,d.y-6,spCol(d.sp),14,{sp:2,up:1.4,life:30});wPop(d.x,d.y-32,`NÍVEL ${d.wl}!`,C.yellow,9);}if(!cd.noLv)w.lv[cd.key||cd.id]=(w.lv[cd.key||cd.id]||0)+1;if(!w.owned.some(o=>(o.key||o.id)===(cd.key||cd.id)))w.owned.push(cd);
   part(90,130,RAR[cd.r],24,{sp:3,life:30,grav:.04,size:2});w.cards=null;if(w.duo&&!duoBothPicked(w,cd))return;
-  const wr=w.wall/w.wallMax,SMW=STG&&STG.mode==='wall';w.dda=SMW?Math.max(.85,Math.min(1,w.dda*(wr<.35?.88:1))):Math.max(.75,Math.min(2.2,w.dda*(wr>.85?1.15:wr>.6?1.05:wr<.35?.88:1)));
+  const wr=w.wall/w.wallMax,SMW=STG&&STG.mode==='wall';w.dda=SMW?w.dda/* SEMALIVIO: nas fases a Muralha não alivia quando está apanhando */:Math.max(.75,Math.min(2.2,w.dda*(wr>.85?1.15:wr>.6?1.05:wr<.35?.88:1)));
   w.wave++;wStormStart(w);if(w.waveHeal){const hh=Math.round(w.wallMax*w.waveHeal);w.wall=Math.min(w.wallMax,w.wall+hh);wPop(90,262,'+'+hh,'#7fe88a',10);}if(w.crystal)w.shieldHits=(w.shieldHits||0)+6;w.thiefDone=w.wave%2===1;wBarrelSpawn(w.wave>=4?2:1);w.spawned=0;w.toSpawn=(SMW?Math.round((STG.i<3?5:6)+w.wave*(STG.i<3?2:2.5)+STG.i*.15+Math.min(5,(w.gap||0)/4)):8+w.wave*3)+((w.wave===5||w.wave===10)?1:0);w.bossHold=0;if(w.wave===5||w.wave===10)w.toSpawn=Math.round((w.toSpawn-1)*1.8)+56+w.wave;w.theme=w.nextTheme||null;w.rangeT=200;if(w.theme==='enxame')w.toSpawn=Math.round(w.toSpawn*1.35);w.surge=0;if(SMW&&(STG.i%3===1||STG.i>=6&&STG.i%3===0)&&w.wave>=2&&w.wave!==5&&w.wave!==10){w.surge=w.wave>=6?3:2;w.toSpawn=Math.round(w.toSpawn*(w.surge===3?1.55:1.35));}w.spawnT=70;if(SMW&&[3,6,8].includes(w.wave))w.rushAt=w.t+380;w.banner={t:80,text:w.theme?`ONDA ${w.wave}: ${WTHEME[w.theme].n}`:`ONDA ${w.wave}`,sub:'Ameaça: '+'●'.repeat(Math.max(1,Math.min(5,Math.round((w.dda-.6)*3.2))))+'○'.repeat(5-Math.max(1,Math.min(5,Math.round((w.dda-.6)*3.2))))};if(w.surge)w.banner.sub=`${w.surge} grupos de inimigos vindo!`;w.running=true;}
 /* TEMPESTADE na Muralha (inspirado nas ondas com clima dos defensores de muralha de celular): raios caem nos inimigos e os monstrinhos elétricos carregam o especial mais rápido */
 function wStormStart(w){w.storm=null;if(w.wave>=4&&w.wave!==5&&w.wave!==10&&Math.random()<.3){w.storm={t:0,next:120};w.banner={t:120,text:'TEMPESTADE!',sub:'Raios caem nos inimigos · Elétricos carregam o especial 2x'};tone([110,98,82],.14,'sawtooth',.04);}}
@@ -16076,11 +16076,11 @@ const LOOKKEY=new Map();try{for(const k in LOOKS)LOOKKEY.set(LOOKS[k],k);}catch(
 /* /SEMCODIGO2 */
 
 /* DDA08NOV (Felipe: "terminei mais um jogo da muralha, continua fácil"): dificuldade que se ADAPTA ao jogador, como nos jogos grandes.
-   Cada vitória fácil na Muralha (muralha com 75%+ de vida) deixa as próximas fases 12% mais fortes; vitória apertada mantém; derrota alivia 8%.
-   Fica entre 0,85x e 3x e vale pra todas as fases de Muralha. Assim quem tem muitas melhorias recebe desafio de verdade e quem está começando não trava. */
-function wDdaK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss))return 1;return Math.max(.85,Math.min(3,flags.wDda||1));}catch(e){return 1;}}
+   Cada vitória fácil na Muralha (muralha com 75%+ de vida) deixa as próximas fases 12% mais fortes; vitória apertada mantém; derrota NÃO alivia (Felipe).
+   Fica entre 1x e 3x e vale pra todas as fases de Muralha. Assim quem tem muitas melhorias recebe desafio de verdade e quem está começando não trava. */
+function wDdaK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss))return 1;return Math.max(1,Math.min(3,flags.wDda||1));}catch(e){return 1;}}
 {const _ws=wSpawn;wSpawn=function(){const w=WL,n0=w?w.foes.length:0;const r=_ws.apply(this,arguments);try{const k=wDdaK();if(k!==1&&WL)for(let j=n0;j<WL.foes.length;j++){const e=WL.foes[j];if(e.dk)continue;e.dk=1;e.max=Math.round(e.max*k);e.hp=Math.round(e.hp*k);if(e.shield)e.shield=Math.round(e.shield*k);}}catch(e){}return r;};}
-{const _sr=showResult;showResult=async function(R2){try{if(R2&&R2.key==='wall'&&STG&&STG.mode==='wall'&&!STG.miss&&WL){const wf=WL.wallMax?WL.wall/WL.wallMax:0;let d=flags.wDda||1;if(R2.win)d*=wf>=.75?1.12:wf>=.4?1.04:1;else d*=.92;flags.wDda=Math.max(.85,Math.min(3,Math.round(d*1000)/1000));try{__EV('muralha dda '+flags.wDda);}catch(_){}}}catch(e){}return _sr.apply(this,arguments);};}
+{const _sr=showResult;showResult=async function(R2){try{if(R2&&R2.key==='wall'&&STG&&STG.mode==='wall'&&!STG.miss&&WL){const wf=WL.wallMax?WL.wall/WL.wallMax:0;let d=flags.wDda||1;if(R2.win)d*=wf>=.75?1.12:wf>=.4?1.04:1;/* Felipe 08/nov: perder NUNCA deixa mais fácil */flags.wDda=Math.max(1,Math.min(3,Math.round(d*1000)/1000));try{__EV('muralha dda '+flags.wDda);}catch(_){}}}catch(e){}return _sr.apply(this,arguments);};}
 /* /DDA08NOV */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};

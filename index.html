@@ -15883,6 +15883,13 @@ function fogo2F(C2){try{let L=null;if(typeof WL!=='undefined'&&WL&&C2===WL.ctx)L
   const n=L?L.filter(sp=>SP[sp]&&SP[sp].type==='fogo').length:1;return n>=4?.3:n===3?.4:.6;}catch(e){return .6;}}
 /* /FOGO5TODOS08NOV */
 
+/* ARTES08NOV (Buchecha, REPORTS_08NOV): armadilha da Muralha nova vista de cima (R190), Tonho com cara própria (R192), Nina nova (R196) */
+try{NV7U.trap_par='blobs/d346a6d933fa8eb43fedf7419f119ff8.webp';NV7U.trap_dis='blobs/bba7651166e679a3c05e5e4682872787.webp';NV7U.trap_fog='blobs/67a1343ef740e5989cfadd8ad81de839.webp';['trap_par','trap_dis','trap_fog'].forEach(k=>delete NV7I[k]);}catch(e){}
+try{const R={npc_tonho:'blobs/60035b806c87615fdc91c1c61bd24a22.webp',nf_tonho:'blobs/d6d6c6d3b0e6d45ae521443bc55b0096.webp',npc_nina:'blobs/9ea2967dac3e87130c7c775ab3dd7f23.webp',nf_nina:'blobs/fae27ebd4ecbbdbdff3c2dba72644732.webp'};
+  for(const k in R){const i=new Image();i.decoding='async';i.src=R[k];ASI[k]=i;}
+  NPC4.tonho='npc_tonho';NPC4.nina='npc_nina';NPCART.tonho='nf_tonho';NPCART.nina='nf_nina';}catch(e){}
+/* /ARTES08NOV */
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

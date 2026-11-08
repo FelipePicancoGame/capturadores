@@ -407,7 +407,7 @@ window.CVNovasHistoriasDados={"versao": 1, "status": "PROPOSTAS_NOVAS_EM_COPIA_D
    3) Voltou pro mapa: as imagens do mapa voltam em segundo plano, 2 por vez.
    Imagem solta que o jogo pedir de novo volta a carregar sozinha (o jogo vê 'carregando', igual ao começo do jogo). */
 (function(){try{if(/nounload/.test(location.hash))return;
-  const BL='data:image/gif;base64,R0lGODlhAQABAAAAACw=',MINPX=60000,P=HTMLImageElement.prototype;
+  const BL='data:image/gif;base64,R0lGODlhAQABAAAAACw=',MINPX=1000000/* SEMCODIGO2 (08/nov): antes 60000; imagens até 1 milhão de pixels (botões, ícones, painéis, cenário) ficam sempre */,P=HTMLImageElement.prototype;
   const dS=Object.getOwnPropertyDescriptor(P,'src'),dW=Object.getOwnPropertyDescriptor(P,'naturalWidth'),dH=Object.getOwnPropertyDescriptor(P,'naturalHeight'),dC=Object.getOwnPropertyDescriptor(P,'complete');
   const ALL=new Set();let SOLTAS=0,VOLTAS=0;
   const now=()=>performance.now();
@@ -16063,6 +16063,17 @@ const LUNEX={u:'blobs/2f3e0315478c4cad2dd7fcef4e41c765.webp',ox:120,oy:500,w:118
 const LOOKKEY=new Map();try{for(const k in LOOKS)LOOKKEY.set(LOOKS[k],k);}catch(e){}
 {const _dp=drawPerson;drawPerson=function(sx,sy,dir,leg,L){try{const k=LOOKKEY.get(L);if(k&&(k==='player'||NPC4[k]||NPCART[k]))return;}catch(e){}return _dp.apply(this,arguments);};}
 /* /SEMCODIGO08NOV */
+
+/* SEMCODIGO2 (08/nov, Felipe: "repete essa regra pra menus, botões, cenário e tudo"):
+   1) imagens pequenas e médias (botões, ícones, painéis, peças de cenário: até 1 milhão de pixels) nunca saem da memória — só as folhas grandes de animação e fundos enormes que não estão na tela;
+   2) telas de menu inteiras (Ajustes, telas novas, menu, loja, seleção, cartas) também ficam sempre na memória;
+   3) os Ajustes esperam a arte carregar (até 4 s) em vez de mostrar a lista de texto antiga. */
+{const KP=/^(mn_|ui_|ic_|ic\d|btv|esc_|tela_|cf_|cb_|cd|selo_|hc_|it_|vm_|tdw|tdc_|st_|sp_|ti_|bau_|cr_|mg_|tx_|vh_|fp_|fr_|d_|o_|c_|i_|b_|t_|n_)/;
+ const KEEP2=()=>{try{const K=window.__KEEPUI;if(!K)return;for(const k in ASI)if(KP.test(k)&&ASI[k])K.add(ASI[k]);
+   for(const D of [typeof CFGI!=='undefined'?CFGI:null,typeof NV7I!=='undefined'?NV7I:null,typeof MNNEW!=='undefined'?MNNEW:null,typeof DLGI!=='undefined'?DLGI:null])if(D)for(const k in D){const v=D[k];if(v&&typeof v==='object'&&'src' in v)K.add(v);}}catch(e){}};
+ setInterval(KEEP2,3000);setTimeout(KEEP2,1000);}
+{const _dm=drawMenu;drawMenu=function(u){try{const cf=u.cfg||{};if((cf.cfgart||cf.gcart)&&!u.__artOk){const ok=cf.gcart?drawGcArt(u):drawCfgArt(u);if(ok){u.__artOk=1;return;}u.__w0=u.__w0||performance.now();if(performance.now()-u.__w0<4000){b.save();b.fillStyle='rgba(10,8,28,.55)';b.fillRect(0,0,W,H);b.restore();u.rects=[];return;}}}catch(e){}return _dm(u);};}
+/* /SEMCODIGO2 */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

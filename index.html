@@ -16029,6 +16029,13 @@ function tioShow(lines){return new Promise(res=>{try{if(!lines||!lines.length)re
   setTimeout(()=>{tw.classList.remove('anda');tw.classList.add('acena');show();bl.classList.add('on');ok=true;},2300);
   }catch(e){res();}});}
 /* /DIFICULDADE08NOV */
+/* SERRA08NOV (Felipe: "vamos usar como os outros jogos fazem"): dificuldade em DENTE DE SERRA, em todos os mundos e nos minijogos de fases
+   (Muralha, Torres, Horda). Em cada bloco de 5 fases: as 2 primeiras são mais leves (respiro), sobe na 3ª e 4ª, e a 5ª (a do chefe) é o pico.
+   Como a cada 5 fases tudo já fica 15% mais forte, a fase depois do chefe volta a ser mais tranquila. Na média do bloco a dificuldade quase não muda. */
+const SAW=[.88,.94,1,1.06,1.18];function sawK(){try{if(!STG||STG.miss||STG.i==null)return 1;return SAW[STG.i%5];}catch(e){return 1;}}
+{const _ws=wSpawn;wSpawn=function(){const w=WL,n0=w?w.foes.length:0;const r=_ws.apply(this,arguments);try{const k=sawK();if(k!==1&&WL&&STG&&STG.mode==='wall')for(let j=n0;j<WL.foes.length;j++){const e=WL.foes[j];if(e.sk)continue;e.sk=1;e.max=Math.round(e.max*k);e.hp=Math.round(e.hp*k);if(e.shield)e.shield=Math.round(e.shield*k);}}catch(e){}return r;};}
+for(const nm of ['towerMode','survMode']){try{const f=eval(nm);const g=async function(){try{if(STG&&!STG.sawd&&!STG.miss&&STG.mode!=='wall'){STG.sawd=1;STG.mult*=sawK();}}catch(e){}return f.apply(this,arguments);};eval(nm+'=g');}catch(e){}}
+/* /SERRA08NOV */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

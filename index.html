@@ -4948,7 +4948,7 @@ async function powersMenu(){while(true){const tp=[...new Set(party.map(m=>SP[m.s
 function bFire(C2,s,tg){const PL=pwLv(SP[s.sp]?SP[s.sp].type:s.type);s={...s,dmg:s.dmg*bRange(s.sp,lvOf(s))[1],tier:Math.max(s.tier||1,PL)};const B2=behOf(s.sp,lvOf(s)),big=(s.big?1.3:1)*(s.pw||1),ang=Math.atan2(tg.y-s.y,tg.x-s.x)+(s.ang||0);
   if((B2.k==='jet'||B2.k==='aurora')&&s.pierce)s={...s,dmg:s.dmg*(1+.2*(s.pierce||0))};
   switch(B2.k){
-  case 'blast':{const bb=1+(PL>=2?.1:0)+(PL>=4?.1:0);bFireball(C2,s,ang,big*bb*(B2.big2?1.2:1),PL>=3);const ex=bNear(C2,tg.x,tg.y,150,tg).sort((a,c2)=>Math.hypot(a.x-s.x,a.y-s.y)-Math.hypot(c2.x-s.x,c2.y-s.y)).slice(0,PL>=5?1:0);ex.forEach((e,k)=>C2.fx.push({k:'delay',t:-(k+1)*5,run:()=>{if(!e.dead)bFireball(C2,{...s,dmg:s.dmg*.6},Math.atan2(e.y-s.y,e.x-s.x),big*.85,PL>=5);}}));break;}
+  case 'blast':{const bb=1+(PL>=2?.1:0)+(PL>=4?.1:0);bFireball(C2,s,ang,big*bb*(B2.big2?1.2:1),PL>=3);const ex=bNear(C2,tg.x,tg.y,150,tg).sort((a,c2)=>Math.hypot(a.x-s.x,a.y-s.y)-Math.hypot(c2.x-s.x,c2.y-s.y)).slice(0,PL>=5?1:0);ex.forEach((e,k)=>C2.fx.push({k:'delay',t:-(k+1)*5,run:()=>{if(!e.dead)bFireball(C2,{...s,dmg:s.dmg*(typeof fogo2F==='function'?fogo2F(C2):.6)},Math.atan2(e.y-s.y,e.x-s.x),big*.85,PL>=5);}}));break;}
   case 'breath':{const _iw=typeof WL!=='undefined'&&WL&&C2===WL.ctx,d=Math.hypot(tg.x-s.x,tg.y-s.y),R2=_iw?wRng(WL,s.src)*.62:95+(s.pierce||0)*22+(PL-1)*8;if(d>R2+(_iw?0:10)){bFireball(C2,s,ang,big,PL>=5);break;}
     C2.fx.push({k:'flame',x:s.x+Math.cos(ang)*5,y:s.y+Math.sin(ang)*5,ang,maxR:Math.min(R2,d+24),R:0,t:0,dur:30,brn:PL>=5,hit:new Set(),s,dmg:s.dmg*(_iw?.5:.8),type:s.type,w:big,seed:Math.random()*9});if(s.src)C2.fx.push({k:'throw',src:s.src,t:0,dur:14});break;}
   case 'lava':for(let li=0;li<(B2.n||1)+(PL>=5?1:0);li++){const ox=li?(Math.random()*36-18):0,oy=li?(Math.random()*20-10):0;bLob(C2,s,tg.x+ox,tg.y+oy,{dur:24+li*3,h:26+li*6,delay:li*4,style:'lava',size:4,on:(x,y)=>{for(const e of bNear(C2,x,y,14*big*(1+.2*(s.pierce||0))))bHit(C2,e,s.dmg,s.type,{shot:mkS(s)});C2.fx.push({k:'zone',x,y:y+10,hy:10,r:16*big,t:0,dur:150,style:'lava',burn:PL>=3?1:0,type:s.type,dmg:s.dmg*.3,src:s.src});}});}break;
@@ -15877,7 +15877,10 @@ function arCT(sp,i,R2,L,c,ok){try{const ty=(SP[sp]||{}).type,k=({rocha:'pedra',e
    O poder é do TIPO (fica pra sempre, mesmo quando o monstrinho evolui). */
 {const _bf=bFire;bFire=function(C2,s,tg){const r=_bf(C2,s,tg);try{const ty=SP[s.sp]?SP[s.sp].type:s.type;if(ty==='fogo'&&pwLv('fogo')>=5&&!s._x2){const B2=behOf(s.sp,lvOf(s));
     if(B2.k!=='blast'){const ex=bNear(C2,tg.x,tg.y,150,tg).sort((a,c2)=>Math.hypot(a.x-s.x,a.y-s.y)-Math.hypot(c2.x-s.x,c2.y-s.y))[0];
-      if(ex)C2.fx.push({k:'delay',t:-6,run:()=>{if(!ex.dead)bFireball(C2,{...s,_x2:1,dmg:s.dmg*.6,tier:5},Math.atan2(ex.y-s.y,ex.x-s.x),(s.pw||1)*.85,true);}});}}}catch(e){}return r;};}
+      if(ex)C2.fx.push({k:'delay',t:-6,run:()=>{if(!ex.dead)bFireball(C2,{...s,_x2:1,dmg:s.dmg*fogo2F(C2),tier:5},Math.atan2(ex.y-s.y,ex.x-s.x),(s.pw||1)*.85,true);}});}}}catch(e){}return r;};}
+/* FOGO2F08NOV: a 2ª bola do Fogo Nv5 enfraquece quanto mais monstrinhos de fogo em campo (1–2: 60%, 3: 40%, 4+: 30%) */
+function fogo2F(C2){try{let L=null;if(typeof WL!=='undefined'&&WL&&C2===WL.ctx)L=WL.defs.map(d=>d.sp);else if(typeof TD!=='undefined'&&TD&&TD.towers)L=TD.towers.map(t=>t.sp);
+  const n=L?L.filter(sp=>SP[sp]&&SP[sp].type==='fogo').length:1;return n>=4?.3:n===3?.4:.6;}catch(e){return .6;}}
 /* /FOGO5TODOS08NOV */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};

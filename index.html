@@ -16446,6 +16446,74 @@ setTimeout(()=>{try{for(const m of (typeof party!=='undefined'?party:[]))cardIlu
 try{const st=document.createElement('style');st.textContent=`html body #cv-chapter .c1-dialogue,html body #cv-chapter .c1-story .c1-dialogue{top:calc(100cqw * 1322 / 1080)!important;bottom:auto!important;padding:0!important;min-height:0!important;line-height:calc(100cqw * 62.75 / 1080)!important;font-size:4cqw}
 html body #cv-chapter .c1-dialogue strong{display:block!important;margin:0!important;line-height:calc(100cqw * 62.75 / 1080)!important;font-size:3.3cqw}`;document.head.appendChild(st);}catch(e){}
 
+/* TELAS13_08NOV (08/nov, Felipe mandou 3 telas novas do Buchecha): MURALHA modelo 13, MINIJOGOS Atlas 04 e ARENA de Outono.
+   Cada tela é 1 imagem montada com as peças nas posições do LAYOUT.json (com sobra em cima/embaixo pra celular comprido); o que muda
+   (progresso, energia, moedas, fases, cartas do time) é escrito por cima. Em inglês ficam as telas antigas (a arte tem texto em português). */
+const N13U={mur:'assets/telas13/mur13.webp',mini:'assets/telas13/mini04.webp',are:'assets/telas13/are13.webp',carta:'assets/telas13/are13_carta.webp'},N13D={mur:[852,1846,110],mini:[898,1751,160],are:[898,1752,160]},N13I={};let N13C=null;
+function n13(k){let i=N13I[k];if(!i){try{i=new Image();i.decoding='async';const i0=i;i.onerror=()=>setTimeout(()=>{if(N13I[k]===i0)delete N13I[k];},3000);i.src=N13U[k];N13I[k]=i;}catch(e){return null;}}return i.complete&&i.naturalWidth?i:null;}
+function n13On(){return window.CVLANG!=='en';}
+function n13Tela(key){if(!n13On())return null;const I=n13(key);if(!I)return null;const [cw,ch,pt]=N13D[key];let k=W/cw,ox=0,oy=(H-ch*k)/2;if(oy<0){k=H/ch;oy=0;ox=(W-cw*k)/2;}
+  b.save();b.fillStyle='#1d2a20';b.fillRect(0,0,W,H);b.imageSmoothingEnabled=true;try{b.imageSmoothingQuality='high';}catch(e){}b.drawImage(I,ox,oy-pt*k,cw*k,(ch+2*pt)*k);b.restore();N13C={k,ox,oy};return N13C;}
+function q13(r){const t=N13C;return {x:t.ox+r[0]*t.k,y:t.oy+r[1]*t.k,w:r[2]*t.k,h:r[3]*t.k};}
+function f13(s,cx,cy,px,col,mw,ink){const t=N13C,x=t.ox+cx*t.k,y=t.oy+cy*t.k,f=px*t.k;s=String(s);b.save();b.font=`700 ${f}px Fredoka, "Arial Rounded MT Bold", sans-serif`;b.textAlign='center';b.textBaseline='middle';const M=mw?mw*t.k:undefined;
+  if(ink){b.lineJoin='round';b.strokeStyle=ink;b.lineWidth=f*.18;M?b.strokeText(s,x,y,M):b.strokeText(s,x,y);}b.fillStyle=col;M?b.fillText(s,x,y,M):b.fillText(s,x,y);b.restore();}
+function hit13(r,f){const q=q13(r);arHit2(q.x,q.y,q.w,q.h,f);}
+function msg13(A){if(A.msg&&A.msg.t>0){A.msg.t--;rrect(14,H/2-12,W-28,24,7,'rgba(60,40,20,.94)',false);T(A.msg.s,W/2,H/2-6,5.6,'center','#ffffff',W-34);}}
+try{setTimeout(()=>{try{if(n13On())for(const k in N13U)n13(k);}catch(e){}},2500);}catch(e){}
+
+/* MURALHA · modelo 13 */
+{const _w=wallHubDraw;wallHubDraw=function(A){if(!n13Tela('mur'))return _w(A);A.hits=[];
+  const S=stgState('wall'),wd=Math.floor(S.next/STGN),fs=S.next%STGN,tot=S.stars.reduce((a,x)=>a+x,0);
+  f13(`Mundo ${wd+1} · Fase ${fs+1} · ★${tot}`,312+449/2,820+33,33,'#ffffff',430,'#0e2a6a');
+  hit13([723,77,100,99],()=>A.pick({k:'x'}));
+  hit13([33,600,788,381],()=>{tone([660,880],.05);A.pick({k:'fases'});});
+  hit13([31,1057,311,242],()=>{tone([660,880],.05);A.pick({k:'hist'});});
+  hit13([19,1310,328,306],()=>{tone([660,880],.05);A.pick({k:'cartas'});});
+  hit13([352,1014,476,739],()=>{tone([660,880],.05);A.pick({k:'dupla'});});
+  msg13(A);};}
+
+/* MINIJOGOS · Atlas 04 */
+const N13MINI={'EXPEDIÇÃO':[35,298,455,390],'MURALHA':[490,280,368,374],'TORRES':[30,687,416,311],'HORDA':[483,685,376,315],'COMBINA':[28,1005,453,385],'ARENA':[495,1023,368,353],'FECHAR':[232,1597,438,141]};
+{const _m=drawTilesMini2;drawTilesMini2=function(u){const cf=u.cfg,L=cf.tiles;if(!L||!String(cf.title||'').startsWith('MINIGAMES'))return _m(u);if(!n13Tela('mini'))return _m(u);
+  u.t2=(u.t2||0)+1;const t=u.t2;
+  {const m=/⚡\s*(\S+)/.exec(cf.title||'');if(m)f13('Energia '+m[1],331+289/2,8+29,40,'#ffffff',300,'#0e2219');}
+  f13(String(flags.coins||0),316+109/2,216+16,25,'#4a2a10',96);
+  f13(String((()=>{try{return m3Insig();}catch(e){return flags.badge?1:0;}})()),625+84/2,216+16,25,'#4a2a10',72);
+  const sub=n=>{const it=L.find(x=>x.n===n);return it&&it.sub||'';};
+  f13(sub('EXPEDIÇÃO'),200+146/2,615+23,30,'#3a2a12',140);f13(sub('COMBINA'),185+169/2,1317+23,30,'#3a2a12',160);
+  u.rects=[];
+  L.forEach((it,idx)=>{const r=N13MINI[it.n];if(!r)return;const q=q13(r);
+    if(it.badge&&typeof mm2==='function'&&mm2('selo_novo')){const s=q.w*.24;b.save();b.globalAlpha=.85+.15*Math.sin(t/6);b.drawImage(mm2('selo_novo'),q.x+q.w-s*.95,q.y-s*.05,s,s);b.restore();}
+    u.rects.push({x:q.x,y:q.y,w:q.w,h:q.h,i:idx});});
+  u.boxR={x:0,y:0,w:W,h:H};return true;};}
+
+/* ARENA · Outono */
+const N13CARD=[[50,469,151,216],[216,469,151,216],[376,469,151,216],[535,469,151,216],[696,469,151,216]];
+function arEntry13(A){if(!n13Tela('are'))return false;const t=A.t;A.hits=[];
+  hit13([793,90,82,80],()=>A.pick({k:'x'}));hit13([24,92,90,87],()=>{try{m6Next(A);}catch(e){}});
+  const CB=n13('carta');
+  (A.deck||[]).slice(0,5).forEach((sp,i)=>{const r=N13CARD[i],q=q13(r),cx=r[0]+r[2]/2;let RR={n:'',ink:'#3d2a1c'},cl=1,fr=0,nd=1;try{RR=arRar(sp);cl=arCardLv(sp);fr=arFrag(sp);nd=arCardNeed(cl,sp);}catch(e){}const can=cl<ARCMAX&&fr>=nd;
+    if(CB){b.save();b.imageSmoothingEnabled=true;b.drawImage(CB,q.x,q.y,q.w,q.h);b.restore();}
+    f13(String(RR.n||'').toUpperCase(),cx,r[1]+25,20,RR.ink||'#3d2a1c',r[2]-22);
+    try{const CI=(typeof cardIlu==='function')?cardIlu(sp):null,m=q13([r[0]+16,r[1]+40,r[2]-32,104]);if(CI){cardIluDraw(CI,m.x,m.y,m.w,m.h,6*N13C.k);}else{const I=arCardArt(sp);if(I){const s=Math.min(m.w/I.naturalWidth,m.h/I.naturalHeight),w=I.naturalWidth*s,h=I.naturalHeight*s;b.save();b.imageSmoothingEnabled=true;b.drawImage(I,m.x+(m.w-w)/2,m.y+(m.h-h)/2,w,h);b.restore();}else arDrawMon(sp,m.x+m.w/2,m.y+m.h*.6,r[3]/600,'idle','s',i);}}catch(e){}
+    f13(`carta ${cl}`,cx,r[1]+164,22,'#3d2a1c',r[2]-20);
+    const bq=q13([r[0]+17,r[1]+187,r[2]-34,17]);rrect(bq.x+.4,bq.y+.4,Math.max(0,(bq.w-.8)*Math.min(1,cl>=ARCMAX?1:fr/Math.max(1,nd))),bq.h-.8,bq.h/2,can?'#4ac83a':'#e0a020',false);
+    f13(cl>=ARCMAX?'MÁX':can?'SUBIR!':`${fr}/${nd}`,cx,r[1]+196,15,'#fff3df',r[2]-34,'#3a2010');
+    if(can){b.save();b.globalAlpha=.55+.4*Math.sin(t/5);f13('⬆',r[0]+r[2]-16,r[1]+18,34,'#4ad83a',0,'#1a4a10');b.restore();}
+    hit13(r,()=>arCardUp(A,sp));});
+  hit13([219,701,461,94],()=>arTimeEdit(A));
+  const S=stgState('arena'),ch=Math.floor(S.next/STGN),fl=S.next%STGN;
+  f13(`Cap. ${ch+1} · Andar ${fl+1}`,470+278/2,1037+19,27,'#5a3418',270);
+  f13(`Recorde: onda ${flags.arenaBest||0}`,380+290/2,1260+19,28,'#5a3418',285);
+  hit13([27,884,845,271],()=>{A.lobby='dg';A.scroll=null;tone([660,880],.05);});
+  hit13([63,1180,771,158],()=>A.pick({k:'solo'}));hit13([42,1359,399,166],()=>A.pick({k:'coop'}));hit13([456,1359,397,166],()=>A.pick({k:'pvp'}));
+  msg13(A);return true;}
+{const _e=arEntryDraw;arEntryDraw=function(A){if(arEntry13(A))return;_e(A);};}
+
+/* RATODANO08NOV (Felipe: 'Rato quando toma dano vira o rato antigo'): na Muralha a Ratonga não usa as animações antigas nem quando apanha */
+{const _dmf=drawMonFx;drawMonFx=function(sp){if(G&&G.mode==='wall'&&String(sp||'').replace('*','')==='ratonga'){const keep={};for(const k of ['ratonga','ratonga@costas','ratonga@e','ratonga@w'])if(MONANIM[k]){keep[k]=MONANIM[k];delete MONANIM[k];}try{return _dmf.apply(this,arguments);}finally{Object.assign(MONANIM,keep);}}return _dmf.apply(this,arguments);};}
+/* /TELAS13_08NOV */
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

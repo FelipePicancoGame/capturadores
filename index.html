@@ -15890,6 +15890,12 @@ try{const R={npc_tonho:'blobs/60035b806c87615fdc91c1c61bd24a22.webp',nf_tonho:'b
   NPC4.tonho='npc_tonho';NPC4.nina='npc_nina';NPCART.tonho='nf_tonho';NPCART.nina='nf_nina';}catch(e){}
 /* /ARTES08NOV */
 
+/* DESTRAVA (08/nov, Francisco R205/R207): quem venceu a Bruna ANTES de terminar o Ladrão de Frutas ficava com a missão "Medalha Pedra" presa
+   (ela só se completava na hora da vitória). Agora toda missão que já está cumprida (medalha, arena) se completa sozinha assim que fica liberada. */
+{const _d=msDone0;let IN=0,AC=0;msDone0=async function(m){const r=await _d(m);if(!IN){IN=1;try{await msAutoCheck();}catch(e){}finally{IN=0;}}return r;};
+  setInterval(async()=>{try{if(AC||IN||busy||G.mode!=='world'||ui.length||!party.length)return;if(!MISS.some(m=>m.auto&&msSt(m.id)<2&&msAvail(m)&&m.auto()))return;AC=1;busy=true;try{await msAutoCheck();}finally{AC=0;busy=false;}}catch(e){}},2000);}
+/* /DESTRAVA */
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

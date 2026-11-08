@@ -16056,6 +16056,14 @@ const LUNEX={u:'blobs/2f3e0315478c4cad2dd7fcef4e41c765.webp',ox:120,oy:500,w:118
   const L=b31Lay(),s=L.s,x=L.ox-LUNEX.ox*s,y=L.oy-LUNEX.oy*s,w=LUNEX.w*s,h=LUNEX.h*s;if(x>0||y>0||x+w<W||y+h<H)_b();b.drawImage(LUNEXI,x,y,w,h);return true;}catch(e){return _b();}};}
 /* /LUNARIA08NOV */
 
+/* SEMCODIGO08NOV (Felipe: "personagem está mudando pro código antigo de imagem. Retire todas as imagens por código do jogo"):
+   1) as artes do herói e dos NPCs nunca saem da memória (antes, ao economizar memória, a arte saía e por um instante aparecia o boneco desenhado por código);
+   2) quem tem arte própria (herói e NPCs com arte) nunca mais é desenhado por código: se a arte ainda não carregou, espera em vez de mostrar o boneco antigo. */
+{const KEEPC=()=>{try{const K=window.__KEEPUI;if(!K)return;for(const k in ASI)if(/^(npc_|nf_|hr_|hrr_|hrf_|hrfr_|esc_)/.test(k)&&ASI[k])K.add(ASI[k]);}catch(e){}};setInterval(KEEPC,3000);setTimeout(KEEPC,800);}
+const LOOKKEY=new Map();try{for(const k in LOOKS)LOOKKEY.set(LOOKS[k],k);}catch(e){}
+{const _dp=drawPerson;drawPerson=function(sx,sy,dir,leg,L){try{const k=LOOKKEY.get(L);if(k&&(k==='player'||NPC4[k]||NPCART[k]))return;}catch(e){}return _dp.apply(this,arguments);};}
+/* /SEMCODIGO08NOV */
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

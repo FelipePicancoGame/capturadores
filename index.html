@@ -4963,7 +4963,7 @@ async function powersMenu(){while(true){const tp=[...new Set(party.map(m=>SP[m.s
   const rows=L.map(t=>{const lv=pwLv(t),mx=lv>=5,c=pwCost(t,lv),who=party.filter(m=>SP[m.sp].type===t).map(m=>nm(m)).slice(0,2).join(', ');
     return{t,lv,who,n:`${TYPES[t]}${who?' · '+who:''}`,d:mx?`Máximo: ${PWD[t][4]}`:`Melhora: ${PWD[t][lv]}`+((flags.ess||0)<c?` (faltam ${c-(flags.ess||0)} ✨)`:''),ic:PWIC[t],c,ess:1,max:mx,dis:!mx&&(flags.ess||0)<c,pips:[lv,5],bg:TYPECOL[t]+'33',can:!mx&&(flags.ess||0)>=c};});
   const j=await (UIK.loja?choose([...rows.map(i=>i.n),'Voltar'],{shop:rows,pwArt:1}):shopPick(rows,`CARTAS DE PODER · ✨ ${flags.ess||0}`,'Ganhe ✨ em chefes, capítulos, troféus e missões'));if(j<0||j>=L.length)return;
-  const t=L[j],lv=pwLv(t);if(lv>=5){shopToast(`${TYPES[t]} já está no máximo!`,1);continue;}const c=pwCost(t,lv);
+  const t=L[j],lv=pwLv(t);if(lv>=5){shopToast(`${TYPES[t]} já está no máximo!`,1);continue;}{const cap=pwCap();if(lv>=cap){tone([300],.06);shopToast(`O nível ${lv+1} libera quando você vencer o Mundo ${cap-2} da Muralha`,1);continue;}}const c=pwCost(t,lv);
   if((flags.ess||0)<c){tone([300],.06);shopToast(`Faltam ${c-(flags.ess||0)} Essências pra melhorar ${TYPES[t]}`,1);continue;}
   flags.ess-=c;flags.pw=flags.pw||{};flags.pw[t]=lv+1;saveGame();tone([784,988,1319,1568],.07);shopToast(`${TYPES[t]} subiu pro NÍVEL ${lv+1}!`,0);}}
 /* ataque normal: sai do monstrinho */
@@ -16148,9 +16148,15 @@ function wDdaK(){return 1;}/* PAGAPOUCO (08/nov): dificuldade adaptativa desliga
    retorno cada vez menor, sem virar "comprou, passou". */
 function wPowIdx(w){try{let n=0;const T=new Set(w.defs.map(d=>SP[d.sp]&&SP[d.sp].type).filter(Boolean));for(const t of T)n+=pwLv(t)-1;
   for(const c of wcuList())n+=wcsLv(c.id)+wcuLv(c.id)*.5;return n;}catch(e){return 0;}}
-function wPowK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss)||!WL)return 1;if(WL.__pk==null){WL.__pk=Math.min(2,1+.04*wPowIdx(WL));try{__EV('muralha poder '+WL.__pk.toFixed(2));}catch(_){}}return WL.__pk;}catch(e){return 1;}}
+function wPowK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss)||!WL)return 1;if(WL.__pk==null){WL.__pk=1;/* (08/nov) desligado: Felipe preferiu o jeito dos outros jogos (limite de nível por progresso, ver PODERLIMITE) */try{__EV('muralha poder '+WL.__pk.toFixed(2));}catch(_){}}return WL.__pk;}catch(e){return 1;}}
 {const _ws=wSpawn;wSpawn=function(){const w=WL,n0=w?w.foes.length:0;const r=_ws.apply(this,arguments);try{const k=wPowK();if(k!==1&&WL)for(let j=n0;j<WL.foes.length;j++){const e=WL.foes[j];if(e.pk)continue;e.pk=1;e.max=Math.round(e.max*k);e.hp=Math.round(e.hp*k);if(e.shield)e.shield=Math.round(e.shield*k);}}catch(e){}return r;};}
 /* /PAGAPOUCO */
+
+/* PODERLIMITE (08/nov, Felipe: "pesquisa como os outros jogos fazem"): como no Clash Royale (nível das cartas limitado pelo nível do Rei),
+   o nível das Cartas de Poder fica limitado pelo progresso: até o nível 3 no começo, 4 depois de vencer o Mundo 1 da Muralha e 5 depois do Mundo 2.
+   Quem já tinha nível acima continua com ele. Comprar/melhorar sempre deixa mais forte, mas não dá pra pular muito à frente da fase. */
+function pwCap(){try{let c=3;if(stgWOpen('wall',1))c=4;if(stgWOpen('wall',2))c=5;return c;}catch(e){return 5;}}
+/* /PODERLIMITE */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

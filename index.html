@@ -228,6 +228,11 @@ window.C1IMG={"historia/01_vila_menina": "blobs/cbec3c49427e9a1e8a868e4eb2130af2
   '<div class="c1-dialogue"><strong>HERO</strong>Olha só quem eu encontrei! Qual de vocês vai se aventurar comigo?</div>'+
   c1Pick();
   animateActors();bindTools();for(const b of screen.querySelectorAll('[data-pick]'))b.addEventListener('click',()=>confirm(b.dataset.pick,b));
+  /* ESCOLHA08NOV (R201: 'tentando escolher um bichinho, mas não consigo pegar'): só o botão ESCOLHER funcionava; tocar no cartão ou no monstrinho não fazia nada.
+     Agora o cartão inteiro e o monstrinho na clareira também escolhem. */
+  try{const open=(id,p)=>{if(screen.querySelector('.c1-modal-wrap'))return;confirm(id,p);};
+   for(const c of screen.querySelectorAll('.c1-card2')){const p=c.querySelector('[data-pick]');if(!p)continue;c.style.cursor='pointer';c.addEventListener('click',e=>{if(e.target.closest('[data-pick]'))return;open(p.dataset.pick,p);});}
+   for(const m of monsters){const a=screen.querySelector('.c1-creature.'+m.id),p=screen.querySelector('[data-pick="'+m.id+'"]');if(a&&p){a.style.cursor='pointer';a.style.pointerEvents='auto';a.addEventListener('click',()=>open(m.id,p));}}}catch(e){}
  }
  function confirm(id,trigger){
   const m=monsters.find(m=>m.id===id);if(!m||finalizing)return;
@@ -5203,7 +5208,7 @@ function fPower(C2,e){const pw=e.ft.pw,al=C2.allies().filter(a=>!a.dead),tgt=al[
 function foePose(e,t,moving){let oy=0,rot=0,sx=1,sy=1,alpha=1,ox=0;const ft=e.ft||{},ph=t/5+(e.wob||0);
   if(ft.fly){oy-=6+Math.sin(t/7+(e.wob||0))*2;sy*=1+Math.sin(t*.9+(e.wob||0))*.07;sx*=1-Math.sin(t*.9+(e.wob||0))*.04;}
   if(ft.zig)ox+=Math.sin(t/7+(e.wob||0))*5;
-  if(e.rollT>0){rot=t*.45*(e.flip?-1:1);sy*=.85;sx*=.9;}
+  /* R203 (08/nov, Felipe: 'Pedrisco vem com animação rodando. Tira'): rolando ele só corre mais (e levanta poeira), sem girar */if(e.rollT>0){sy*=.96;}
   if(e.dashT>0){sx*=1.18;sy*=.86;rot+=(e.flip?.2:-.2);}
   if(e.phaseT>0)alpha=.3+((t>>1)%2)*.1;
   if(e.rage){ox+=Math.sin(t*2)*.8;}
@@ -12213,7 +12218,7 @@ let MGCFG=0;
 async function gameCfg(hl){if(MGCFG)return;MGCFG=1;try{try{autoPause();}catch(e){}
   while(true){const mOn=musOn(),sOn=!flags.sfxOff,eOn=!flags.glowOff,tOn=!flags.fxOff,g=gfxLv();
     const L=[`GRÁFICOS: ${GFXN[g]}`,`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`BRILHOS: ${eOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${tOn?'LIGADO':'DESLIGADO'}`,`NARRAÇÃO: ${!flags.narraOff?'LIGADA':'DESLIGADA'}`,`CHUVA E NEBLINA: ${!flags.wxOff?'LIGADAS':'DESLIGADAS'}`,offLabel(),window.CVLANG==='en'?'LANGUAGE: ENGLISH':'IDIOMA: PORTUGUÊS','VOLTAR'];
-    const j=await choose(L,{noCancel:true,cadAsk:{q:hl?'Toque em GRÁFICOS até ficar MÉDIO ou LEVE':'AJUSTES — toque pra mudar',nf:1,cols:[g===0?'#1f7a3a':g===1?'#a0661a':'#8a2f2f',mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',eOn?'#1f7a3a':'#8a2f2f',tOn?'#1f7a3a':'#8a2f2f',!flags.narraOff?'#1f7a3a':'#8a2f2f',!flags.wxOff?'#1f7a3a':'#8a2f2f','#1f6a7a','#2f5fa8','#6a4a2a']}});
+    const j=await choose(L,{noCancel:true,gcart:{hl},cadAsk:{q:hl?'Toque em GRÁFICOS até ficar MÉDIO ou LEVE':'AJUSTES — toque pra mudar',nf:1,cols:[g===0?'#1f7a3a':g===1?'#a0661a':'#8a2f2f',mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',eOn?'#1f7a3a':'#8a2f2f',tOn?'#1f7a3a':'#8a2f2f',!flags.narraOff?'#1f7a3a':'#8a2f2f',!flags.wxOff?'#1f7a3a':'#8a2f2f','#1f6a7a','#2f5fa8','#6a4a2a']}});
     if(j===7){await offMenu();continue;}
     if(j===8){cvSetLang(window.CVLANG==='en'?'pt':'en');return;}
     if(j===0){flags.gfx=(g+1)%3;saveGame();gfxApply();hl=0;try{tone([660,880],.05);}catch(e){}continue;}
@@ -15798,7 +15803,7 @@ const NV7ACT={'Pôr na frente':[91,1588,442,112,'#2f6a2a'],'Trocar com o Sítio'
   n7F(sp.name,540,126,62,'#5a2a12',640);
   if(u.cfg.nav&&party.length>1){const ix=party.indexOf(m);n7F(`${ix+1}/${party.length}`,540,180,26,'#7a5a3a',200);}
   {const q=n7R([307,220,466,429]);b.save();b.beginPath();b.rect(q.x,q.y,q.w,q.h);b.clip();b.save();b.globalCompositeOperation='lighter';glowAt(q.x+q.w/2,q.y+q.h*.5,q.w*.42,hex2rgb(tc).join(','),.35);b.restore();
-    E(q.x+q.w/2,q.y+q.h*.86,q.w*.24,q.h*.05,'rgba(60,30,10,.25)',0,false);drawMonFx(monKey(m),q.x+q.w/2,q.y+q.h*.58+Math.sin(t/10)*1.2,1.1,false,{sx:1+Math.sin(t/14)*.02,sy:1-Math.sin(t/14)*.025});b.restore();}
+    {const K=monKey(m),F=(typeof monFit==='function'&&monFit(K,q.w,q.h))||{dx:0,dy:q.h*.08,sc:1.1,ft:q.h*.36};E(q.x+q.w/2,q.y+q.h*.5+F.ft,q.w*.24,q.h*.05,'rgba(60,30,10,.25)',0,false);drawMonFx(K,q.x+q.w/2+F.dx,q.y+q.h*.5+F.dy+Math.sin(t/10)*1.2,F.sc,false,{sx:1+Math.sin(t/14)*.02,sy:1-Math.sin(t/14)*.025});}b.restore();}
   n7F(typeName(m.sp),299,733,36,tc,190,'#fff3df');n7F('Nv '+m.lv,781,733,38,'#5a2a12',190);
   {const p=n7P(452,728),k=n7T().k;heartsRow(p[0],p[1],afH(m),Math.max(2,28*k),Math.max(5,42*k),'rgba(120,80,50,.3)');}
   const bars=[['HP',`${m.hp}/${st.hp}`,m.hp/st.hp,'#3fb84a'],['Ataque',st.atk,st.atk/120,'#ee6a3a'],['Defesa',st.def,st.def/120,'#3f7fd2'],['Velocidade',st.spd,st.spd/120,'#e8b020']];
@@ -15930,6 +15935,46 @@ function cadUiK(r){const land=!!(r&&r.width>r.height*1.2);let v=flags&&flags.uiS
     setInterval(()=>{if(el.style.display==='block')up();},500);};
   setTimeout(add,500);}
 /* /TAMANHO */
+
+/* MOLDURA (08/nov, Francisco R202 "centralizar os monstrinhos na moldura"): na tela do monstrinho, o desenho ficava encostado embaixo
+   (Zumbel e os pequenos quase sumiam). Agora o jogo mede onde o desenho realmente está e o põe no meio da moldura, do mesmo tamanho pra todos. */
+const MONFIT={};function monFit(K,w,h){const c=MONFIT[K],now=performance.now();/* mede de novo 3x nos primeiros segundos: a animação pode ainda estar carregando */if(c&&(c.n>=3||now-c.at<1500))return mfScale(c,w,h);try{const cv2=document.createElement('canvas');cv2.width=cv2.height=700;const x2=cv2.getContext('2d'),prev=b;b=x2;try{drawMonFx(K,350,350,1,false,{});}finally{b=prev;}
+  const d=x2.getImageData(0,0,700,700).data;let x0=700,y0=700,x1=-1,y1=-1;for(let y=0;y<700;y+=2)for(let x=0;x<700;x+=2)if(d[(y*700+x)*4+3]>40){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
+  if(x1<0)return c?mfScale(c,w,h):null;const m={l:x0-350,r:x1-350,t:y0-350,b:y1-350,at:now,n:(c?c.n:0)+1};MONFIT[K]=m;return mfScale(m,w,h);}catch(e){return null;}}
+function mfScale(m,w,h){const bw=Math.max(8,m.r-m.l),bh=Math.max(8,m.b-m.t),sc=Math.max(.6,Math.min(3.2,w*.66/bw,h*.66/bh));return{sc,dx:-(m.l+m.r)/2*sc,dy:-(m.t+m.b)/2*sc,ft:(m.b-(m.t+m.b)/2)*sc};}
+/* /MOLDURA */
+
+/* AJUSTESARTE (08/nov, Felipe R206: "cria uma tela melhor na interface ajuste"; "acho que demorava pra carregar e mostrava a tela de código antes"):
+   os AJUSTES de dentro dos minijogos (Muralha, Torres, Horda...) agora usam a mesma arte dos Ajustes do mapa: caderno, cartões e interruptores.
+   As artes já carregam quando o jogo abre, então a tela de texto não aparece mais antes. */
+function drawGcArt(u){const ks=['cfg_fundo','cartao_opcao','botao_voltar','interruptor_ligado','interruptor_desligado','cfg_icone_musica','cfg_icone_sons','cfg_icone_tremor'];const I={};for(const k of ks){I[k]=cfgImg(k);if(!I[k])return false;}
+  u.rects=[];const s=Math.min(W*.98/941,H*.98/1672),fw=941*s,fh=1672*s,X=(W-fw)/2,Y=(H-fh)/2,p=(x,y)=>[X+x*s,Y+y*s],TC='#064657';
+  b.save();b.fillStyle='rgba(10,8,28,.55)';b.fillRect(0,0,W,H);b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(I.cfg_fundo,X,Y,fw,fh);b.textBaseline='middle';
+  const txt=(t,x,y,n,al,col,mw)=>{b.font=`800 ${n*s}px CadBaloo, "Baloo 2", Fredoka, Arial, sans-serif`;b.textAlign=al||'left';b.fillStyle=col||TC;const q=p(x,y);b.fillText(t,q[0],q[1],mw?mw*s:undefined);};
+  const g=gfxLv(),en=window.CVLANG==='en';
+  const R=[['🖼️',en?'Graphics':'Gráficos',{t:GFXN[g],c:g===0?'#1f7a3a':g===1?'#a0661a':'#8a2f2f'}],[I.cfg_icone_musica,en?'Music':'Música',musOn()],[I.cfg_icone_sons,en?'Sounds':'Sons',!flags.sfxOff],['✨',en?'Glow':'Brilhos',!flags.glowOff],[I.cfg_icone_tremor,en?'Shake':'Tremor',!flags.fxOff],['🔊',en?'Narration':'Narração',!flags.narraOff],['🌧️',en?'Rain & fog':'Chuva e neblina',!flags.wxOff],['📶',en?'Offline':'Offline',{t:offShort(),c:'#1f6a7a'}],['🌐',en?'Language':'Idioma',{t:en?'English':'Português',c:'#2f5fa8'}]];
+  const cx=95,cw=750,y0=u.cfg.gcart&&u.cfg.gcart.top||300,sp=Math.min(112,(1600-y0)/(R.length+1.2)),ch=sp-8;
+  if(u.cfg.gcart&&u.cfg.gcart.hl)txt(en?'Tap GRAPHICS until MEDIUM or LIGHT':'Toque em GRÁFICOS até ficar MÉDIO ou LEVE',470,y0-34,30,'center','#a8361f',760);
+  R.forEach(([ic,lab,v],k)=>{const y=y0+k*sp,q=p(cx,y),sc=k===u.i?1+Math.sin(frame/8)*.012:1;b.save();b.translate(q[0]+cw*s/2,q[1]+ch*s/2);b.scale(sc,sc);b.drawImage(I.cartao_opcao,-cw*s/2,-ch*s/2,cw*s,ch*s);b.restore();u.rects.push({x:q[0],y:q[1],w:cw*s,h:ch*s,i:k});
+    if(typeof ic==='string')txt(ic,cx+60,y+ch/2+2,46,'center');else{const is=ch*.66,qi=p(cx+30,y+(ch-is)/2);b.drawImage(ic,qi[0],qi[1],is*s,is*s);}
+    txt(lab,cx+118,y+ch/2+2,40,'left',TC,330);
+    if(typeof v==='boolean'){const T2=v?I.interruptor_ligado:I.interruptor_desligado,tw=150,th=68,q2=p(cx+cw-tw-78,y+(ch-th)/2-6);b.drawImage(T2,q2[0],q2[1],tw*s,th*s);txt(v?(en?'ON':'LIGADO'):(en?'OFF':'DESLIGADO'),cx+cw-tw/2-78,y+ch-12,19,'center',v?'#1f7a3a':'#8a4a4a',160);}
+    else txt(v.t,cx+cw-80,y+ch/2+2,34,'right',v.c,260);});
+  {const w=480,h=w*206/857,x=(941-w)/2,y=y0+R.length*sp+14,q=p(x,y),sc=u.i===9?1+Math.sin(frame/8)*.012:1;b.save();b.translate(q[0]+w*s/2,q[1]+h*s/2);b.scale(sc,sc);b.drawImage(I.botao_voltar,-w*s/2,-h*s/2,w*s,h*s);b.restore();u.rects.push({x:q[0],y:q[1],w:w*s,h:h*s,i:9});txt(en?'BACK':'VOLTAR',x+w*.58,y+h/2+4,48,'center',TC,240);}
+  b.restore();return true;}
+{const _dm=drawMenu;drawMenu=function(u){if(u.cfg&&u.cfg.gcart&&drawGcArt(u))return;return _dm(u);};}
+/* o painel de volume (em cima) não cobre os cartões: a lista começa embaixo dele */
+setInterval(()=>{try{const top=ui.length&&ui[ui.length-1];if(!top||!top.cfg||!top.cfg.gcart)return;const el=document.getElementById('volPanel');if(!el||el.style.display!=='block')return;const r=el.getBoundingClientRect(),c=cv.getBoundingClientRect(),y=(r.bottom-c.top)/c.height*H,s=Math.min(W*.98/941,H*.98/1672),Y=(H-1672*s)/2;
+  const need=Math.max(300,Math.min(560,Math.ceil((y-Y)/s+40)));if(top.cfg.gcart.top!==need)top.cfg.gcart.top=need;}catch(e){}},250);
+/* as artes dos Ajustes já carregam no começo do jogo */
+setTimeout(()=>{try{['cfg_fundo','cartao_opcao','botao_voltar','interruptor_ligado','interruptor_desligado','cfg_icone_musica','cfg_icone_sons','cfg_icone_tremor','seletor_personagem','botao_salvar','botao_carregar','icone_personagem','cfg_icone_salvar','cfg_icone_carregar'].forEach(cfgImg);}catch(e){}},3000);
+/* /AJUSTESARTE */
+
+/* PEDRAPASSO (08/nov, Felipe R204: "animação do monstro de pedra andando ainda está lenta"): Rochedo e Pedrisco andavam a 10 quadros por segundo,
+   devagar demais pro tamanho deles na Muralha. Agora o passo deles é mais rápido (15 quadros/s) em todo lugar. */
+{const DONE={};const _m=monAnimDraw;monAnimDraw=function(sp,act,...r){try{if(act==='walk'){const base=String(sp).replace('*','');if(/^(rochedo|pedrisco)$/.test(base)&&!DONE[base]){DONE[base]=1;
+    for(const k of Object.keys(MONANIMSRC))if(k===base||k.startsWith(base+'@')){const W=MONANIMSRC[k].walk;if(W)W.fps=Math.max(W.fps||8,15);try{const o=MONANIM[k];if(o&&o.walk)o.walk.fps=Math.max(o.walk.fps||8,15);}catch(e){}}}}}catch(e){}return _m(sp,act,...r);};}
+/* /PEDRAPASSO */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

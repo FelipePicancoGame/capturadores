@@ -14155,7 +14155,7 @@ function CADON(){return CAD.ready||CAD.wait;}
 }catch(e){console.error('cad',e);}})();
 const CADLAY={"bike":[0,482,260,190],"cfg":[805,262,125,125],"en":[0,100,195,90],"fechar":[0,8,83,115],"joy":[30,1640,350,350],"loja":[0,190,195,90],"menu":[805,65,125,190],"mini":[0,292,260,190],"missao":[380,1572,552,418],"s0":[202,100,195,90],"s1":[406,100,195,90],"s2":[604,100,195,90]};/* tela do mapa: posições do Montador da Tela do Mapa (base 941x2048) */
 function cadFrame(){const s=document.getElementById('stage'),r=s?s.getBoundingClientRect():{left:0,top:0,width:document.documentElement.clientWidth,height:document.documentElement.clientHeight};return r;}
-function cadLayout(){if(!CAD.ready||!CAD.E)return;const r=cadFrame(),k=Math.min(r.width/941,r.height/2048),E=CAD.E;CAD.k=k;
+function cadLayout(){if(!CAD.ready||!CAD.E)return;const r=cadFrame(),k=Math.min(r.width/941,r.height/2048)*(typeof cadUiK==='function'?cadUiK(r):1),E=CAD.E;CAD.k=k;
   const VH=document.documentElement.clientHeight,cx=r.left+r.width/2,L=r.left,T=r.top,R=r.left+r.width,B=r.top+r.height;
   const put=(e,x,y,w,h)=>{e.style.left=x+'px';e.style.top=y+'px';e.style.width=w+'px';e.style.height=h+'px';};
   const tl=(e,x,y,w,h)=>put(e,L+x*k,T+y*k,w*k,h*k),tr=(e,x,y,w,h)=>put(e,R-(941-x)*k,T+y*k,w*k,h*k),tc=(e,x,y,w,h)=>(r.width>r.height*1.2)?put(e,L+x*k,T+y*k,w*k,h*k)/* MAPADEITADO07NOV (R175): celular deitado — os ícones do meio vão pro canto de cima à esquerda, sem cobrir o mapa */:put(e,cx+(x-470.5)*k,T+y*k,w*k,h*k),br=(e,x,y,w,h)=>put(e,R-(941-x)*k,B-(2048-y)*k,w*k,h*k);
@@ -14361,6 +14361,8 @@ setTimeout(rpRetry,15000);setInterval(rpRetry,5*60e3);
 const css=document.createElement('style');css.textContent=`
 #rpBtn{position:fixed;left:max(4px,env(safe-area-inset-left,0px));top:42%;z-index:10060;width:34px;height:34px;border-radius:50%;border:2px solid #154c5e;background:#fffaf0;box-shadow:0 2px 0 rgba(0,0,0,.35);font-size:17px;line-height:28px;text-align:center;padding:0;opacity:.82;cursor:pointer;touch-action:manipulation}
 #rpBtn:active{transform:scale(.92)}
+/* TAMANHO (08/nov): celular deitado no mapa, a 🐞 vai pro lado direito (na esquerda ficava em cima dos ícones maiores) */
+@media (orientation:landscape){body.cadv #rpBtn{left:auto;right:max(4px,env(safe-area-inset-right,0px))}}
 #rpBox{position:fixed;inset:0;z-index:10070;background:rgba(10,20,30,.55);display:flex;align-items:center;justify-content:center;padding:14px}
 #rpBox .pp{background:#fffaf0;border:3px solid #154c5e;border-radius:16px;max-width:380px;width:100%;max-height:92vh;overflow:auto;padding:12px 14px;font-family:CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif;color:#154c5e;box-shadow:0 6px 24px rgba(0,0,0,.4)}
 #rpBox h3{margin:0 0 6px;font-size:20px}#rpBox p{margin:4px 0;font-size:14px;line-height:1.3}
@@ -14395,9 +14397,15 @@ async function rpOpen(){if(document.getElementById('rpBox'))return;const shot=aw
     ta.addEventListener('focus',()=>{box.classList.add('typing');fit();setTimeout(()=>{fit();ta.scrollIntoView({block:'center'});},350);});
     ta.addEventListener('blur',()=>{setTimeout(()=>{if(document.activeElement!==ta){box.classList.remove('typing');box.style.top='';box.style.height='';box.style.bottom='';}},250);});
     if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit);}}catch(e){}
-  const $=s=>box.querySelector(s),close=()=>box.remove();
-  $('#rpC').onclick=close;box.addEventListener('click',e=>{if(e.target===box)close();});
-  $('#rpAt').onclick=()=>$('#rpF').click();
+  /* RPANEXO (08/nov, Francisco R207: 'quando vou anexar print a janela de report fecha e não envia'): no iPhone, ao voltar da galeria
+     chegava um toque fantasma no fundo escuro e a janela fechava; e às vezes o celular recarrega o jogo enquanto a galeria está aberta.
+     Agora só fecha no Cancelar, e o texto fica guardado: se o jogo recarregar, a janela volta aberta com o que você escreveu. */
+  const DK='cv_rp_draft',dSave=()=>{try{localStorage.setItem(DK,JSON.stringify({t:$('#rpT').value,at:Date.now()}));}catch(e){}},dDel=()=>{try{localStorage.removeItem(DK);}catch(e){}};
+  const $=s=>box.querySelector(s),close=()=>{dDel();box.remove();};
+  $('#rpC').onclick=close;
+  try{const d=JSON.parse(localStorage.getItem(DK)||'null');if(d&&Date.now()-d.at<15*60e3&&d.t&&!$('#rpT').value)$('#rpT').value=d.t;}catch(e){}
+  $('#rpT').addEventListener('input',dSave);
+  $('#rpAt').onclick=()=>{dSave();$('#rpF').click();};
   $('#rpF').onchange=()=>{const f=$('#rpF').files&&$('#rpF').files[0];if(!f)return;const rd=new FileReader();rd.onload=async()=>{print=await rpShrink(rd.result,420,.66);$('#rpI2').innerHTML=print?'<img alt="Print anexado">':'não deu pra abrir';if(print)$('#rpI2 img').src=print;};rd.readAsDataURL(f);};
   $('#rpS').onclick=async()=>{const t=$('#rpT').value.trim();if(!t&&!print){$('#rpM').textContent='Escreva o problema ou anexe um print.';return;}
     $('#rpS').disabled=true;$('#rpM').textContent='Enviando…';
@@ -14407,6 +14415,8 @@ async function rpOpen(){if(document.getElementById('rpBox'))return;const shot=aw
     try{tone([660,880,1320],.05);}catch(e){}setTimeout(close,1600);};
   setTimeout(()=>{try{$('#rpT').focus();}catch(e){}},50);}
 window.rpOpen=rpOpen;
+/* RPANEXO: o jogo recarregou com uma janela de aviso aberta (galeria do iPhone) → abre de novo com o texto */
+try{const d=JSON.parse(localStorage.getItem('cv_rp_draft')||'null');if(d&&Date.now()-d.at<15*60e3)setTimeout(()=>{try{rpOpen();}catch(e){}},4000);}catch(e){}
 })();
 
 /* entrega o prêmio no mapa, com a mensagem do Felipe */
@@ -15895,6 +15905,20 @@ try{const R={npc_tonho:'blobs/60035b806c87615fdc91c1c61bd24a22.webp',nf_tonho:'b
 {const _d=msDone0;let IN=0,AC=0;msDone0=async function(m){const r=await _d(m);if(!IN){IN=1;try{await msAutoCheck();}catch(e){}finally{IN=0;}}return r;};
   setInterval(async()=>{try{if(AC||IN||busy||G.mode!=='world'||ui.length||!party.length)return;if(!MISS.some(m=>m.auto&&msSt(m.id)<2&&msAvail(m)&&m.auto()))return;AC=1;busy=true;try{await msAutoCheck();}finally{AC=0;busy=false;}}catch(e){}},2000);}
 /* /DESTRAVA */
+
+/* TAMANHO (08/nov, Felipe: "coloca opção nos ajustes de aumentar o tamanho dos ícones, tem muita gente reclamando"; Francisco R200 tela deitada):
+   em AJUSTES, régua "Ícones" 100–150% (em pé vai até 120%). Aumenta os botões do mapa (menu, ajustes, saldo, minijogos, bicicleta, convidar, missões) e o direcional.
+   No celular deitado, quem nunca mexeu já começa em 130% (lá os ícones ficavam pequenos demais). */
+function cadUiK(r){const land=!!(r&&r.width>r.height*1.2);let v=flags&&flags.uiS;if(v==null)v=land?130:100;/* em pé a tela já é estreita: até 120% (mais que isso os ícones saem da tela) */return Math.max(1,Math.min(land?1.5:1.2,v/100));}
+{const add=()=>{const el=document.getElementById('volPanel');if(!el){setTimeout(add,400);return;}if(el.querySelector('[data-u]'))return;
+    const d=document.createElement('div');d.innerHTML=`<div style="text-align:center;font-size:13px;color:#a8361f;margin:4px 0 2px">🔍 TAMANHO</div><label style="display:flex;align-items:center;gap:8px;margin:2px 0"><span style="width:92px">📱 Ícones</span><input data-u="1" type="range" min="100" max="150" step="10" style="flex:1;accent-color:#e0a020;height:28px"><b data-uv style="width:44px;text-align:right"></b></label>`;
+    el.appendChild(d);const i=d.querySelector('input'),v=d.querySelector('[data-uv]');
+    const cur=()=>{try{return Math.round(cadUiK(cadFrame())*100);}catch(e){return flags.uiS||100;}};
+    const up=()=>{const x=cur();if(document.activeElement!==i)i.value=x;v.textContent=x+'%';};up();
+    i.addEventListener('input',()=>{flags.uiS=+i.value;v.textContent=i.value+'%';try{cadLayout();}catch(e){}});i.addEventListener('change',()=>{try{saveGame();}catch(e){}});
+    setInterval(()=>{if(el.style.display==='block')up();},500);};
+  setTimeout(add,500);}
+/* /TAMANHO */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

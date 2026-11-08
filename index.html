@@ -15705,6 +15705,106 @@ function lsPeerEnd(why){const A=AR,M=A.mp;if(A.over)return;A.over=true;if(why!==
 })();
 /* /ARLOCKSTEP07NOV */
 
+/* ARTES07NOV (07/nov, Buchecha entregou o PEDIDO_CLAUDE_07nov_TELAS_E_ARTES_DOS_REPORTS):
+   (6) Aurorion e Auroril DE COSTAS na Muralha (R165); (5) armadilha de espinhos nova, parada/disparando/em chamas (R167);
+   (3) menu novo da Muralha que ocupa a tela toda (R164); (2) entrada nova da Arena no estilo Outono (R160/R164).
+   As telas inteiras: o fundo cobre a tela toda (sem esticar beirada) e os painéis (tirados da tela limpa) ficam por cima, sem deformar. */
+const NV7U={mon_fundo:'blobs/10f1e847de9978df5b09c5f2f74473e3.webp',mon_cam:'blobs/a601ba182529c2b0f30bccdd21f2cbd4.webp',
+  are_fundo:'blobs/f340588c94f4b3cd4bced67acea73c55.webp',are_cam:'blobs/52b5d1d2299486910bf1828a1107e8fc.webp',
+  mur_fundo:'blobs/c74a8af1abb067ab9a60205327b282a8.webp',mur_cam:'blobs/550ba006b91b2f213bc1e36adf61e40f.webp',
+  trap_par:'blobs/29c0a1e659a54aec55c434b256bf70ec.webp',trap_dis:'blobs/4e178fb6253242910ea1fc7f3ad597b9.webp',trap_fog:'blobs/f4560cf060fbaf57162b5f48c8f76af4.webp'},NV7I={};
+function nv7(k){let i=NV7I[k];if(!i){try{i=new Image();i.decoding='async';{const i0=i;i.onerror=()=>setTimeout(()=>{if(NV7I[k]===i0)delete NV7I[k];},3000);}i.src=NV7U[k];NV7I[k]=i;}catch(e){return null;}}return i.complete&&i.naturalWidth?i:null;}
+/* fundo cobrindo a tela (corta um pouco dos lados em celular comprido, nunca estica) + camada de painéis no lugar do desenho (m7T) */
+function nv7Tela(p){const F=nv7(p+'_fundo'),C=nv7(p+'_cam');if(!F||!C)return false;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';
+  const s=Math.max(W/F.naturalWidth,H/F.naturalHeight),fw=F.naturalWidth*s,fh=F.naturalHeight*s;b.drawImage(F,(W-fw)/2,(H-fh)/2,fw,fh);
+  const t=n7T();b.drawImage(C,t.ox,t.oy,1080*t.k,1920*t.k);b.restore();return true;}
+function n7T(){let k=W/1080,ox=0,oy=(H-1920*k)/2;if(oy<0){k=H/1920;oy=0;ox=(W-1080*k)/2;}return {k,ox,oy};}
+function n7P(x,y){const t=n7T();return [t.ox+x*t.k,t.oy+y*t.k];}
+function n7R(r){const t=n7T();return {x:t.ox+r[0]*t.k,y:t.oy+r[1]*t.k,w:r[2]*t.k,h:r[3]*t.k};}
+function n7Hit(r,f){const q=n7R(r);arHit2(q.x,q.y,q.w,q.h,f);}
+function n7F(s,cx,cy,px,col,mw,ink){const p=n7P(cx,cy),t=n7T(),f=px*t.k;s=String(s);b.save();b.font=`700 ${f}px Fredoka, "Arial Rounded MT Bold", sans-serif`;b.textAlign='center';b.textBaseline='middle';const M=mw?mw*t.k:undefined;
+  if(ink){b.fillStyle=ink;b.lineJoin='round';b.strokeStyle=ink;b.lineWidth=f*.16;M?b.strokeText(s,p[0],p[1],M):b.strokeText(s,p[0],p[1]);}
+  b.fillStyle=col;M?b.fillText(s,p[0],p[1],M):b.fillText(s,p[0],p[1]);b.restore();}
+function n7Mon(sp,r,i){const q=n7R(r);let I=null;try{I=arCardArt(sp);}catch(e){}if(I){const s=Math.min(q.w/I.naturalWidth,q.h/I.naturalHeight),w=I.naturalWidth*s,h=I.naturalHeight*s;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(I,q.x+(q.w-w)/2,q.y+(q.h-h)/2,w,h);b.restore();return;}
+  arDrawMon(sp,q.x+q.w/2,q.y+q.h*.575,r[3]/527,'idle','s',i||0);}
+function nv7Img(I,r,a){if(!I)return;const q=n7R(r);b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';if(a!=null)b.globalAlpha=a;b.drawImage(I,q.x,q.y,q.w,q.h);b.restore();}
+function nv7Clip(r,rad,fn){const q=n7R(r);b.save();b.beginPath();b.roundRect(q.x,q.y,q.w,q.h,rad*n7T().k);b.clip();try{fn(q);}finally{b.restore();}}
+try{setTimeout(()=>{try{['mur_fundo','mur_cam','are_fundo','are_cam','trap_par','trap_dis','trap_fog'].forEach(nv7);}catch(e){}},6000);}catch(e){}
+
+/* (6) costas do Aurorion e do Auroril (1 pose parada + 1 pose de ataque, 256x256, pés em y=235) */
+try{const C7={aurorion:{idle:['4c809f7e0c32540f52354fd2b0f468c3',[24,21,208,214]],attack:['ac1ee590010c0f1d2dd6aebd603c7ec3',[24,42,208,193]]},
+  auroril:{idle:['1b58860934fccedf00806e4491db4e4c',[53,21,150,214]],attack:['b23fe9070d1784a683e5096686e1cbec',[53,42,150,193]]}};
+  for(const sp in C7){const k=sp+'@costas';MONANIMSRC[k]={};for(const act in C7[sp]){const v=C7[sp][act];MONANIMSRC[k][act]={n:1,fps:act==='attack'?6:1,bb:v[1],src:'blobs/'+v[0]+'.webp'};}
+    const o={};for(const [act,d] of Object.entries(MONANIMSRC[k])){let A=null;Object.defineProperty(o,act,{enumerable:true,configurable:true,get(){if(!A||A.dead){A=monAnimMake(k,act,d);MONLIVE.add(A);}A.lu=performance.now();return A;},set(v){A=v;}});}MONANIM[k]=o;}}catch(e){}
+
+/* (5) armadilha de espinhos: parada, disparando (quando alguém pisa) e em chamas (quando quem pisou está pegando fogo) */
+{const _w=wNewDraw;wNewDraw=function(w,t){const P=nv7('trap_par'),D=nv7('trap_dis'),F=nv7('trap_fog');if(!w.nSpike||!P||!D)return _w(w,t);
+  const n=w.nSpike;w.nSpike=0;try{_w(w,t);}finally{w.nSpike=n;}
+  w.spkF=w.spkF||[];for(let k=0;k<Math.min(3,n);k++){const [x,y]=WSPK[k],on=w.spkT&&w.spkT[k]>0;
+    if(on&&w.foes&&w.foes.some(e=>!e.dead&&e.burn>0&&Math.abs(e.x-x)<18&&Math.abs(e.y-y)<12))w.spkF[k]=40;if(w.spkF[k]>0)w.spkF[k]--;
+    const I=(w.spkF[k]>0&&F)?F:on?D:P,bw=40,bh=20,bob=on?-.6:0;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';E(x,y+5,17,3.6,'rgba(40,25,10,.35)',0,false);
+    if(I===F){b.globalAlpha=.85+.15*Math.sin(t/3+k);}b.drawImage(I,x-bw/2,y-bh/2-3+bob,bw,bh);b.restore();}};}
+
+/* (3) MENU DA MURALHA novo (tela inteira) */
+{const _wh=wallHubDraw;wallHubDraw=function(A){const t=A.t;A.hits=[];if(!nv7Tela('mur'))return _wh(A);
+  const S=stgState('wall'),wd=Math.floor(S.next/STGN),fs=S.next%STGN,tot=S.stars.reduce((a,x)=>a+x,0);
+  n7F('MURALHA',521,168,74,'#a8361f',640,'#fff3df');n7Hit([900,40,170,170],()=>A.pick({k:'x'}));
+  const pool=(()=>{try{return arStgPool(BIOMES[Math.floor(S.next/3)%BIOMES.length]);}catch(e){return [];}})(),pt=party.map(m=>monKey(m).replace('*',''));
+  [['fases',[110,581,860,230],'FASES',`Mundo ${wd+1} · Fase ${fs+1} · ★${tot}`,'#2f6a2a',()=>{for(let k=0;k<2&&pool.length;k++){const p=n7P(770+k*110,742);arDrawMon(pool[k%pool.length],p[0],p[1],.34,'idle','w',k);}const p=n7P(905,752);arChest(p[0],p[1],1.25,false);}],
+   ['dupla',[110,863,860,230],'DUPLA','defenda com um amigo','#2f5a9a',()=>{for(let k=0;k<2&&pt[k];k++){const p=n7P(770+k*120,1028);arDrawMon(pt[k],p[0],p[1],.34,'idle','s',k);}}],
+   ['hist',[110,1145,860,230],'HISTÓRIA','capítulos da Muralha','#6a3a9a',()=>{n7F('📖',830,1262,110,'#ffffff');}],
+   ['cartas',[110,1427,860,230],'CARTAS','melhore suas cartas da Muralha','#3a7a2a',()=>{[-1,0,1].forEach(k=>{const p=n7P(830+k*62,1545),kk=n7T().k;b.save();b.translate(p[0],p[1]);b.rotate(k*.22);rrect(-34*kk,-46*kk,68*kk,92*kk,8*kk,'#7a4a1a',false);rrect(-30*kk,-42*kk,60*kk,84*kk,6*kk,['#e0a020','#d8483a','#3a8ad8'][k+1],false);b.restore();});n7F('★',830,1545,56,'#fff3c0',0,'#7a4a1a');}]
+  ].forEach(o=>{const r=o[1];nv7Clip([r[0]+10,r[1]+10,r[2]-20,r[3]-20],20,()=>{try{o[5]();}catch(e){}});
+    n7F(o[2],r[0]+330,r[1]+92,o[2].length>6?66:76,o[4],520,'#fff3df');n7F(o[3],r[0]+330,r[1]+165,34,'#6a4a2a',520);n7Hit(r,()=>{tone([660,880],.05);A.pick({k:o[0]});});});
+  if(A.msg&&A.msg.t>0){A.msg.t--;rrect(14,H/2-12,W-28,24,7,'rgba(60,40,20,.94)',false);T(A.msg.s,W/2,H/2-6,5.6,'center','#ffffff',W-34);}};}
+
+/* (2) ENTRADA DA ARENA nova (estilo Outono, vale para todos os estilos da Arena) */
+function arEntryNv7(A){const t=A.t;A.hits=[];if(!nv7Tela('are'))return false;
+  n7F('ARENA',510,166,80,'#d2462e',640,'#fff3df');n7Hit([900,40,170,170],()=>A.pick({k:'x'}));
+  {const p=n7P(58,166);rrect(p[0]-7,p[1]-7,14,14,7,'rgba(90,50,20,.75)',false);n7F('🎨',58,168,40,'#ffffff');n7Hit([0,90,120,150],()=>{try{m6Next(A);}catch(e){}});}
+  n7F('SEU TIME',540,314,46,'#7a3a18',600);
+  A.deck.forEach((sp,i)=>{const r=[104+182*i,357,148,184],cx=r[0]+r[2]/2,RR=arRar(sp),cl=arCardLv(sp),fr=arFrag(sp),nd=arCardNeed(cl,sp),can=cl<ARCMAX&&fr>=nd;
+    n7F(RR.n,cx,r[1]+20,22,RR.ink||'#3d2a1c',r[2]-14);try{n7Mon(sp,[cx-50,r[1]+32,100,100],i);}catch(e){}
+    n7F(`carta ${cl}`,cx,r[1]+141,24,'#3d2a1c',r[2]-10);
+    const q=n7R([r[0]+12,r[1]+154,r[2]-24,22]);rrect(q.x,q.y,q.w,q.h,2.5,'rgba(60,35,15,.8)',false);rrect(q.x+.6,q.y+.6,(q.w-1.2)*Math.min(1,cl>=ARCMAX?1:fr/nd),q.h-1.2,2,can?'#4ac83a':'#e0a020',false);n7F(cl>=ARCMAX?'MÁX':can?'SUBIR!':`${fr}/${nd}`,cx,r[1]+165,19,'#fff3df',r[2]-24);
+    if(can){b.save();b.globalAlpha=.55+.4*Math.sin(t/5);n7F('⬆',r[0]+r[2]-12,r[1]+14,40,'#4ad83a',0,'#1a4a10');b.restore();}n7Hit(r,()=>arCardUp(A,sp));});
+  n7F('⚡ herói: congela todos  ·  🧩 barra: tenho / faltam',540,679,30,'#6a4a2a',820);
+  const S=stgState('arena'),ch=Math.floor(S.next/STGN),fl=S.next%STGN;
+  [['MASMORRAS',`Cap. ${ch+1} · Andar ${fl+1}`,777,()=>{A.lobby='dg';A.scroll=null;tone([660,880],.05);}],['SEM FIM',`recorde: onda ${flags.arenaBest||0}`,971,()=>A.pick({k:'solo'})],
+   ['JUNTOS','os dois juntos (2 celulares)',1165,()=>A.pick({k:'coop'})],['CONTRA','um contra o outro (2 celulares)',1359,()=>A.pick({k:'pvp'})]].forEach(o=>{const y=o[2];
+    n7F(o[0],560,y+62,64,'#a8361f',600,'#fff3df');n7F(o[1],560,y+118,32,'#6a4a2a',640);n7Hit([102,y,876,163],o[3]);});
+  n7F('TROCAR O TIME',560,1690,50,'#2f5a8a',520,'#fff3df');n7Hit([210,1632,660,133],()=>arTimeEdit(A));
+  if(A.msg&&A.msg.t>0){A.msg.t--;rrect(14,H/2-12,W-28,24,7,'rgba(60,40,20,.94)',false);T(A.msg.s,W/2,H/2-6,5.6,'center','#ffffff',W-34);}
+  return true;}
+{const _e=arEntryDraw;arEntryDraw=function(A){if(arEntryNv7(A)!==false)return;_e(A);};}
+/* (1) TELA DO MONSTRINHO nova (R138): retrato grande na moldura, nome na faixa, selos de tipo e nível, amizade, 4 barras,
+   golpes, Poder/Especial, setas ◀ ▶ e os 4 botões nos lugares do desenho do Buchecha. Ações diferentes dessas 4 usam a carta antiga. */
+const NV7ACT={'Pôr na frente':[91,1588,442,112,'#2f6a2a'],'Trocar com o Sítio':[547,1588,442,112,'#2f5a9a'],'Comparar':[91,1714,442,112,'#6a3a9a'],'Voltar':[547,1714,442,112,'#a8361f']};
+{const _d=drawMonCard;drawMonCard=function(u){const A=u.cfg.actions;if(A&&A.some(a=>!NV7ACT[a]))return _d(u);
+  const m=u.cfg.card,sp=SP[m.sp];if(!sp||!nv7('mon_fundo')||!nv7('mon_cam'))return _d(u);u.t2=(u.t2||0)+1;const t=u.t2,st=stats(m),tc=TYPECOL[sp.type]||'#888';
+  nv7Tela('mon');
+  n7F(sp.name,540,126,62,'#5a2a12',640);
+  if(u.cfg.nav&&party.length>1){const ix=party.indexOf(m);n7F(`${ix+1}/${party.length}`,540,180,26,'#7a5a3a',200);}
+  {const q=n7R([307,220,466,429]);b.save();b.beginPath();b.rect(q.x,q.y,q.w,q.h);b.clip();b.save();b.globalCompositeOperation='lighter';glowAt(q.x+q.w/2,q.y+q.h*.5,q.w*.42,hex2rgb(tc).join(','),.35);b.restore();
+    E(q.x+q.w/2,q.y+q.h*.86,q.w*.24,q.h*.05,'rgba(60,30,10,.25)',0,false);drawMonFx(monKey(m),q.x+q.w/2,q.y+q.h*.58+Math.sin(t/10)*1.2,1.1,false,{sx:1+Math.sin(t/14)*.02,sy:1-Math.sin(t/14)*.025});b.restore();}
+  n7F(typeName(m.sp),299,733,36,tc,190,'#fff3df');n7F('Nv '+m.lv,781,733,38,'#5a2a12',190);
+  {const p=n7P(452,728),k=n7T().k;heartsRow(p[0],p[1],afH(m),Math.max(2,28*k),Math.max(5,42*k),'rgba(120,80,50,.3)');}
+  const bars=[['HP',`${m.hp}/${st.hp}`,m.hp/st.hp,'#3fb84a'],['Ataque',st.atk,st.atk/120,'#ee6a3a'],['Defesa',st.def,st.def/120,'#3f7fd2'],['Velocidade',st.spd,st.spd/120,'#e8b020']];
+  bars.forEach(([n,v,f,col],k)=>{const y=827+53*k;n7F(n,249,y+18,30,'#5a3418',240);const q=n7R([394,y+4,524,26]);rrect(q.x,q.y,q.w*Math.max(.04,Math.min(1,f)),q.h,q.h/2,col,false);b.save();b.globalAlpha=.3;rrect(q.x+1,q.y+.6,Math.max(0,q.w*Math.max(.04,Math.min(1,f))-2),q.h*.38,q.h*.2,'#ffffff',false);b.restore();n7F(String(v),884,y+18,26,'#ffffff',150,'rgba(40,20,5,.85)');});
+  {const f0=forca(st),f50=forca(stAt(m,50));n7F(`FORÇA ${f0}  ·  no nível 50: ${f50}`,540,1048,28,'#8a4a12',820);}
+  n7F('GOLPES',540,1118,30,'#7a5a3a',300);
+  m.moves.slice(0,4).forEach((id,k)=>{const mv=MOVES[id];if(!mv)return;const r=[125+(k%2)*420,1140+Math.floor(k/2)*78,410,64],q=n7R(r);if(trovHyb(m,mv))typeFill(q.x,q.y,q.w,q.h,q.h/2,'trovim');else rrect(q.x,q.y,q.w,q.h,q.h/2,TYPECOL[mv.type]||'#888',false);
+    b.save();b.globalAlpha=.25;rrect(q.x+1,q.y+.5,q.w-2,q.h*.4,q.h*.2,'#ffffff',false);b.restore();n7F(mvN(m.sp,id),r[0]+r[2]/2,r[1]+r[3]/2,30,'#ffffff',r[2]-30,'rgba(0,0,0,.45)');});
+  const b2=behOf(m.sp,m.lv);n7F('Poder: '+b2.d,540,1404,28,'#3d2a1c',820);
+  n7F(`Especial: ${ULTNAME[m.sp]||'—'}`,540,1484,32,'#a8361f',820);if(ULTDESC[m.sp])n7F(ULTDESC[m.sp],540,1526,24,'#6a4a2a',820);
+  u.rects=[];u.boxR=null;
+  if(!A){n7F('Voltar',768,1770,40,NV7ACT.Voltar[4],380);u.rects=[{x:0,y:0,w:W,h:H,i:0}];return;}
+  Object.entries(NV7ACT).forEach(([a,r])=>{const i=A.indexOf(a);if(i<0){b.save();b.globalAlpha=.55;const q=n7R(r);rrect(q.x+2,q.y+2,q.w-4,q.h-6,8,'rgba(120,100,80,.55)',false);b.restore();n7F(a,r[0]+r[2]/2,r[1]+r[3]/2-3,34,'#8a7a6a',r[2]-40);return;}
+    n7F(a,r[0]+r[2]/2,r[1]+r[3]/2-3,36,r[4],r[2]-40);const q=n7R(r);u.rects.push({x:q.x,y:q.y,w:q.w,h:q.h,i});});
+  if(u.cfg.nav&&party.length>1){[[100,[130,370,130,116]],[101,[820,370,130,116]]].forEach(([i,r])=>{const q=n7R(r);u.rects.push({x:q.x,y:q.y,w:q.w,h:q.h,i});});}};}
+try{setTimeout(()=>{try{['mon_fundo','mon_cam'].forEach(nv7);}catch(e){}},9000);}catch(e){}
+/* /ARTES07NOV */
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

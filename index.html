@@ -11825,6 +11825,7 @@ arBottomM7=function(A,G2,t){A.bh=[];const S=M7L.solo,k=m7T().k;
   if(can){b.save();b.globalAlpha=.08+.07*Math.sin(t/6);rrect(Q.x,Q.y,Q.w,Q.h,3,'#ffffff',false);b.restore();}
   A.bh.push({x:R.x,y:R.y,w:R.w,h:R.h,f:()=>{A.buyT=performance.now();arBuy();}});
   A.deck.forEach((sp,i)=>{const n=i+1,R2=m7R(S['carta'+n]),L=A.lv[sp]||0,c=arUpCost(sp),ok=A.mana>=c&&L<5;
+    if(typeof arCT==='function'&&arCT(sp,i,R2,L,c,ok)){A.bh.push({x:R2.x,y:R2.y,w:R2.w,h:R2.h,f:()=>arUpgrade(i)});return;}
     m6T(S['nv'+n],L>=5?'máx':`nv${L+1}`,'#fff3df','#1d4a3a');{const q=S['img'+n],z=m6sq(q);if(q[4])z[4]=q[4];m7Mon(sp,z,1/533,i);}
     if(L>=5)m6T(S['cus'+n],'MÁX','#b06010');else{m6G(S['gota'+n]);m6T(S['cus'+n],String(c),ok?'#2a2a2a':'#9a8a70');}
     if(!ok&&L<5){b.save();b.globalAlpha=.25;rrect(R2.x+2,R2.y+2,R2.w-4,R2.h-4,3,'#3a2a1a',false);b.restore();}A.bh.push({x:R2.x,y:R2.y,w:R2.w,h:R2.h,f:()=>arUpgrade(i)});});};
@@ -15854,6 +15855,22 @@ function m3Score(){try{return M3&&M3.L&&M3.L.type==='score'&&!(typeof m3hTipo===
   return _c();};}
 {const _s=m3Stars;m3Stars=function(){const S=M3;if(S&&m3Score()){const g=S.goal;return !S.won?0:S.score>=g*3?3:S.score>=g*2?2:1;}return _s();};}
 /* /COMBINACANDY */
+
+const CTU_P='blobs/',CTU_S='.webp';/* CARTATIPO08NOV (R170): as 5 cartas do deck embaixo da Arena usam a moldura do TIPO do monstrinho (arte do Buchecha, 200x283):
+   nível na faixa de cima, retrato no meio, custo na faixa de baixo. */
+const CTU={"agua": "11740b7d6bd658521f4876c00fad6282", "eletrico": "b5b5f2f07c128b8db925da54c049d544", "fantasma": "81fbb4a722b9a6a02bcc94e5b9cfdb35", "fogo": "7158962c1a4cec38fea08e21e8c2316c", "gelo": "5c18c801bd80dd0da4172791600da8c8", "inseto": "366d7dd8cd71add99d3ea674749500d5", "normal": "87f31da81665356138b8dc0ef610afb8", "pedra": "96babab26f35fab02976d6044997691b", "planta": "0f5d34b05a42bbe8c2d93fc88ad4d22d"};
+function arCT(sp,i,R2,L,c,ok){try{const ty=(SP[sp]||{}).type,k=({rocha:'pedra',eletrico:'eletrico'})[ty]||ty;if(!CTU[k])return false;NV7U['ct_'+k]=CTU_P+CTU[k]+CTU_S;const I=nv7('ct_'+k);if(!I)return false;
+  const fx=v=>R2.x+v/200*R2.w,fy=v=>R2.y+v/283*R2.h,fw=v=>v/200*R2.w,fh=v=>v/283*R2.h;
+  b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(I,R2.x,R2.y,R2.w,R2.h);b.restore();
+  T(L>=5?'máx':`nv${L+1}`,fx(117),fy(22)+fh(37)*.16,fh(37)*.62,'center','#fff3df',fw(100),'rgba(40,20,5,.8)');
+  {const x=fx(27),y=fy(68),w=fw(146),h=fh(157);let A=null;try{A=arCardArt(sp);}catch(e){}
+    if(A){const s=Math.min(w/A.naturalWidth,h/A.naturalHeight)*.96,ww=A.naturalWidth*s,hh=A.naturalHeight*s;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(A,x+(w-ww)/2,y+(h-hh)/2,ww,hh);b.restore();}
+    else arDrawMon(sp,x+w/2,y+h*.62,h/95,'idle','s',i);}
+  const my=fy(232)+fh(32)*.2,mh=fh(32)*.62;
+  if(L>=5)T('MÁX',fx(100),my,mh,'center','#b06010',fw(140));else T('💧'+c,fx(100),my,mh,'center',ok?'#2a2a2a':'#9a8a70',fw(140));
+  if(!ok&&L<5){b.save();b.globalAlpha=.28;rrect(R2.x+1,R2.y+1,R2.w-2,R2.h-2,3,'#3a2a1a',false);b.restore();}
+  return true;}catch(e){return false;}}
+/* /CARTATIPO08NOV */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

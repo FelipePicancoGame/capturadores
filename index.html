@@ -1143,7 +1143,7 @@ const SFXDATA={toque:'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjY
 function sfxLoad(){if(SFXL||!ACX)return;SFXL=1;for(const k of SFXN)fetch(SFXDATA[k]||('assets/sfx/sfx_'+k+'.mp3')).then(r=>r.arrayBuffer()).then(ab=>new Promise((ok,no)=>{const p=ACX.decodeAudioData(ab,ok,no);if(p&&p.then)p.then(ok,no);})).then(b=>{SFXB[k]=b;}).catch(()=>{});}
 /* SOMEQUILIBRIO07NOV (R149/R158/R166 'sons dos ataques muito altos, não ouço a música'): todos os efeitos passam por um controle só,
    que segura quando muitos tocam juntos (não soma mais) e fica mais baixo nos minijogos; a música dos minijogos subiu ~30%. */
-function sfxBus(){try{if(!window.__sfxb||window.__sfxb.c!==ACX){const g=ACX.createGain(),k=ACX.createDynamicsCompressor();k.threshold.value=-22;k.knee.value=8;k.ratio.value=8;k.attack.value=.003;k.release.value=.18;g.connect(k);k.connect(ACX.destination);window.__sfxb={c:ACX,g};}
+function sfxBus(){try{if(!window.__sfxb||window.__sfxb.c!==ACX){const g=ACX.createGain(),k=ACX.createDynamicsCompressor();k.threshold.value=-22;k.knee.value=8;k.ratio.value=8;k.attack.value=.003;k.release.value=.18;g.connect(k);k.connect(sfxVolNode());window.__sfxb={c:ACX,g};}
   const m=G.mode,mg=(m==='wall'||m==='td'||m==='surv'||m==='exp'||m==='arena'||m==='match'||m==='math')?.6:1;if(window.__sfxb.v!==mg){window.__sfxb.v=mg;window.__sfxb.g.gain.value=mg;}return window.__sfxb.g;}catch(e){return ACX.destination;}}
 function sfxMG(k){try{const m=G.mode;/* SOMBAIXO (05/nov, Felipe: 'os efeitos de som estão muito mais altos que a música') */if(m==='wall'||m==='td'||m==='surv'||m==='exp'||m==='math'||m==='arena')return k==='moeda'?.08:k==='golpe'||k==='impacto'?.5:.32;}catch(e){}return .7;}
 function sfxPlay(k,v){if(flags&&flags.sfxOff)return true;const b=SFXB[k];if(!b||!ACX)return false;const now=ACX.currentTime;if(SFXLAST[k]&&now-SFXLAST[k]<.05)return true;SFXLAST[k]=now;try{const s=ACX.createBufferSource(),g=ACX.createGain();s.buffer=b;g.gain.value=(SFXV[k]||.6)*(v==null?1:v)*sfxMG(k);s.connect(g);g.connect(sfxBus());s.onended=()=>{try{s.disconnect();g.disconnect();}catch(_){}};s.start();}catch(e){return false;}return true;}
@@ -8624,7 +8624,7 @@ function m3Blast(cells,born,label){const S=M3,C=S.cols,kill=new Set();
     else if(q.sp===3){const k=q.c;for(let y2=0;y2<S.rows;y2++)for(let x2=0;x2<C;x2++)if(S.g[y2][x2]&&S.g[y2][x2].c===k)add(y2,x2);}};
   for(const [r,c] of cells)add(r,c);
   for(const bn of born||[])kill.delete(bn.r*C+bn.c);
-  const n=kill.size;S.combo++;const pts=n*20*S.combo;S.score+=pts;
+  const n=kill.size;S.combo++;const pts=n*20*Math.min(S.combo,4);S.score+=pts;
   let sx=0,sy=0,iceB=0;for(const id of kill){const r=Math.floor(id/C),c=id%C,q=S.g[r][c],[x,y]=m3Pt(r,c);sx+=x;sy+=y;q.pop=1;m3Part(x,y,M3COL[q.c]||'#fff',3);S.got[q.c]=(S.got[q.c]||0)+1;S.pw=Math.min(S.pwMax,S.pw+(q.c===S.pwI?1:.25));if(S.ice[r][c]>0){S.ice[r][c]--;iceB++;m3Part(x,y,'#d8f4ff',4);}}
   for(const bn of born||[]){if(S.ice[bn.r][bn.c]>0){S.ice[bn.r][bn.c]--;iceB++;}S.got[bn.k]=(S.got[bn.k]||0)+1;}
   if(iceB)S.score+=iceB*30;
@@ -13527,7 +13527,7 @@ const MSONG={
     mel:[[[0,1],[3,1],[7,1],[3,1],[8,2],[7,2]],[[6,2],[7,2],[3,4]],[[0,1],[3,1],[7,1],[12,1],[11,2],[8,2]],[[7,8]],[[12,1],[11,1],[8,1],[7,1],[8,2],[11,2]],[[12,2],[15,2],[14,4]],[[12,1],[11,1],[8,1],[7,1],[6,2],[3,2]],[[2,4],[-1,4]]]}};
 function musOn(){return flags.music!==false;}
 function musInit(){if(MUS.bus||!ACX)return;MUS.bus=ACX.createGain();MUS.bus.gain.value=musOn()?.16:0;
-  const lp=ACX.createBiquadFilter();lp.type='lowpass';lp.frequency.value=5200;const comp=ACX.createDynamicsCompressor();comp.threshold.value=-18;comp.ratio.value=3;MUS.bus.connect(lp);lp.connect(comp);comp.connect(ACX.destination);
+  const lp=ACX.createBiquadFilter();lp.type='lowpass';lp.frequency.value=5200;const comp=ACX.createDynamicsCompressor();comp.threshold.value=-18;comp.ratio.value=3;MUS.bus.connect(lp);lp.connect(comp);comp.connect(musVolNode());
   try{const len=Math.floor(ACX.sampleRate*1.8),ir=ACX.createBuffer(2,len,ACX.sampleRate);for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6);}MUS.rev=ACX.createConvolver();MUS.rev.buffer=ir;const wet=ACX.createGain();wet.gain.value=.32;MUS.rev.connect(wet);wet.connect(lp);}catch(e){MUS.rev=null;}
   const n=ACX.createBuffer(1,ACX.sampleRate*.3,ACX.sampleRate),d=n.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;MUS.noise=n;}
 function musG(k){if(!MUS.g[k]){const g=ACX.createGain();g.gain.value=0;g.connect(MUS.bus);if(MUS.rev)g.connect(MUS.rev);MUS.g[k]=g;}return MUS.g[k];}
@@ -13602,7 +13602,7 @@ function mfSecTick(k,now){const S=MFS.sx,SE=MSEC[k];if(!S||!S.pc||!SE||!MFS.node
     MFS.node=s2;MFS.gs=g2;S.t0=ts;S.o0=seg[0];S.ls=seg[0];S.le=seg[1];S.hot=want;S.pend=ts+.5;if(want&&BB){if(k==='wall'&&!flags.mbPT)flags.mbPT=1;else{const fl=flags.mbi||(flags.mbi={});fl[k]=(fl[k]||0)+1;}}if(up&&MFS.duck)MFS.duck=Math.min(MFS.duck,ts);}catch(e){}}
 
 function mfBoss(){try{const m=G.mode,L=m==='wall'?WL&&WL.foes:m==='td'?TD&&TD.foes:m==='surv'?SV&&SV.foes:null;if(m==='wall'&&WL&&WL.running!==false&&(WL.wave===5||WL.wave===10)&&(WL.spawned<WL.toSpawn||(WL.foes||[]).some(e=>e&&!e.dead)))return true;return !!(L&&L.some(e=>e&&e.boss&&!e.dead));}catch(e){return false;}}
-function mfAviso(){const b=MFS.buf&&MFS.buf[MAVISO];if(!b)return;try{const s=ACX.createBufferSource(),g=ACX.createGain();s.buffer=b;g.gain.value=.85;s.connect(g);g.connect(ACX.destination);s.start();MFS.duck=ACX.currentTime+9;}catch(e){}}
+function mfAviso(){const b=MFS.buf&&MFS.buf[MAVISO];if(!b)return;try{const s=ACX.createBufferSource(),g=ACX.createGain();s.buffer=b;g.gain.value=.85;s.connect(g);g.connect(musVolNode());s.start();MFS.duck=ACX.currentTime+9;}catch(e){}}
 function mfLoadAviso(){if(MFS.buf[MAVISO]||MFS.ldA)return;MFS.ldA=1;fetch(MAVISO).then(r=>r.arrayBuffer()).then(ab=>new Promise((ok,no)=>{const p=ACX.decodeAudioData(ab,ok,no);if(p&&p.then)p.then(ok,no);})).then(b=>{MFS.buf[MAVISO]=b;}).catch(()=>{MFS.ldA=0;});}
 const MFS={el:{},src:{},g:{},buf:{},cur:null};
 /* 25/out OTIMIZAÇÃO: música dos minijogos aberta em 24 kHz e mono (antes 44 kHz estéreo: 65–77 MB por música; agora ~18 MB). Era o que mais pesava na Horda e na Torre. */
@@ -13626,7 +13626,7 @@ function mfTick(){if(!ACX)return false;const k=mfFor(),on=musOn(),now=ACX.curren
   return true;}
 /* MUSDUCK (03/nov, report do Felipe: "a música tá muito alta e não dá pra ouvir a explicação"): enquanto tem fala/explicação na tela ou a narração está lendo, a música abaixa pra ~30%. */
 function musDuckOn(){try{if(typeof ui!=='undefined'&&ui.some(u=>u&&u.type==='dialog'))return true;if(document.querySelector('#tutL,.c1-dialogue,.nv-dialogue,.nvf'))return true;if(window.speechSynthesis&&speechSynthesis.speaking)return true;}catch(e){}return false;}
-function musDuckNode(){if(!MUS.dk){MUS.dk=ACX.createGain();MUS.dk.gain.value=1;MUS.dk.connect(ACX.destination);}return MUS.dk;}
+function musDuckNode(){if(!MUS.dk){MUS.dk=ACX.createGain();MUS.dk.gain.value=1;MUS.dk.connect(musVolNode());}return MUS.dk;}
 function musTick(){if(!ACX||ACX.state!=='running')return;musInit();const mfOn=mfTick();const on=musOn(),now=ACX.currentTime,dk=musDuckOn()?.3:1;try{setT(musDuckNode().gain,dk,now,dk<1?.15:.6);}catch(e){}setT(MUS.bus.gain,on?.16*dk:0,now,dk<1?.15:.6);if(!on){MUS.next=0;return;}
   if(mfOn){for(const k in MUS.g)setT(MUS.g[k].gain,0,now,.3);MUS.mood=null;MUS.next=0;return;}
   {const ti=musIntensity();MUS.int=MUS.int==null?ti:MUS.int+(ti-MUS.int)*.04;}
@@ -13877,7 +13877,7 @@ async function msArtWrap(m,f){const prev=MSART;MSART=(m&&MSARTU[m.id])?m.id:prev
   function tick(){try{const top=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null,show=!!(MSART&&typeof G!=='undefined'&&G.mode==='world'&&top&&top.type==='dialog');
     if(show){if(!el){el=document.createElement('img');el.id='msArt';el.alt='';el.style.cssText='position:fixed;z-index:40;pointer-events:none;aspect-ratio:3/2;object-fit:cover;border-radius:14px;border:3px solid #f6d36a;box-shadow:0 8px 22px rgba(0,0,0,.45),0 0 0 2px #6a3a12 inset;background:#2a1a0a;opacity:0;transform:translateY(8px) scale(.97);transition:opacity .25s,transform .25s';document.body.appendChild(el);}
       if(cur!==MSART){cur=MSART;el.src=MSARTU[MSART];}
-      const c=cv(),R=c?c.getBoundingClientRect():{left:0,width:innerWidth,top:0,height:innerHeight,bottom:innerHeight};const w=Math.min(R.width*.92,560),h=w/1.5,bot=R.bottom-R.height*.2-6;
+      const c=cv(),R=c?c.getBoundingClientRect():{left:0,width:innerWidth,top:0,height:innerHeight,bottom:innerHeight};let w=Math.min(R.width*.92,560),h=w/1.5,bot=R.bottom-R.height*.2-6;try{const L=top.cadL;if(L&&H>0){const k=R.height/H,s9=L.s||1;bot=R.top+(L.y-(top.speaker?64*s9*.42:0))*k-8;}}catch(_){}if(bot-h<R.top+8){h=Math.max(60,bot-R.top-8);w=h*1.5;}
       el.style.width=w+'px';el.style.left=(R.left+(R.width-w)/2)+'px';el.style.top=Math.max(R.top+8,bot-h)+'px';
       if(!vis){vis=true;el.style.display='block';requestAnimationFrame(()=>{if(el){el.style.opacity='1';el.style.transform='none';}});}}
     else if(vis&&el){vis=false;el.style.opacity='0';el.style.transform='translateY(8px) scale(.97)';setTimeout(()=>{if(!vis&&el)el.style.display='none';},260);}}catch(e){}requestAnimationFrame(tick);}
@@ -15804,6 +15804,44 @@ const NV7ACT={'Pôr na frente':[91,1588,442,112,'#2f6a2a'],'Trocar com o Sítio'
   if(u.cfg.nav&&party.length>1){[[100,[130,370,130,116]],[101,[820,370,130,116]]].forEach(([i,r])=>{const q=n7R(r);u.rects.push({x:q.x,y:q.y,w:q.w,h:q.h,i});});}};}
 try{setTimeout(()=>{try{['mon_fundo','mon_cam'].forEach(nv7);}catch(e){}},9000);}catch(e){}
 /* /ARTES07NOV */
+
+/* REPORTS07NOITE (07/nov noite, reports R182–R187) */
+/* R184 'Tá sem música': no iPhone, quando outro app/ligação/alarme toca som, o áudio do jogo fica 'interrupted' (não 'suspended')
+   e o jogo só retomava 'suspended' → ficava mudo até recarregar. Agora qualquer estado parado volta no próximo toque e ao voltar pro jogo. */
+(function(){const rs=why=>{try{if(typeof ACX!=='undefined'&&ACX&&ACX.state!=='running'&&ACX.state!=='closed'){const st=ACX.state;ACX.resume().then(()=>{try{musTick();}catch(e){}}).catch(()=>{});try{__EV('som parado ('+st+') → retomando '+why);}catch(e){}}}catch(e){}};
+  ['pointerdown','touchend','keydown','click'].forEach(ev=>document.addEventListener(ev,()=>rs('toque'),true));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)rs('voltou');});addEventListener('pageshow',()=>rs('voltou'));addEventListener('focus',()=>rs('voltou'));})();
+/* R185: VOLUME da música e dos efeitos (0 a 150%), aparece junto dos AJUSTES */
+function musVolNode(){if(!window.__mv||window.__mv.context!==ACX){window.__mv=ACX.createGain();window.__mv.connect(ACX.destination);}const v=(flags&&flags.volM!=null?flags.volM:100)/100;if(Math.abs(window.__mv.gain.value-v)>.001)window.__mv.gain.value=v;return window.__mv;}
+function sfxVolNode(){if(!window.__sv||window.__sv.context!==ACX){window.__sv=ACX.createGain();window.__sv.connect(ACX.destination);}const v=(flags&&flags.volS!=null?flags.volS:100)/100;if(Math.abs(window.__sv.gain.value-v)>.001)window.__sv.gain.value=v;return window.__sv;}
+(function(){let el=null;const css='position:fixed;z-index:60;left:50%;transform:translateX(-50%);top:calc(6px + env(safe-area-inset-top));width:min(92vw,380px);box-sizing:border-box;padding:8px 12px 6px;border-radius:14px;background:#fff6e0;border:3px solid #c98a3a;box-shadow:0 6px 16px rgba(0,0,0,.35);font:700 14px Fredoka,"Arial Rounded MT Bold",system-ui,sans-serif;color:#5a3418';
+  const row=(k,lab)=>`<label style="display:flex;align-items:center;gap:8px;margin:2px 0"><span style="width:92px">${lab}</span><input data-k="${k}" type="range" min="0" max="150" step="5" style="flex:1;accent-color:#e0a020;height:28px"><b data-v="${k}" style="width:44px;text-align:right"></b></label>`;
+  function mk(){el=document.createElement('div');el.id='volPanel';el.style.cssText=css;el.innerHTML=`<div style="text-align:center;font-size:13px;color:#a8361f;margin-bottom:2px">🔊 VOLUME</div>${row('volM','🎵 Música')}${row('volS','💥 Efeitos')}`;
+    el.addEventListener('pointerdown',e=>e.stopPropagation(),true);el.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
+    el.querySelectorAll('input').forEach(i=>{i.addEventListener('input',()=>{const k=i.dataset.k;flags[k]=+i.value;upd();try{if(ACX){musVolNode();sfxVolNode();}}catch(e){}if(k==='volS'){try{const n=performance.now();if(!el._t||n-el._t>180){el._t=n;tone([660,880],.05);}}catch(e){}}});i.addEventListener('change',()=>{try{saveGame();}catch(e){}});});
+    document.body.appendChild(el);}
+  function upd(){if(!el)return;el.querySelectorAll('input').forEach(i=>{const v=flags[i.dataset.k]!=null?flags[i.dataset.k]:100;if(document.activeElement!==i)i.value=v;el.querySelector(`[data-v="${i.dataset.k}"]`).textContent=Math.round(v)+'%';});}
+  setInterval(()=>{try{const top=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null,c=top&&top.cfg,show=!!(c&&(c.cfgart||(c.cadAsk&&/AJUSTES|CONFIGURA/.test(String(c.cadAsk.q||'')))));
+    if(show){if(!el)mk();if(el.style.display!=='block'){el.style.display='block';upd();}}else if(el&&el.style.display!=='none')el.style.display='none';}catch(e){}},200);})();
+
+/* R182 (Gabi): a figura da missão ficava em cima da 1ª linha da fala. Agora a figura para em cima da caixa de fala de verdade (com a plaquinha do nome)
+   e diminui quando não cabe. (troca feita no próprio msArt) */
+
+/* R183 (Gabi): no Combina dava pra vencer a fase 1 com 1 jogada (meta 504 e uma cascata sozinha fazia milhares).
+   Meta de pontos das fases de pontos ×4 (fase 1: 504 → 2016) e a cascata conta no máximo ×4 (antes subia sem limite). */
+{const _l=m3Lv;m3Lv=function(lv){const L=_l(lv);if(L.type==='score')L.goal=Math.round(L.goal*4);return L;};}
+
+/* R186 (Brasalor 'fica mudando de monstrinho'): 10 monstrinhos tinham só ATAQUE de costas; parado, o jogo desenhava outra arte (de frente/lado)
+   e no tiro voltava pra costas. Agora o parado de costas usa o 1º quadro da caminhada de costas (mesma arte, respira igual aos outros). */
+{const nv7R=k=>{const o={};for(const [act,d] of Object.entries(MONANIMSRC[k])){let A=null;Object.defineProperty(o,act,{enumerable:true,configurable:true,get(){if(!A||A.dead){A=monAnimMake(k,act,d);MONLIVE.add(A);}A.lu=performance.now();return A;},set(v){A=v;}});}MONANIM[k]=o;};
+  try{for(const k of Object.keys(MONANIMSRC)){if(!k.endsWith('@costas'))continue;const S=MONANIMSRC[k],base=k.slice(0,-7),N=MONANIMSRC[base+'@n'];if(S.idle||!S.attack||!N||!N.walk)continue;S.idle=Object.assign({},N.walk,{fps:1});IDLEWALK[base]=1;nv7R(k);}}catch(e){}
+  /* R187: a caminhada 'de frente' da Brasinha era desenhada de lado; a de frente certa é a da diagonal (sw) */
+  try{const Bw=MONANIMSRC['brasinha@sw']&&MONANIMSRC['brasinha@sw'].walk;if(Bw&&MONANIMSRC.brasinha){MONANIMSRC.brasinha.walk=Object.assign({},Bw);nv7R('brasinha');}}catch(e){}}
+/* R187: na Muralha os inimigos vêm reto pra muralha: de frente. Quando quicam pra trás (empurrão) ou vão na diagonal não viram de costas/de lado;
+   e a passada é pelo tempo (os grandes e lentos, como o Rochedo, quase não mexiam as pernas porque o passo era pela distância andada). */
+{const _d=d8Track;d8Track=function(o,x,y){const d=_d(o,x,y);try{if(G.mode==='wall'&&d!=='e'&&d!=='w')return 's';}catch(e){}return d;};}
+{const _m=monAnimDraw;monAnimDraw=function(sp,act,...r){if(act==='walk'&&MONWD!=null&&typeof G!=='undefined'&&G.mode==='wall'){const k=MONWD;MONWD=null;try{return _m(sp,act,...r);}finally{MONWD=k;}}return _m(sp,act,...r);};}
+/* /REPORTS07NOITE */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

@@ -6008,7 +6008,7 @@ function murCard(w,d,i,x,y,cw,ch,t){const tc=spCol(d.sp)||'#7aa0ff',ty=(SP[d.sp.
   /* retrato */
   {const [px0,py0]=N(.22,.13),pw=cw*.64,ph=ch*.46,M=murImg('a_'+d.sp.replace('*',''))||murImg('s_'+d.sp.replace('*',''))||MONIMG[d.sp.replace('*','')];b.save();rpath(px0,py0,pw,ph,2);b.clip();
    b.save();b.globalCompositeOperation='lighter';glowAt(px0+pw/2,py0+ph*.55,pw*.5,hex2rgb(tc).join(','),.28);b.restore();
-   b.restore();if(M&&M.complete&&M.naturalWidth){const [qx,qy]=N(.07,.04);murImgBig(M,qx,qy,cw*.86,ch*.57,ready?Math.sin(t/6+i)*.5:0);}else drawMon(d.sp,px0+pw/2,py0+ph*.6,.3);}
+   b.restore();const CI=(typeof cardIlu==='function')&&cardIlu(d.sp);if(CI){cardIluDraw(CI,px0,py0,pw,ph,2);}else if(M&&M.complete&&M.naturalWidth){const [qx,qy]=N(.07,.04);murImgBig(M,qx,qy,cw*.86,ch*.57,ready?Math.sin(t/6+i)*.5:0);}else drawMon(d.sp,px0+pw/2,py0+ph*.6,.3);}
   /* nível no hexágono */
   {const [hx,hy]=N(.14,.215),pop=d.lvT>0?1+Math.sin(d.lvT/50*Math.PI)*.35:1;const ks=Math.min(1.25,cw/38);T(`${d.wl}`,hx,hy-ch*.1*pop,ch*.2*pop,'center',C.white,cw*.3,C.ink);}
   /* nome */
@@ -6151,7 +6151,7 @@ function renderWall0(){const w=WL,t=w.t,sh=w.shake?((w.shake%4<2)?1:-1):0;
         if(sel){b.save();b.globalCompositeOperation='lighter';glowAt(ccx,y2+ch2/2,50,hex2rgb(rc).join(','),.6);b.restore();}
         b.save();b.imageSmoothingEnabled=true;b.shadowColor='rgba(0,0,0,.45)';b.shadowBlur=5;b.shadowOffsetY=2.5;b.drawImage(C2I,x,y2,cw,ch2);b.restore();
         if(cd.mon!=null&&w.defs[cd.mon]){const d=w.defs[cd.mon];b.save();b.globalCompositeOperation='lighter';glowAt(ccx,pcy,20,hex2rgb(spCol(d.sp)).join(','),.35);b.restore();
-          const I=MONIMG[d.sp.replace('*','')];if(I&&I.complete&&I.naturalWidth){const bx=cw*.66,k2=Math.min(bx/I.naturalWidth,bx/I.naturalHeight),bob=Math.sin(t/12+i)*.8;b.imageSmoothingEnabled=true;b.drawImage(I,ccx-I.naturalWidth*k2/2,pcy-I.naturalHeight*k2/2+bob,I.naturalWidth*k2,I.naturalHeight*k2);}else drawMon(d.sp,ccx,pcy+6,.45,false);
+          const CI2=(typeof cardIlu==='function')&&cardIlu(d.sp);if(CI2){const ww=cw*.6,hh=ww*1.15;cardIluDraw(CI2,ccx-ww/2,pcy-hh/2,ww,hh,5);}else{const I=MONIMG[d.sp.replace('*','')];if(I&&I.complete&&I.naturalWidth){const bx=cw*.66,k2=Math.min(bx/I.naturalWidth,bx/I.naturalHeight),bob=Math.sin(t/12+i)*.8;b.imageSmoothingEnabled=true;b.drawImage(I,ccx-I.naturalWidth*k2/2,pcy-I.naturalHeight*k2/2+bob,I.naturalWidth*k2,I.naturalHeight*k2);}else drawMon(d.sp,ccx,pcy+6,.45,false);}
           const tcl=spCol(d.sp)||'#888',BL=CDBL[Math.min(3,cd.r)];ell(x+cw*BL[0],y2+ch2*BL[1],cw*.1,cw*.1,tcl,false);}
         else{b.save();b.globalCompositeOperation='lighter';glowAt(ccx,pcy,18,hex2rgb(rc).join(','),.35);b.restore();drawIcon(cd.ic,ccx,pcy,1.05);}
         const BL=CDBL[Math.min(3,cd.r)],BR=CDBR[Math.min(3,cd.r)];if(cd.mon!=null&&cd.ic)drawIcon(cd.ic,x+cw*BL[0],y2+ch2*BL[1],.4);
@@ -6167,7 +6167,7 @@ function renderWall0(){const w=WL,t=w.t,sh=w.shake?((w.shake%4<2)?1:-1):0;
         b.fillStyle='rgba(0,0,0,.4)';b.fillRect(x+3,y2+4,cw-2,ch2-2);
         const g=b.createRadialGradient(ccx,ccy-3,2,ccx,ccy,cr+2);g.addColorStop(0,'#4a4378');g.addColorStop(1,'#1c1838');b.beginPath();b.arc(ccx,ccy,cr+1.5,0,Math.PI*2);b.fillStyle=g;b.fill();
         b.save();b.beginPath();b.arc(ccx,ccy,cr+1,0,Math.PI*2);b.clip();
-        if(cd.mon!=null&&w.defs[cd.mon]){const d=w.defs[cd.mon];b.save();b.globalCompositeOperation='lighter';glowAt(ccx,ccy,18,hex2rgb(spCol(d.sp)).join(','),.4);b.restore();{const I=MONIMG[d.sp.replace('*','')];if(I&&I.complete&&I.naturalWidth){const k2=Math.min(cr*1.7/I.naturalWidth,cr*1.7/I.naturalHeight),bob=Math.sin(t/12+i)*.8;b.imageSmoothingEnabled=true;b.drawImage(I,ccx-I.naturalWidth*k2/2,ccy-I.naturalHeight*k2/2+bob,I.naturalWidth*k2,I.naturalHeight*k2);}else drawMon(d.sp,ccx,ccy+5,.42,false);}}
+        if(cd.mon!=null&&w.defs[cd.mon]){const d=w.defs[cd.mon];b.save();b.globalCompositeOperation='lighter';glowAt(ccx,ccy,18,hex2rgb(spCol(d.sp)).join(','),.4);b.restore();{const CI2=(typeof cardIlu==='function')&&cardIlu(d.sp);if(CI2){cardIluDraw(CI2,ccx-cr-1,ccy-cr-1,cr*2+2,cr*2+2,0);}else{const I=MONIMG[d.sp.replace('*','')];if(I&&I.complete&&I.naturalWidth){const k2=Math.min(cr*1.7/I.naturalWidth,cr*1.7/I.naturalHeight),bob=Math.sin(t/12+i)*.8;b.imageSmoothingEnabled=true;b.drawImage(I,ccx-I.naturalWidth*k2/2,ccy-I.naturalHeight*k2/2+bob,I.naturalWidth*k2,I.naturalHeight*k2);}else drawMon(d.sp,ccx,ccy+5,.42,false);}}}
         else drawIcon(cd.ic,ccx,ccy,.8);b.restore();
         b.save();b.imageSmoothingEnabled=true;b.drawImage(CI,x,y2,cw,ch2);b.restore();
         if(cd.mon!=null&&cd.ic)drawIcon(cd.ic,x+cw-9,y2+ch2*.44,.34);
@@ -13015,7 +13015,7 @@ function drawDexArt(u){const st=u.cfg.dex;if(!ukReady('colecao'))return false;st
     b.save();b.globalAlpha*=ap;const sc=.8+.2*ap;b.translate(x+w/2,y+h/2);b.scale(sc,sc);b.translate(-x-w/2,-y-h/2);
     ukD(C2,cau?'c_'+(UIK.colecao.fr['c_'+ty]?ty:'normal'):seen?'c_visto':'c_desconhecido',x,y,w,h);
     if(cau||seen){b.save();b.beginPath();b.rect(x+14,y+16,w-28,h-72);b.clip();const ms=1.95,o=monCtrOff(sp,ms),cx=x+w/2+o[0],cy=y+100+o[1]+(cau?Math.sin(t/12+k)*2:0);
-      if(cau)drawMon(sp,cx,cy,ms);else{b.translate(cx,cy);b.scale(ms,ms);b.globalAlpha*=.8;b.imageSmoothingEnabled=true;b.drawImage(silhouette(sp),-40,-44,80,80);}b.restore();}
+      if(cau){const CI=(typeof cardIlu==='function')&&cardIlu(sp);if(CI){b.restore();b.save();cardIluDraw(CI,x+16,y+18,w-32,h-76,14);}else drawMon(sp,cx,cy,ms);}else{b.translate(cx,cy);b.scale(ms,ms);b.globalAlpha*=.8;b.imageSmoothingEnabled=true;b.drawImage(silhouette(sp),-40,-44,80,80);}b.restore();}
     else ukD(C2,'interr',x+w/2-45,y+40,90,105);
     ukT(String(num).padStart(2,'0'),x+29,y+31,22,'#fff','center',40,4,'#06183a');
     if(cau)ukD(C2,'selo',x+w-52,y+6,46,46);
@@ -15238,7 +15238,7 @@ function duoResDraw(w,t){if(!duoIsDuo(w)||!murUI())return;const R=duoResRect(w);
   if(!cells.length)T('sem outros monstrinhos',R.x+R.w/2,R.y+R.h/2,4.4,'center','#cfc6ff',R.w-6,C.ink);
   const dr=w.resDrag;
   for(const c of cells){if(dr&&dr.m===c.m&&dr.on)b.globalAlpha=.35;const tc=spCol(c.m.sp)||'#7aa0ff';rrect(c.x,c.y,c.w,c.h,4,darkHex(tc,.55),false);b.strokeStyle=tc;b.lineWidth=.9;rpath(c.x+.5,c.y+.5,c.w-1,c.h-1,4);b.stroke();
-    {const k0=c.m.sp.replace('*',''),M=murImg('a_'+k0)||murImg('s_'+k0)||MONIMG[k0];if(M&&M.complete&&M.naturalWidth)murImgBig(M,c.x+c.w*.08,c.y+c.h*.03,c.w*.84,c.h*.72,0);else drawMon(c.m.sh?c.m.sp+'*':c.m.sp,c.x+c.w/2,c.y+c.h*.6,c.h*.011);}T(`${nm(c.m)} · Nv${c.m.lv}`,c.x+c.w/2,c.y+c.h-6.2,Math.min(5,c.h*.14),'center',C.white,c.w-3,C.ink);b.globalAlpha=1;}
+    {const k0=c.m.sp.replace('*',''),M=murImg('a_'+k0)||murImg('s_'+k0)||MONIMG[k0],CI=(typeof cardIlu==='function')&&cardIlu(k0);if(CI)cardIluDraw(CI,c.x+c.w*.06,c.y+c.h*.05,c.w*.88,c.h*.7,3);else if(M&&M.complete&&M.naturalWidth)murImgBig(M,c.x+c.w*.08,c.y+c.h*.03,c.w*.84,c.h*.72,0);else drawMon(c.m.sh?c.m.sp+'*':c.m.sp,c.x+c.w/2,c.y+c.h*.6,c.h*.011);}T(`${nm(c.m)} · Nv${c.m.lv}`,c.x+c.w/2,c.y+c.h-6.2,Math.min(5,c.h*.14),'center',C.white,c.w-3,C.ink);b.globalAlpha=1;}
   if(dr&&dr.on){const tg=duoResTarget(w,dr.x,dr.y);if(tg>=0){const d=w.defs[tg];b.beginPath();b.arc(d.x,d.y-12,19+Math.sin(t/4)*1.5,0,Math.PI*2);b.lineWidth=2.4;b.strokeStyle='rgba(255,226,122,.95)';b.stroke();}
     drawMon(dr.m.sh?dr.m.sp+'*':dr.m.sp,dr.x,dr.y,.32);}
   b.restore();}
@@ -16428,6 +16428,23 @@ tioShow=function(lines){return new Promise(res=>{try{if(!lines||!lines.length)re
   w.defs.forEach((d,i)=>{const g=!!(d.m&&d.m.guarda),col=g?'#3f6ae0':'#2fb855';b.save();b.beginPath();b.ellipse(d.x,d.y+OY+10,15,4.6,0,0,Math.PI*2);b.lineWidth=1.4;b.strokeStyle=col;b.globalAlpha=.75+.25*Math.sin(t/8+i);b.stroke();b.restore();
     let y=d.y+OY-48;try{if(murUI()){const r=murLU('c'+(d._mk!=null?d._mk:i));if(r)y=r.y+OY-10;const v=murLU('vida');if(v)y=Math.min(y,v.y+OY-8);}}catch(e){}duoPill(d.x,y,g?'GUARDA BENTO':'VOCÊ',col);});}catch(e){}};}
 /* /GUARDADUPLA08NOV */
+
+/* CARTAILU08NOV (Felipe: "em todas"): ilustrações novas das cartas (Buchecha, 72 artes 512x640 com fundo) em todas as cartas de monstrinho:
+   Muralha (cartas de baixo e reserva), Coleção, Arena, Torres e cartão do treinador. Quem não tem ilustração continua com a arte de antes. */
+let ILUP='assets/cartas/';const ILUSET=new Set(['arvorito','assombrao','assombro','auroril','aurorion','brasalor','brasinha','cabritao','cabrito','cacauzinho','caranguejo','caranguerra','carneirao','cascal','cascopedra','choquinho','cogumelao','cogumelim','cogumestre','corujao','corujarca','corujito','dracobrasa','espectron','fagulho','flocolino','florabela','floraia','florestao','florina','fornalho','furacao','glacimor','infernalho','lesmagma','marolo','mentora','montanhao','nevascao','nevoar','noctavio','pedregao','pedrisco','peixonete','pincador','pinguimperador','pinguinho','pipiu','psiquara','psiuto','ratangao','ratonga','ratorrei','rochedo','sombrale','sombrin','tempestor','trovim','trovim2','trovim3','trovoar','tsunamor','tubarete','tubarrei','ventania','vulcanela','zumbel','zumbirex','zumbitron']);
+const ILUVAR={brasalor:'brasalor_a',nevascao:'nevascao_a',nevoar:'nevoar_a'},ILUI={};
+function cardIlu(sp){sp=String(sp||'').replace('*','');if(!ILUSET.has(sp))return null;let i=ILUI[sp];if(!i){i=new Image();i.decoding='async';i.src=ILUP+(ILUVAR[sp]||sp)+'.webp';ILUI[sp]=i;}return i.complete&&i.naturalWidth?i:null;}
+function cardIluDraw(I,x,y,w,h,r,fy){const s=Math.max(w/I.naturalWidth,h/I.naturalHeight),sw=w/s,sh=h/s,sx=(I.naturalWidth-sw)/2,sy=(I.naturalHeight-sh)*(fy==null?.3:fy);b.save();rpath(x,y,w,h,r||0);b.clip();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(I,sx,sy,sw,sh,x,y,w,h);b.restore();}
+{const _a=arCardArt;arCardArt=function(sp){return cardIlu(sp)||_a(sp);};}
+{const _p=tdwPortrait;tdwPortrait=function(tw,r,ready,t,i){const I=cardIlu(tw&&tw.sp);if(I){cardIluDraw(I,r.x,r.y,r.w,r.h,Math.min(r.w,r.h)*.08);return;}return _p.apply(this,arguments);};}
+{const _c=tcMonCard;tcMonCard=function(K,m,x,y,w,h,t,k,big){const I=m&&cardIlu(m.sp);if(!I)return _c.apply(this,arguments);ukD(K,'cartao_equipe',x,y,w,h);cardIluDraw(I,x+w*.1,y+h*.06,w*.8,h*.7,w*.05);ukArial2('Nv'+m.lv,x+w/2,y+h*.89,Math.round(h*.105),'#fff',w*.6);};}
+setTimeout(()=>{try{for(const m of (typeof party!=='undefined'?party:[]))cardIlu(m.sp);}catch(e){}},4000);
+/* /CARTAILU08NOV */
+
+/* LINHAS08NOV (Felipe: 'as legendas estão fora da linha do caderno'): o texto da história fica em cima das linhas do caderno.
+   As linhas da página ficam a cada 62,75 px (arte de 1080 de largura), a 1ª em y=1378: o nome vai na 1ª linha e cada linha de texto na seguinte. */
+try{const st=document.createElement('style');st.textContent=`html body #cv-chapter .c1-dialogue,html body #cv-chapter .c1-story .c1-dialogue{top:calc(100cqw * 1322 / 1080)!important;bottom:auto!important;padding:0!important;min-height:0!important;line-height:calc(100cqw * 62.75 / 1080)!important;font-size:4cqw}
+html body #cv-chapter .c1-dialogue strong{display:block!important;margin:0!important;line-height:calc(100cqw * 62.75 / 1080)!important;font-size:3.3cqw}`;document.head.appendChild(st);}catch(e){}
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

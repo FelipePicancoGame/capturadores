@@ -8894,9 +8894,9 @@ function m3cObj(S,L){const R0=L.o,R=m3R(R0),hb=R0[3],box=!!L.oj;b.drawImage(m3cA
   else if(S.L.type==='ice'){const n=S.ice.reduce((a,row)=>a+row.filter(v=>v).length,0),I=m3Art('gelo_1'),z=Math.min(R.h*(box?.42:.6),(ix1-ix0)*.3),x=ix0+z*.7;if(I)b.drawImage(I,x-z/2,cy-z/2,z,z);m3T(n?`QUEBRE: ${n}`:'GELO ✔',x+z*.6+(ix1-x-z*.6)/2,cy,Math.min(hb*(box?.18:.26),40),n?'#1a4a7a':'#1f7a3a',(ix1-x-z*.6)*.95);}
   else m3T(`META: ${S.goal}`,(ix0+ix1)/2,cy,Math.min(hb*(box?.2:.28),44),'#4a2a10',(ix1-ix0)*.95);}
 function m3cBarra(S,R0){const R=m3R(R0),LB=m3cL(),sx=R.w/(LB.bn||960),BP=m3cArt('barra_pontos'),BC=m3cArt('barra_cheia');b.drawImage(BP,R.x,R.y,R.w,R.h);
-  const g=S.goal,sc=S.score,xs=LB.bx||[101,383,571,763,859],fs=[0,1,1.35,1.8,2.1];let px=xs[4];for(let i=0;i<4;i++){if(sc<fs[i+1]*g){px=xs[i]+(xs[i+1]-xs[i])*Math.max(0,(sc-fs[i]*g)/((fs[i+1]-fs[i])*g));break;}}
+  const g=S.goal,sc=S.score,xs=LB.bx||[101,383,571,763,859],fs=m3Score()?[0,1,2,3,3.5]:[0,1,1.35,1.8,2.1];let px=xs[4];for(let i=0;i<4;i++){if(sc<fs[i+1]*g){px=xs[i]+(xs[i+1]-xs[i])*Math.max(0,(sc-fs[i]*g)/((fs[i+1]-fs[i])*g));break;}}
   if(px>xs[0]){b.save();b.beginPath();b.rect(R.x,R.y,px*sx,R.h);b.clip();b.drawImage(BC,R.x,R.y,R.w,R.h);b.restore();}
-  const SA=m3cArt('estrela_acesa'),gOk=S.L.type==='score'||m3GoalOk();[1,1.35,1.8].forEach((f,i)=>{if(gOk&&sc>=g*f&&SA){const z=(LB.bz||84)*sx;b.drawImage(SA,R.x+xs[i+1]*sx-z/2,R.y+(LB.by||55)*sx-z/2,z,z);}});
+  const SA=m3cArt('estrela_acesa'),gOk=S.L.type==='score'||m3GoalOk();(m3Score()?[1,2,3]:[1,1.35,1.8]).forEach((f,i)=>{if(gOk&&sc>=g*f&&SA){const z=(LB.bz||84)*sx;b.drawImage(SA,R.x+xs[i+1]*sx-z/2,R.y+(LB.by||55)*sx-z/2,z,z);}});
   T(S.L.type==='score'?`${sc} / ${S.goal}`:`${sc} pontos`,R.x+R.w/2,R.y+R.h+1,5.6,'center','#ffffff',Math.max(R.w,60),'rgba(0,0,0,.55)');}
 function m3cPoder(S,R0,t){const pb=m3PwBtn(),R=m3R(R0),kq=S.pw/S.pwMax,full=kq>=1,sr=R.w/360;
   if(full){b.save();b.globalCompositeOperation='lighter';glowAt(pb.x,pb.y,R.w*.55,hex2rgb(M3COL[S.pwI]).join(','),.45+.25*Math.sin(t/6));b.restore();}
@@ -15828,8 +15828,8 @@ function sfxVolNode(){if(!window.__sv||window.__sv.context!==ACX){window.__sv=AC
    e diminui quando não cabe. (troca feita no próprio msArt) */
 
 /* R183 (Gabi): no Combina dava pra vencer a fase 1 com 1 jogada (meta 504 e uma cascata sozinha fazia milhares).
-   Meta de pontos das fases de pontos ×4 (fase 1: 504 → 2016) e a cascata conta no máximo ×4 (antes subia sem limite). */
-{const _l=m3Lv;m3Lv=function(lv){const L=_l(lv);if(L.type==='score')L.goal=Math.round(L.goal*4);return L;};}
+   Meta de pontos das fases de pontos ×6 (fase 1: 504 → 3024) e a cascata conta no máximo ×4 (antes subia sem limite). */
+{const _l=m3Lv;m3Lv=function(lv){const L=_l(lv);if(L.type==='score')L.goal=Math.round(L.goal*6);return L;};}
 
 /* R186 (Brasalor 'fica mudando de monstrinho'): 10 monstrinhos tinham só ATAQUE de costas; parado, o jogo desenhava outra arte (de frente/lado)
    e no tiro voltava pra costas. Agora o parado de costas usa o 1º quadro da caminhada de costas (mesma arte, respira igual aos outros). */
@@ -15842,6 +15842,18 @@ function sfxVolNode(){if(!window.__sv||window.__sv.context!==ACX){window.__sv=AC
 {const _d=d8Track;d8Track=function(o,x,y){const d=_d(o,x,y);try{if(G.mode==='wall'&&d!=='e'&&d!=='w')return 's';}catch(e){}return d;};}
 {const _m=monAnimDraw;monAnimDraw=function(sp,act,...r){if(act==='walk'&&MONWD!=null&&typeof G!=='undefined'&&G.mode==='wall'){const k=MONWD;MONWD=null;try{return _m(sp,act,...r);}finally{MONWD=k;}}return _m(sp,act,...r);};}
 /* /REPORTS07NOITE */
+
+/* COMBINACANDY (07/nov, Felipe: "no Combina precisa ter mais jogadas. Veja a média de jogadas no Candy Crush e copia"):
+   como no Candy Crush, a fase de PONTOS não acaba quando bate a meta: você joga TODAS as jogadas (20, a média das fases de pontos 1–20 do Candy)
+   e as estrelas vêm dos pontos no fim (1★ meta, 2★ 2× a meta, 3★ 3× a meta). Fases de juntar e de gelo continuam terminando ao completar. */
+function m3Score(){try{return M3&&M3.L&&M3.L.type==='score'&&!(typeof m3hTipo==='function'&&m3hTipo());}catch(e){return false;}}
+{const _l=m3Lv;m3Lv=function(lv){const L=_l(lv);if(L.type==='score')L.moves=20;return L;};}
+{const _c=m3Check;m3Check=function(){const S=M3;if(S&&m3Score()&&!S.won&&!S.ending&&!S.fin&&!S.tutS&&S.moves>0){const ok=m3GoalOk();
+    if(ok&&!S.metaOk){S.metaOk=1;S.banner={t:0,txt:'META BATIDA!'};try{const G2=m3Geo();m3Pop(G2.x0+G2.bw/2,G2.y0+G2.bh*.62,'jogue até o fim: mais ⭐','#fff3a0',7.5);}catch(e){}try{tone([523,659,784],.07);}catch(e){}}
+    if(ok){const g=m3GoalOk;m3GoalOk=()=>false;try{return _c();}finally{m3GoalOk=g;}}}
+  return _c();};}
+{const _s=m3Stars;m3Stars=function(){const S=M3;if(S&&m3Score()){const g=S.goal;return !S.won?0:S.score>=g*3?3:S.score>=g*2?2:1;}return _s();};}
+/* /COMBINACANDY */
 
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

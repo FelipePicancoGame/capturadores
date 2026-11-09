@@ -16999,6 +16999,18 @@ try{(function(){
   const wide=()=>Math.max(240,Math.min(420,Math.round(216*innerWidth/innerHeight)));
   setInterval(()=>{try{if(G&&G.mode==='surv'&&big()&&(W!==wide()||H!==216)){document.body.classList.remove('rotp');setScreen(wide(),216);}}catch(e){}},250);
 })();}catch(e){}
+/* LATERAIS09NOV (Felipe: 'adapte todas as telas dupla ou maior pra tela cheia; se não der, como na Muralha, preenche com as folhas meio embaçadas nas laterais'): quando a tela em pé fica no meio de uma tela larga, as laterais mostram o próprio jogo ampliado e embaçado */
+try{(function(){
+  const cv=document.getElementById('screen');if(!cv)return;
+  const st=document.createElement('style');st.textContent='#cvBlur{position:fixed;left:-40px;top:-40px;width:calc(100% + 80px);height:calc(100% + 80px);z-index:0;pointer-events:none;filter:blur(22px) brightness(.66) saturate(1.15);display:none}';document.head.appendChild(st);
+  const bl=document.createElement('canvas');bl.id='cvBlur';bl.width=192;bl.height=120;const par=cv.parentElement||document.body;par.insertBefore(bl,par.firstChild);
+  const g=bl.getContext('2d');
+  try{if(getComputedStyle(cv).position==='static')cv.style.position='relative';if(!cv.style.zIndex)cv.style.zIndex='1';}catch(e){}
+  setInterval(()=>{try{const r=cv.getBoundingClientRect(),cls=document.body.classList,on=r.width>0&&r.width<innerWidth-60&&!cls.contains('rot')&&!cls.contains('rotp')&&!document.getElementById('cv-chapter');
+    bl.style.display=on?'block':'none';if(!on)return;
+    const bw=192,bh=Math.max(60,Math.round(192*innerHeight/innerWidth));if(bl.height!==bh)bl.height=bh;
+    const s=bw/innerWidth,sy=cv.height*.12,sh=cv.height*.6,sw=cv.width*.2;g.drawImage(cv,0,sy,sw,sh,0,0,r.left*s+3,bh);g.drawImage(cv,cv.width-sw,sy,sw,sh,r.right*s-3,0,(innerWidth-r.right)*s+3,bh);}catch(e){}},120);
+})();}catch(e){}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

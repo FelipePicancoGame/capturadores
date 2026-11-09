@@ -16988,6 +16988,17 @@ try{(function(){
 try{(function(){const _ps=portraitScreen;const big=()=>Math.min(innerWidth,innerHeight)>=520&&innerWidth>innerHeight;
 portraitScreen=function(){if(!big()||document.body.classList.contains('rot'))return _ps.apply(this,arguments);document.body.classList.remove('rotp');
 if(G&&G.mode==='surv')setScreen(Math.max(240,Math.min(400,Math.round(216*innerWidth/innerHeight))),216);else setScreen(180,320,3);};})();}catch(e){}
+/* HORDALARGA09NOV (Felipe: 'coloca tela larga'): em tela grande deitada a Horda usa a largura toda. O HUD mantém o tamanho pela altura e cada peça gruda no seu canto (esquerda, meio ou direita) */
+try{(function(){
+  const big=()=>Math.min(innerWidth,innerHeight)>=520&&innerWidth>innerHeight&&!document.body.classList.contains('rot');
+  hhK=function(){return Math.min(W/1080,H/1920);};
+  const ax=(x0,w,y,bot)=>{const k=hhK();if(W-1080*k<1)return x0*k;const c=x0+w/2;if(!bot)return (x0>=640&&y<200)?W-(1080-x0)*k:x0*k;return c<360?x0*k:c>720?W-(1080-x0)*k:W/2+(x0-540)*k;};
+  hhR=function(r,bot){const k=hhK();const x=ax(r[0],r[2]||0,r[1],bot);return bot?[x,H-(1920-r[1])*k,r[2]*k,r[3]*k]:[x,r[1]*k,r[2]*k,r[3]*k];};
+  hhT=function(s,cx,cy,px,col,bot,mw,al,sh){const k=hhK(),sz=px*k,y=bot?H-(1920-cy)*k:cy*k;T(s,ax(cx,0,cy,bot),y-sz*.56,sz,al||'center',col,mw?mw*k:0,sh===0?null:C.ink);};
+  try{if(window.CVEN){if(!CVEN['ESPECIAL'])CVEN['ESPECIAL']='SPECIAL';if(!CVEN['VAI!'])CVEN['VAI!']='GO!';}}catch(e){}
+  const wide=()=>Math.max(240,Math.min(420,Math.round(216*innerWidth/innerHeight)));
+  setInterval(()=>{try{if(G&&G.mode==='surv'&&big()&&(W!==wide()||H!==216)){document.body.classList.remove('rotp');setScreen(wide(),216);}}catch(e){}},250);
+})();}catch(e){}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

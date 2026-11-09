@@ -16640,6 +16640,68 @@ try{Object.assign(window.CVEN||{},{'Enfermeira':'Nurse','Prontinho! Todos recupe
    (a barra não sobe pra não cobrir as bases dos monstrinhos). Vale pro desenho e pro toque, porque os dois usam murLU. */
 {const _lu=murLU;murLU=function(id){const r=_lu.apply(this,arguments);try{if(r&&/^c[0-3]$/.test(id)&&typeof MUR_NOSQ!=='undefined'&&!MUR_NOSQ){const v=_lu('vida');if(v){const top=r.y+r.h*.07,lim=v.y+v.h+1;if(top<lim)r.y+=lim-top;}}}catch(e){}return r;};}
 /* /REPS08NOITE */
+/* MURRES08NOV (Felipe mandou Muralha_Resultados_03 · Salão dos Troféus): telas de VITÓRIA/FIM e ESTATÍSTICAS da Muralha com as bases novas do Buchecha (sem texto).
+   Todo texto é escrito pelo jogo (PT/EN); valores, nomes, retratos e porcentagens vêm da partida. Retângulos do LAYOUT.json (base 627x1254). */
+(function(){try{
+const MRU={vit:'assets/murres/vit.webp',est:'assets/murres/est.webp'},MRB={};
+for(const k in MRU){const i=new Image();i.decoding='async';i.src=MRU[k];MRB[k]=i;}
+const okI=k=>MRB[k]&&MRB[k].complete&&MRB[k].naturalWidth>0;
+const EN=()=>window.CVLANG==='en',L2=(pt,en)=>EN()?en:pt;
+const KK=()=>{const k=Math.min(W/627,H/1254);return {k,ox:(W-627*k)/2,oy:(H-1254*k)/2};};
+const P=r=>{const t=KK();return [t.ox+r[0]*t.k,t.oy+r[1]*t.k,r[2]*t.k,r[3]*t.k];};
+function base(key,a){const t=KK();b.fillStyle='#120e2a';b.fillRect(0,0,W,H);b.save();b.globalAlpha=a;b.imageSmoothingEnabled=true;b.drawImage(MRB[key],t.ox,t.oy,627*t.k,1254*t.k);b.restore();}
+function tx(s,r,px,col,al,ink,fy){const t=KK(),[x,y,w,h]=P(r);let f=px*t.k;s=String(s);b.save();b.font=`800 ${f}px CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif`;
+  while(f>4&&b.measureText(s).width>w){f*=.92;b.font=`800 ${f}px CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif`;}
+  b.textAlign=al||'center';b.textBaseline='middle';const X=al==='left'?x:al==='right'?x+w:x+w/2,Y=y+h*(fy==null?.52:fy);
+  if(ink){b.lineJoin='round';b.lineWidth=f*.2;b.strokeStyle=ink;b.strokeText(s,X,Y);}b.fillStyle=col;b.fillText(s,X,Y);b.restore();}
+function tx2(s,r,px,col){const w=String(s).split(' ');if(w.length<2){tx(s,r,px,col);return;}const h=Math.ceil(w.length/2),a=w.slice(0,h).join(' '),c=w.slice(h).join(' ');tx(a,[r[0],r[1],r[2],r[3]/2],px*.85,col,'center',null,.6);tx(c,[r[0],r[1]+r[3]/2,r[2],r[3]/2],px*.85,col,'center',null,.45);}
+function portrait(key,r,sc){const [x,y,w,h]=P(r),cx=x+w/2,cy=y+h/2,R=Math.min(w,h)*.4;b.save();b.beginPath();b.arc(cx,cy,R,0,Math.PI*2);b.fillStyle='rgba(255,246,220,.9)';b.fill();b.clip();
+  try{const s=R/38*sc,oo=(typeof monCtrOff==='function')?monCtrOff(key,s):[0,0];drawMon(key,cx+oo[0],cy+oo[1],s);}catch(e){}b.restore();}
+const fmt=n=>Math.round(n||0).toLocaleString(EN()?'en-US':'pt-BR');
+let LASTK=null;{const _sr=showResult;showResult=function(R2){try{LASTK=R2&&R2.key;}catch(e){}return _sr.apply(this,arguments);};}
+/* ---------- VITÓRIA / FIM DA DEFESA ---------- */
+const VL={titulo:[192,150,304,63],est:[[199,244,97,92],[294,230,103,99],[397,243,93,93]],dt:[221,389,247,34],dl:[[170,438,386,33],[170,477,386,33],[170,517,386,33],[170,557,386,33],[170,598,386,33]],
+  rt:[230,650,228,35],rr:[[119,772,97,38],[235,772,97,38],[350,772,97,38],[466,772,98,38]],rv:[[124,811,90,29],[240,811,90,29],[355,811,90,29],[471,811,90,29]],
+  mt:[217,866,248,33],mr:[180,931,84,81],mn:[310,914,233,48],md:[317,967,218,32],cont:[154,1054,372,80]};
+const PERF_EN=['Waves cleared','Enemies defeated','Best combo · Elites','Barrels blown · Thieves','Wall health'];
+const _dr=drawResult;
+drawResult=function(u){const R2=u.cfg.result;if(!R2||R2.key!=='wall'||!okI('vit'))return _dr(u);
+  R2.t++;const t=R2.t,ap=Math.min(1,t/12);base('vit',ap);u.boxR=null;u.rects=t>30?[{x:0,y:0,w:W,h:H,i:0}]:[];if(ap<1)return;
+  const win=!!R2.win;tx(win?L2('VITÓRIA!','VICTORY!'):L2('FIM DA DEFESA','DEFENSE OVER'),VL.titulo,46,'#fff6e0','center','#1a2a6a');
+  /* estrelas: as não conquistadas ficam apagadas por cima da arte */
+  for(let i=0;i<3;i++){const [x,y,w,h]=P(VL.est[i]),cx=x+w/2,cy=y+h*.53,on=i<(R2.stars||0),st=18+i*10;
+    if(!on||t<st){b.save();b.globalAlpha=on?Math.max(0,1-(t-st+8)/8):.78;star5(cx,cy,w*.5,'#2a2440');b.restore();}
+    else if(t<st+10){b.save();b.globalCompositeOperation='lighter';glowAt(cx,cy,w*.9,'255,230,140',.6*(1-(t-st)/10));b.restore();}}
+  tx(L2('DESEMPENHO','PERFORMANCE'),VL.dt,24,'#1e2a6a');
+  const Ls=R2.lines||[],perf=Ls.slice(0,5),get=re=>{const l=Ls.find(q=>re.test(q[0]));return l?l[1]:null;};
+  perf.forEach(([a,v],i)=>{if(t<=16+i*4)return;const r=VL.dl[i];tx(EN()?PERF_EN[i]:a,[r[0]+12,r[1],250,r[3]],19,'#2a1f14','left');tx(v,[r[0]+250,r[1],r[2]-262,r[3]],21,'#2a1f14','right');});
+  tx(L2('RECOMPENSAS','REWARDS'),VL.rt,24,'#fff6e0','center','#1a2a6a');
+  const RW=[[L2('Moedas','Coins'),get(/^Moedas/)],[L2('Pontos de treino','Training points'),get(/^Pontos de Treino/i)],[L2('Fichas da Muralha','Wall tokens'),get(/Fichas da Muralha/)],[L2('Bônus das estrelas','Star bonus'),get(/^Bônus das estrelas/)]];
+  RW.forEach(([lab,v],i)=>{if(t<=30+i*3)return;tx2(lab,VL.rr[i],18,'#3a2410');tx(v==null?'+0':v,VL.rv[i],22,'#fff8e8','center','#7a4a00');});
+  {const h=get(/Moeda de Honra/);if(h&&t>40)tx(L2('Moeda de Honra ','Honor coin ')+h,[230,690,228,22],15,'#7a4a00');}
+  {const D2=R2.dmg||[],mx=Math.max(0,...D2),mi=mx>0?D2.indexOf(mx):-1,sp=mi>=0&&R2.mons?R2.mons[mi]:null;tx(L2('Quem mais bateu','Top damage'),VL.mt,22,'#3a2410');
+    if(sp&&t>34){portrait(sp,VL.mr,1.7);tx(R2.mvpName||'',VL.mn,30,'#1e2a6a','left');tx(`${fmt(mx)} ${L2('de dano','damage')}`,VL.md,20,'#5a3410');}}
+  if(t>30)tx(L2('CONTINUAR','CONTINUE'),VL.cont,34,'#ffffff','center','#0e1a5a');};
+/* ---------- ESTATÍSTICAS ---------- */
+const SL={titulo:[123,150,305,63],sub:[84,263,400,44],rk:[{posicao:[61,377,40,30],retrato:[113,364,68,65],cab:[205,337,287,42],barra:[208,386,280,12],dx:[205,403,287,33]},{posicao:[61,503,40,30],retrato:[113,487,68,65],cab:[205,467,287,39],barra:[208,513,280,12],dx:[205,530,287,32]},{posicao:[61,624,40,30],retrato:[113,605,68,65],cab:[205,588,287,38],barra:[208,632,280,12],dx:[205,649,287,32]},{posicao:[61,740,40,30],retrato:[113,722,68,65],cab:[205,706,287,37],barra:[208,749,280,12],dx:[205,766,287,32]}],
+  treino:[151,876,295,72],cont:[97,1054,371,80]};
+const _ds=drawMgStats;
+drawMgStats=function(u){const st=u.cfg.mgstats;if(!st||LASTK!=='wall'||!okI('est'))return _ds(u);
+  st.t++;const t=st.t,ap=Math.min(1,t/10),L=st.L.slice(0,4),tot=st.L.reduce((a,o)=>a+o.d,0)||1;u.boxR=null;u.rects=t>40?[{x:0,y:0,w:W,h:H,i:0}]:[];base('est',ap);if(ap<1)return;
+  tx(L2('ESTATÍSTICAS','STATISTICS'),SL.titulo,44,'#fff6e0','center','#1a2a6a');tx(L2('Quem bateu mais nesta partida','Who hit the most this match'),SL.sub,24,'#1e2a6a');
+  SL.rk.forEach((R,i)=>{const o=L[i];if(!o){const [x,y,w,h]=P([55,R.cab[1]-12,457,R.dx[1]+R.dx[3]-R.cab[1]+18]);rrect(x,y,w,h,8*KK().k,'#f7ebd2',false);return;}
+    if(t<=10+i*6)return;const kk=Math.min(1,(t-10-i*6)/24),pc=o.d/tot,mvp=i===0&&o.d>0;
+    tx(`${i+1}º`,R.posicao,26,'#2a1f14');portrait(monKey(o.m),R.retrato,1.6);
+    tx(nm(o.m),[R.cab[0],R.cab[1],200,R.cab[3]],26,'#1e2a6a','left');tx(`${Math.round(pc*100*kk)}%`,[R.cab[0]+200,R.cab[1],R.cab[2]-200,R.cab[3]],28,mvp?'#8a3a00':'#1e2a6a','right');
+    if(pc>0){const [x,y,w,h]=P(R.barra),fw=Math.max(h,w*pc*kk);const g=b.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'#7fd0ff');g.addColorStop(1,'#2a7ae0');b.save();rpath(x+1,y+1,fw-2,h-2,h/2);b.fillStyle=g;b.fill();b.fillStyle='rgba(255,255,255,.35)';b.fillRect(x+2,y+1.5,fw-4,h*.28);b.restore();}
+    tx(`${fmt(o.d*kk)} ${L2('de dano','damage')}`+(o.g!=null?`  ·  +${o.g} XP`:''),R.dx,18,'#3a2a1a','left');});
+  if(t>30&&st.pts!=null){const r=SL.treino;tx(`+${fmt(st.pts)} ${L2('pontos de treino','training points')}`,[r[0]+8,r[1],r[2]-8,r[3]*.55],26,'#1e2a6a');tx(L2('Use no Menu › Treino','Use it in Menu › Training'),[r[0],r[1]+r[3]*.55,r[2],r[3]*.45],18,'#2a3a7a');}
+  if(t>30&&st.foot)tx(st.foot,[110,990,407,30],18,'#1e2a6a');
+  if(t>40)tx(L2('CONTINUAR','CONTINUE'),SL.cont,34,'#ffffff','center','#0e1a5a');};
+setTimeout(()=>{for(const k in MRU)if(!okI(k)){const i=new Image();i.src=MRU[k];MRB[k]=i;}},5000);
+}catch(e){console.warn('murres',e);}})();
+/* /MURRES08NOV */
+
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

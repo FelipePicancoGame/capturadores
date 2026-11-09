@@ -16962,6 +16962,37 @@ try{(function(){
   const fix=()=>{try{const L=[];if(typeof party!=='undefined')L.push(party);if(typeof storage!=='undefined')L.push(storage);for(const A of L)if(Array.isArray(A))for(const m of A)if(m&&typeof m.sp==='string'&&m.sp.replace('*','')==='ratonga')m.sp=m.sp.replace('ratonga','ratangao');}catch(e){}};
   fix();setInterval(fix,4000);
 })();}catch(e){}
+/* PULAR09NOV (Felipe: 'coloca um botão de pular, para quando a pessoa ficar travada, ela conseguir pular e destravar'): botão próprio na tela, no mapa e na Horda. O herói pula pro lugar livre mais perto (de preferência pra frente) */
+try{(function(){
+  let el=null,last=[0,1],lp=null,busyJ=0;
+  const EN=()=>window.CVLANG==='en';
+  function mk(){el=document.createElement('button');el.id='cvJump';el.type='button';el.setAttribute('aria-label','Pular');
+    el.style.cssText='position:fixed;left:max(4px,env(safe-area-inset-left,0px));top:calc(42% + 44px);z-index:10059;padding:0 10px;height:34px;border-radius:17px;border:2px solid #154c5e;background:#fffaf0;color:#154c5e;font:700 14px Fredoka,system-ui,sans-serif;box-shadow:0 2px 0 rgba(0,0,0,.35);opacity:.9;display:none;touch-action:manipulation';
+    ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup'].forEach(ev=>el.addEventListener(ev,e=>e.stopPropagation(),{passive:true}));
+    el.addEventListener('click',e=>{e.stopPropagation();jump();});document.body.appendChild(el);}
+  function vis(){try{if(G.mode==='world')return !busy&&!(ui&&ui.length);if(G.mode==='surv')return !!(SV&&SV.pl&&!SV.cards&&!SV.paused&&!SV.ask);}catch(e){}return false;}
+  function pos(){try{if(G.mode==='world')return[P.px,P.py];if(G.mode==='surv')return[SV.pl.x,SV.pl.y];}catch(e){}return null;}
+  function freeW(x,y){try{return !blocked(x,y);}catch(e){return false;}}
+  function freeS(x,y){try{const u={x,y,st:SV.pl.st,hp:SV.pl.hp};svSolidPush(u,5);return Math.hypot(u.x-x,u.y-y)<.6;}catch(e){return false;}}
+  function pick(x0,y0,free,R0,R1,step){
+    const open=(x,y)=>{let n=0;for(const r of [R0*.6,R0*1.2])for(let a=0;a<12;a++)if(free(x+Math.cos(a*Math.PI/6)*r,y+Math.sin(a*Math.PI/6)*r))n++;return n;};
+    const l=Math.hypot(last[0],last[1])||1,fx=last[0]/l,fy=last[1]/l;
+    for(let d=R0*2;d<=R1*.7;d+=step){const x=x0+fx*d,y=y0+fy*d;if(free(x,y)&&open(x,y)>=18)return[x,y];}
+    let best=null,bs=-1;
+    for(let r=R0;r<=R1;r+=step){for(let a=0;a<24;a++){const an=a*Math.PI/12,x=x0+Math.cos(an)*r,y=y0+Math.sin(an)*r;if(!free(x,y))continue;const o=open(x,y);const sc=o*10-r*.2+(Math.cos(an)*fx+Math.sin(an)*fy)*8;if(o>=18&&sc>bs){bs=sc;best=[x,y];}}if(best)return best;}
+    return null;}
+  function jump(){if(busyJ||!vis())return;const p=pos();if(!p)return;
+    const W0=G.mode==='world',t=W0?pick(p[0],p[1],freeW,12,96,4):pick(p[0],p[1],freeS,16,160,6);
+    try{tone([523,784,1047],.05);}catch(e){}
+    if(!t){try{if(W0&&typeof toast==='function')toast(EN()?'No free spot nearby':'Nenhum lugar livre perto');}catch(e){}return;}
+    busyJ=1;const N=9;let k=0;const x0=p[0],y0=p[1];
+    const iv=setInterval(()=>{k++;const f=k/N,x=x0+(t[0]-x0)*f,y=y0+(t[1]-y0)*f;
+      try{if(W0){P.px=x;P.py=y;P.hopY=-Math.sin(f*Math.PI)*10;}else{SV.pl.x=x;SV.pl.y=y;}}catch(e){}
+      if(k>=N){clearInterval(iv);busyJ=0;try{if(W0){P.hopY=0;P.x=Math.floor(P.px/16);P.y=Math.floor(P.py/16);P.path=null;P.mark=null;P.trail=[[P.px,P.py]];if(typeof FOL!=='undefined'&&FOL){FOL.x=P.px;FOL.y=P.py+2;}try{wpSpawn('dust',P.px,P.py,{vx:0,vy:-.2,life:20});}catch(e){}}}catch(e){}}},28);}
+  setInterval(()=>{if(!el){if(!document.body)return;mk();}const v=vis();el.style.display=v?'block':'none';if(v){const t2=EN()?'⤴ JUMP':'⤴ PULAR';if(el.textContent!==t2)el.textContent=t2;}
+    const p=pos();if(p&&lp){const dx=p[0]-lp[0],dy=p[1]-lp[1];if(Math.hypot(dx,dy)>.8&&!busyJ)last=[dx,dy];}lp=p;},150);
+  window.__cvJump=jump;
+})();}catch(e){}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

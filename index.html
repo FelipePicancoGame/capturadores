@@ -17011,7 +17011,7 @@ try{(function(){
   setInterval(()=>{try{const r=cv.getBoundingClientRect(),cls=document.body.classList,on=r.width>0&&r.width<innerWidth-60&&!cls.contains('rot')&&!cls.contains('rotp')&&!document.getElementById('cv-chapter');
     bl.style.display=on?'block':'none';if(!on)return;
     const bw=192,bh=Math.max(60,Math.round(192*innerHeight/innerWidth));if(bl.height!==bh)bl.height=bh;
-    const s=bw/innerWidth,sy=cv.height*.12,sh=cv.height*.6,sw=cv.width*.2;g.drawImage(cv,0,sy,sw,sh,0,0,r.left*s+3,bh);g.drawImage(cv,cv.width-sw,sy,sw,sh,r.right*s-3,0,(innerWidth-r.right)*s+3,bh);}catch(e){}},120);
+    if(window.__expSplit&&__expSplit()){g.drawImage(cv,0,cv.height*.18,cv.width,cv.height*.22,0,0,bw,bh);return;}const s=bw/innerWidth,sy=cv.height*.12,sh=cv.height*.6,sw=cv.width*.2;g.drawImage(cv,0,sy,sw,sh,0,0,r.left*s+3,bh);g.drawImage(cv,cv.width-sw,sy,sw,sh,r.right*s-3,0,(innerWidth-r.right)*s+3,bh);}catch(e){}},120);
 })();}catch(e){}
 /* VALORESEN09NOV: os números das cartas da Horda em inglês (dano, andar, ataque...) */
 try{(function(){const _v=svVal,D={dano:'damage',rapidez:'speed',vida:'HP',vidas:'lives',queimar:'burn',andar:'move',alcance:'range',prender:'root','nível':'level',por:'per',inimigo:'enemy',derrotado:'defeated',parceiros:'partners',magias:'spells','lentidão':'slow',gelar:'freeze',desvio:'dodge',carga:'charge',bolinhas:'orbs',bolhas:'bubbles',alvos:'targets',ataque:'attack','força':'power',sim:'yes','não':'no','área':'area',chance:'chance',exp:'exp'};
@@ -17021,6 +17021,29 @@ svVal=function(){const v=_v.apply(this,arguments);try{if(window.CVLANG==='en'&&A
 try{(function(){for(const nm of ['hordaObjDraw','svObjArrows']){const f=window[nm]||(typeof eval(nm)==='function'?eval(nm):null);if(typeof f!=='function')continue;const w=function(S){try{const SS=S||SV;if(SS&&(SS.cards||SS.ask||SS.extraAsk))return;}catch(e){}return f.apply(this,arguments);};try{eval(nm+'=w');}catch(e){}}
 try{if(window.CVEN){const D=Object.assign({'Vampirismo':'Vampirism','Caçador':'Hunter'},{"Atravessar": "Pierce", "Patinhas Ligeiras": "Quick Paws", "Especial Turbo": "Turbo Special", "Bolha Protetora": "Shield Bubble", "Espinhos": "Thorns", "Estouro Final": "Final Burst", "Sabedoria": "Wisdom", "Gemas Douradas": "Golden Gems", "Golpe Final": "Finishing Blow", "Esquiva": "Dodge", "Segunda Chance": "Second Chance", "Brasas": "Embers", "Turbo Total": "Full Turbo"});for(const k in D)if(!CVEN[k])CVEN[k]=D[k];}}catch(e){}})();}catch(e){}
 window.__svV=function(){try{if(W>260&&H<=216){const s=Math.min(W/180,H/320);return{s,ox:(W-180*s)/2};}}catch(e){}return null;};
+/* EXPQUADRADA09NOV (Felipe: 'na expedição muda a posição das coisas pra deixar mais quadrada, pra quem joga no Tesla ou no computador'): em tela grande deitada a Expedição mostra a cena da luta à esquerda e os painéis (equipe, botões, recompensas, pets) à direita. Os toques são levados pro lugar certo do jogo */
+try{(function(){
+  const cv=document.getElementById('screen');if(!cv)return;const SPL=196;
+  const sp=document.createElement('canvas');sp.id='expSplit';sp.style.cssText='position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:5;pointer-events:none;display:none;background:transparent!important;box-shadow:none!important';
+  (cv.parentElement||document.body).appendChild(sp);const g=sp.getContext('2d');
+  const on=()=>{try{return G&&G.mode==='exp'&&W===240&&H===480&&Math.min(innerWidth,innerHeight)>=520&&innerWidth>innerHeight&&!document.body.classList.contains('rot');}catch(e){return false;}};
+  const lay=()=>{const bw=480,bh=Math.max(SPL,H-SPL),k=Math.min(innerWidth/bw,innerHeight/bh)*.98,bx=(innerWidth-bw*k)/2,by=(innerHeight-bh*k)/2;return{k,bx,by,lo:(bh-SPL)/2*k,bh};};
+  let act=false;
+  function frame(){const a=on();if(a!==act){act=a;sp.style.display=a?'block':'none';cv.style.opacity=a?'0':'';}
+    if(a){const d=window.devicePixelRatio||1,w=Math.round(innerWidth*d),h=Math.round(innerHeight*d);if(sp.width!==w||sp.height!==h){sp.width=w;sp.height=h;}
+      const L=lay(),sx=cv.width/240,sy=cv.height/480;g.setTransform(d,0,0,d,0,0);g.clearRect(0,0,innerWidth,innerHeight);g.imageSmoothingEnabled=true;
+      g.save();g.shadowColor='rgba(0,0,0,.5)';g.shadowBlur=18;g.fillStyle='#111';g.fillRect(L.bx,L.by+L.lo,240*L.k,SPL*L.k);g.fillRect(L.bx+240*L.k,L.by,240*L.k,(H-SPL)*L.k);g.restore();
+      g.drawImage(cv,0,0,cv.width,SPL*sy,L.bx,L.by+L.lo,240*L.k,SPL*L.k);
+      g.drawImage(cv,0,SPL*sy,cv.width,cv.height-SPL*sy,L.bx+240*L.k,L.by,240*L.k,(H-SPL)*L.k);}
+    requestAnimationFrame(frame);}
+  requestAnimationFrame(frame);
+  const map=e=>{if(!act)return;try{const L=lay(),X=e.clientX,Y=e.clientY;let lx,ly;if(X<L.bx+240*L.k){lx=(X-L.bx)/L.k;ly=(Y-L.by-L.lo)/L.k;}else{lx=(X-L.bx-240*L.k)/L.k;ly=SPL+(Y-L.by)/L.k;}
+    const r=cv.getBoundingClientRect(),cx=r.left+lx/240*r.width,cy=r.top+ly/480*r.height;
+    Object.defineProperty(e,'clientX',{value:cx,configurable:true});Object.defineProperty(e,'clientY',{value:cy,configurable:true});
+    Object.defineProperty(e,'pageX',{value:cx,configurable:true});Object.defineProperty(e,'pageY',{value:cy,configurable:true});}catch(_){}};
+  for(const ev of ['pointerdown','pointermove','pointerup','pointercancel','click','mousedown','mouseup','mousemove'])window.addEventListener(ev,e=>{if(act&&e.target&&(e.target===cv||e.target.id==='stage'||e.target===cv.parentElement))map(e);},true);
+  window.__expSplit=()=>act;
+})();}catch(e){}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

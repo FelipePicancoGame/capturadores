@@ -6029,7 +6029,7 @@ function murBottom(w,t,WKK,BIG){
   /* barrinha de recarga do ataque (embaixo dos pés de cada monstrinho) */
   w.defs.forEach(d=>{const cdf=1-Math.max(0,d.cd)/Math.max(1,d.cdMax),col=TYPECOL[MOVES[d.mv].type],y=MURNEW()?d.y+3:284.6;rrect(d.x-10,y,20,2.8,1.4,'rgba(10,8,24,.8)',false);rrect(d.x-9.5,y+.4,19*cdf,2,1,cdf>=1?C.white:col,false);});
   {const r=murLU('suporte'),I=murImg('suporte');if(r&&I)murRot(r,()=>{b.save();b.imageSmoothingEnabled=true;b.drawImage(I,r.x,r.y,r.w,r.h);b.restore();});}
-  const _dr=duoIsDuo(w);w.defs.forEach((d,i)=>{if(_dr&&d._ow!==duoMe(w))return;const r=murLU('c'+(d._mk!=null?d._mk:Math.min(3,i)));if(!r)return;if(d.charge>=100&&!REDUCED){const k=1.06+.035*Math.sin(t/6+i),cx=r.x+r.w/2,cy=r.y+r.h/2;b.save();b.translate(cx,cy-2.5);b.scale(k,k);b.translate(-cx,-cy);murRot(r,()=>murCard(w,d,i,r.x,r.y,r.w,r.h,t));b.restore();}else murRot(r,()=>murCard(w,d,i,r.x,r.y,r.w,r.h,t));});if(_dr)duoResDraw(w,t);
+  const _dr=duoIsDuo(w);w.defs.forEach((d,i)=>{if(_dr&&d._ow!==duoMe(w))return;const r=murLU('c'+(d._mk!=null?d._mk:Math.min(3,i)));if(!r)return;if(d.charge>=100&&!REDUCED){/* CARTAGRANDE08NOV (Felipe: 'a carta cresce mas as coisas escritas nela não'): cresce o retângulo da carta (texto junto), sem escala no canvas */const k=1.06+.035*Math.sin(t/6+i),cx=r.x+r.w/2,cy=r.y+r.h/2,nw=r.w*k,nh=r.h*k,r2=Object.assign({},r,{x:cx-nw/2,y:cy-2.5-nh/2,w:nw,h:nh});murRot(r2,()=>murCard(w,d,i,r2.x,r2.y,r2.w,r2.h,t));}else murRot(r,()=>murCard(w,d,i,r.x,r.y,r.w,r.h,t));});if(_dr)duoResDraw(w,t);
   /* VIDAPRAFRENTE (06/nov, Felipe: 'não dá pra ver a vida da muralha'): a barra ficava atrás das cartas e da reserva; agora é desenhada por cima */
   {const r=murLU('vida');if(r)murRot(r,()=>murHP(w,t,r.x,r.y,r.w,r.h));}}
 /* botões no painel 🧪 TESTE (só aparecem onde o painel existe) */
@@ -16633,6 +16633,9 @@ try{if(typeof MONANIMSRC!=='undefined')for(const k of Object.keys(MONANIMSRC))if
     const L=flags.gemLog=Array.isArray(flags.gemLog)?flags.gemLog:[];L.push([Date.now(),last,g,(G&&G.mode)||'',String(ttl).slice(0,30)]);if(L.length>30)L.splice(0,L.length-30);try{window.__EV&&__EV(`cristais ${last}→${g} (${G&&G.mode}${ttl?' · '+String(ttl).slice(0,24):''})`);}catch(e){}last=g;}}catch(e){}},700);})();
 /* R248/R251: falas que faltavam no inglês */
 try{Object.assign(window.CVEN||{},{'Enfermeira':'Nurse','Prontinho! Todos recuperados.':'All done! Everyone is healed.','Prontinho! Todos recuperados. Volte sempre!':'All done! Everyone is healed. Come back anytime!'});}catch(e){}
+/* R255 (Felipe: 'me dá a opção de escolher onde o monstrinho fica na muralha. Só tá dando pra trocar de lugar'): arrastar o monstrinho pra uma base VAZIA leva ele pra lá */
+{const _he=wHoldEnd;wHoldEnd=function(){try{const w=WL;if(w&&w.swapDrag&&!(w.duo||w.duoG)&&typeof murLW==='function'){const s=w.swapDrag,d=w.defs[s.i];if(d&&(s.j<0||s.j===s.i)){const used=new Set(w.defs.map(q=>q._mk));let best=-1,bd=30;for(let k=0;k<4;k++){if(used.has(k))continue;const q=murLW('m'+k);if(!q)continue;const dd=Math.abs((q.x+q.w/2)-s.x);if(dd<bd){bd=dd;best=k;}}
+      if(best>=0){const q=murLW('m'+best);d._mk=best;d.x=q.x+q.w/2;d.y=q.y+q.h+1;w.swapDrag=null;w.hold=null;try{tone([523,659],.05);}catch(_){}wPop(d.x,d.y-34,'MUDOU!','#ffe27a',7);return true;}}}}catch(e){}return _he.apply(this,arguments);};}
 /* /REPS08NOITE */
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

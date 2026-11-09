@@ -2833,12 +2833,12 @@ function renderBattle(){
   {b.save();b.beginPath();b.rect(0,BTOP?216-H:0,W,BTOP?H-58:158);b.clip();bBattleFxDraw();b.restore();}
   abDraw();
   if(B.vs)vsDraw();
-  if(BTOP&&BTV2){btvFrameDraw();btvPlates(f,m);}else if(!B.hideE||B.ball){const s=stats(f),_eo=EYO()-(EYO()?26:0);b.save();b.translate(0,_eo);TY+=_eo;bcPlate(6,6,228,30,'#f2b632');const ty0=SP[f.sp].type,tyN=TYPES[ty0]||'',nw=Math.min(110,tw(nm(f),10));T(nm(f),13,9.5,10,'left',BL.ink,110,null);if(f.sh)T('★',13+nw+2,9,8,'left','#ffd23f',10,C.ink);
+  if(BTOP&&BTV2){btvFrameDraw();btvPlates(f,m);}else if(!B.hideE||B.ball){const s=stats(f),_eo=EYO()-(EYO()?26:0);b.save();b.translate(0,_eo);TY+=_eo;/* PLACAMENOR09NOV (carro: 'tá desproporcional') */const _ZK=(W>=260&&H<=216)?(window.__PZK||.72):1,_tz0=TZ;if(_ZK<1){b.scale(_ZK,_ZK);TZ=_ZK;}bcPlate(6,6,228,30,'#f2b632');const ty0=SP[f.sp].type,tyN=TYPES[ty0]||'',nw=Math.min(110,tw(nm(f),10));T(nm(f),13,9.5,10,'left',BL.ink,110,null);if(f.sh)T('★',13+nw+2,9,8,'left','#ffd23f',10,C.ink);
     if(tyN){const cw2=tw(tyN,5.6)+9,cx2=13+nw+(f.sh?13:5);rrect(cx2,11,cw2,9,4.5,BLmix(TYPECOL[ty0]||'#8a8aa8',.62),false);T(tyN,cx2+cw2/2,12.4,5.6,'center',BL.ink,cw2,null);}
-    T('Nv '+f.lv,228,10.5,7.5,'right',BL.ink,40,null);bcHp(13,25,214,5.5,f.dhp,s.hp);stBadge(f,172,10);b.restore();TY-=_eo;}
-  if(!(BTOP&&BTV2)&&!B.hideP){const s=stats(m),U=H>300?40:H>216?0:12,px0=128,py0=104-U,pw=106;bcPlate(px0,py0,pw,38,'#3fd162');T(nm(m),px0+7,py0+4,8.6,'left',BL.ink,62,null);if(m.sh)T('★',px0+7+Math.min(62,tw(nm(m),8.6))+2,py0+3.5,7,'left','#ffd23f',10,C.ink);T('Nv '+m.lv,px0+pw-6,py0+5,6.6,'right',BL.ink,30,null);
+    T('Nv '+f.lv,228,10.5,7.5,'right',BL.ink,40,null);bcHp(13,25,214,5.5,f.dhp,s.hp);stBadge(f,172,10);b.restore();TY-=_eo;TZ=_tz0;}
+  if(!(BTOP&&BTV2)&&!B.hideP){const s=stats(m),U=H>300?40:H>216?0:12,px0=128,py0=104-U,pw=106;const _PK=(W>=260&&H<=216)?(window.__PPK||.8):1,_ax=px0+pw,_ay=py0+38,_t0=[TZ,TX,TY];if(_PK<1){b.save();b.translate(_ax*(1-_PK),_ay*(1-_PK));b.scale(_PK,_PK);TZ=_PK;TX=_t0[1]+_ax*(1-_PK);TY=_t0[2]+_ay*(1-_PK);}bcPlate(px0,py0,pw,38,'#3fd162');T(nm(m),px0+7,py0+4,8.6,'left',BL.ink,62,null);if(m.sh)T('★',px0+7+Math.min(62,tw(nm(m),8.6))+2,py0+3.5,7,'left','#ffd23f',10,C.ink);T('Nv '+m.lv,px0+pw-6,py0+5,6.6,'right',BL.ink,30,null);
     bcHp(px0+7,py0+16,pw-14,5,m.dhp,s.hp);stBadge(m,px0+pw-34,py0+24);T(`${Math.ceil(m.dhp)} / ${s.hp}`,px0+pw-6,py0+23.5,7.2,'right',BL.ink,50,null);
-    const lo=m.lv**3,hi=(m.lv+1)**3;{const xf=Math.max(0,Math.min(1,((m.dxp??m.xp)-lo)/(hi-lo)));T('XP',px0+7,py0+24,5.4,'left','#2f7fe8',14,null);rrect(px0+18,py0+26,46,2.6,1.3,'#dfe4f2',false);if(xf>0)rrect(px0+18,py0+26,46*xf,2.6,1.3,'#3f8fff',false);if(m.dxp!=null&&xf>0){b.save();b.globalCompositeOperation='lighter';glowAt(px0+18+46*xf,py0+27,5,'120,200,255',.8);b.restore();}}}
+    const lo=m.lv**3,hi=(m.lv+1)**3;{const xf=Math.max(0,Math.min(1,((m.dxp??m.xp)-lo)/(hi-lo)));T('XP',px0+7,py0+24,5.4,'left','#2f7fe8',14,null);rrect(px0+18,py0+26,46,2.6,1.3,'#dfe4f2',false);if(xf>0)rrect(px0+18,py0+26,46*xf,2.6,1.3,'#3f8fff',false);if(m.dxp!=null&&xf>0){b.save();b.globalCompositeOperation='lighter';glowAt(px0+18+46*xf,py0+27,5,'120,200,255',.8);b.restore();}}if(_PK<1){b.restore();TZ=_t0[0];TX=_t0[1];TY=_t0[2];}}
   if(G.mode==='battle'&&!BTOP){bcPanel(158,58,frame);}else if(G.mode!=='battle')box(0,158,240,58);}
 
 /* ---------- battle ---------- */
@@ -3597,7 +3597,7 @@ function bcPanel(py,ph,t){if(H>300&&BTV2){const L=BLY(),[x,y,w,h]=L.ct;btvFrameD
 let BFRAMEY=0;
 
 function bcSplit(s,maxW,fz){if(tw(s,fz)<=maxW||s.indexOf(' ')<0)return [s];const w=s.split(' ');let best=[s],bd=1e9;for(let i=1;i<w.length;i++){const a=w.slice(0,i).join(' '),c2=w.slice(i).join(' '),d=Math.max(tw(a,fz),tw(c2,fz));if(d<bd){bd=d;best=[a,c2];}}return best;}
-function bcCards(u,ms,m,py,ph,t){const LF=H>300&&BTV2,LY=LF?BLY():null,cp=ph<70,n=ms.length,WIDE=!LF&&H<=216&&W>=260,Wc=WIDE?W-30:W,gap=LF?-1.6:WIDE?7:5,cw=LF?60.3:Math.min(62,(Wc-12-gap*(n-1))/n),tot=cw*n+gap*(n-1),x0=LF?3.6:(Wc-tot)/2,ch=LF?(LY.cH||82.9):cp?ph-7:ph-26,sel=u.sel;
+function bcCards(u,ms,m,py,ph,t){const LF=H>300&&BTV2,LY=LF?BLY():null,cp=ph<70,n=ms.length,WIDE=!LF&&H<=216&&W>=260,Wc=WIDE?W-30:W,gap=LF?-1.6:WIDE?7:5,cw=LF?60.3:Math.min(WIDE?(window.__BCW||44):62,(Wc-12-gap*(n-1))/n),tot=cw*n+gap*(n-1),x0=LF?3.6:(Wc-tot)/2,ch=LF?(LY.cH||82.9):cp?ph-7:ph-26,sel=u.sel;
   ms.forEach((id,k)=>{const mv=MOVES[id],hy=trovHyb(m,mv),col=hy?'#2f8fe8':TYPECOL[mv.type]||'#8a8aa8',ef=moveEff(id),DE=bDmgEst(id),
     q=Math.min(1,Math.max(0,(t-k*2)/9)),ent=q<1?(1-q)*14:0;if(q<=0)return;
     const isS=sel===k,kb=u.i===k&&sel==null,lift=isS?(cp?-4:-6):kb?-2:0,x=x0+k*(cw+gap),y=(LF?LY.cy:py+(cp?5:16))+lift+ent,bh=cp?12:21;
@@ -4767,7 +4767,7 @@ function setScreen(w,h,cap){const nS=bestS(w,h,cap);if(W!==w||H!==h||S!==nS||buf
 function portraitScreen(){const land=innerWidth>innerHeight;document.body.classList.toggle('rotp',land);const ar=land?innerWidth/innerHeight:innerHeight/innerWidth;setScreen(180,Math.max(320,Math.min(400,Math.round(180*ar))),3);}
 function PYO(){return G.mode==='battle'?(H>216?-Math.round(18+(H-216)*.1+(H>300?30:0))+BMO().p[1]:-20):0;}function EYO(){return G.mode==='battle'&&H>216?-Math.round((H-216)*.3+(H>300?22:0))+BMO().e[1]:0;}function BZ(){return G.mode==='battle'&&H>300?1.3:1;}
 /* TELAQUADRADA09NOV (Felipe, tela do carro: 'mantém o jogo mais amplo, não corta a tela lateral, só espalha as coisas na barra de baixo'): tela deitada usa toda a largura */function battleScreen(){const rot=document.body.classList.contains('rot');if(!rot&&innerHeight>innerWidth*1.1)setScreen(240,Math.max(216,Math.min(540,Math.round(240*innerHeight/innerWidth))));else setScreen(Math.max(240,Math.min(384,Math.round(216*innerWidth/innerHeight))),216);}
-function expScreen(){const rot=document.body.classList.contains('rot'),vw=rot?innerHeight:innerWidth,vh=rot?innerWidth:innerHeight,ar=vw/vh;if(ar>1.12)setScreen(Math.max(240,Math.min(420,Math.round(216*ar))),216);else setScreen(240,Math.max(216,Math.min(540,Math.round(240/ar))));}
+function expScreen(){const rot=document.body.classList.contains('rot'),vw=rot?innerHeight:innerWidth,vh=rot?innerWidth:innerHeight,ar=vw/vh;/* EXPCARRO09NOV (Felipe: 'tá com arte antiga' na tela do carro): tela grande deitada usa a Expedição nova, em pé, com as laterais embaçadas */if(!rot&&Math.min(innerWidth,innerHeight)>=520&&innerWidth>innerHeight){setScreen(240,480);return;}if(ar>1.12)setScreen(Math.max(240,Math.min(420,Math.round(216*ar))),216);else setScreen(240,Math.max(216,Math.min(540,Math.round(240/ar))));}
 function fit(){const rot=document.body.classList.contains('rot')||document.body.classList.contains('rotp');if(rot){const sc=Math.min(innerHeight/W,innerWidth/H);cv.style.width=Math.floor(W*sc)+'px';cv.style.height=Math.floor(H*sc)+'px';return;}const sc=Math.min(innerWidth/W,innerHeight/H);cv.style.width=Math.floor(W*sc)+'px';cv.style.height=Math.floor(H*sc)+'px';}
 /* TITPC (04/nov, Felipe: 'pessoas não conseguem jogar no PC'): a abertura, a escolha do herói e a história são telas em pé; no PC (janela deitada) viram uma coluna em pé no meio da tela, com os botões visíveis */function titleScreen(){if(innerWidth>innerHeight*1.05)setScreen(180,320,3);else worldScreen();}
 function worldScreen(){const ar=innerHeight/innerWidth;if(ar>=1)setScreen(180,Math.max(240,Math.min(400,Math.round(180*ar))));else setScreen(Math.max(240,Math.min(400,Math.round(216/ar))),216);}
@@ -8499,15 +8499,17 @@ function renderSurv(){const S=SV,P2=S.pl,t=S.t,sh=S.shake?((S.shake%4<2)?1:-1):0
   if(S.stick){const [ox,oy]=S.stick.o,[kx,ky]=S.stick.k;b.globalAlpha=.5;E(ox,oy,22,22,'rgba(20,16,50,.6)');E(ox+kx*16,oy+ky*16,10,10,'#f2b632');b.globalAlpha=1;}}/*HH31b*/
   if(S.banner){const bt=S.banner.t;b.fillStyle='rgba(180,30,40,.85)';b.fillRect(0,110,W,22);if(bt>5)T(S.banner.text,W/2,114,9,'center',C.white,W-10,C.ink);}
   bCutin(S.ctx);
+  {/* CARTASMENORES09NOV (Felipe: 'mantém a tela e diminui os ícones'): na tela larga a escolha de cartas é desenhada menor, no meio, sem mudar a tela */const _V=window.__svV?__svV():null,_W0=W,_H0=H,_TZ=TZ,_TX=TX,_TY=TY;if(_V&&S.cards){b.fillStyle='rgba(10,8,28,.85)';b.fillRect(0,0,_W0,_H0);b.save();b.translate(_V.ox,0);b.scale(_V.s,_V.s);W=180;H=320;TZ=_V.s;TX=_V.ox;TY=0;}try{
   if(S.cards){texts=[];const cs=S.cards;cs.t++;b.fillStyle='rgba(10,8,28,.85)';b.fillRect(0,0,W,H);if(cs.chest){b.save();b.globalCompositeOperation='lighter';glowAt(W/2,30,40,'255,210,63',.45);b.restore();T('BAÚ DO CHEFE!',W/2,36,14,'center',C.yellow,W-10,C.ink);T(`Escolha ${cs.chest} melhoria${cs.chest>1?'s':''}`,W/2,58,8,'center',C.white,W-10);}else{T(`NÍVEL ${S.lv}!`,W/2,40,14,'center',C.yellow,W-10,C.ink);T(`Escolha 1 carta · você tem ${svSlots(S)} de ${SVSLOT}`,W/2,60,8,'center',C.white,W-10);}
     cs.opts.forEach((cd,i)=>{const y=80+i*62+Math.max(0,14-cs.t*2)*(i+1),on=i===cs.i;b.save();if(on){b.shadowColor=C.yellow;b.shadowBlur=10;}b.restore();svCardDraw(cd,i,y,on,S,t);});
     T('As cartas valem só nesta partida.',W/2,H-40,6,'center','#e8e4ff',W-10);T('Pegar a mesma carta de novo deixa ela mais forte (NV 2, 3...).',W/2,H-31,5.4,'center','#c8c4e8',W-10);T('Toque numa carta',W/2,H-21,6.5,'center','#fff3c8',W-10);}
+  }finally{if(_V&&S.cards){b.restore();W=_W0;H=_H0;TZ=_TZ;TX=_TX;TY=_TY;}}}
   if(S.ask)svAskDraw(t);
   if(S.paused){texts=[];b.fillStyle='rgba(10,8,28,.78)';b.fillRect(0,0,W,H);T('PAUSADO',W/2,100,14,'center',C.white,170,C.ink);
     ['Continuar','Desistir'].forEach((s2,i)=>{const y=134+i*30;(pillArt(40,y,100,24,i?'#c23b3b':'#2f8f4c')||rrect(40,y,100,24,6,i?'#c23b3b':'#2f8f4c'));T(s2,90,y+6,9,'center',C.white,96);});}}
 function svTap(x,y){const S=SV;if(!S)return;
   if(S.ask){if(S.ask.t<15)return;if(x>30&&x<W-30&&y>=150&&y<=176){S.ask=null;const d=S.done;S.done=()=>{};d('win');}else if(x>30&&x<W-30&&y>=186&&y<=212){S.ask=null;S.extra={k0:S.kills,t0:S.time};S.limit=99999;S.banner={t:140,text:'MODO EXTRA! Bônus pela metade'};}return;}
-  if(S.cards){if(S.cards.t<14)return;S.cards.opts.forEach((cd,i)=>{const yy=80+i*62;if(y>=yy&&y<=yy+54)svPick(i);});return;}
+  if(S.cards){if(S.cards.t<14)return;const _V=window.__svV?__svV():null,_y=_V?y/_V.s:y;S.cards.opts.forEach((cd,i)=>{const yy=80+i*62;if(_y>=yy&&_y<=yy+54)svPick(i);});return;}
   if(S.paused){if(x>40&&x<140){if(y>=134&&y<158)S.paused=false;else if(y>=164&&y<188){S.paused=false;const d=S.done;S.done=()=>{};d('quit');}}return;}
   if(x>W-30&&y<30){S.paused=true;return;}if(Math.hypot(x-(W-24),y-(H-24))<22)svSpecial();}
 /* HORDA31 (31/out, Felipe: "atualiza tudo"): HUD novo da HORDA com o pacote aprovado do Buchecha (PACOTE_FINAL 30out, base 1080x1920,
@@ -16945,7 +16947,7 @@ try{if(window.CVLANG==='en'){const im=new Image();im.onload=()=>{try{const c=doc
 try{const D={'PODERES 🔥':'POWERS 🔥','PODERES':'POWERS','MELHORIAS':'UPGRADES','máx':'max','Vantagem!':'Advantage!','Desvantagem':'Disadvantage','Tipos iguais':'Same types','COMPARAR':'COMPARE','MESMO NÍVEL':'SAME LEVEL','PEDIDOS DA VILA':'VILLAGE REQUESTS','ENTREGAR':'DELIVER','PRESENTE DO DIA':'DAILY GIFT','PEGAR PRESENTE':'CLAIM GIFT','LOJA DE HONRA':'HONOR SHOP',
     'DIA 1':'DAY 1','DIA 2':'DAY 2','DIA 3':'DAY 3','DIA 4':'DAY 4','DIA 5':'DAY 5','DIA 6':'DAY 6','DIA 7':'DAY 7','35 moedas':'35 coins','3 Cápsulas':'3 Capsules','3 Poções':'3 Potions','70 moedas':'70 coins','2 Super Cápsulas':'2 Super Capsules','1 cristal + 2 Super Poções':'1 crystal + 2 Super Potions','Doce Mágico, 105 moedas':'Magic Candy, 105 coins','e 3 cristais':'and 3 crystals'};
   if(window.CVEN)for(const k in D)if(!window.CVEN[k])window.CVEN[k]=D[k];
-  const RX=[[/^nv(\d+)$/,m=>`Lv${m[1]}`],[/^Críticos causam \+(\d+)% de dano(.*)$/,m=>`Crits deal +${m[1]}% damage${m[2]}`],[/^Inimigo derrotado cura (.+)$/,m=>`A defeated enemy heals ${m[1]}`],[/^(ATAQUE|DEFESA|HABILIDADE) · (COMUM|RARO|ÉPICO|LENDÁRIO)$/,m=>`${{ATAQUE:'ATTACK',DEFESA:'DEFENSE',HABILIDADE:'ABILITY'}[m[1]]} · ${{COMUM:'COMMON',RARO:'RARE','ÉPICO':'EPIC','LENDÁRIO':'LEGENDARY'}[m[2]]}`],[/^Sobreviva (\d+:\d\d)$/,m=>`Survive ${m[1]}`],[/^(\d+) medalhas?$/,m=>`${m[1]} medal${m[1]==='1'?'':'s'}`],[/^tem (\d+)$/,m=>`have ${m[1]}`],[/^Alcance: (.+) acerta (\d+)% mais longe$/,m=>`Range: ${tr(m[1])} hits ${m[2]}% farther`]];
+  const RX=[[/^nv(\d+)$/,m=>`Lv${m[1]}`],[/^Críticos causam \+(\d+)% de dano(.*)$/,m=>`Crits deal +${m[1]}% damage${m[2]}`],[/^Inimigo derrotado cura (.+)$/,m=>`A defeated enemy heals ${m[1]}`],[/^Recarga (\d+)% menor$/,m=>`${m[1]}% faster recharge`],[/^(ATAQUE|DEFESA|HABILIDADE) · (COMUM|RARO|ÉPICO|LENDÁRIO)$/,m=>`${{ATAQUE:'ATTACK',DEFESA:'DEFENSE',HABILIDADE:'ABILITY'}[m[1]]} · ${{COMUM:'COMMON',RARO:'RARE','ÉPICO':'EPIC','LENDÁRIO':'LEGENDARY'}[m[2]]}`],[/^Sobreviva (\d+:\d\d)$/,m=>`Survive ${m[1]}`],[/^(\d+) medalhas?$/,m=>`${m[1]} medal${m[1]==='1'?'':'s'}`],[/^tem (\d+)$/,m=>`have ${m[1]}`],[/^Alcance: (.+) acerta (\d+)% mais longe$/,m=>`Range: ${tr(m[1])} hits ${m[2]}% farther`]];
   const _t=window.tr;window.tr=function(s){const r=_t(s);if(s==null||window.CVLANG!=='en')return r;const k=String(s);for(const [re,f] of RX){const m=re.exec(k);if(m){try{return f(m);}catch(e){}}}return r;};
 }catch(e){}
 })();
@@ -16997,7 +16999,7 @@ try{(function(){
   hhT=function(s,cx,cy,px,col,bot,mw,al,sh){const k=hhK(),sz=px*k,y=bot?H-(1920-cy)*k:cy*k;T(s,ax(cx,0,cy,bot),y-sz*.56,sz,al||'center',col,mw?mw*k:0,sh===0?null:C.ink);};
   try{if(window.CVEN){if(!CVEN['ESPECIAL'])CVEN['ESPECIAL']='SPECIAL';if(!CVEN['VAI!'])CVEN['VAI!']='GO!';}}catch(e){}
   const wide=()=>Math.max(240,Math.min(420,Math.round(216*innerWidth/innerHeight)));
-  /* CARTASHORDA09NOV: a escolha de cartas da Horda é em pé; na tela larga ela abre numa coluna no meio (laterais embaçadas) e o jogo volta pra largo depois */setInterval(()=>{try{if(G&&G.mode==='surv'&&big()){document.body.classList.remove('rotp');const cw=!!(SV&&(SV.cards||SV.ask||SV.extraAsk)),tw2=cw?180:wide(),th=cw?320:216;if(W!==tw2||H!==th)setScreen(tw2,th);}}catch(e){}},120);
+  /* CARTASHORDA09NOV: a escolha de cartas da Horda é em pé; na tela larga ela abre numa coluna no meio (laterais embaçadas) e o jogo volta pra largo depois */setInterval(()=>{try{if(G&&G.mode==='surv'&&big()){document.body.classList.remove('rotp');const tw2=wide(),th=216;if(W!==tw2||H!==th)setScreen(tw2,th);}}catch(e){}},120);
 })();}catch(e){}
 /* LATERAIS09NOV (Felipe: 'adapte todas as telas dupla ou maior pra tela cheia; se não der, como na Muralha, preenche com as folhas meio embaçadas nas laterais'): quando a tela em pé fica no meio de uma tela larga, as laterais mostram o próprio jogo ampliado e embaçado */
 try{(function(){
@@ -17018,6 +17020,7 @@ svVal=function(){const v=_v.apply(this,arguments);try{if(window.CVLANG==='en'&&A
 /* SETABAU09NOV: a setinha do baú não aparece por cima das cartas da Horda; textos das cartas em inglês */
 try{(function(){for(const nm of ['hordaObjDraw','svObjArrows']){const f=window[nm]||(typeof eval(nm)==='function'?eval(nm):null);if(typeof f!=='function')continue;const w=function(S){try{const SS=S||SV;if(SS&&(SS.cards||SS.ask||SS.extraAsk))return;}catch(e){}return f.apply(this,arguments);};try{eval(nm+'=w');}catch(e){}}
 try{if(window.CVEN){const D=Object.assign({'Vampirismo':'Vampirism','Caçador':'Hunter'},{"Atravessar": "Pierce", "Patinhas Ligeiras": "Quick Paws", "Especial Turbo": "Turbo Special", "Bolha Protetora": "Shield Bubble", "Espinhos": "Thorns", "Estouro Final": "Final Burst", "Sabedoria": "Wisdom", "Gemas Douradas": "Golden Gems", "Golpe Final": "Finishing Blow", "Esquiva": "Dodge", "Segunda Chance": "Second Chance", "Brasas": "Embers", "Turbo Total": "Full Turbo"});for(const k in D)if(!CVEN[k])CVEN[k]=D[k];}}catch(e){}})();}catch(e){}
+window.__svV=function(){try{if(W>260&&H<=216){const s=Math.min(W/180,H/320);return{s,ox:(W-180*s)/2};}}catch(e){}return null;};
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

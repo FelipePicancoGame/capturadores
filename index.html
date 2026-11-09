@@ -16945,7 +16945,7 @@ try{if(window.CVLANG==='en'){const im=new Image();im.onload=()=>{try{const c=doc
 try{const D={'PODERES 🔥':'POWERS 🔥','PODERES':'POWERS','MELHORIAS':'UPGRADES','máx':'max','Vantagem!':'Advantage!','Desvantagem':'Disadvantage','Tipos iguais':'Same types','COMPARAR':'COMPARE','MESMO NÍVEL':'SAME LEVEL','PEDIDOS DA VILA':'VILLAGE REQUESTS','ENTREGAR':'DELIVER','PRESENTE DO DIA':'DAILY GIFT','PEGAR PRESENTE':'CLAIM GIFT','LOJA DE HONRA':'HONOR SHOP',
     'DIA 1':'DAY 1','DIA 2':'DAY 2','DIA 3':'DAY 3','DIA 4':'DAY 4','DIA 5':'DAY 5','DIA 6':'DAY 6','DIA 7':'DAY 7','35 moedas':'35 coins','3 Cápsulas':'3 Capsules','3 Poções':'3 Potions','70 moedas':'70 coins','2 Super Cápsulas':'2 Super Capsules','1 cristal + 2 Super Poções':'1 crystal + 2 Super Potions','Doce Mágico, 105 moedas':'Magic Candy, 105 coins','e 3 cristais':'and 3 crystals'};
   if(window.CVEN)for(const k in D)if(!window.CVEN[k])window.CVEN[k]=D[k];
-  const RX=[[/^nv(\d+)$/,m=>`Lv${m[1]}`],[/^(\d+) medalhas?$/,m=>`${m[1]} medal${m[1]==='1'?'':'s'}`],[/^tem (\d+)$/,m=>`have ${m[1]}`],[/^Alcance: (.+) acerta (\d+)% mais longe$/,m=>`Range: ${tr(m[1])} hits ${m[2]}% farther`]];
+  const RX=[[/^nv(\d+)$/,m=>`Lv${m[1]}`],[/^Sobreviva (\d+:\d\d)$/,m=>`Survive ${m[1]}`],[/^(\d+) medalhas?$/,m=>`${m[1]} medal${m[1]==='1'?'':'s'}`],[/^tem (\d+)$/,m=>`have ${m[1]}`],[/^Alcance: (.+) acerta (\d+)% mais longe$/,m=>`Range: ${tr(m[1])} hits ${m[2]}% farther`]];
   const _t=window.tr;window.tr=function(s){const r=_t(s);if(s==null||window.CVLANG!=='en')return r;const k=String(s);for(const [re,f] of RX){const m=re.exec(k);if(m){try{return f(m);}catch(e){}}}return r;};
 }catch(e){}
 })();
@@ -16984,6 +16984,10 @@ try{(function(){
     const p=pos();if(p&&lp){const dx=p[0]-lp[0],dy=p[1]-lp[1];if(Math.hypot(dx,dy)>.8&&!busyJ)last=[dx,dy];}lp=p;},150);
   window.__cvJump=jump;
 })();}catch(e){}
+/* CARROTELA09NOV (Felipe, tela do carro: a Horda aparecia deitada/girada). Tela grande deitada (carro, PC, tablet) não gira o jogo: a Horda usa a tela larga; Muralha, Torres e os outros ficam em pé no meio */
+try{(function(){const _ps=portraitScreen;const big=()=>Math.min(innerWidth,innerHeight)>=520&&innerWidth>innerHeight;
+portraitScreen=function(){if(!big()||document.body.classList.contains('rot'))return _ps.apply(this,arguments);document.body.classList.remove('rotp');
+if(G&&G.mode==='surv')setScreen(Math.max(240,Math.min(400,Math.round(216*innerWidth/innerHeight))),216);else setScreen(180,320,3);};})();}catch(e){}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

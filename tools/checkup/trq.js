@@ -1,0 +1,2 @@
+const {chromium}=require('playwright');(async()=>{const br=await chromium.launch();const pg=await br.newPage();await pg.addInitScript(()=>{localStorage.setItem('cv.lang','en')});await pg.goto('http://localhost:8790/audit.html#semsom');for(let i=0;i<25;i++){await pg.waitForTimeout(700);if(await pg.evaluate(()=>window.__GM&&__GM()==='title'))break;}
+const L=JSON.parse(process.argv[2]);console.log(JSON.stringify(await pg.evaluate(L=>L.map(s=>[s,tr(s)]),L),null,0));await br.close();})();

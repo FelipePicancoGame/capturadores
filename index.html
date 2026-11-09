@@ -16054,7 +16054,7 @@ function m3Score(){try{return M3&&M3.L&&M3.L.type==='score'&&!(typeof m3hTipo===
 const CTU_P='blobs/',CTU_S='.webp';/* CARTATIPO08NOV (R170): as 5 cartas do deck embaixo da Arena usam a moldura do TIPO do monstrinho (arte do Buchecha, 200x283):
    nível na faixa de cima, retrato no meio, custo na faixa de baixo. */
 const CTU={"agua": "11740b7d6bd658521f4876c00fad6282", "eletrico": "b5b5f2f07c128b8db925da54c049d544", "fantasma": "81fbb4a722b9a6a02bcc94e5b9cfdb35", "fogo": "7158962c1a4cec38fea08e21e8c2316c", "gelo": "5c18c801bd80dd0da4172791600da8c8", "inseto": "366d7dd8cd71add99d3ea674749500d5", "normal": "87f31da81665356138b8dc0ef610afb8", "pedra": "96babab26f35fab02976d6044997691b", "planta": "0f5d34b05a42bbe8c2d93fc88ad4d22d"};
-function arCT(sp,i,R2,L,c,ok){try{const ty=(SP[sp]||{}).type,k=({rocha:'pedra',eletrico:'eletrico'})[ty]||ty;if(!CTU[k])return false;NV7U['ct_'+k]=CTU_P+CTU[k]+CTU_S;const I=nv7('ct_'+k);if(!I)return false;
+function arCT(sp,i,R2,L,c,ok){try{/* CARTAMAIOR09NOV (Felipe: as cartas de trás são tortas; a carta cobre elas) */{const kx=window.__ACKX||1.12,ky=window.__ACKY||1.15;R2={x:R2.x-R2.w*(kx-1)/2,y:R2.y-R2.h*(ky-1)*.4,w:R2.w*kx,h:R2.h*ky};}const ty=(SP[sp]||{}).type,k=({rocha:'pedra',eletrico:'eletrico'})[ty]||ty;if(!CTU[k])return false;NV7U['ct_'+k]=CTU_P+CTU[k]+CTU_S;const I=nv7('ct_'+k);if(!I)return false;
   const fx=v=>R2.x+v/200*R2.w,fy=v=>R2.y+v/283*R2.h,fw=v=>v/200*R2.w,fh=v=>v/283*R2.h;
   b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(I,R2.x,R2.y,R2.w,R2.h);b.restore();
   T(L>=5?'máx':`nv${L+1}`,fx(117),fy(22)+fh(37)*.16,fh(37)*.62,'center','#fff3df',fw(100),'rgba(40,20,5,.8)');
@@ -17045,14 +17045,11 @@ try{(function(){
   for(const ev of ['pointerdown','pointermove','pointerup','pointercancel','click','mousedown','mouseup','mousemove'])window.addEventListener(ev,e=>{if(act&&e.target&&(e.target===cv||e.target.id==='stage'||e.target===cv.parentElement))map(e);},true);
   window.__expSplit=()=>act;
 })();}catch(e){}
-/* MENUSPC09NOV (Felipe: 'melhorar o menu e a sala de treino pra PC e navegador'): em tela grande deitada, as telas cheias do jogo (menu, equipe, loja, mochila, coleção, treino, troféus, creche, mapa...) abrem em pé no meio, como no celular, com as laterais embaçadas; ao fechar, o mapa volta a ser largo */
-try{(function(){const K=['cadAsk','mslist','party','mons','bagv','shop','tiles','card','news','store','chap','dex','quest','daily','cshop','medals','creche','sitio','smap','mcap','vmap','cmp','wmap','tcard','mgstats','train'];
-  let on=false;const big=()=>Math.min(innerWidth,innerHeight)>=520&&innerWidth>innerHeight&&!document.body.classList.contains('rot');
-  setInterval(()=>{try{if(!G||G.mode!=='world'||!big()){if(on&&G&&G.mode!=='world')on=false;return;}
-    const top=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null,full=!!(top&&top.cfg&&K.some(k=>top.cfg[k]));
-    if(full&&!(W===180&&H===320)){on=true;setScreen(180,320,3);}
-    else if(!full&&on){on=false;try{worldScreen();}catch(e){}}}catch(e){}},80);
-})();}catch(e){}
+/* CADLARGO09NOV (Felipe: 'não muda o tamanho da tela'): o aviso em balão (ex.: tipos da Horda) é feito em pé; na tela deitada ele é desenhado menor, no meio, sem mudar a tela, e o botão ENTENDI fica visível */
+try{(function(){const _d=drawCadAsk;drawCadAsk=function(u){if(!(W>=260&&H<=216))return _d.apply(this,arguments);
+  const s=Math.min(W/180,H/320),ox=(W-180*s)/2,W0=W,H0=H,t0=[TZ,TX,TY];let r;b.fillStyle='rgba(8,6,24,.45)';b.fillRect(0,0,W,H);b.save();b.translate(ox,0);b.scale(s,s);W=180;H=320;TZ=s;TX=ox;TY=0;
+  try{r=_d.apply(this,arguments);}finally{b.restore();W=W0;H=H0;TZ=t0[0];TX=t0[1];TY=t0[2];}
+  try{const f=q=>q&&Object.assign(q,{x:ox+q.x*s,y:q.y*s,w:q.w*s,h:q.h*s});(u.rects||[]).forEach(f);if(u.boxR)f(u.boxR);}catch(e){}return r;};})();}catch(e){}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

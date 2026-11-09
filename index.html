@@ -16663,22 +16663,28 @@ let LASTK=null;{const _sr=showResult;showResult=function(R2){try{LASTK=R2&&R2.ke
 const VL={titulo:[192,150,304,63],est:[[199,244,97,92],[294,230,103,99],[397,243,93,93]],dt:[221,389,247,34],dl:[[170,438,386,33],[170,477,386,33],[170,517,386,33],[170,557,386,33],[170,598,386,33]],
   rt:[230,650,228,35],rr:[[119,772,97,38],[235,772,97,38],[350,772,97,38],[466,772,98,38]],rv:[[124,811,90,29],[240,811,90,29],[355,811,90,29],[471,811,90,29]],
   mt:[217,866,248,33],mr:[180,931,84,81],mn:[310,914,233,48],md:[317,967,218,32],cont:[154,1054,372,80]};
-const PERF_EN=['Waves cleared','Enemies defeated','Best combo · Elites','Barrels blown · Thieves','Wall health'];
+const PERF_EN={'Ondas vencidas':'Waves cleared','Inimigos derrotados':'Enemies defeated','Maior combo · Elites':'Best combo · Elites','Barris explodidos · Ladrões':'Barrels blown · Thieves','Vida da muralha':'Wall health','Vidas do portão':'Gate lives','Tempo':'Time','Nível alcançado':'Level reached'};
+/* MURRES2 (Felipe: 'muda todas as telas de todos os jogos pra essa'): Torres e Horda usam a mesma tela. O ícone de cada linha é o da arte que combina com o texto (bandeira, caveira, espadas, barril, escudo); linhas que sobram somem. */
+const ROWY=[438,477,517,557,598],RES_KEYS={wall:1,td:1,surv:1},iconOf=a=>/^Ondas|^Tempo/.test(a)?0:/^Inimigos/.test(a)?1:/combo|^Nível/i.test(a)?2:/^Barris/.test(a)?3:/^Vida/.test(a)?4:-1;
+const PARCH='#fcEAca';function cover(r,col){const [x,y,w,h]=P(r);b.fillStyle=col||PARCH;b.fillRect(x,y,w,h);}
+function iconRow(i,j){if(i===j)return;cover([125,ROWY[i]+1,44,31],'#fcebcc');if(j<0)return;const t=KK(),I=MRB.vit,[x,y,w,h]=P([128,ROWY[i]+1,38,31]);b.drawImage(I,128,ROWY[j]+1,38,31,x,y,w,h);}
 const _dr=drawResult;
-drawResult=function(u){const R2=u.cfg.result;if(!R2||R2.key!=='wall'||!okI('vit'))return _dr(u);
+drawResult=function(u){const R2=u.cfg.result;if(!R2||!RES_KEYS[R2.key]||!okI('vit'))return _dr(u);
   R2.t++;const t=R2.t,ap=Math.min(1,t/12);base('vit',ap);u.boxR=null;u.rects=t>30?[{x:0,y:0,w:W,h:H,i:0}]:[];if(ap<1)return;
-  const win=!!R2.win;tx(win?L2('VITÓRIA!','VICTORY!'):L2('FIM DA DEFESA','DEFENSE OVER'),VL.titulo,46,'#fff6e0','center','#1a2a6a');
+  const win=!!R2.win;tx(EN()?tr(R2.title||(win?'VITÓRIA!':'FIM DA DEFESA')):(R2.title||(win?'VITÓRIA!':'FIM DA DEFESA')),VL.titulo,46,'#fff6e0','center','#1a2a6a');
   /* estrelas: as não conquistadas ficam apagadas por cima da arte */
   for(let i=0;i<3;i++){const [x,y,w,h]=P(VL.est[i]),cx=x+w/2,cy=y+h*.53,on=i<(R2.stars||0),st=18+i*10;
     if(!on||t<st){b.save();b.globalAlpha=on?Math.max(0,1-(t-st+8)/8):.78;star5(cx,cy,w*.5,'#2a2440');b.restore();}
     else if(t<st+10){b.save();b.globalCompositeOperation='lighter';glowAt(cx,cy,w*.9,'255,230,140',.6*(1-(t-st)/10));b.restore();}}
   tx(L2('DESEMPENHO','PERFORMANCE'),VL.dt,24,'#1e2a6a');
-  const Ls=R2.lines||[],perf=Ls.slice(0,5),get=re=>{const l=Ls.find(q=>re.test(q[0]));return l?l[1]:null;};
-  perf.forEach(([a,v],i)=>{if(t<=16+i*4)return;const r=VL.dl[i];tx(EN()?PERF_EN[i]:a,[r[0]+12,r[1],250,r[3]],19,'#2a1f14','left');tx(v,[r[0]+250,r[1],r[2]-262,r[3]],21,'#2a1f14','right');});
+  const Ls=R2.lines||[],RWRE=/^Moedas|^Pontos de Treino|Fichas da Muralha|^Bônus das estrelas|Moeda de Honra/i,perf=Ls.filter(q=>!RWRE.test(q[0])).slice(0,5),get=re=>{const l=Ls.find(q=>re.test(q[0]));return l?l[1]:null;};
+  for(let i=0;i<5;i++){if(i>=perf.length){cover([114,ROWY[i]-3,458,40]);continue;}iconRow(i,iconOf(perf[i][0]));}
+  perf.forEach(([a,v],i)=>{if(t<=16+i*4)return;const r=VL.dl[i];tx(EN()?(PERF_EN[a]||tr(a)):a,[r[0]+12,r[1],250,r[3]],19,'#2a1f14','left');tx(v,[r[0]+250,r[1],r[2]-262,r[3]],21,'#2a1f14','right');});
   tx(L2('RECOMPENSAS','REWARDS'),VL.rt,24,'#fff6e0','center','#1a2a6a');
-  const RW=[[L2('Moedas','Coins'),get(/^Moedas/)],[L2('Pontos de treino','Training points'),get(/^Pontos de Treino/i)],[L2('Fichas da Muralha','Wall tokens'),get(/Fichas da Muralha/)],[L2('Bônus das estrelas','Star bonus'),get(/^Bônus das estrelas/)]];
-  RW.forEach(([lab,v],i)=>{if(t<=30+i*3)return;tx2(lab,VL.rr[i],18,'#3a2410');tx(v==null?'+0':v,VL.rv[i],22,'#fff8e8','center','#7a4a00');});
-  {const h=get(/Moeda de Honra/);if(h&&t>40)tx(L2('Moeda de Honra ','Honor coin ')+h,[230,690,228,22],15,'#7a4a00');}
+  const RW=[[L2('Moedas','Coins'),get(/^Moedas/)],[L2('Pontos de treino','Training points'),get(/^Pontos de Treino/i)],(R2.key==='wall'?[L2('Fichas da Muralha','Wall tokens'),get(/Fichas da Muralha/)]:[L2('Moeda de Honra','Honor coin'),get(/Moeda de Honra/)]),[L2('Bônus das estrelas','Star bonus'),get(/^Bônus das estrelas/)]];
+  RW.forEach(([lab,v],i)=>{if(t<=30+i*3)return;tx2(lab,VL.rr[i],18,'#3a2410');tx(v==null?'+0':String(v).replace(/\s*🏅/,''),VL.rv[i],22,'#fff8e8','center','#7a4a00');});
+  if(R2.key!=='wall'){const [x,y,w,h]=P([360,700,86,72]),g=b.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'#fff3c8');g.addColorStop(1,'#fde3a6');b.fillStyle=g;b.fillRect(x,y,w,h);b.save();b.font=`${h*.72}px sans-serif`;b.textAlign='center';b.textBaseline='middle';b.fillText('🏅',x+w/2,y+h*.55);b.restore();}
+  {const h=R2.key==='wall'&&get(/Moeda de Honra/);if(h&&t>40)tx(L2('Moeda de Honra ','Honor coin ')+h,[230,690,228,22],15,'#7a4a00');}
   {const D2=R2.dmg||[],mx=Math.max(0,...D2),mi=mx>0?D2.indexOf(mx):-1,sp=mi>=0&&R2.mons?R2.mons[mi]:null;tx(L2('Quem mais bateu','Top damage'),VL.mt,22,'#3a2410');
     if(sp&&t>34){portrait(sp,VL.mr,1.7);tx(R2.mvpName||'',VL.mn,30,'#1e2a6a','left');tx(`${fmt(mx)} ${L2('de dano','damage')}`,VL.md,20,'#5a3410');}}
   if(t>30)tx(L2('CONTINUAR','CONTINUE'),VL.cont,34,'#ffffff','center','#0e1a5a');};
@@ -16686,7 +16692,7 @@ drawResult=function(u){const R2=u.cfg.result;if(!R2||R2.key!=='wall'||!okI('vit'
 const SL={titulo:[123,150,305,63],sub:[84,263,400,44],rk:[{posicao:[61,377,40,30],retrato:[113,364,68,65],cab:[205,337,287,42],barra:[208,386,280,12],dx:[205,403,287,33]},{posicao:[61,503,40,30],retrato:[113,487,68,65],cab:[205,467,287,39],barra:[208,513,280,12],dx:[205,530,287,32]},{posicao:[61,624,40,30],retrato:[113,605,68,65],cab:[205,588,287,38],barra:[208,632,280,12],dx:[205,649,287,32]},{posicao:[61,740,40,30],retrato:[113,722,68,65],cab:[205,706,287,37],barra:[208,749,280,12],dx:[205,766,287,32]}],
   treino:[151,876,295,72],cont:[97,1054,371,80]};
 const _ds=drawMgStats;
-drawMgStats=function(u){const st=u.cfg.mgstats;if(!st||LASTK!=='wall'||!okI('est'))return _ds(u);
+drawMgStats=function(u){const st=u.cfg.mgstats;if(!st||!okI('est'))return _ds(u);
   st.t++;const t=st.t,ap=Math.min(1,t/10),L=st.L.slice(0,4),tot=st.L.reduce((a,o)=>a+o.d,0)||1;u.boxR=null;u.rects=t>40?[{x:0,y:0,w:W,h:H,i:0}]:[];base('est',ap);if(ap<1)return;
   tx(L2('ESTATÍSTICAS','STATISTICS'),SL.titulo,44,'#fff6e0','center','#1a2a6a');tx(L2('Quem bateu mais nesta partida','Who hit the most this match'),SL.sub,24,'#1e2a6a');
   SL.rk.forEach((R,i)=>{const o=L[i];if(!o){const [x,y,w,h]=P([55,R.cab[1]-12,457,R.dx[1]+R.dx[3]-R.cab[1]+18]);rrect(x,y,w,h,8*KK().k,'#f7ebd2',false);return;}

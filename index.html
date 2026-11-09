@@ -11893,12 +11893,17 @@ let ARVU=null;const ARVHOME=Math.PI/2,ARVDIR={s:Math.PI/2,n:-Math.PI/2,e:0,w:Mat
 function arvPose(u){if(!u||!u.vAtk)return 0;const ph=performance.now()-u.vAtk;if(ph<170)return -8*ph/170;if(ph<275)return -8+26*(ph-170)/105;if(ph<520){const t=(ph-275)/245;return 18*(1-t)*(1-t);}return 0;}
 {const _f=arFire;arFire=function(A,u,i,S,p,tg){try{if(u&&tg&&ARV.has(u.form||u.sp)){const q=arPos(arGeo(),tg.d);u.vTgt=Math.atan2(q.y-p.y,q.x-p.x);u.vAtk=performance.now();}}catch(e){}return _f(A,u,i,S,p,tg);};}
 {const _p=arSPiece;arSPiece=function(u,x,y,k,t,o){ARVU=u;try{return _p(u,x,y,k,t,o);}finally{ARVU=null;}};}
-{const _dm=arDrawMon;arDrawMon=function(sp,x,y,sc,act,dir,seed,fix){const I=arvImg(sp);if(!I)return _dm(sp,x,y,sc,act,dir,seed,fix);
+{const _dm=arDrawMon;
+/* ARANDA08NOV (Felipe: 'os mobs na arena estão deslizando ao invés de andar' / 'coloca as animações da arena'): quem tem animação de andar
+   anda de verdade no caminho (8 direções); quem só tem a arte de cima gingando e quicando a cada passo; quem está parado no tabuleiro respira. */
+const arWalk=sp=>{const s=String(sp||'').replace('*','');return !!(MONANIM[s]&&MONANIM[s].walk&&MONANIM[s].walk.ok!==false);};
+arDrawMon=function(sp,x,y,sc,act,dir,seed,fix){if(act==='walk'&&arWalk(sp))return _dm(sp,x,y+8*sc,sc*1.45,act,dir,seed,fix);
+  const I=arvImg(sp);if(!I)return _dm(sp,x,y,sc,act,dir,seed,fix);
   const u=ARVU;let ang,off=0;
   if(u&&(u.form||u.sp)===sp){if(u.vAng==null)u.vAng=ARVHOME;const want=u.vTgt!=null&&u.vAtk&&performance.now()-u.vAtk<1400?u.vTgt:ARVHOME,d=Math.atan2(Math.sin(want-u.vAng),Math.cos(want-u.vAng));u.vAng+=Math.max(-.18,Math.min(.18,d));ang=u.vAng;off=arvPose(u)*sc*.55;}
   else ang=act==='walk'?(ARVDIR[dir]!=null?ARVDIR[dir]:ARVHOME):ARVHOME;
-  const z=92*sc,cx=x+Math.cos(ang)*off,cy=y+4*sc+Math.sin(ang)*off;
-  b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.translate(cx,cy);b.rotate(ang-ARVHOME);b.drawImage(I,-z/2,-z/2,z,z);b.restore();};}
+  const z=92*sc,cx=x+Math.cos(ang)*off,cy=y+4*sc+Math.sin(ang)*off,tm=performance.now()/1000+(seed||0)*.37,wk=act==='walk',ph=tm*9,bob=wk?-Math.abs(Math.sin(ph))*6*sc:0,wob=wk?Math.sin(ph)*.16:0,br=wk?1:1+Math.sin(tm*2.6)*.035,sq=wk?1-Math.abs(Math.cos(ph))*.06:1;
+  b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.translate(cx,cy+bob);b.rotate(ang-ARVHOME+wob);b.scale(br/sq*(wk?1:1),br*sq);b.drawImage(I,-z/2,-z/2,z,z);b.restore();};}
 /* /ARVISTA */
 /* SOMVOLTA (05/nov, reports 'tá sem música' / 'tem ficado sem som'): no iPhone o som fica 'interrompido' depois de bloquear a tela, de uma ligação ou de trocar de app; no próximo toque ou ao voltar pro jogo ele é religado */
 {const rv=()=>{try{if(typeof ACX!=='undefined'&&ACX&&ACX.state!=='running'&&ACX.state!=='closed')ACX.resume().catch(()=>{});}catch(e){}};['pointerdown','touchend','keydown'].forEach(ev=>addEventListener(ev,rv,{capture:true,passive:true}));document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(rv,300);});setInterval(()=>{if(!document.hidden)rv();},4000);}

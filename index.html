@@ -15720,7 +15720,7 @@ function mcDrawCardsUI(w,t){const cs=w.cards;if(!cs||w.duo||w.duoG)return;
 function mcTakeAll(w,cs){cs.dois=1;cs.doisFeito=1;const L=cs.opts.slice();for(let j=0;j<L.length-1;j++){try{mcApplyCard(w,L[j]);}catch(e){}}cs.opts=[L[L.length-1]];cs.i=0;wPop(90,200,'Levou todas as cartas!',C.yellow,10);try{part(90,130,'#ffd23f',30,{sp:3,life:30,grav:.04,size:2});}catch(e){}setTimeout(()=>{try{if(WL===w&&w.cards===cs)wPick(0);}catch(e){}},350);}
 try{Object.assign(window.CVEN=window.CVEN||{},{'+1 CARTA':'+1 CARD','LEVAR 2':'TAKE 2','TODAS':'ALL','LEVOU':'TOOK','ESCOLHA':'PICK'});}catch(e){}
 const FPAD_EX=[['AGACHAMENTOS','SQUATS'],['FLEXÕES','PUSH-UPS'],['POLICHINELOS','JUMPING JACKS']],FPAD_S=30;
-const FPAD_IMG={};function fpadImg(src){let im=FPAD_IMG[src];if(!im){im=new Image();im.decoding='async';im.src=src;FPAD_IMG[src]=im;}return im.complete&&im.naturalWidth?im:null;}
+const FPAD_IMG={};setTimeout(()=>{try{fpadImg('assets/fpad/simbolo.png');}catch(e){}},6000);function fpadImg(src){let im=FPAD_IMG[src];if(!im){im=new Image();im.decoding='async';im.src=src;FPAD_IMG[src]=im;}return im.complete&&im.naturalWidth?im:null;}
 function fpadL(pt,en){return window.CVLANG==='en'?en:pt;}
 function fpadCan(w){const cs=w&&w.cards;return !!(cs&&!w.duo&&!w.duoG&&!cs.dois&&!w.fpadUsed&&!w.fpad&&cs.opts.length>1);}
 function fpadStart(w){const n=flags.fpadN||0;w.fpad={t0:performance.now(),ex:FPAD_EX[n%FPAD_EX.length],cs:w.cards,ct:w.cards.t||0};flags.fpadN=n+1;w.fpadUsed=1;try{tone([523,659,784],.06);}catch(e){}try{saveGame();}catch(e){}}
@@ -15731,7 +15731,9 @@ function fpadDraw(w,t){const A=w.fpad;if(!A)return;if(w.cards!==A.cs){w.fpad=nul
   b.save();b.fillStyle='rgba(12,10,34,.96)';b.fillRect(-20,-80,220,480);b.restore();
   const LG=fpadImg('assets/fpad/logo.png');
   if(LG){const lw=110,lh=lw*LG.naturalHeight/LG.naturalWidth;b.save();b.imageSmoothingEnabled=true;b.drawImage(LG,90-lw/2,-30,lw,Math.min(46,lh));b.restore();T(fpadL('PAUSA DO EXERCÍCIO','EXERCISE BREAK'),90,20,7,'center','#ffd23f',170,C.ink);}
-  else{T('FP IMPULSE',90,-24,13,'center','#ff8a1e',170,C.ink);T(fpadL('PAUSA DO EXERCÍCIO','EXERCISE BREAK'),90,-6,8,'center','#ffd23f',170,C.ink);}
+  else{const SB=fpadImg('assets/fpad/simbolo.png');/* símbolo FP da marca do Felipe (Drive: Marca Felipe Picanço-01.png) */
+    if(SB){const sh=26,sw=sh*SB.naturalWidth/SB.naturalHeight;b.save();b.imageSmoothingEnabled=true;b.drawImage(SB,90-sw/2,-40,sw,sh);b.restore();T('FP IMPULSE',90,-11,12,'center','#3fe0a0',170,C.ink);T(fpadL('PAUSA DO EXERCÍCIO','EXERCISE BREAK'),90,6,7.5,'center','#ffd23f',170,C.ink);}
+    else{T('FP IMPULSE',90,-24,13,'center','#ff8a1e',170,C.ink);T(fpadL('PAUSA DO EXERCÍCIO','EXERCISE BREAK'),90,-6,8,'center','#ffd23f',170,C.ink);}}
   T(fpadL('Faça quantos','Do as many'),90,32,7,'center','#e8e4ff',170);
   T(ex,90,42,12,'center',C.white,172,C.ink);
   T(fpadL('você conseguir em 30 segundos!','as you can in 30 seconds!'),90,59,7,'center','#e8e4ff',172);

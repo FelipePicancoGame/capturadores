@@ -12910,7 +12910,7 @@ function lojPager(u,V,key,n){const pages=Math.max(1,Math.ceil(n/8)),pg=LOJPG[key
   return pg;}
 function lojToast(T0){if(!T0)return;T0.t=(T0.t||0)+1;if(T0.t>140)return;const a=Math.min(1,T0.t/6,(140-T0.t)/15);b.save();b.globalAlpha=a;ukPill(150,1440,640,58,T0.bad?'#e05050':'#46c060',T0.bad?'#a02020':'#20803a','#fff3d0');b.restore();ukT(T0.txt,470,1471,26,'#fff','center',600,5,'#10101a');}
 function drawStoreArt(u){const S=u.cfg.store,L=u.cfg.rows,n=L.length;if(UPF&&UPF!==MODEUPS.wall)return false;if(!ukReady('loja'))return false;S.t++;S.tt=(S.tt||0)+1;u.rects=[];u.boxR=null;
-  ukBg('loja');const V=ukBegin(1672);ukFF('loja',V);
+  ukBg('loja');const V=ukBegin(1672);
   const tabs=UPF?[{n:'PODERES 🔥',i:n,dot:pwBuyN()},{n:'MELHORIAS',i:n+1,dot:upBuyN(UPF)}]:[{n:'ITENS',i:n},{n:'PODERES 🔥',i:n+1,dot:pwBuyN()},{n:'HONRA',i:n+3,dot:(flags.honra||0)>=4?1:0},{n:'PRESENTES',i:n+4,dot:giftReady()?1:0}];
   lojTabs(u,V,tabs,UPF?1:0);
   if(S.tab===0)lojWallet('moeda',Math.round(S.shown));else lojWallet('gema',gems());
@@ -12925,7 +12925,7 @@ function drawStoreArt(u){const S=u.cfg.store,L=u.cfg.rows,n=L.length;if(UPF&&UPF
   lojToast(S.toast);V.end();return true;}
 /* PODERES (Essência) — mesma estante, 9 tipos em 2 páginas */
 function drawPowersArt(u){const cf=u.cfg,L=cf.shop;if(!cf.pwArt||!ukReady('loja'))return false;u.t2=(u.t2||0)+1;const t=u.t2,n=L.length;u.rects=[];u.boxR=null;
-  ukBg('loja');const V=ukBegin(1672);ukFF('loja',V);
+  ukBg('loja');const V=ukBegin(1672);
   const jmp=q=>()=>{SHOPJMP=q;const ix=ui.indexOf(u);if(ix>=0){ui.splice(ix,1);u.res(n);}};
   const tabs=UPF?[{n:'PODERES 🔥',i:-9},{n:'MELHORIAS',fn:jmp('MELHORIAS'),dot:upBuyN(UPF)}]:[{n:'ITENS',fn:jmp('ITENS')},{n:'PODERES 🔥',i:-9},{n:'HONRA',fn:jmp('HONRA'),dot:(flags.honra||0)>=4?1:0},{n:'PRESENTES',fn:jmp('PRESENTES'),dot:giftReady()?1:0}];
   lojTabs(u,V,tabs,UPF?0:1);u.rects=u.rects.filter(r=>r.i!==-9||r.fn);lojWallet('ess',flags.ess||0);

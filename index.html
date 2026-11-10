@@ -3159,12 +3159,12 @@ function migDmg(){if(flags.migDmg1)return;flags.migDmg1=1;let gm=0,cn=0;const U=
 function upCost(u){return u.c+UP(u.k)*Math.round(u.c*.8);}
 const SHOPITEMS=[{k:'potion',n:'Poção',d:'Cura 20 de HP de um monstrinho. Use na Mochila ou na batalha.',c:35},{k:'super',n:'Poção Forte',d:'Cura 60 de HP. Ótima pra monstrinhos de nível alto.',c:90},
   {k:'ball',n:'Cápsula',d:'Joga num monstrinho selvagem pra tentar capturar.',c:40},{k:'sball',n:'Super Cápsula',d:'Captura quase 2x mais fácil que a Cápsula comum.',c:110},
-  {k:'candy',n:'Doce Mágico',d:'Sobe 1 nível na hora. Pode até aprender golpe novo!',c:1200},
-  {k:'cafe',n:'Café Turbo',d:'Por 20 min: +15% de velocidade e +10% de ataque. Use na Mochila.',c:150},
-  {k:'vitc',n:'Vitamina C',d:'Resistência: +1 de DEFESA pra sempre (máx +10 por suplementos/treino).',c:400},
-  {k:'proteina',n:'Proteína',d:'Músculos: +1 de ATAQUE pra sempre (máx +10).',c:400},
-  {k:'sucoverde',n:'Suco Verde',d:'Saúde: +3 de VIDA máxima pra sempre (máx +30).',c:400},
-  {k:'isotonico',n:'Isotônico',d:'Fôlego: +1 de VELOCIDADE pra sempre (máx +10).',c:400}];
+  {k:'candy',n:'Doce Mágico',d:'Sobe 1 nível na hora. Pode até aprender golpe novo!',c:6000},
+  {k:'cafe',n:'Café Turbo',d:'Por 20 min: +15% de velocidade e +10% de ataque. Use na Mochila.',c:750},
+  {k:'vitc',n:'Vitamina C',d:'Resistência: +1 de DEFESA pra sempre (máx +10 por suplementos/treino).',c:2000},
+  {k:'proteina',n:'Proteína',d:'Músculos: +1 de ATAQUE pra sempre (máx +10).',c:2000},
+  {k:'sucoverde',n:'Suco Verde',d:'Saúde: +3 de VIDA máxima pra sempre (máx +30).',c:2000},
+  {k:'isotonico',n:'Isotônico',d:'Fôlego: +1 de VELOCIDADE pra sempre (máx +10).',c:2000}];
 const SUPL={vitc:'def',proteina:'atk',sucoverde:'hp',isotonico:'spd'},BONMAX={hp:30,atk:10,def:10,spd:10},BONSTEP={hp:3,atk:1,def:1,spd:1},BONN={hp:'VIDA',atk:'ATAQUE',def:'DEFESA',spd:'VELOCIDADE'};
 function addBon(m,k,n){m.bon=m.bon||{};const before=m.bon[k]||0;m.bon[k]=Math.min(BONMAX[k],before+n);return m.bon[k]-before;}
 const UPICON={wallDmg:'sword',wallSpd:'bolt',wallCrit:'eye',wallCritD:'boom',wallRegen:'regen',tdDmg:'sword',tdRange:'eye',tdSpd:'bolt',tdCheap:'coin',expDmg:'sword',expHp:'heart',expSpd:'energy',expCrit:'eye',expArmor:'shield',expBoss:'skull',expLuck:'star',wallHp:'shield',ultStart:'star',tdEnergy:'energy',tdLives:'heart',gemVal:'gem',expCoins:'coin',coinMul:'coin'};
@@ -3427,17 +3427,17 @@ function drawShop(u){if(drawPowersArt(u)||drawHonraArt(u)||drawPedArt(u))return;
 function shopPrice(it){const n=(flags.shopBuy||{})[it.k]||0;return SUPL[it.k]?Math.round(it.c*Math.pow(1.15,n)/10)*10:it.c+(it.k==='cafe'?50*n:0);}
 function storeRows(tab){if(tab===0)return SHOPITEMS.map(it=>({n:it.n,d:it.d,ic:it.k,c:shopPrice(it),dis:(flags.coins||0)<shopPrice(it),tag:`tem ${bag[it.k]||0}`}));
   return upsList().map(u=>{const mx=UP(u.k)>=u.max;const lv0=UP(u.k);return{n:u.n,tot:lv0?'Total: '+u.d.replace(/\+(\d+)/g,(m0,n0)=>'+'+(+n0*lv0)):null,d:u.d.charAt(0).toUpperCase()+u.d.slice(1)+'.',ic:UPICON[u.k],bg:'#efe4ff',c:upGem(u),gem:1,max:mx,dis:mx||gems()<upGem(u),lv:UP(u.k),lvMax:u.max};});}
-const UPCOST={wallHp:[50,80,120,180,250],ultStart:[50,80,120,180],wallRegen:[60,100,150,220],tdEnergy:[50,80,120,180,250],tdLives:[50,80,120,180],tdRange:[50,80,120,180],tdCheap:[50,80,120,180],gemVal:[40,60,90,130],expHp:[50,80,120,180,250],expArmor:[60,100,150,220],expLuck:[60,100,150,220],coinMul:[80,120,180,260,360],expCoins:[80,120,180,260,360]};const SVMC=[40,65,100,145,200];
-function upGem(u){const L=UPCOST[u.k],l=UP(u.k);return L?L[Math.min(l,L.length-1)]:Math.max(4,Math.round(u.c/12))+l*4;}
+/* PRECO09NOV (Felipe 09/nov: "5 vezes": força só jogando; pra acelerar gasta cristais/moedas) */const UPCOST={wallHp:[250,400,600,900,1250],ultStart:[250,400,600,900],wallRegen:[300,500,750,1100],tdEnergy:[250,400,600,900,1250],tdLives:[250,400,600,900],tdRange:[250,400,600,900],tdCheap:[250,400,600,900],gemVal:[200,300,450,650],expHp:[250,400,600,900,1250],expArmor:[300,500,750,1100],expLuck:[300,500,750,1100],coinMul:[400,600,900,1300,1800],expCoins:[400,600,900,1300,1800]};const SVMC=[200,325,500,725,1000];
+function upGem(u){const L=UPCOST[u.k],l=UP(u.k);return L?L[Math.min(l,L.length-1)]:(Math.max(4,Math.round(u.c/12))+l*4)*5;}
 let UPF=null;const MODEUPS={wall:['wallHp','wallDmg','wallSpd','wallCrit','wallCritD','wallRegen','ultStart','coinMul'],td:['tdEnergy','tdLives','tdDmg','tdRange','tdSpd','tdCheap','gemVal','coinMul'],exp:['expDmg','expHp','expSpd','expCrit','expArmor','expBoss','expLuck','expCoins']};
 function upsList(){const L=UPS.filter(u=>!UPOFF.has(u.k));return UPF?L.filter(u=>UPF.includes(u.k)):L;}
 async function shopMenu(UF){UPF=UF||null;flags.up=flags.up||{};const S={tab:UF?1:0,t:0,shown:flags.coins||0,toast:null,bump:null,coins:[]};
   while(true){const rows=storeRows(S.tab);const j=await choose([...rows.map(r=>r.n),'ITENS','MELHORIAS','SAIR','HONRA','PRESENTES'],{store:S,rows});const n=rows.length;
     if(j<0||j===n+2){UPF=null;return;}if(j===n+3){await honraMenu();S.shown=flags.coins||0;continue;}if(j===n+4){await giftMenu();S.shown=flags.coins||0;continue;}if(j===n){if(UPF){await powersMenu();if(SHOPJMP){const q=SHOPJMP;SHOPJMP=null;if(q==='SAIR'){UPF=null;return;}if(q==='HONRA'){await honraMenu();}else if(q==='PRESENTES'){await giftMenu();}else if(q==='ITENS')S.tab=0;else if(q==='MELHORIAS')S.tab=1;S.tt=0;}continue;}S.tab=0;S.tt=0;continue;}if(j===n+1){if(!UPF){await powersMenu();if(SHOPJMP){const q=SHOPJMP;SHOPJMP=null;if(q==='SAIR'){UPF=null;return;}if(q==='HONRA'){await honraMenu();}else if(q==='PRESENTES'){await giftMenu();}else if(q==='ITENS')S.tab=0;else if(q==='MELHORIAS')S.tab=1;S.tt=0;}continue;}S.tab=1;S.tt=0;continue;}
-    if(S.tab===0){const it=SHOPITEMS[j],pc=shopPrice(it);if((flags.coins||0)<pc){S.toast={t:0,txt:`Faltam ${pc-(flags.coins||0)} moedas`,bad:1};continue;}
+    if(S.tab===0){const it=SHOPITEMS[j],pc=shopPrice(it);if((flags.coins||0)<pc){S.toast={t:0,txt:`Faltam ${pc-(flags.coins||0)} moedas`,bad:1};/* FALTALOJA09NOV (Felipe: 'quando clicar pra comprar e não tiver, já direciona pra compra') */try{await lojaReal();}catch(e){}continue;}
       flags.coins-=pc;flags.shopBuy=flags.shopBuy||{};flags.shopBuy[it.k]=(flags.shopBuy[it.k]||0)+1;bag[it.k]=(bag[it.k]||0)+1;S.toast={t:0,txt:`+1 ${it.n}! Agora tem ${bag[it.k]}`,ic:it.k};S.bump={k:j,t:0};S.coins.push({k:j,t:0});saveGame();}
     else{const u=upsList()[j];if(UP(u.k)>=u.max){S.toast={t:0,txt:`${u.n} já está no máximo`,bad:1};continue;}const c2=upGem(u);
-      if(gems()<c2){S.toast={t:0,txt:`Faltam ${c2-gems()} cristais (ganhe vencendo fases)`,bad:1};continue;}
+      if(gems()<c2){S.toast={t:0,txt:`Faltam ${c2-gems()} cristais (ganhe vencendo fases)`,bad:1};try{await lojaReal();}catch(e){}continue;}
       addGems(-c2);flags.up[u.k]=UP(u.k)+1;S.toast={t:0,txt:`${u.n} subiu pro nível ${UP(u.k)}!`,ic:UPICON[u.k],up:1};S.bump={k:j,t:0};S.coins.push({k:j,t:0});saveGame();}}}
 function drawStore(u){UKWAIT=null;{const S0=u.cfg&&u.cfg.store;if(S0){const c0=flags.coins||0;S0.shown=(typeof S0.shown==='number'?S0.shown:c0);S0.shown+=(c0-S0.shown)*.3;if(Math.abs(S0.shown-c0)<.5)S0.shown=c0;}}if(drawStoreArt(u)||ukWaitDraw(u))return;const S=u.cfg.store,L=u.cfg.rows,n=L.length;S.t++;S.tt=(S.tt||0)+1;const t=S.t,tt=S.tt;S.shown+=((flags.coins||0)-S.shown)*.2;if(Math.abs(S.shown-(flags.coins||0))<.5)S.shown=flags.coins||0;
   const g=b.createLinearGradient(0,0,0,H);g.addColorStop(0,'#3a2a6a');g.addColorStop(1,'#16122c');b.fillStyle=g;b.fillRect(0,0,W,H);
@@ -4130,14 +4130,14 @@ function expSpawn(){const s=EXP.stage,boss=s%5===0&&EXP.wave===EXPW-1;
   if(!gold&&s>=4&&Math.random()<.18){const u=EXP.foes[Math.floor(Math.random()*EXP.foes.length)];u.elite=1;u.max=u.hp=Math.round(u.hp*2.6);EXP.eliteBan={t:0};expLog(`Um CAMPEÃO apareceu: ${SP[u.sp].name}! Vale 4x moedas`);try{tone([330,415,494,659],.08,'sawtooth',.035);}catch(e){}}
   if(gold){for(const f of EXP.foes)f.gold=1;EXP.goldBan={t:0};expLog('CHUVA DE OURO! Inimigos dourados dão 3x moedas');try{tone([988,1319,1568,2093],.07);}catch(e){}}}
 /* limite de XP dos mini games: cada monstrinho tem um 'fôlego' de XP que enche devagar com o tempo real */
-const MGCAPS=[10,12,14,16,18,21,24,27,30,33,36,40,44,50];
+const MGCAPS=[8,9,10,11,13,14,16,17,18,19,20,22,23,24,27,28,30,31,32,33,34,36,38,40,50];
 function mgCap(){const k=MISS.filter(m=>m.main&&!m.arena&&msSt(m.id)>=2).length;return MGCAPS[Math.min(MGCAPS.length-1,k)];}
 /* XP dos mini games: sempre ganha um pouco, mas o teto vem da HISTÓRIA (capítulo). Perto do teto ganha menos, acima dele quase nada. */
 /* XP VARIÁVEL (22/10): se o monstrinho está bem mais fraco que a fase, ganha mais XP (até 2,5x) */
-function stgRecLv(){try{if(STG&&STG.i!=null)return Math.round(5+STG.i*1.0);if(G.mode==='exp'&&flags.expStage)return Math.round(5+(flags.expStage-1)*1.5);}catch(e){}return null;}
+function stgRecLv(){try{if(STG&&STG.i!=null)return stgRuler(STG.i);if(G.mode==='exp'&&flags.expStage)return Math.round(5+(flags.expStage-1)*1.5);}catch(e){}return null;}
 let XPVART=0;function xpVarMul(lv){const r=stgRecLv();if(r==null)return 1;const d=r-lv;if(d<=2)return 1;const k=1+Math.min(15,d-2)*.1;if(Date.now()-XPVART>45000){XPVART=Date.now();try{QTOAST.push({t:0,txt:`XP x${k.toFixed(1).replace('.',',')}: seu monstrinho está mais fraco que a fase!`,ic:'star'});}catch(e){}}return k;}
-let MGCAPT=0;function mgXP(m,g){g=g*xpVarMul(m.lv);const cap=mgCap(),lv=m.lv;let f=lv<cap-3?1:lv<cap?.3+.7*(cap-lv)/3:lv<cap+2?.04:.01;f*=1/(1+Math.max(0,lv-10)*.02);{const lost=Math.max(0,g-g*f),capB=((lv+1)**3-lv**3)*2;if(lost>0)m.xpBank=Math.min(capB,(m.xpBank||0)+Math.round(lost));if(f>=.99&&m.xpBank>0){const out=Math.min(m.xpBank,Math.round(g));m.xpBank-=out;g+=out;}}
-  if(f<.3&&Date.now()-MGCAPT>60000){MGCAPT=Date.now();try{QTOAST.push({t:0,txt:`XP baixo no nível ${cap}+: avance na HISTÓRIA pra subir mais!`,ic:'star'});}catch(e){}}
+let MGCAPT=0;function mgXP(m,g){g=g*xpVarMul(m.lv);const cap=mgCap(),lv=m.lv;/* acima do limite da história não trava: ganha 35% (até +6 níveis) e depois 12%; o resto fica guardado e volta quando a história avança */const cf=lv<cap?1:lv<cap+6?.35:.12;let f=cf/(1+Math.max(0,lv-10)*.02);{const lost=Math.max(0,g-g*cf),capB=((lv+1)**3-lv**3)*2;if(lost>0)m.xpBank=Math.min(capB,(m.xpBank||0)+Math.round(lost));if(cf>=1&&m.xpBank>0){const out=Math.min(m.xpBank,Math.round(g));m.xpBank-=out;g+=out;}}
+  if(cf<1&&Date.now()-MGCAPT>60000){MGCAPT=Date.now();try{QTOAST.push({t:0,txt:(window.CVLANG==='en'?`Above the story limit (Lv${cap}): XP is slower. Do missions to level up fast!`:`Acima do limite da história (Nv${cap}): XP mais devagar. Faça missões pra subir rápido!`),ic:'star'});}catch(e){}}
   return Math.max(1,Math.round(g*f));}
 /* moedas da Expedição: no máximo 250 por dia (é passiva) */
 function expCoinCap(c){if(!(c>0))return 0;const d=qDay(),E=flags.expXD&&flags.expXD.d===d?flags.expXD:(flags.expXD={d,g:{}});const used=E.c||0,ok=Math.max(0,Math.min(c,250-used));E.c=used+ok;try{if(EXP)euSessGain().c+=ok;}catch(e){}return ok;}
@@ -5297,7 +5297,7 @@ const WBAL=[1.5,1.75,.35,1.6,.07,1.03];/* DIFICULDADE 22/10: a cada 5 fases a Mu
 /* 25/out: 1ª missão do jogo mais fácil (Felipe: 'não dá pra ganhar') */function WEASE(){return STG&&STG.mode==='wall'&&STG.first?.42:1;}
 function wSpawn(){const w=WL,n=w.wave,boss=(n===5||n===10)&&w.spawned===w.toSpawn-1&&w.bossW!==n;
   const pool=n<3?['pipiu','ratonga','zumbel']:n<5?['pipiu','ratonga','zumbel','pedrisco','brotim']:n<7?['ratonga','zumbel','pedrisco','brotim','marolo','fagulho','choquinho']:['zumbel','pedrisco','marolo','fagulho','choquinho','assombro','lesmagma','corujito','florina'];
-  const sp=boss?(STGB('wall')?RGN[STGB('wall').k].boss:'rochedo'):rgPick(STGB('wall'),pool);const SMW=STG&&STG.mode==='wall';const lv=SMW?Math.min(52,Math.max(2,Math.round(WBAL[0]+STG.i*WBAL[1]+n*WBAL[2]+Math.floor(STG.i/5))+(boss?3:0))):Math.max(2,w.avg-2+Math.floor(n*.85)+(boss?4:0));
+  const sp=boss?(STGB('wall')?RGN[STGB('wall').k].boss:'rochedo'):rgPick(STGB('wall'),pool);const SMW=STG&&STG.mode==='wall';const lv=SMW?Math.min(53,Math.max(2,Math.round(stgRuler(STG.i)+n*WBAL[2])+(boss?3:0))):Math.max(2,w.avg-2+Math.floor(n*.85)+(boss?4:0));
   const r0=Math.random(),TH0=w.theme,BIRD=['pipiu','ventania','corujito','corujao'].includes(sp),ARQ=SP[sp]&&SP[sp].type!=='normal'&&sp!=='cacauzinho',kind0=boss?'boss':TH0==='veloz'&&r0<.7?'fast':TH0==='blindado'&&r0<.55?'tank':n>=2&&r0<.22?'fast':n>=3&&r0<.4?'tank':n>=5&&r0<.52?'shield':'norm',kind=BIRD&&kind0==='fast'?'norm':kind0;
   const m=mk(sp,lv),st=stats(m),hp=Math.round(st.hp*({boss:(G.mode==='wall'?20:14),tank:5,fast:1.6,norm:2.8,shield:2.6}[kind])*(SMW?WBAL[3]/2.8*(STG.i<2?.85:1)*(1+Math.min(.7,(w.gap||0)*.035)):1)*(SMW?(1+WBAL[4])*Math.pow(1.075,n-1)*Math.pow(WBAL[5],STG.i)*wGate():(1+n*.11)*STGM('wall'))*w.dda*WEASE()*LSM('wall'));
   w.foes.push({m,sp,lv,st,x:boss?90:28+Math.random()*124,y:(boss?14:18)-(w.ext||0),hp,max:hp,shield:kind==='shield'?Math.round(hp*.45):0,spd:(.17+st.spd/250)*({boss:.55,tank:.65,fast:1.9,norm:1,shield:.85}[kind]),kind,boss,sum:0,hit:0,burn:0,slow:0,root:0,stun:0,atk:0,age:0,flip:Math.random()<.5,wob:Math.random()*6});fApply(w.foes[w.foes.length-1]);{const e=w.foes[w.foes.length-1];try{if(w._wtW!==w.wave){w._wtW=w.wave;w._wt={};}for(const tp of spTypes(e.sp))if(!w._wt[tp])w._wt[tp]=e.sp.replace('*','');}catch(_e){}if(!boss&&TH0==='enxame'){e.max=e.hp=Math.max(1,Math.round(e.hp*.5));}if(!boss&&TH0==='blindado')e.armorW=1;if(!boss&&TH0==='voador')e.wdodge=1;if(!boss&&TH0==='veloz'&&!BIRD)e.spd*=1.2;if(!boss&&ARQ&&TH0==='cerco'&&Math.random()<.4){e.archer=1;e.aStop=172+Math.random()*28;e.acd=60+Math.floor(Math.random()*90);}}
@@ -6222,7 +6222,7 @@ async function wallMode(){if(!party.length)return;try{murPreload();}catch(e){}aw
   try{__fotoAplicar('wall',WL);}catch(e){}const res=await new Promise(r=>{WL.done=r;WL.running=true;});WL.running=false;WL.banner=null;WL.bossIntro=null;if(DUOH){try{duoHostEnd(res);}catch(e){console.error(e);}}
   const waves=res==='win'?10:WL.wave-1,coins=Math.round((WL.kills*.3+(res==='win'?15:0))*WL.coinMul*(1+.1*UP('coinMul')))+Math.round((WL.bonus||0)*.3);flags.coins=(flags.coins||0)+coins;
   if(res==='win'){WL.flash=1;await say('A muralha resistiu às 10 ondas! Você salvou o Vale!');}else if(res==='lose')await say(`A muralha caiu na onda ${WL.wave}...`);
-  const xp=Math.max(5,Math.round((waves*WL.avg*5+WL.kills*3)*XPMG));const ups=[];
+  let xp=Math.max(5,Math.round((waves*WL.avg*5+WL.kills*3)*XPMG));try{if(STG&&STG.mode==='wall'&&!STG.miss&&STG.i!=null){const A=Math.max(1,Math.min(49,WL.avg||1)),nd=(A+1)**3-A**3,d=A-stgRuler(STG.i),ok=d<=2?1:Math.max(.1,Math.pow(.75,d-2));xp=Math.max(5,Math.round(nd*.667*(1+Math.max(0,A-10)*.02)*(waves/10)*ok));}}catch(e){}const ups=[];
   {const _dd=DUOH?WL.defs.filter(d=>party.includes(d.m)):WL.defs,_cx=DUOH?{dmg:new Map([...(((WL.ctx&&WL.ctx.dmg)||new Map()).entries())].filter(([k])=>party.includes(k)))}:WL.ctx;mgAward(_cx,_dd.map(d=>d.m),xp,ups,_dd.map(d=>d.wl||1));}
   flags.ls=flags.ls||{};flags.ls.wall=res==='win'?0:(flags.ls.wall||0)+1;qEv('wall_wave',waves);qEv('mg_kill',WL.kills);const best=flags.wallBest||0;if(waves>best)flags.wallBest=waves;
   const prizes=[];
@@ -16158,7 +16158,9 @@ setTimeout(()=>{try{['cfg_fundo','cartao_opcao','botao_voltar','interruptor_liga
 /* DIFICULDADE08NOV (Felipe: "tô no level 31 e a fase é 52; com melhorias e tudo eu tenho que NÃO conseguir. Tenho que estar um pouquinho acima, 20 levels é muito"):
    do Mundo 2 em diante, na Muralha, se o seu time está mais de 5 níveis abaixo dos inimigos da fase, cada nível a menos deixa os inimigos 4% mais fortes (vida), no máximo o dobro (Felipe: 'desafiador, mas não impossível; aumento pequeno').
    Com o time no nível certo nada muda. E quando perde, o Tio Felipe aparece com dicas de como melhorar. */
-function stgFoeLv(i){return Math.min(52,Math.max(2,Math.round(WBAL[0]+i*WBAL[1]+Math.floor(i/5))));}
+/* REGUA09NOV (Felipe 09/nov: 'cada mundo tem um limite pela história; pra passar: missões, muita Muralha ou comprar força'). Uma régua só: fase 1 = nv 2, fase 15 = nv 17, fase 30 = nv 34, fase 45 = nv 50. Mundo 1 = começo da história, Mundo 2 = resto, Mundo 3 = depois do Aurorion. */
+function stgRuler(i){return Math.min(50,Math.max(2,Math.round(2+48*(i|0)/44)));}
+function stgFoeLv(i){return stgRuler(i);}
 function wGapK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss)||!WL||STG.i<15)return 1;const g=stgFoeLv(STG.i)+3-(WL.avg||1);return g>5?Math.min(2,Math.pow(1.04,g-5)):1;}catch(e){return 1;}}
 {const _ws=wSpawn;wSpawn=function(){const w=WL,n0=w?w.foes.length:0;const r=_ws.apply(this,arguments);try{const k=wGapK();if(k>1&&WL)for(let j=n0;j<WL.foes.length;j++){const e=WL.foes[j];if(e.gk)continue;e.gk=1;e.max=Math.round(e.max*k);e.hp=Math.round(e.hp*k);if(e.shield)e.shield=Math.round(e.shield*k);}}catch(e){}return r;};}
 /* TIOQUANDO (08/nov, Felipe: "não aparece sempre que perder; entra quando perder 3 vezes ou quando a diferença de força for muito grande, e explica"):

@@ -6587,7 +6587,7 @@ function saudeBox(){if(document.getElementById('sdBox'))return;const bx=document
  bx.querySelector('#sdP').onclick=async()=>{if(!ta.value){try{ta.value=await navigator.clipboard.readText();}catch(e){M('Segure na caixa e escolha Colar.');ta.focus();return;}}go();};}
 function saudeBtn(on){let e=document.getElementById('sdBtn');if(!on){if(e)e.remove();return;}if(e)return;e=document.createElement('button');e.id='sdBtn';e.type='button';e.textContent='💪 Exercício vira 💎';
  ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup'].forEach(ev=>e.addEventListener(ev,x=>x.stopPropagation(),{passive:true}));e.addEventListener('click',x=>{x.stopPropagation();if(window.cvSaudeNativo){window.cvSaudeNativo().then(k=>{const r=saudeGanha(k,'app');rwToast(r.n?`💪 +${r.n} 💎`:'Sem cristal novo agora');}).catch(()=>saudeBox());}else saudeBox();});document.body.appendChild(e);}
-{const c=document.createElement('style');c.textContent=`#sdBtn{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(11.5vh + env(safe-area-inset-bottom,0px));z-index:10050;border:2px solid #154c5e;background:#fff3c4;color:#3a2a10;font:700 15px 'Fredoka',sans-serif;border-radius:999px;padding:8px 16px;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+{const c=document.createElement('style');c.textContent=`#sdBtn{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(2.2vh + env(safe-area-inset-bottom,0px));z-index:10050;border:2px solid #154c5e;background:#fff3c4;color:#3a2a10;font:700 15px 'Fredoka',sans-serif;border-radius:999px;padding:8px 16px;box-shadow:0 3px 0 rgba(0,0,0,.35)}
 #sdBox{position:fixed;inset:0;z-index:10070;background:rgba(10,20,30,.55);display:flex;align-items:center;justify-content:center;padding:14px}#sdBox .pp{background:#fffaf0;color:#2a2a2a;border-radius:16px;padding:16px;max-width:360px;width:100%;font:15px/1.35 'Fredoka',sans-serif}#sdBox h3{margin:0 0 6px}#sdBox p{margin:6px 0}#sdBox textarea{width:100%;min-height:44px;font:16px monospace;border-radius:8px;border:2px solid #c9b48a;padding:6px;box-sizing:border-box;background:#fff;color:#222}#sdBox .msg{min-height:20px;margin:6px 0;color:#1d7a3a;font-weight:700}#sdBox .bt{display:flex;gap:8px}#sdBox .bt button{flex:1;padding:10px;border-radius:10px;font:700 15px 'Fredoka',sans-serif;border:2px solid #8c6c37;color:#3a2a10}#sdBox .ok{background:#f5c565}#sdBox .no{background:#e8dcc0}`;document.head.appendChild(c);}
 async function questMenu(){saudeBtn(true);try{return await questMenu0();}finally{saudeBtn(false);}}
 async function questMenu0(){const st={t:0,burst:null};
@@ -12910,7 +12910,7 @@ function lojPager(u,V,key,n){const pages=Math.max(1,Math.ceil(n/8)),pg=LOJPG[key
   return pg;}
 function lojToast(T0){if(!T0)return;T0.t=(T0.t||0)+1;if(T0.t>140)return;const a=Math.min(1,T0.t/6,(140-T0.t)/15);b.save();b.globalAlpha=a;ukPill(150,1440,640,58,T0.bad?'#e05050':'#46c060',T0.bad?'#a02020':'#20803a','#fff3d0');b.restore();ukT(T0.txt,470,1471,26,'#fff','center',600,5,'#10101a');}
 function drawStoreArt(u){const S=u.cfg.store,L=u.cfg.rows,n=L.length;if(UPF&&UPF!==MODEUPS.wall)return false;if(!ukReady('loja'))return false;S.t++;S.tt=(S.tt||0)+1;u.rects=[];u.boxR=null;
-  ukBg('loja');const V=ukBegin(1672);
+  ukBg('loja');const V=ukBegin(1672);ukFF('loja',V);
   const tabs=UPF?[{n:'PODERES 🔥',i:n,dot:pwBuyN()},{n:'MELHORIAS',i:n+1,dot:upBuyN(UPF)}]:[{n:'ITENS',i:n},{n:'PODERES 🔥',i:n+1,dot:pwBuyN()},{n:'HONRA',i:n+3,dot:(flags.honra||0)>=4?1:0},{n:'PRESENTES',i:n+4,dot:giftReady()?1:0}];
   lojTabs(u,V,tabs,UPF?1:0);
   if(S.tab===0)lojWallet('moeda',Math.round(S.shown));else lojWallet('gema',gems());
@@ -12925,7 +12925,7 @@ function drawStoreArt(u){const S=u.cfg.store,L=u.cfg.rows,n=L.length;if(UPF&&UPF
   lojToast(S.toast);V.end();return true;}
 /* PODERES (Essência) — mesma estante, 9 tipos em 2 páginas */
 function drawPowersArt(u){const cf=u.cfg,L=cf.shop;if(!cf.pwArt||!ukReady('loja'))return false;u.t2=(u.t2||0)+1;const t=u.t2,n=L.length;u.rects=[];u.boxR=null;
-  ukBg('loja');const V=ukBegin(1672);
+  ukBg('loja');const V=ukBegin(1672);ukFF('loja',V);
   const jmp=q=>()=>{SHOPJMP=q;const ix=ui.indexOf(u);if(ix>=0){ui.splice(ix,1);u.res(n);}};
   const tabs=UPF?[{n:'PODERES 🔥',i:-9},{n:'MELHORIAS',fn:jmp('MELHORIAS'),dot:upBuyN(UPF)}]:[{n:'ITENS',fn:jmp('ITENS')},{n:'PODERES 🔥',i:-9},{n:'HONRA',fn:jmp('HONRA'),dot:(flags.honra||0)>=4?1:0},{n:'PRESENTES',fn:jmp('PRESENTES'),dot:giftReady()?1:0}];
   lojTabs(u,V,tabs,UPF?0:1);u.rects=u.rects.filter(r=>r.i!==-9||r.fn);lojWallet('ess',flags.ess||0);
@@ -13046,6 +13046,8 @@ function drawDexArt(u){const st=u.cfg.dex;if(!ukReady('colecao'))return false;st
   V.end();return true;}
 
 /* ---------- MEDALHAS DAS ARENAS — álbum de pergaminho (25/out) ---------- */
+/* FUNDOSEMEMENDA (09/nov, alinhador): Medalhas, Creche, Sítio e Comparar desenhavam o fundo duas vezes (uma esticada na tela toda e outra no tamanho da arte), o que deixava uma emenda com a montanha/moldura repetida em cima e embaixo. Agora o fundo é desenhado uma vez só no tamanho da arte, e as faixas que sobram (em cima/embaixo no celular comprido, dos lados na tela larga) mostram a mesma arte bem desfocada por trás (funciona até no Safari antigo). */
+function ukFF(t,V){const F=ukImg(t,'f');if(!F)return;const k=V.k;b.save();b.imageSmoothingEnabled=true;try{b.imageSmoothingQuality='high';}catch(e){}if(V.ox>0.5||V.oy>0.5){let Bc=F.__ukBlur;if(!Bc){try{Bc=document.createElement('canvas');Bc.width=28;Bc.height=50;const x=Bc.getContext('2d');x.imageSmoothingEnabled=true;x.drawImage(F,0,0,28,50);F.__ukBlur=Bc;}catch(e){Bc=null;}}if(Bc){const x0=-V.ox/k,y0=-V.oy/k,cw=W/k,ch=H/k,sc=Math.max(cw/941,ch/1672),dw=941*sc,dh=1672*sc;b.drawImage(Bc,x0+(cw-dw)/2,y0+(ch-dh)/2,dw,dh);b.fillStyle='rgba(0,0,0,.18)';b.fillRect(x0,y0,cw,ch);}}b.drawImage(F,0,0,941,1672);b.restore();}
 function ukF(t,x,y,w,h){const F=ukImg(t,'f');if(!F)return;b.save();b.imageSmoothingEnabled=true;b.drawImage(F,x,y,w,h);b.restore();}
 function ukArial(s,x,y,sz,col,mw){b.save();b.font=`bold ${sz}px Arial,"Helvetica Neue",Helvetica,sans-serif`;b.textAlign='center';b.textBaseline='middle';const w=b.measureText(s).width;if(mw&&w>mw){b.translate(x,y);b.scale(mw/w,1);b.translate(-x,-y);}b.fillStyle=col;b.fillText(s,x,y);b.restore();}
 const AMXY=[[173,298],[493,298],[173,623],[493,623],[173,948],[493,948]];

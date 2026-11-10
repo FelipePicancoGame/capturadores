@@ -4163,7 +4163,7 @@ function expSpawn(){const s=EXP.stage,boss=s%5===0&&EXP.wave===EXPW-1;
   if(!gold&&s>=4&&Math.random()<.18){const u=EXP.foes[Math.floor(Math.random()*EXP.foes.length)];u.elite=1;u.max=u.hp=Math.round(u.hp*2.6);EXP.eliteBan={t:0};expLog(`Um CAMPEÃO apareceu: ${SP[u.sp].name}! Vale 4x moedas`);try{tone([330,415,494,659],.08,'sawtooth',.035);}catch(e){}}
   if(gold){for(const f of EXP.foes)f.gold=1;EXP.goldBan={t:0};expLog('CHUVA DE OURO! Inimigos dourados dão 3x moedas');try{tone([988,1319,1568,2093],.07);}catch(e){}}}
 /* limite de XP dos mini games: cada monstrinho tem um 'fôlego' de XP que enche devagar com o tempo real */
-const MGCAPS=[8,9,10,11,13,14,16,17,18,19,20,22,23,24,27,28,30,31,32,33,34,36,38,40,50];
+const MGCAPS=[8,9,10,11,13,14,16,17,18,19,20,22,23,24,27,28,30,31,32,33,34,50];/* ESTAT10NOV: a história tem 21 missões principais (sem arenas); antes o 50 nunca chegava e o limite parava em 36 depois do Aurorion */
 function mgCap(){const k=MISS.filter(m=>m.main&&!m.arena&&msSt(m.id)>=2).length;return MGCAPS[Math.min(MGCAPS.length-1,k)];}
 /* XP dos mini games: sempre ganha um pouco, mas o teto vem da HISTÓRIA (capítulo). Perto do teto ganha menos, acima dele quase nada. */
 /* XP VARIÁVEL (22/10): se o monstrinho está bem mais fraco que a fase, ganha mais XP (até 2,5x) */
@@ -5326,11 +5326,11 @@ function trovJetDraw(f){const I=asImg(f.ball?'fx_trovbola':'fx_trovjato');if(!I)
   const L=Math.max(head-tail,14)*1.3,hh=f.w*2.5;b.translate(f.x+ca*tail,f.y+sa*tail);b.rotate(f.ang);b.drawImage(I,fi*fw,0,fw,fh,-3,-hh/2,L,hh);b.restore();
   b.save();b.globalCompositeOperation='lighter';glowAt(f.x+ca*head,f.y+sa*head,8,'255,220,60',.55);b.restore();return true;}
 function bJet(C2,s,ang,o){C2.fx.push({k:'jet',zap:o.zap||0,ball:o.ball||0,x:s.x,y:s.y,ang,len:o.len||220,head:0,t:0,dur:30,w:o.w||7,hit:new Set(),s,on:o.on,dmg:o.dmg??s.dmg,type:s.type,maxHit:1+(s.pierce||0)+(s.big?1:0),tier:s.tier||1});}
-const WBAL=[1.5,1.75,.35,1.6,.07,1.03];/* DIFICULDADE 22/10: a cada 5 fases a Muralha fica 15% mais forte (pede subir nível/cartas) */function wGate(){return STG&&STG.mode==='wall'?Math.pow(1.15,Math.floor(STG.i/5)):1;}
+const WBAL=[1.5,1.75,.35,1.6,.07,1];/* ESTAT10NOV (Chefe da Estatística): sem +3% por fase — o nível do inimigo já sobe com a régua *//* DIFICULDADE 22/10: a cada 5 fases a Muralha fica 15% mais forte (pede subir nível/cartas) */function wGate(){return 1;}/* ESTAT10NOV: o salto de +15% a cada 5 fases contava a dificuldade 2 vezes (a régua já sobe ~5 níveis a cada 5 fases); nos testes a Muralha virava muro a partir da fase 10 */
 /* 25/out: 1ª missão do jogo mais fácil (Felipe: 'não dá pra ganhar') */function WEASE(){return STG&&STG.mode==='wall'&&STG.first?.42:1;}
 function wSpawn(){const w=WL,n=w.wave,boss=(n===5||n===10)&&w.spawned===w.toSpawn-1&&w.bossW!==n;
   const pool=n<3?['pipiu','ratonga','zumbel']:n<5?['pipiu','ratonga','zumbel','pedrisco','brotim']:n<7?['ratonga','zumbel','pedrisco','brotim','marolo','fagulho','choquinho']:['zumbel','pedrisco','marolo','fagulho','choquinho','assombro','lesmagma','corujito','florina'];
-  const sp=boss?(STGB('wall')?RGN[STGB('wall').k].boss:'rochedo'):rgPick(STGB('wall'),pool);const SMW=STG&&STG.mode==='wall';const lv=SMW?Math.min(53,Math.max(2,Math.round(stgRuler(STG.i)+n*WBAL[2])+(boss?3:0))):Math.max(2,w.avg-2+Math.floor(n*.85)+(boss?4:0));
+  const sp=boss?(STGB('wall')?RGN[STGB('wall').k].boss:'rochedo'):rgPick(STGB('wall'),pool);const SMW=STG&&STG.mode==='wall';const lv=SMW?Math.min(53,Math.max(2,Math.round(stgRuler(STG.i)+n*WBAL[2]*Math.min(1,stgRuler(STG.i)/25))+(boss?3:0))):Math.max(2,w.avg-2+Math.floor(n*.85)+(boss?4:0));
   const r0=Math.random(),TH0=w.theme,BIRD=['pipiu','ventania','corujito','corujao'].includes(sp),ARQ=SP[sp]&&SP[sp].type!=='normal'&&sp!=='cacauzinho',kind0=boss?'boss':TH0==='veloz'&&r0<.7?'fast':TH0==='blindado'&&r0<.55?'tank':n>=2&&r0<.22?'fast':n>=3&&r0<.4?'tank':n>=5&&r0<.52?'shield':'norm',kind=BIRD&&kind0==='fast'?'norm':kind0;
   const m=mk(sp,lv),st=stats(m),hp=Math.round(st.hp*({boss:(G.mode==='wall'?20:14),tank:5,fast:1.6,norm:2.8,shield:2.6}[kind])*(SMW?WBAL[3]/2.8*(STG.i<2?.85:1)*(1+Math.min(.7,(w.gap||0)*.035)):1)*(SMW?(1+WBAL[4])*Math.pow(1.075,n-1)*Math.pow(WBAL[5],STG.i)*wGate():(1+n*.11)*STGM('wall'))*w.dda*WEASE()*LSM('wall'));
   w.foes.push({m,sp,lv,st,x:boss?90:28+Math.random()*124,y:(boss?14:18)-(w.ext||0),hp,max:hp,shield:kind==='shield'?Math.round(hp*.45):0,spd:(.17+st.spd/250)*({boss:.55,tank:.65,fast:1.9,norm:1,shield:.85}[kind]),kind,boss,sum:0,hit:0,burn:0,slow:0,root:0,stun:0,atk:0,age:0,flip:Math.random()<.5,wob:Math.random()*6});fApply(w.foes[w.foes.length-1]);{const e=w.foes[w.foes.length-1];try{if(w._wtW!==w.wave){w._wtW=w.wave;w._wt={};}for(const tp of spTypes(e.sp))if(!w._wt[tp])w._wt[tp]=e.sp.replace('*','');}catch(_e){}if(!boss&&TH0==='enxame'){e.max=e.hp=Math.max(1,Math.round(e.hp*.5));}if(!boss&&TH0==='blindado')e.armorW=1;if(!boss&&TH0==='voador')e.wdodge=1;if(!boss&&TH0==='veloz'&&!BIRD)e.spd*=1.2;if(!boss&&ARQ&&TH0==='cerco'&&Math.random()<.4){e.archer=1;e.aStop=172+Math.random()*28;e.acd=60+Math.floor(Math.random()*90);}}
@@ -15626,7 +15626,7 @@ function mcBuy(k){const w=WL;if(!w||!w.cards||w.duo||w.duoG)return;const cs=w.ca
 /* — ondas com tema: com carta contra = mais fraca; sem = mais forte — */
 wSpawn=function(){const w=WL;const n0=w?w.foes.length:0;const r=MC_O.wSpawn.apply(this,arguments);try{if(!w||w.duo||w.duoG)return r;const e=w.foes[w.foes.length-1];if(!e||w.foes.length===n0||e._mc)return r;e._mc=1;
     /* inimigos crescem mais a cada onda nas fases (cartas fazem falta): +11% por onda em vez de +7,5% */
-    if(STG&&STG.mode==='wall'&&!STG.first&&w.wave>1){const k=Math.pow(1.11/1.075,w.wave-1);e.max=e.hp=Math.round(e.hp*k);if(e.shield)e.shield=Math.round(e.shield*k);}
+    if(STG&&STG.mode==='wall'&&!STG.first&&w.wave>1){const k=Math.pow(1.08/1.075,w.wave-1);e.max=e.hp=Math.round(e.hp*k);if(e.shield)e.shield=Math.round(e.shield*k);}
     if(w.mcSlow){e.spd*=w.mcSlow;e._mcs=w.mcSlow;}
     const th=w.theme;if(th&&!e.boss){const has=w.mcHas;if(th==='enxame'){if(has){e.max=e.hp=Math.max(1,Math.round(e.hp*.8));}}
       else if(th==='blindado'){if(has){if(Math.random()<.5)e.armorW=0;}else{e.max=e.hp=Math.round(e.hp*1.3);}}

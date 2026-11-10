@@ -17235,6 +17235,15 @@ setTimeout(start,2500);
 <script>/* versão app: guarda os arquivos no aparelho (abre sem internet depois da primeira vez) */
 if('serviceWorker' in navigator){addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
 </script>
+<script>/* TRAD_DICT_PRIMEIRO (09/nov, Felipe: "chefe de tradução... ter certeza que está tudo coerente"):
+   Algumas regras com número ("+N% de dano", "Capítulo", "Nome: fala") rodavam DEPOIS do dicionário e estragavam frases que já tinham
+   tradução inteira (ex.: "vizinhos dão +20% damage", "Guard Bento: Os meus monstrinhos..."). Causa real: as regras não olhavam o dicionário.
+   Agora a frase inteira do dicionário (CVEN) sempre vence; regra só entra quando não há frase inteira. */
+(function(){try{const _t=window.tr;const TY={'Fogo':'Fire','Água':'Water','Planta':'Grass','Elétrico':'Electric','Pedra':'Rock','Gelo':'Ice'};
+ window.tr=function(s){if(s!=null&&window.CVLANG==='en'){const k=String(s),D=window.CVEN||{},v=D[k];if(v&&v!==k)return v;
+   const m=/^(Fogo|Água|Planta|Elétrico|Pedra|Gelo) causa \+(\d+)% de dano$/.exec(k);if(m)return TY[m[1]]+' deals +'+m[2]+'% damage';}
+  return _t(s);};}catch(e){}})();
+</script>
 <script>/* LANGBTN (05/nov, Felipe: "como mudo de língua?" / "não tem essa opção no meu jogo"): botão 🌐 na tela inicial */
 (function(){let el=null;function mk(){el=document.createElement('button');el.id='cvLangBtn';el.style.cssText='position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;padding:8px 12px;border-radius:12px;border:2px solid #fff3df;background:#2f5fa8;color:#fff;font:700 15px system-ui,sans-serif;box-shadow:0 3px 0 rgba(0,0,0,.35);display:none';
   el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();try{cvSetLang(window.CVLANG==='en'?'pt':'en');}catch(_){}});document.body.appendChild(el);}

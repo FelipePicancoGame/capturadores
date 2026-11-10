@@ -3434,7 +3434,7 @@ function upsList(){const L=UPS.filter(u=>!UPOFF.has(u.k));return UPF?L.filter(u=
 async function shopMenu(UF){UPF=UF||null;flags.up=flags.up||{};const S={tab:UF?1:0,t:0,shown:flags.coins||0,toast:null,bump:null,coins:[]};
   while(true){const rows=storeRows(S.tab);const j=await choose([...rows.map(r=>r.n),'ITENS','MELHORIAS','SAIR','HONRA','PRESENTES'],{store:S,rows});const n=rows.length;
     if(j<0||j===n+2){UPF=null;return;}if(j===n+3){await honraMenu();S.shown=flags.coins||0;continue;}if(j===n+4){await giftMenu();S.shown=flags.coins||0;continue;}if(j===n){if(UPF){await powersMenu();if(SHOPJMP){const q=SHOPJMP;SHOPJMP=null;if(q==='SAIR'){UPF=null;return;}if(q==='HONRA'){await honraMenu();}else if(q==='PRESENTES'){await giftMenu();}else if(q==='ITENS')S.tab=0;else if(q==='MELHORIAS')S.tab=1;S.tt=0;}continue;}S.tab=0;S.tt=0;continue;}if(j===n+1){if(!UPF){await powersMenu();if(SHOPJMP){const q=SHOPJMP;SHOPJMP=null;if(q==='SAIR'){UPF=null;return;}if(q==='HONRA'){await honraMenu();}else if(q==='PRESENTES'){await giftMenu();}else if(q==='ITENS')S.tab=0;else if(q==='MELHORIAS')S.tab=1;S.tt=0;}continue;}S.tab=1;S.tt=0;continue;}
-    if(S.tab===0){const it=SHOPITEMS[j],pc=shopPrice(it);if((flags.coins||0)<pc){S.toast={t:0,txt:`Faltam ${pc-(flags.coins||0)} moedas`,bad:1};/* FALTALOJA09NOV (Felipe: 'quando clicar pra comprar e não tiver, já direciona pra compra') */try{await lojaReal();}catch(e){}continue;}
+    if(S.tab===0){const it=SHOPITEMS[j],pc=shopPrice(it);if((flags.coins||0)<pc){S.toast={t:0,txt:`Faltam ${pc-(flags.coins||0)} moedas`,bad:1};/* FALTALOJA09NOV (Felipe: 'quando clicar pra comprar e não tiver, já direciona pra compra') */try{await lojaReal(1);}catch(e){}continue;}
       flags.coins-=pc;flags.shopBuy=flags.shopBuy||{};flags.shopBuy[it.k]=(flags.shopBuy[it.k]||0)+1;bag[it.k]=(bag[it.k]||0)+1;S.toast={t:0,txt:`+1 ${it.n}! Agora tem ${bag[it.k]}`,ic:it.k};S.bump={k:j,t:0};S.coins.push({k:j,t:0});saveGame();}
     else{const u=upsList()[j];if(UP(u.k)>=u.max){S.toast={t:0,txt:`${u.n} já está no máximo`,bad:1};continue;}const c2=upGem(u);
       if(gems()<c2){S.toast={t:0,txt:`Faltam ${c2-gems()} cristais (ganhe vencendo fases)`,bad:1};try{await lojaReal();}catch(e){}continue;}
@@ -10206,7 +10206,10 @@ const LJP={painel:[20,170,1040,1705],titulo:[230,60,620,150],fechar:[920,110,120
 const LJN=['PUNHADO DE<br>CRISTAIS','SACO DE<br>CRISTAIS','BAÚ DE<br>CRISTAIS','ENERGIA<br>CHEIA','PASSE<br>DO MÊS','MONSTRINHO<br>RARO','2x PRA<br>SEMPRE','AUTOMÁTICO<br>PRA SEMPRE'];
 function ljInfo(i){const o=LOJAREAL[i]||{},sub=String(o.sub||''),p=sub.lastIndexOf('·'),ben=(p>=0?sub.slice(0,p):sub).replace(/💎/g,'').replace('⚡ cheia','Cheia').trim(),pr=p>=0?sub.slice(p+1).trim():'';
   const own=(i===6&&typeof unlOk==='function'&&unlOk('fast'))||(i===7&&typeof unlOk==='function'&&unlOk('auto'));return {ben,pr,own,gem:/💎/.test(sub)};}
-function lojaReal(){return new Promise(res=>{
+/* MOEDASREAL09NOV (Felipe 09/nov: 'coloca' pacotes de moedas): 2ª página da loja com 6 pacotes de moedas. Preços provisórios; pagamento ainda não ligado. */
+const LOJAMOEDAS=[{c:5000,pr:'US$ 0,99'},{c:12000,pr:'US$ 1,99'},{c:30000,pr:'US$ 4,99'},{c:70000,pr:'US$ 9,99'},{c:150000,pr:'US$ 19,99'},{c:400000,pr:'US$ 49,99'}];
+try{Object.assign(window.CVEN||{},{'MOEDAS':'COINS','PACOTE DE':'PACK OF','MAIS':'MORE','VOLTAR':'BACK'});}catch(e){}
+function lojaReal(pg0){return new Promise(res=>{
   if(document.getElementById('ljBox')){res();return;}
   const F="font-family:CadBaloo,Fredoka,'Baloo 2',Arial,sans-serif;font-weight:800;";
   const box=document.createElement('div');box.id='ljBox';box.style.cssText='position:fixed;inset:0;z-index:9990;background:rgba(6,12,30,.62);touch-action:none;user-select:none;-webkit-user-select:none';
@@ -10225,23 +10228,26 @@ function lojaReal(){return new Promise(res=>{
   const upd=()=>{const [c,g]=sal();tM.innerHTML='Moedas '+c;tG.innerHTML='Cristais '+g;};upd();
   let sel=-1;const cards=[];
   const close=()=>{removeEventListener('resize',fit);clearInterval(tk);box.remove();res();};
-  LJP.c.forEach((p,i)=>{const x=p[0],y=p[1],fe=i===8,inf=fe?{ben:'Voltar',pr:'',own:false}:ljInfo(i);
-    const c=el('div',[x,y,300,440],'cursor:pointer');const bg=img(LJU.lj_cartao,[0,0,300,440],c);
-    if(fe)img(LJU.lj_fechar,[90,45,120,120],c);else img(LJU['lj_prod_'+(i+1)],[30,20,240,190],c);
-    img(LJU.lj_nome,[10,218,280,80],c);txt(fe?'FECHAR':LJN[i],[24,222,252,70],fe?36:29,'#fff',c,OUT);
+  const CW=el('div',[0,0,1080,1920],'pointer-events:none');
+  const render=(pg)=>{CW.innerHTML='';cards.length=0;sel=-1;
+  LJP.c.forEach((p,i)=>{if(pg===1&&(i===6||i===7))return;const x=p[0],y=p[1],fe=i===8,mo=pg===1&&!fe,M=mo?LOJAMOEDAS[i]:null,inf=fe?{ben:pg?'Cristais':'Moedas',pr:'',own:false}:mo?{ben:M.c.toLocaleString('pt-BR'),pr:M.pr,own:false,coin:1}:ljInfo(i);
+    const c=el('div',[x,y,300,440],'cursor:pointer;pointer-events:auto',CW);const bg=img(LJU.lj_cartao,[0,0,300,440],c);
+    if(fe&&pg===0){img(LJU.lj_moeda,[75,40,150,150],c);}else if(fe)img(LJU.lj_cristal,[75,40,150,150],c);else if(mo){const k=Math.min(5,1+i);for(let q=0;q<k;q++)img(LJU.lj_moeda,[70+((q*53)%110),30+q*22-(k>3?20:0),120,120],c);}else img(LJU['lj_prod_'+(i+1)],[30,20,240,190],c);
+    img(LJU.lj_nome,[10,218,280,80],c);txt(fe?(pg===0?'MAIS<br>MOEDAS':'VOLTAR'):mo?'PACOTE DE<br>MOEDAS':LJN[i],[24,222,252,70],fe?32:29,'#fff',c,OUT);
     img(LJU.lj_beneficio,[20,302,260,45],c);
-    if(!fe&&inf.gem)img(LJU.lj_cristal,[32,306,38,38],c);
-    txt(inf.ben,[inf.gem&&!fe?66:28,302,inf.gem&&!fe?200:244,45],26,'#3a2a10',c);
+    if(!fe&&inf.gem)img(LJU.lj_cristal,[32,306,38,38],c);if(!fe&&inf.coin)img(LJU.lj_moeda,[32,306,38,38],c);const ic=!fe&&(inf.gem||inf.coin);
+    txt(inf.ben,[ic?66:28,302,ic?200:244,45],26,'#3a2a10',c);
     let pb=null;if(!fe){pb=img(inf.own?LJU.lj_preco_desativado:LJU.lj_preco,[30,355,240,65],c);txt(inf.own?'JÁ É SEU':inf.pr,[30,352,240,65],34,'#fff',c,OUT);}
     cards.push({c,bg,pb,own:inf.own});
     c.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();bg.src=LJU.lj_cartao_apertado;if(pb&&!inf.own)pb.src=LJU.lj_preco_apertado;c.style.transform='scale(.97)';});
     const up=()=>{c.style.transform='';bg.src=sel===i?LJU.lj_cartao_selecionado:LJU.lj_cartao;if(pb&&!inf.own)pb.src=LJU.lj_preco;};
     c.addEventListener('pointerleave',up);c.addEventListener('pointercancel',up);
     c.addEventListener('pointerup',e=>{e.preventDefault();e.stopPropagation();
-      if(fe){try{tone([523],.04);}catch(_){}close();return;}
+      if(fe){try{tone([523],.04);}catch(_){}render(pg===0?1:0);return;}
       if(sel>=0&&cards[sel])cards[sel].bg.src=LJU.lj_cartao;sel=i;up();
       try{tone([523,659],.05);}catch(_){}
-      try{rwToast(inf.own?'Você já tem esse! Ele fica liberado pra sempre.':'Em breve! As compras vão funcionar quando o jogo estiver na App Store.');}catch(_){}});});
+      try{rwToast(inf.own?'Você já tem esse! Ele fica liberado pra sempre.':'Em breve! As compras vão funcionar quando o jogo estiver na App Store.');}catch(_){}});});};
+  render(pg0===1?1:0);
   const x=el('div',LJP.fechar,'cursor:pointer');img(LJU.lj_fechar,[0,0,120,120],x);
   x.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();x.style.transform='scale(.9)';});
   x.addEventListener('pointerup',e=>{e.preventDefault();e.stopPropagation();try{tone([523],.04);}catch(_){}close();});

@@ -9731,10 +9731,10 @@ function drawChapters(u){const key=u.cfg.chap,CH=CHAPTERS[key],{out}=chapInfo(ke
     T(CH.name,W/2,fy+fh*.24,9.5,'center',C.white,fw*.62,C.ink);}
   const got=out.filter(o=>o.got).length;{const tw3=Math.min(pW-30,tw(`${got}/${n} recompensas`,6.2)+26),tx0=W/2-tw3/2,ty0=pY+9;rrect(tx0,ty0,tw3,10,5,'#5a3418',false);star5(tx0+8,ty0+5,3.2,C.yellow);T(`${got}/${n} recompensas`,W/2+5,ty0+1.6,6.2,'center',C.white,tw3-16);
     const pf=got/n;rrect(pX+14,ty0+13,pW-28,3,1.5,'rgba(90,52,24,.35)',false);if(pf>0)rrect(pX+14,ty0+13,(pW-28)*pf,3,1.5,'#3fae5a',false);}
-  const top=pY+30,bot=pY+pH-10,gap=2,rh=Math.min(30,(bot-top)/n),h=rh-gap,x0=pX+10,rw2=pW-20,fs=Math.min(7,h*.4),gs=Math.min(5.6,h*.31),isT=c=>c.goal[0]==='survBest',fm=(c,v)=>isT(c)?`${Math.floor(v/60)}:${String(v%60).padStart(2,'0')}`:v;
-  out.forEach((o,k)=>{const y=top+k*rh,ap=Math.min(1,Math.max(0,(tt-k*1.5)/8));if(ap<=0)return;const claim=o.done&&!o.got&&!o.locked,curr=!o.done&&!o.locked,cy=y+h/2;
+  /* HORDA2COL10NOV (Felipe no carro: 'letras muito pequenas e muito fininho o espaço'): tela larga = 2 colunas de capítulos, linhas com o dobro da altura */const CC=(W>H*1.05&&n>8)?2:1,PER=Math.ceil(n/CC),GX=8,top=pY+30,bot=pY+pH-10,gap=CC>1?3:2,rh=Math.min(30,(bot-top)/PER),h=rh-gap,rw2=(pW-20-GX*(CC-1))/CC,fs=Math.min(7,h*.4),gs=Math.min(5.6,h*.31),isT=c=>c.goal[0]==='survBest',fm=(c,v)=>isT(c)?`${Math.floor(v/60)}:${String(v%60).padStart(2,'0')}`:v;
+  out.forEach((o,k)=>{const x0=pX+10+Math.floor(k/PER)*(rw2+GX),y=top+(k%PER)*rh,ap=Math.min(1,Math.max(0,(tt-k*1.5)/8));if(ap<=0)return;const claim=o.done&&!o.got&&!o.locked,curr=!o.done&&!o.locked,cy=y+h/2;
     b.save();b.globalAlpha=ap;b.translate((1-ap)*24,0);
-    if(claim||curr){b.save();b.globalCompositeOperation='lighter';glowAt(W/2,cy,rw2*.5,claim?'255,210,80':hex2rgb(CH.col).join(','),.25+.1*Math.sin(tt/6));b.restore();}
+    if(claim||curr){b.save();b.globalCompositeOperation='lighter';glowAt(x0+rw2/2,cy,rw2*.5,claim?'255,210,80':hex2rgb(CH.col).join(','),.25+.1*Math.sin(tt/6));b.restore();}
     const bg=o.locked?'rgba(90,60,40,.28)':o.got?'#e9f4d8':claim?'#fff0b0':curr?'#ffffff':'#f6ead0';rrect(x0,y,rw2,h,h*.42,bg,false);
     b.beginPath();if(b.roundRect){b.roundRect(x0,y,rw2,h,h*.42);b.lineWidth=claim||curr?1.3:.8;b.strokeStyle=claim?'#e0a020':curr?CH.col:o.locked?'rgba(90,52,24,.35)':'rgba(120,80,40,.45)';b.stroke();}
     const mr=h*.42,mx=x0+mr+2;E(mx,cy,mr,mr,o.locked?'#8a7a6a':o.got?'#3fae5a':CH.col,0,false);b.beginPath();b.arc(mx,cy,mr,0,Math.PI*2);b.lineWidth=.9;b.strokeStyle='rgba(255,255,255,.75)';b.stroke();
@@ -9743,7 +9743,7 @@ function drawChapters(u){const key=u.cfg.chap,CH=CHAPTERS[key],{out}=chapInfo(ke
     else T(String(k+1),mx,cy-mr*.62,mr*1.25,'center',C.white,mr*2,C.ink);
     b.restore();if(ap<.6){u.rects.push({x:x0,y,w:rw2,h,i:k});return;}
     const rA=claim?50:34,tx=mx+mr+4,tW=rw2-(tx-x0)-rA-4,dark=o.locked?'#6a5a48':'#3a2a1a';
-    const two=h>=13;
+    const two=h>=13||CC>1;
     if(two){T(o.c.t,tx,cy-fs-.3,fs,'left',dark,tW);T(curr?`${o.c.g} · ${fm(o.c,Math.min(o.v,o.c.goal[1]))}/${fm(o.c,o.c.goal[1])}`:o.c.g,tx,cy+.6,gs,'left',o.locked?'#8a7a68':curr?CH.col:'#7a6a58',tW);}
     else{T(o.c.t,tx,cy-fs*.6,fs,'left',dark,tW*.55);const t1=Math.min(tW*.55,tw(o.c.t,fs));T(o.c.g,tx+t1+4,cy-gs*.6,gs,'left',o.locked?'#a89880':'#7a6a58',tW-t1-4);}
     if(curr&&two){const f=Math.min(1,o.v/o.c.goal[1]),bw=Math.min(40,tW*.35),bx2=x0+rw2-rA-bw-4;rrect(bx2,cy-1.5,bw,3,1.5,'#e0d4c0',false);rrect(bx2,cy-1.5,bw*f,3,1.5,CH.col,false);}

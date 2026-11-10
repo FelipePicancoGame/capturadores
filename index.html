@@ -12969,6 +12969,54 @@ function drawStoreArt(u){const S=u.cfg.store,L=u.cfg.rows,n=L.length;if(UPF&&UPF
   if(S.bump)S.bump.t++;
   {const pl=1+Math.sin(S.t/16)*.012;b.save();b.translate(470,1568);b.scale(pl,pl);b.translate(-470,-1568);ukD('loja','sair',210,1505,520,126);b.restore();u.rects.push(V.R(210,1505,520,126,n+2));}
   lojToast(S.toast);V.end();return true;}
+/* LOJA2PECAS (09-10/nov, Felipe: "tela cheia, artes separadas pra ficar leve, sem desalinhar"; "no carro dá pra colocar 2 estantes?"):
+   Loja do Vale montada com as peças do Buchecha (entregas/LOJA_PECAS_v1, POSICOES.json):
+   cenário cobrindo a tela toda + estante montada peça por peça (topo, faixa das abas, 4 prateleiras, base).
+   Tudo fica num espaço de 900 de largura por estante e é escalado junto, então nada desalinha em nenhum aparelho.
+   Tela larga (carro, PC deitado): 2 estantes lado a lado, 16 produtos de uma vez. */
+const LJ2={im:{},T:70,EH:1810,sh:298,ni:[[125,18],[490,18]],GAP:60};
+function lj2(k){let i=LJ2.im[k];if(!i){i=new Image();i.decoding='async';i.src='assets/loja2/'+k+'.webp';LJ2.im[k]=i;}return i.complete&&i.naturalWidth?i:null;}
+try{setTimeout(()=>{['cenario','topo','faixa_abas','prateleira','base'].forEach(lj2);},1500);}catch(e){}
+function drawStoreArt2(u){const S=u.cfg.store,L=u.cfg.rows,n=L.length;if(UPF)return false;if(!ukReady('loja'))return false;
+  const P={};for(const k of ['cenario','topo','faixa_abas','prateleira','base']){P[k]=lj2(k);if(!P[k])return false;}
+  S.t++;S.tt=(S.tt||0)+1;u.rects=[];u.boxR=null;const T=LJ2.T,EH=LJ2.EH;
+  /* cenário: cobre a tela inteira, sem faixa */
+  {const C=P.cenario,s=Math.max(W/C.naturalWidth,H/C.naturalHeight);b.fillStyle='#2a1a10';b.fillRect(0,0,W,H);b.save();b.imageSmoothingEnabled=true;try{b.imageSmoothingQuality='high';}catch(e){}b.drawImage(C,(W-C.naturalWidth*s)/2,(H-C.naturalHeight*s)/2,C.naturalWidth*s,C.naturalHeight*s);b.restore();}
+  /* 1 estante (900) ou 2 lado a lado (900+60+900) quando cabem do mesmo tamanho */
+  const k1=Math.min(W*.97/900,H*.97/EH),two=1860*k1<=W*.97,EW=two?1860:900,k=Math.min(W*.97/EW,H*.97/EH),ox=(W-EW*k)/2,oy=(H-EH*k)/2;
+  const V={k,ox,oy,R:(x,y,w,h,i)=>({x:ox+x*k,y:oy+y*k,w:w*k,h:h*k,i})};
+  const oT=[TX,TY,TZ];b.save();b.translate(ox,oy);b.scale(k,k);TX=ox;TY=oy;TZ=k;b.imageSmoothingEnabled=true;try{b.imageSmoothingQuality='high';}catch(e){}
+  const im=(I,x,y)=>b.drawImage(I,x,y,I.naturalWidth,I.naturalHeight);
+  const cols=two?[0,960]:[0];
+  /* estante(s): base, prateleiras de baixo pra cima, faixa, topo (ordem do POSICOES) */
+  for(const X of cols){im(P.base,X,T+1461);for(let r=3;r>=0;r--)im(P.prateleira,X,T+315+r*LJ2.sh);im(P.faixa_abas,X,T+209);im(P.topo,X,T);}
+  ukT(tr('LOJA DO VALE'),450,T+148,58,'#fff3c8','center',430,9,'#4a1f08');
+  /* abas na faixa da 1ª estante (posições do POSICOES) */
+  {const tabs=[{n:'ITENS',i:n},{n:'PODERES 🔥',i:n+1,dot:pwBuyN()},{n:'HONRA',i:n+3,dot:(flags.honra||0)>=4?1:0},{n:'PRESENTES',i:n+4,dot:giftReady()?1:0}];
+    tabs.forEach((tb,j)=>{const x=105+j*175,y=T+230,w=166,h=52,on=j===0;ukPill(x,y,w,h,on?'#ffe27a':'#4a4ca0',on?'#ffb81e':'#2c2e74',on?'#fff6c8':'#8288da');
+      b.save();b.font='bold 24px Arial,Helvetica,sans-serif';b.textAlign='center';b.textBaseline='middle';const s=tr(tb.n),mw=w-20,t2=b.measureText(s).width;b.translate(x+w/2,y+h/2+1);if(t2>mw)b.scale(mw/t2,1);b.fillStyle=on?'#101a46':'#dce6ff';b.fillText(s,0,0);b.restore();
+      if(tb.dot>0&&!on){b.save();b.translate(x+w-2,y-2);b.scale(3.4,3.4);redDot(0,0,tb.dot,.9);b.restore();}u.rects.push(V.R(x,y,w,h,tb.i));});}
+  /* saldo: 1 estante = no alto à direita; 2 estantes = na placa da 2ª estante */
+  if(two){ukT(tr('SUAS MOEDAS'),1410,T+122,26,'#ffe9a8','center',400,6,'#4a1f08');ukD('loja','moeda',1300,T+136,44,44);ukT(String(Math.round(S.shown)),1430,T+160,46,'#fff3c8','center',260,8,'#4a1f08');}
+  else{b.save();b.translate(732-744,4-147);lojWallet('moeda',Math.round(S.shown));b.restore();}
+  /* produtos: 2 por prateleira, cada um no seu nicho; 8 por estante */
+  const per=8*cols.length,pages=Math.max(1,Math.ceil(n/per)),pg=LJ2.pg=Math.max(0,Math.min(pages-1,LJ2.pg||0)),sc=.95;LOJPG.it=pg;
+  L.slice(pg*per,pg*per+per).forEach((it,j)=>{const kk=pg*per+j,col=j>>3,jj=j&7,r=jj>>1,c=jj&1,nx=cols[col]+LJ2.ni[c][0]+142.5-170*sc,ny=T+315+r*LJ2.sh+2,ap=Math.min(1,Math.max(0,(S.tt-j*1.5)/8));if(ap<=0)return;
+    const bump=S.bump&&S.bump.k===kk&&S.bump.t<14?Math.sin(S.bump.t/14*Math.PI):0;
+    b.save();b.globalAlpha=ap;b.translate(nx,ny);b.scale(sc,sc);const s2=(.92+.08*ap)*(1+bump*.06);b.translate(170,137);b.scale(s2,s2);b.translate(-170,-137);
+    const sk=SHOPITEMS[kk];ukD('loja','pedestal',32,132,276,50);if(!(sk&&ukD('loja','it_'+sk.k,95,2,150,150))){b.save();b.translate(170,82);b.scale(4.6,4.6);drawItemIcon(it.ic,0,0,1.25);b.restore();}
+    ukD('loja','placa',0,164,340,110);ukT(it.n,170,187,30,'#2a1a10','center',300);ukT(ukShort(it.d,30),170,210,19,'#6a4a2a','center',300);ukT(it.tag||'',75,249,23,'#5a4030','center',110);lojPrice(0,0,'moeda',it.c,false,!it.dis);
+    b.restore();u.rects.push(V.R(nx,ny,340*sc,274*sc,kk));});
+  if(S.bump)S.bump.t++;
+  /* rodapé: SAIR no meio, setas das páginas nas pontas (só se faltar lugar) */
+  {const y=T+1575,cx=EW/2;const pl=1+Math.sin(S.t/16)*.012;b.save();b.translate(cx,y+63);b.scale(pl,pl);b.translate(-cx,-y-63);ukD('loja','sair',cx-260,y,520,126);b.restore();u.rects.push(V.R(cx-260,y,520,126,n+2));
+    if(pages>1){if(pg>0){ukD('loja','ant',40,y+28,70,70);u.rects.push(Object.assign(V.R(20,y+8,110,110,-9),{fn:()=>{LJ2.pg--;}}));}
+      if(pg<pages-1){ukD('loja','prox',EW-110,y+28,70,70);u.rects.push(Object.assign(V.R(EW-130,y+8,110,110,-9),{fn:()=>{LJ2.pg++;}}));}
+      ukT(`${pg+1} / ${pages}`,cx,y+142,24,'#fff3d0','center',120,4,'#1a0a2a');}}
+  {const T0=S.toast;if(T0){b.save();b.translate(EW/2-470,T+1395-1440);lojToast(T0);b.restore();}}
+  b.restore();TX=oT[0];TY=oT[1];TZ=oT[2];return true;}
+{const _d=drawStoreArt;drawStoreArt=function(u){try{if(drawStoreArt2(u))return true;}catch(e){console.error(e);}return _d(u);};}
+/* /LOJA2PECAS */
 /* PODERES (Essência) — mesma estante, 9 tipos em 2 páginas */
 function drawPowersArt(u){const cf=u.cfg,L=cf.shop;if(!cf.pwArt||!ukReady('loja'))return false;u.t2=(u.t2||0)+1;const t=u.t2,n=L.length;u.rects=[];u.boxR=null;
   ukBg('loja');const V=ukBegin(1672);

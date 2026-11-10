@@ -10498,8 +10498,7 @@ function arUpdate(){const A=AR;if(!A||A.over)return;const G2=arGeo(),PL=arPathLe
   for(const e of A.en){if(e.hp<=0)continue;if(e.slowT>0)e.slowT--;else e.slow=0;if(e.poisonT>0){e.poisonT--;e.hp-=e.poison;if(e.hp<=0){arKill(e,arPos(G2,e.d));continue;}}
     e.d+=e.spd*(1-e.slow);if(e.hit>0)e.hit--;if(e.d>=PL){e.hp=0;A.lives-=e.boss?3:1;arMpLeak(e.boss?3:1);tone([200,140],.15,'square',.07);arPop(G2.rx-8,G2.by-10,e.boss?'-3 ❤':'-1 ❤','#ff8080');A.shake=10;if(e.boss)A.bossDone=true;}}
   A.en=A.en.filter(e=>e.hp>0);
-  for(let i=0;i<15;i++){const u=A.grid[i];if(!u)continue;if(u.stone>0){u.stone--;continue;}if(u.atk>0)u.atk--;if(u.cd>0){u.cd--;continue;}const tg=arTarget();if(!tg)continue;const S=arStats(u.sp,u.star),p=arCellXY(i);if(u.fi)S.dmg*=1+.2*u.fi;u.cd=S.cd;arAura(A,u,i,S);u.atk=12;{const _n=performance.now();if(!u.gS||_n-u.gS>1000)u.gS=_n;}
-    arFire(A,u,i,S,p,tg);}
+  for(let i=0;i<15;i++){const u=A.grid[i];if(!u)continue;if(u.stone>0){u.stone--;continue;}if(u.atk>0)u.atk--;if(u.cd>0){u.cd--;continue;}const tg=arTarget();if(!tg)continue;const S=arStats(u.sp,u.star),p=arCellXY(i);if(u.fi)S.dmg*=1+.2*u.fi;u.cd=S.cd;arAura(A,u,i,S);u.atk=12;if(!(window.arGestStart&&arGestStart(A,u,i,S,p,tg)))arFire(A,u,i,S,p,tg);}
   for(const s of A.shots){AR_CUR=s.src||null;const tp=s.tg.hp>0?arPos(G2,s.tg.d):null;if(!tp){s.life=0;continue;}const dx=tp.x-s.x,dy=tp.y-6-s.y,L=Math.hypot(dx,dy),v=5;if(L<v+2){s.life=0;let dmg=s.dmg;
       if(s.ty==='fantasma'&&Math.random()<.25){dmg*=3;arPop(tp.x,tp.y-16,'CRÍTICO!','#e0b0ff');}
       arHit(s.tg,dmg,s.ty,s.col);arBurst(tp.x,tp.y-6,s.col,4);if(s.ab&&!s.tg.ghost)arOnHit(A,s,tp,dmg);
@@ -11945,7 +11944,7 @@ const arWalk=sp=>{const s=String(sp||'').replace('*','');return !!(MONANIM[s]&&M
 arDrawMon=function(sp,x,y,sc,act,dir,seed,fix){if(act==='walk'&&arWalk(sp))return _dm(sp,x,y+8*sc,sc*1.45,act,dir,seed,fix);
   const I=arvImg(sp);if(!I)return _dm(sp,x,y,sc,act,dir,seed,fix);
   const u=ARVU;let ang,off=0;
-  if(u&&(u.form||u.sp)===sp){if(u.vAng==null)u.vAng=ARVHOME;const want=u.vTgt!=null&&u.vAtk&&performance.now()-u.vAtk<1400?u.vTgt:ARVHOME,d=Math.atan2(Math.sin(want-u.vAng),Math.cos(want-u.vAng));u.vAng+=Math.max(-.18,Math.min(.18,d));ang=u.vAng;off=arvPose(u)*sc*.55;}
+  if(u&&(u.form||u.sp)===sp){if(u.vAng==null)u.vAng=ARVHOME;/* FICAVIRADO09NOV (Felipe: 'deixa eles na posição que estiverem, sem ir e voltar; tira o ir pra frente e pra trás'): fica virado pro último alvo até aparecer outro; sem bote */const want=u.vTgt!=null?u.vTgt:ARVHOME,d=Math.atan2(Math.sin(want-u.vAng),Math.cos(want-u.vAng));u.vAng+=Math.max(-.08,Math.min(.08,d));ang=u.vAng;off=0;}
   else ang=act==='walk'?(ARVDIR[dir]!=null?ARVDIR[dir]:ARVHOME):ARVHOME;
   const z=92*sc,cx=x+Math.cos(ang)*off,cy=y+4*sc+Math.sin(ang)*off,tm=performance.now()/1000+(seed||0)*.37,wk=act==='walk',ph=tm*9,bob=wk?-Math.abs(Math.sin(ph))*6*sc:0,wob=wk?Math.sin(ph)*.16:0,br=wk?1:1+Math.sin(tm*2.6)*.035,sq=wk?1-Math.abs(Math.cos(ph))*.06:1;
   b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.translate(cx,cy+bob);b.rotate(ang-ARVHOME+wob);b.scale(br/sq*(wk?1:1),br*sq);b.drawImage(I,-z/2,-z/2,z,z);b.restore();};}
@@ -17207,17 +17206,26 @@ try{(function(){
     b.restore();return true;}catch(e){try{b.restore();}catch(_){}console.error(e);return false;}};
 })();}catch(e){}
 /* ARGESTO09NOV (Felipe: 'quero testar a nova animação' — entrega do GPT/Buchecha Arena_5_principais_ataques_20q_SEM_EFEITO_09nov): na Arena, Fagulho, Marolo, Brotim, Pedrisco e Trovim fazem o ataque novo de 20 quadros (1 gesto, 1 s, sem efeito de poder). Toca uma vez por ataque, do começo ao fim; os outros monstrinhos seguem como antes. */
-try{(function(){const GS={"fagulho":{"u":"blobs/8b78fa3668930ce909ad3625623cdb7c.webp","b":[69,16,108,220]},"marolo":{"u":"blobs/5140040d6afc11c7c9fff30a59d6baff.webp","b":[41,22,174,216]},"brotim":{"u":"blobs/1a2d7f6b2593f4789ef304944353d005.webp","b":[48,27,164,211]},"pedrisco":{"u":"blobs/b670ab8ccdf541a0f36b4e950e84ca54.webp","b":[62,21,131,217]},"trovim":{"u":"blobs/3a11bc35c709069ce37e88687e90f08b.webp","b":[62,22,132,216]}},IM={},DUR=[60,60,60,60,60,35,35,35,35,55,55,50,50,50,50,50,50,50,50,50];
+/* SINCRO09NOV (Felipe: 'só lança quando abrir a boca ou a mão estiver estendida' / 'a magia sai da boca, de onde ele lança' / 'fica virado pro último alvo, sem ir e voltar'):
+   o gesto dura o tempo entre dois ataques (no máximo 1 s); a magia sai no quadro 10 (boca aberta / mão estendida) e nasce no ponto de onde ele lança, já girado pro alvo. Depois ele fica virado pra lá. */
+try{(function(){const GS={"fagulho":{"u":"blobs/8b78fa3668930ce909ad3625623cdb7c.webp","b":[69,16,108,220]},"marolo":{"u":"blobs/5140040d6afc11c7c9fff30a59d6baff.webp","b":[41,22,174,216]},"brotim":{"u":"blobs/1a2d7f6b2593f4789ef304944353d005.webp","b":[48,27,164,211]},"pedrisco":{"u":"blobs/b670ab8ccdf541a0f36b4e950e84ca54.webp","b":[62,21,131,217]},"trovim":{"u":"blobs/3a11bc35c709069ce37e88687e90f08b.webp","b":[62,22,132,216]}},IM={},DUR=[60,60,60,60,60,35,35,35,35,55,55,50,50,50,50,50,50,50,50,50],
+  EP={fagulho:[[122,210]],marolo:[[124,210]],brotim:[[128,70]],pedrisco:[[50,85]],trovim:[[76,210],[176,210]]};
   const img=sp=>{let x=IM[sp];if(!x){x=IM[sp]=new Image();x.decoding='async';x.src=GS[sp].u;}return x.complete&&x.naturalWidth?x:null;};for(const k in GS)img(k);
-  window.arGestDraw=function(u,x,y,sc){try{const sp=String(u.form||u.sp).replace('*',''),g=GS[sp];if(!g||!u.gS||u.stone>0)return false;const e=performance.now()-u.gS;if(e<0||e>=1450)return false;const I=img(sp);if(!I)return false;
-      let f=0,acc=0;for(;f<19;f++){acc+=DUR[f];if(e<acc)break;}
-      /* GIRA09NOV (Felipe: 'a animação não está girando junto com o alvo'): igual à arte de cima da Arena — vira para o alvo, dá o bote e tem o mesmo tamanho */
-      /* GIRASUAVE09NOV (Felipe: 'não está girando, só se teleportando' / 'consegue rodar ele enquanto faz a animação?'): gira devagar até o alvo durante a preparação do gesto (0 a 0,45 s) e volta devagar no fim (1 a 1,45 s) */
-      const HOME=(typeof ARVHOME!=='undefined')?ARVHOME:Math.PI/2;if(u.vAng==null)u.vAng=HOME;if(u.gK!==u.gS){u.gK=u.gS;u.gA0=u.vAng;u.gT=u.vTgt!=null?u.vTgt:HOME;u.gR=performance.now();}const er=Math.min(e,performance.now()-u.gR);
-      const ez=q=>q<.5?2*q*q:1-Math.pow(-2*q+2,2)/2,lerpA=(a,c,q)=>a+Math.atan2(Math.sin(c-a),Math.cos(c-a))*q;
-      let ang;if(e<1000)ang=lerpA(u.gA0,u.gT,ez(Math.min(1,er/450)));else ang=lerpA(u.gT,HOME,ez(Math.min(1,(e-1000)/450)));u.vAng=ang;if(e>=1000)f=19;const off=(typeof arvPose==='function'?arvPose(u):0)*sc*.55;
-      const z=92*sc,bb=g.b,s2=z*.796/bb[3],cx=x+Math.cos(ang)*off,cy=y+4*sc+Math.sin(ang)*off;
-      b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.translate(cx,cy);b.rotate(ang-HOME);b.drawImage(I,f*256,0,256,256,-(bb[0]+bb[2]/2)*s2,-(bb[1]+bb[3]/2)*s2,256*s2,256*s2);b.restore();return true;}catch(e){return false;}};
+  const base=u=>String(u.form||u.sp).replace('*','');const HOME=()=>(typeof ARVHOME!=='undefined')?ARVHOME:Math.PI/2;
+  const fireNow=(A,u)=>{const P=u.gP;u.gP=null;if(!P||A.grid[P.i]!==u)return;let tg=P.tg&&P.tg.hp>0?P.tg:arTarget();if(!tg)return;
+    let o={x:P.p.x,y:P.p.y};const C=u.gC,g=GS[base(u)],L=EP[base(u)];if(C&&g&&L){u.gHand=(u.gHand||0)+1;const e=L[u.gHand%L.length],bb=g.b,dx=(e[0]-(bb[0]+bb[2]/2))*C.s,dy=(e[1]-(bb[1]+bb[3]/2))*C.s,r=C.ang-HOME(),c=Math.cos(r),sn=Math.sin(r);o={x:C.cx+dx*c-dy*sn,y:C.cy+dx*sn+dy*c+6};}
+    arFire(A,u,P.i,P.S,o,tg);};
+  window.arGestStart=function(A,u,i,S,p,tg){try{if(!GS[base(u)]||!img(base(u)))return false;if(u.gP)fireNow(A,u);
+    const L=Math.max(18,Math.min(60,S.cd||60));u.gT0=A.t;u.gL=L;u.gK=null;try{const q=arPos(arGeo(),tg.d);u.vTgt=Math.atan2(q.y-p.y,q.x-p.x);u.vAtk=performance.now();}catch(e){}
+    u.gP={S,i,p,tg,at:A.t+Math.max(1,Math.round(L*.44))};return true;}catch(e){return false;}};
+  {const _rt=arRushTick;arRushTick=function(A){const r=_rt.apply(this,arguments);try{for(const u of A.grid)if(u&&u.gP&&A.t>=u.gP.at)fireNow(A,u);}catch(e){}return r;};}
+  window.arGestDraw=function(u,x,y,sc){try{const A=AR,sp=base(u),g=GS[sp];if(!A||!g||u.gT0==null||u.stone>0)return false;const q=(A.t-u.gT0)/u.gL;if(q<0||q>=1)return false;const I=img(sp);if(!I)return false;
+      const ms=q*1000;let f=0,acc=0;for(;f<19;f++){acc+=DUR[f];if(ms<acc)break;}
+      const H=HOME();if(u.vAng==null)u.vAng=H;if(u.gK!==u.gT0){u.gK=u.gT0;u.gA0=u.vAng;u.gT=u.vTgt!=null?u.vTgt:H;u.gR=A.t;}
+      const ez=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2,lerpA=(a,c,t)=>a+Math.atan2(Math.sin(c-a),Math.cos(c-a))*t;
+      const ang=lerpA(u.gA0,u.gT,ez(Math.min(1,(A.t-u.gR)/(.4*u.gL))));u.vAng=ang;
+      const z=92*sc,bb=g.b,s2=z*.796/bb[3],cx=x,cy=y+4*sc;u.gC={cx,cy,s:s2,ang};
+      b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.translate(cx,cy);b.rotate(ang-H);b.drawImage(I,f*256,0,256,256,-(bb[0]+bb[2]/2)*s2,-(bb[1]+bb[3]/2)*s2,256*s2,256*s2);b.restore();return true;}catch(e){return false;}};
 })();}catch(e){}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);

@@ -50,10 +50,13 @@ sem_en = sorted(n for n, e in EN.items() if e == n and any('a' <= ch <= 'z' for 
 if sem_en: add('w', f'Sem tradução em inglês: {", ".join(sem_en[:12])}{" …" if len(sem_en) > 12 else ""}.')
 peq = [k for k in SP if d['IMG'].get(k) and max(d['IMG'][k]) < 150]
 if peq: add('a', f'Arte pequena (pode borrar em tela grande): {names(peq)}.', 'Medido no arquivo original da imagem.')
+sem_lan = [k for k in SP if k not in json.load(open(HERE + '/lancar.json'))]
+if sem_lan: add('w', f'Sem descrição de como lança o poder: {names(sem_lan)}.')
 if d.get('ERRS'): add('b', 'Erros ao abrir o jogo: ' + ' | '.join(d['ERRS'][:3]))
 json.dump(P, open(D + '/problemas.json', 'w'), ensure_ascii=False, indent=1)
 
 notas = json.load(open(HERE + '/arte_notas.json'))
+LAN = json.load(open(HERE + '/lancar.json'))
 LBL = {'b': 'Erro', 'w': 'Falta', 'a': 'Arte'}
 def li(p):
     rot = p.get('rot', 'Automático')
@@ -75,6 +78,12 @@ def img(k):
     p = f'{D}/img/{k}.webp'
     return 'data:image/webp;base64,' + base64.b64encode(open(p, 'rb').read()).decode() if os.path.exists(p) else ''
 
+def lan(k):
+    L = LAN.get(k)
+    if not L: return '<em>falta</em>'
+    tag = '<span class=ok>aprovado</span>' if L.get('ok') else '<span class=prop>proposta</span>'
+    return f"<b>{esc(L['de'])}</b> {tag}<br>{esc(L['como'])}"
+
 cards = []
 for c in chains:
     parts = []
@@ -89,7 +98,7 @@ for c in chains:
         if not ar: flags.append('Sem poder na Arena')
         fl = ''.join(f"<span class=flag>{f}</span>" for f in flags)
         w = where.get(k)
-        parts.append(f"""<article class=mon data-t="{s['type']}" data-q="{esc((s['name']+' '+k).lower())}"><div class=pic><img src="{img(k)}" alt="{esc(s['name'])}" loading=lazy></div><div class=info><div class=nm><h3>{esc(s['name'])}</h3><span class="t t-{s['type']}">{esc(TN[s['type']])}</span>{f"<span class=evo>{lv}</span>" if lv else ''}</div><div class=stats><span>Vida <b>{b[0]}</b></span><span>Ataque <b>{b[1]}</b></span><span>Defesa <b>{b[2]}</b></span><span>Velocidade <b>{b[3]}</b></span></div><p class=desc>{esc(s.get('desc',''))}</p><dl><dt>Golpes</dt><dd><ul class=mv>{mv}</ul></dd><dt>Especial (Muralha)</dt><dd>{esc(ult) if ult else '<em>nenhum</em>'}</dd><dt>Poder (Arena)</dt><dd>{(esc(ar['n'])+' — '+esc(ar['d'])) if ar else '<em>nenhum</em>'}</dd><dt>Onde aparece</dt><dd>{esc(', '.join(w[:4])+(' …' if len(w)>4 else '')) if w else 'só por evolução'}</dd></dl><div class=flags>{fl}<span class=id>id: {k}</span></div></div></article>""")
+        parts.append(f"""<article class=mon data-t="{s['type']}" data-q="{esc((s['name']+' '+k).lower())}"><div class=pic><img src="{img(k)}" alt="{esc(s['name'])}" loading=lazy></div><div class=info><div class=nm><h3>{esc(s['name'])}</h3><span class="t t-{s['type']}">{esc(TN[s['type']])}</span>{f"<span class=evo>{lv}</span>" if lv else ''}</div><div class=stats><span>Vida <b>{b[0]}</b></span><span>Ataque <b>{b[1]}</b></span><span>Defesa <b>{b[2]}</b></span><span>Velocidade <b>{b[3]}</b></span></div><p class=desc>{esc(s.get('desc',''))}</p><dl><dt>Golpes</dt><dd><ul class=mv>{mv}</ul></dd><dt>Lança o poder pelo(a)</dt><dd>{lan(k)}</dd><dt>Especial (Muralha)</dt><dd>{esc(ult) if ult else '<em>nenhum</em>'}</dd><dt>Poder (Arena)</dt><dd>{(esc(ar['n'])+' — '+esc(ar['d'])) if ar else '<em>nenhum</em>'}</dd><dt>Onde aparece</dt><dd>{esc(', '.join(w[:4])+(' …' if len(w)>4 else '')) if w else 'só por evolução'}</dd></dl><div class=flags>{fl}<span class=id>id: {k}</span></div></div></article>""")
     cards.append(f"<section class=line><h2>Linha {esc(SP[c[0]]['name'])} <small>{len(c)} forma{'s' if len(c)>1 else ''}</small></h2><div class=forms>{''.join(parts)}</div></section>")
 
 def cell(a, b):

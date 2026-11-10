@@ -4220,7 +4220,7 @@ function petDraw(t){const L=pets();const X=EXP;(typeof expNew==='function'&&expN
   X.petFs=fs;if(fs&&!X.petNew&&!X.fuse&&!expDock()){const n=(flags.expKills||{})[fs]||0,P0=PETS[fs],f=Math.min(1,n/P0.need),dk=expDock(),x=dk?8:68-expSide(),y=dk?H-20:45,w=dk?W-16:78;rrect(x,y,w,12,5,'rgba(16,14,36,.7)',false);E(x+7,y+6,5,5,TYPECOL[SP[fs].type],0,false);b.save();b.beginPath();b.arc(x+7,y+6,4.6,0,Math.PI*2);b.clip();drawMon(fs,x+7,y+8,.15);b.restore();
     rrect(x+15,y+7.5,w-19,2.6,1.3,'rgba(255,255,255,.15)',false);rrect(x+15,y+7.5,(w-19)*f,2.6,1.3,'#ffd23f',false);T(`Mascote ${SP[fs].name} ${n}/${P0.need}`,x+15,y+1,4.8,'left','#fff3c8',w-18);}}
 function expRelic(boss,x,y){const R2=relics(),ks=Object.keys(RELK),k=ks[Math.floor(Math.random()*ks.length)],ro=Math.random(),r=boss?(ro<.03?3:ro<.25?2:ro<.75?1:0):(ro<.04?2:ro<.28?1:0),it={k,r};let note='';
-  if(R2.length>=6){let wi=0;R2.forEach((q,i)=>{if(q.r<R2[wi].r)wi=i;});if(R2[wi].r<r){R2[wi]=it;note=' (trocou um mais fraco)';}else{flags.coins=(flags.coins||0)+5*(r+1);try{euSessGain().c+=5*(r+1);}catch(e){}note=` → virou ${5*(r+1)} moedas`;}}else R2.push(it);
+  if(R2.length>=6){let wi=0;R2.forEach((q,i)=>{if(q.r<R2[wi].r)wi=i;});if(R2[wi].r<r){R2[wi]=it;note=' (trocou um mais fraco)';}else{flags.coins=(flags.coins||0)+expCoinCap(5*(r+1));note=` → virou ${5*(r+1)} moedas`;}}else R2.push(it);
   EXP.loot={t:0,k,r,x:x??120,y:y??118,txt:`AMULETO ${RELRN[r]}: ${RELK[k].n} +${RELV[r]}% ${RELK[k].d}`,note};expLog(`Amuleto ${RELK[k].n} +${RELV[r]}%!${note}`);tone(r>=3?[784,988,1319,1760,2093,2637]:r===2?[988,1319,1760,2093]:[880,1175],.09);saveGame();}
 /* FUSÃO DE AMULETOS na Expedição (inspirado na síntese de itens dos heróis idle de barra de tarefas: 3 iguais viram 1 melhor) */
 const RELRN=['COMUM','RARO','ÉPICO','LENDÁRIO'],RELRNP=['COMUNS','RAROS','ÉPICOS','LENDÁRIOS'];
@@ -4243,7 +4243,7 @@ function expFuseDraw(){const X=EXP,F=X.fuse;if(!F)return;F.t++;const t=F.t,cx=12
 const EXPDROPMAX=12;function expDropDay(){const d=new Date().toDateString();if(!flags.expDrop||flags.expDrop.d!==d)flags.expDrop={d,b:0,p:0};return flags.expDrop;}
 function expChest(boss){const r=Math.random();let txt;if(Math.random()<(boss?.7:.3))expRelic(boss);
   if(false){const sp=PRIZES[Math.floor(Math.random()*PRIZES.length)],where=grantMon(sp,Math.max(5,teamAvg()-2));REVEAL={sp,where,t:0,dur:240};txt=`Ovo surpresa: ${SP[sp].name}!`;EXP.chest={t:70,txt};expLog(txt);saveGame();return;}
-  {const G2=euSessGain(),L=expDropDay(),cb=L.b<EXPDROPMAX,cp=L.p<EXPDROPMAX,coin=()=>{const c=5+Math.min(40,(flags.expStage||1));flags.coins=(flags.coins||0)+c;G2.c=(G2.c||0)+c;return `+${c} moedas`;};
+  {const G2=euSessGain(),L=expDropDay(),cb=L.b<EXPDROPMAX,cp=L.p<EXPDROPMAX,coin=()=>{const c=expCoinCap(5+Math.min(40,(flags.expStage||1)));if(!c)return 'Limite de moedas do dia';flags.coins=(flags.coins||0)+c;return `+${c} moedas`;};
     /* 30/out (Felipe: "estão entregando muita cápsula"): baú dá cápsula/poção só às vezes e no máximo EXPDROPMAX de cada por dia; o resto vira moedas */
     if((boss||r<.25)&&cb){bag.ball++;G2.ball++;L.b++;txt='+1 Cápsula';}else if(r<.6&&cp){bag.potion++;G2.p++;L.p++;txt='+1 Poção';}else txt=coin();}
   EXP.chest={t:70,txt};expLog(`Baú! ${txt}`);}
@@ -4681,7 +4681,7 @@ function drawReward(u){const st=u.cfg.reward;st.t++;if(st.off&&typeof drawOffCle
   u.rects.push({x:0,y:0,w:W,h:H,i:0});}
 async function offlineGains(){if(!flags.expOn||!flags.lastSeen)return;const mins=Math.min(480,Math.floor((Date.now()-flags.lastSeen)/60000));flags.expOn=false;
   if(mins<1||!party.length)return;let st=flags.expStage||1,coins=Math.round(mins*st*.02),xp=Math.round(mins*(1+st*.6)*XPMG);flags.coins=(flags.coins||0)+(coins=expCoinCap(coins));
-  const before=party.slice(0,3).map(m=>m.lv),bxp=party.slice(0,3).map(m=>m.xp);party.slice(0,3).forEach(m=>{m.xp+=expCapXP(m,mgXP(m,xp));while(m.lv<50&&m.xp>=(m.lv+1)**3){const s0=stats(m);m.lv++;m.hp+=stats(m).hp-s0.hp;m.dhp=m.hp;
+  const before=party.slice(0,3).map(m=>m.lv),bxp=party.slice(0,3).map(m=>m.xp);party.slice(0,3).forEach(m=>{m.xp+=expCapXP(m,Math.min(mgXP(m,xp),Math.max(0,(m.lv+1)**3-1-m.xp)));while(m.lv<50&&m.xp>=(m.lv+1)**3){const s0=stats(m);m.lv++;m.hp+=stats(m).hp-s0.hp;m.dhp=m.hp;
     for(const [l,id] of SP[m.sp].learn)if(l===m.lv&&!m.moves.includes(id)){if(m.moves.length>=4)m.moves.shift();m.moves.push(id);}}});
   const h=Math.floor(mins/60),mm=mins%60,tempo=h?`${h}h${String(mm).padStart(2,'0')}`:`${mm} min`;
   EXRWSEEN=1;await rewardCard({exp:1,off:1,tempo,rows:[{ic:'off_moedas',l:'MOEDAS',v:coins},{ic:'off_xp',l:'EXPERIÊNCIA',v:party.slice(0,3).reduce((a,m,i)=>a+Math.max(0,m.xp-bxp[i]),0)},...(party.slice(0,3).some((m,i)=>m.lv>before[i])?[{ic:'off_itens',l:'NÍVEIS GANHOS',v:party.slice(0,3).reduce((a,m,i)=>a+(m.lv-before[i]),0)}]:[])],title:'EXPEDIÇÃO',sub:`Enquanto você esteve fora (${tempo}), sua equipe continuou explorando!`,items:[{ic:'coin',n:coins,l:'moedas'}],mons:party.slice(0,3).map((m,i)=>({m,lv0:before[i],xp0:bxp[i]}))});
@@ -10485,7 +10485,7 @@ function arPos(G2,d){let r=d;for(let i=1;i<G2.pts.length;i++){const [ax,ay]=G2.p
 function arNew(){const deck=arDeck();AR={t:0,deck,lv:{},mana:100,cost:10,lives:3,wave:0,spawnLeft:0,spawnT:0,between:150,grid:Array(15).fill(null),en:[],shots:[],pops:[],parts:[],sel:-1,drag:null,over:false,best:flags.arenaBest||0,kills:0,pool:arEnemyPool(),done:null,speed:1,boss:null};for(const s of deck)AR.lv[s]=0;}
 function arWaveInfo(w){const g=AR&&AR.goal,boss=w%5===0||(g&&w===g),hp=Math.round(36*Math.pow(1.24,w-1)*((AR&&AR.hpMult)||1)),n=boss?3:8+Math.floor(w*1.6);return {boss,hp,n,spd:.34+Math.min(.3,w*.012)};}
 function arStartWave(){if(AR.wave>0)AR.mana+=20+AR.wave*2;AR.wave++;const I=arWaveInfo(AR.wave);AR.wi=I;AR.spawnLeft=I.n;AR.spawnT=0;AR.bossDone=!I.boss;if(I.boss){AR.ann={t:0,txt:`CHEFE! Onda ${AR.wave}`};tone([220,165,110],.18,'sawtooth',.08);}else{AR.ann={t:0,txt:`Onda ${AR.wave}`};}}
-function arSpawn(boss){const G2=arGeo(),I=AR.wi,sp=AR.pool[Math.floor(Math.random()*AR.pool.length)],hp=boss?I.hp*28:I.hp;AR.en.push({sp:boss?(AR.bossSp||(AR.bossSp=AR.pool[Math.floor(Math.random()*AR.pool.length)])):sp,d:0,hp,max:hp,spd:boss?I.spd*.55:I.spd*(.9+Math.random()*.2),slow:0,slowT:0,poison:0,poisonT:0,boss:!!boss,id:Math.random(),sc:boss?.5:.28,hit:0});}
+function arSpawn(boss){const G2=arGeo(),I=AR.wi,sp=AR.pool[Math.floor(Math.random()*AR.pool.length)],hp=boss?I.hp*(AR.stgI>=0?20:28):I.hp;AR.en.push({sp:boss?(AR.bossSp||(AR.bossSp=AR.pool[Math.floor(Math.random()*AR.pool.length)])):sp,d:0,hp,max:hp,spd:boss?I.spd*.55:I.spd*(.9+Math.random()*.2),slow:0,slowT:0,poison:0,poisonT:0,boss:!!boss,id:Math.random(),sc:boss?.5:.28,hit:0});}
 function arStats(sp,star){const ty=arType(sp),up=AR.lv[sp]||0,base=9*Math.pow(1.75,star-1)*(1+.3*up);
   const R={fogo:[1,46],agua:[.8,40],planta:[.7,44],eletrico:[.85,48],rocha:[2.4,80],gelo:[.6,46],inseto:[.7,38],normal:[.75,26],fantasma:[1,46]}[ty]||[1,40];
   return {ty,dmg:base*R[0],cd:Math.max(10,R[1]-star*2)};}
@@ -10623,7 +10623,7 @@ try{STGINFO.arena={n:'ARENA',col:'#d83a8a'};}catch(e){}
 {const _o=stgObjTxt;stgObjTxt=function(k,i){return k==='arena'?`Aguente ${arStgGoal(i)} ondas (chefe na última)`:_o(k,i);};}
 function arStgGoal(i){return 5+Math.floor((i%STGN)/3)+Math.floor(i/STGN)*2;}
 function arStgPool(bio){const L=(SMMON[bio&&bio.k]||[]).filter(s=>SP[s]&&MONANIM[s]),base=arEnemyPool();return L.length?[...L.slice(0,2),...L.slice(0,2),...base.slice(0,4)]:base;}
-async function arenaStage(){if(!STG)return;await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();AR.goal=arStgGoal(STG.i);AR.stgI=STG.i;AR.hpMult=STG.mult;AR.pool=arStgPool(STG.bio);
+async function arenaStage(){if(!STG)return;await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();AR.goal=arStgGoal(STG.i);AR.stgI=STG.i;AR.hpMult=STG.mult*(1+.6*Math.min(1,STG.i/10));AR.pool=arStgPool(STG.bio);
   const bl=(SMMON[STG.bio&&STG.bio.k]||[])[2];if(bl&&SP[bl]&&MONANIM[bl])AR.bossSp=bl;G.mode='arena';await fadeTo(0);
   if(!flags.arenaSeen){flags.arenaSeen=1;saveGame();await say('ARENA! Os monstrinhos selvagens andam pelo caminho em volta do tabuleiro. Não deixe eles chegarem ao portão!');await say('Toque em CHAMAR MONSTRINHO e junte 2 IGUAIS com as MESMAS estrelas para virar um mais forte. Embaixo, gaste mana para deixar cada tipo mais forte.');}
   await say(`FASE ${STG.i+1}: aguente ${AR.goal} ondas. A última tem um CHEFE!`);
@@ -11140,7 +11140,7 @@ function arMerge(a,b){if(!arCanMerge(a,b))return false;const sp=AR.grid[b].sp,st
    1) o NÍVEL do monstrinho no Vale conta: +3% de dano por nível (até o nível 30 = +90%). Não vale no CONTRA (fica justo).
    2) cada DERROTA seguida na mesma fase tira 10% da vida dos inimigos dela (até -40%); vencer zera.
    3) mais calmo: ondas de 30 s (eram 25) e o chefe usa o poder a cada 10 s (eram 7). */
-{const _st2=arStats;arStats=function(sp,star){const S=_st2(sp,star);try{if(!(AR&&AR.mp&&AR.mp.mode==='pvp')){const L=Math.min(30,arSpLv(sp)||0);S.dmg*=1+.03*L;}}catch(e){}return S;};}
+{const _st2=arStats;arStats=function(sp,star){const S=_st2(sp,star);try{if(!(AR&&AR.mp&&AR.mp.mode==='pvp')){const L=Math.min(AR&&AR.stgI>=0?50:30,arSpLv(sp)||0);S.dmg*=1+.03*L;}}catch(e){}return S;};}
 function arLossN(){try{return AR&&AR.goal?Math.min(4,((flags.arLoss||{})[AR.stgI])|0):0;}catch(e){return 0;}}
 /* (05/nov) Felipe: "não quero a wave ficando mais fraca depois que perde" — ajuda por derrota REMOVIDA; só conta as derrotas. */
 {const _se=arStgEnd;arStgEnd=function(why){try{flags.arLoss=flags.arLoss||{};if(why==='win')delete flags.arLoss[AR.stgI];else flags.arLoss[AR.stgI]=((flags.arLoss[AR.stgI])|0)+1;saveGame();}catch(e){}_se(why);};}
@@ -12653,7 +12653,7 @@ function m3hNome(sp){try{return (SP[sp]&&SP[sp].name)||sp.charAt(0).toUpperCase(
   const pts=S.score-s0;if(pts>0){S.press=Math.max(0,S.press-Math.min(.22,pts/(1500+S.lv*150)));S.hitT=18;}};}
 {const _u=matchUpdate;matchUpdate=function(){const S0=M3;_u();const S=M3;if(!S||S!==S0)return;const t=m3hTipo();if(!t)return;
   const pause=S.banner||S.tutS||S.ending||S.fin||S.won||S.endP||(typeof ui!=='undefined'&&ui.length)||G.mode!=='match';
-  if(!pause&&S.tl>0){S.tl=Math.max(0,S.tl-1/60);if(t==='cerco')S.press=Math.min(1,S.press+1/60/24*(1+S.lv*.02));}
+  if(!pause&&S.tl>0){S.tl=Math.max(0,S.tl-1/60);if(t==='cerco')S.press=Math.min(1,S.press+1/60/24*(1+S.lv*.02)*(S.L.cercoK||1));}
   if(S.hitT>0)S.hitT--;
   if(!pause&&S.phase==='idle'&&(S.tl<=0||S.press>=1||(t==='resgate'&&S.score>=S.goal)))m3Check();
   if(S.endP&&!S.endP.__h){S.endP.__h=1;const n=m3hNome(S.hsp);
@@ -16198,6 +16198,20 @@ function m3Score(){try{return M3&&M3.L&&M3.L.type==='score'&&!(typeof m3hTipo===
   return _c();};}
 {const _s=m3Stars;m3Stars=function(){const S=M3;if(S&&m3Score()){const g=S.goal;return !S.won?0:S.score>=g*3?3:S.score>=g*2?2:1;}return _s();};}
 /* /COMBINACANDY */
+/* ESTAT10NOV-D (10/nov, Estatística aprovada pelo Felipe). Arena: inimigos ×1,6 da fase 10 em diante, chefe ×20 (era ×28), nível conta até 50 (em arenaStage/arSpawn/arStats).
+   Expedição: moeda do baú passa pelo teto de 250/dia; XP de fora não atravessa o nível. Combina: o PODER não se recarrega com as peças que ele mesmo
+   destrói e enche em 20; da fase 4 à 10 as metas sobem devagar (pontos ×1,5, juntar ×2, juntar −6 jogadas, gelo −8, resgate ×1,35 e −4 s, cerco 20% mais rápido). */
+{const _l=m3Lv;m3Lv=function(lv){const L=_l(lv),r=Math.min(1,Math.max(0,(lv-3)/7)),f=k=>1+(k-1)*r,tp=L.type;
+  if(tp==='score')L.goal=Math.round(L.goal*f(1.5));else if(tp==='resgate'){L.goal=Math.round(L.goal*f(1.35));if(L.tmax)L.tmax=Math.round(L.tmax-4*r);}
+  if(L.collect)L.collect=L.collect.map(([k,n])=>[k,Math.round(n*f(2))]);
+  if(tp==='collect')L.moves+=Math.round(-6*r);else if(tp==='ice')L.moves+=Math.round(-8*r);
+  if(tp==='cerco')L.cercoK=f(1.2);return L;};}
+{const _n=m3New;m3New=function(lv){_n(lv);if(M3)M3.pwMax=20;};}
+{const _p=m3Power;m3Power=function(){const S=M3;if(S&&S.phase==='idle'&&S.pw>=S.pwMax)S.pwLock=1;return _p.apply(this,arguments);};}
+{const _b=m3Blast;m3Blast=function(cells,born,label){const S=M3,p0=S?S.pw:0;_b(cells,born,label);if(S&&S.pwLock)S.pw=Math.min(S.pw,p0);};}
+{const _u=matchUpdate;matchUpdate=function(){const S=M3;if(S&&S.pwLock&&S.phase==='idle')S.pwLock=0;return _u.apply(this,arguments);};}
+Object.assign(window.CVEN=window.CVEN||{},{'Limite de moedas do dia':'Daily coin limit reached','Baú! Limite de moedas do dia':'Chest! Daily coin limit reached'});
+/* /ESTAT10NOV-D */
 
 const CTU_P='blobs/',CTU_S='.webp';/* CARTATIPO08NOV (R170): as 5 cartas do deck embaixo da Arena usam a moldura do TIPO do monstrinho (arte do Buchecha, 200x283):
    nível na faixa de cima, retrato no meio, custo na faixa de baixo. */
@@ -17060,7 +17074,7 @@ try{let KEEP=0;
   const leave=async()=>{await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;saveGame();await fadeTo(0);};
   arLobbyShow=async function(kind){await fadeTo(1);portraitScreen();document.body.classList.add('nopad');AR={lobby:kind,over:true,grid:[],en:[],t:0,hits:[],deck:arDeck()};arLobbyInit();arDragInit();G.mode='arena';await fadeTo(0);
     const r=await new Promise(res=>{AR.pick=res;});if(KEEP&&r&&(r.k==='stage'||r.k==='solo'))return r;await leave();return r;};
-  arenaStage=async function(){if(!STG)return;await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();AR.goal=arStgGoal(STG.i);AR.stgI=STG.i;AR.hpMult=STG.mult;AR.pool=arStgPool(STG.bio);
+  arenaStage=async function(){if(!STG)return;await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();AR.goal=arStgGoal(STG.i);AR.stgI=STG.i;AR.hpMult=STG.mult*(1+.6*Math.min(1,STG.i/10));AR.pool=arStgPool(STG.bio);
     const bl=(SMMON[STG.bio&&STG.bio.k]||[])[2];if(bl&&SP[bl]&&MONANIM[bl])AR.bossSp=bl;G.mode='arena';await fadeTo(0);
     if(!flags.arenaSeen){flags.arenaSeen=1;saveGame();await say('ARENA! Os monstrinhos selvagens andam pelo caminho em volta do tabuleiro. Não deixe eles chegarem ao portão!');await say('Toque em CHAMAR MONSTRINHO e junte 2 IGUAIS com as MESMAS estrelas para virar um mais forte. Embaixo, gaste mana para deixar cada tipo mais forte.');}
     await say(`FASE ${STG.i+1}: aguente ${AR.goal} ondas. A última tem um CHEFE!`);

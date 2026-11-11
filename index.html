@@ -14050,6 +14050,10 @@ const MISS=[
 function msSt(id){return ((flags.ms||{})[id])||0;}
 function msSet(id,v){flags.ms=flags.ms||{};flags.ms[id]=v;}
 function msAvail(m){return !m.need||msSt(m.need)>=2;}
+/* MISSAOALCANCE11NOV (Felipe/Eloá: 'algumas missões levam pra lugares que não dá pra completar' — ex.: Vara do Seu Zé na Rota 2 aparecia antes da Lia sair da frente): missão só aparece/guia quando o mapa dela (e o lugar do objeto) já dá pra alcançar a pé — todas as passagens (GATE) no caminho abertas. A missão que abre a passagem continua valendo. */
+let MSREACH={t:-1,s:null};function msReach(){if(MSREACH.s&&frame-MSREACH.t<30)return MSREACH.s;const M=MAPS,ok=new Set(['home','town']),q=['home','town'];
+  while(q.length){const a=q.shift();for(const w of ((M[a]||{}).warps||[])){const b2=w[2];if(!M[b2]||ok.has(b2))continue;if(!gateOpen(b2))continue;ok.add(b2);q.push(b2);}}MSREACH={t:frame,s:ok};return ok;}
+{const _ma=msAvail;msAvail=function(m){if(!_ma(m))return false;try{const R=msReach(),need=[m.map];if(m.find&&m.find.map)need.push(m.find.map);for(const mp of need){if(!mp||R.has(mp)||!MAPS[mp])continue;if(GATE[mp]===m.id)continue;return false;}}catch(e){}return true;};}
 function msNext(){if(!flags.msMig&&party.length){flags.msMig=1;for(const m of MISS)if(m.auto&&msSt(m.id)<2&&m.auto())msSet(m.id,2);}return MISS.find(m=>m.main&&msSt(m.id)<2&&msAvail(m));}
 async function msAutoCheck(){for(const m of MISS)if(m.auto&&msSt(m.id)<2&&msAvail(m)&&m.auto())await msDone(m);}
 /* missões com mini game: usam o cenário do lugar onde a missão acontece e o nível se ajusta à equipe (nunca fica fácil demais) */

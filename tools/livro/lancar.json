@@ -27,9 +27,9 @@
   "como": "Empurra as duas mãos para a frente e uma onda nasce entre elas."
  },
  "trovim": {
-  "de": "mãos (alternando)",
-  "ok": 1,
-  "como": "Estende uma mão de cada vez; a água eletrificada sai da palma, com faíscas amarelas."
+  "de": "boca e mãos (alternando)",
+  "como": "Estende uma mão de cada vez; a água sai da boca e a eletricidade sai da palma, com faíscas amarelas.",
+  "ok": 1
  },
  "trovim2": {
   "de": "mãos",
@@ -234,23 +234,28 @@
  },
  "flocolino": {
   "de": "pontas de gelo do corpo",
-  "como": "As pontas de cristal brilham e disparam flocos de neve."
+  "como": "As pontas de cristal brilham e disparam flocos de neve.",
+  "ok": 1
  },
  "nevascao": {
   "de": "boca (uivo)",
-  "como": "Levanta a cabeça, uiva e solta um sopro de neve."
+  "como": "Levanta a cabeça, uiva e solta um sopro de neve.",
+  "ok": 1
  },
  "glacimor": {
   "de": "boca (uivo)",
-  "como": "Uiva forte; o gelo sai da boca e cristais crescem do chão nos alvos."
+  "como": "Uiva forte; o gelo sai da boca e cristais crescem do chão nos alvos.",
+  "ok": 1
  },
  "pinguinho": {
   "de": "barriga (escorregão)",
-  "como": "Escorrega de barriga para a frente deixando um rastro de gelo."
+  "como": "Escorrega de barriga para a frente deixando um rastro de gelo.",
+  "ok": 1
  },
  "pinguimperador": {
-  "de": "nadadeiras",
-  "como": "Ergue as nadadeiras e aponta; estilhaços de gelo saem delas."
+  "de": "boca",
+  "como": "Ergue as nadadeiras e lança estilhaços de gelo pela boca.",
+  "ok": 1
  },
  "brasinha": {
   "de": "boca",

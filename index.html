@@ -7256,6 +7256,22 @@ const T_=(...a)=>T(...a);const TDCC=[['#e8583a','ATAQUE'],['#3fae5a','DEFESA'],[
 function tdOffer(){const T=TD;T.cl=T.cl||{};const pool=TDCARDS.filter(c=>!c.max||(T.cl[c.id]||0)<c.max);const opts=[];while(opts.length<3&&pool.length)opts.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);if(!opts.length)return;T.cards={opts,t:0,i:1};tone([659,880,1175],.07);}
 function tdCardPick(i){const T=TD,c=T.cards&&T.cards.opts[i];if(!c||T.cards.t<14)return;c.f(T);if(!c.noLv)T.cl[c.id]=(T.cl[c.id]||0)+1;for(const tw of T.towers)tdTowerStats(tw);T.cards=null;tdPop(90,140,c.n.toUpperCase()+'!',C.yellow,9);tdPart(90,140,C.yellow,20,{sp:2.6,life:30});tone([660,880],.06);}
 function tdCardsTap(x,y){const cs=TD.cards;for(let i=0;i<cs.opts.length;i++){const y0=74+i*62;if(y>=y0&&y<=y0+56&&x>=6&&x<=174){if(cs.i===i||'ontouchstart' in window||true)tdCardPick(i);return true;}}return true;}
+
+/* TORRESANUNCIO11NOV (Felipe: 'ajusta até a pessoa precisar comprar cartas ou assistir anúncio'): na escolha de cartas das Torres
+   entram TODAS 💎 (pega as 3 cartas) e TODAS 📺 ANÚNCIO (pausa de exercício da FPimpulse, 1 por partida; 2 nas fases antes/no chefe) */
+function tdTakeAll(T,cs){if(!T||T.cards!==cs)return;for(const c of cs.opts.slice()){try{c.f(T);if(!c.noLv)T.cl[c.id]=(T.cl[c.id]||0)+1;}catch(e){}}for(const tw of T.towers)tdTowerStats(tw);T.cards=null;try{tdPop(90,140,(window.CVLANG==='en'?'TOOK ALL CARDS!':'LEVOU TODAS!'),C.yellow,9);tdPart(90,140,C.yellow,24,{sp:2.8,life:30});tone([880,1175,1568],.06);}catch(e){}}
+const TDTODAS=20;
+(function(){const D=tdCardsDraw;tdCardsDraw=function(t){D.apply(this,arguments);try{const T=TD,cs=T&&T.cards;if(!cs)return;
+    if(T.fpad){fpadDraw(T,t);return;}
+    const g=gems(),en=window.CVLANG==='en';b.fillStyle='rgba(12,10,26,.92)';b.fillRect(0,252,180,26);
+    const can=g>=TDTODAS;rrect(14,256,74,18,5,can?'#7a3ad8':'#5a5070',false);T_(en?'ALL':'TODAS',51,257.6,5.6,'center',C.white,70,C.ink);T_(TDTODAS+'💎',51,265,5.2,'center','#f0e0ff',70,C.ink);
+    const on=fpadCan(T),pu=on?Math.sin(t/9)*.5:0,left=fpadMax(T)-(T.fpadUsed||0);rrect(92-pu,256-pu,74+pu*2,18+pu*2,5,on?'#2f9f4c':'#3d5a44',false);T_(en?'ALL':'TODAS',129,257.6,5.6,'center',C.white,70,C.ink);T_(left<=0?'✓':((en?'📺 30s AD':'📺 ANÚNCIO')+(fpadMax(T)>1?' '+left:'')),129,265,5.2,'center','#dcffe0',70,C.ink);
+    T_('💎 '+g,174,4,6.5,'right','#e8d8ff',40,C.ink);}catch(e){}};
+  const P=tdCardsTap;tdCardsTap=function(x,y){const T=TD,cs=T&&T.cards;if(!cs)return P.apply(this,arguments);
+    if(T.fpad){if(fpadLeft(T)<=0){if(x>=18&&x<=162&&y>=230&&y<=260)fpadDone(T);}else if(x>=53&&x<=127&&y>=258&&y<=278){T.fpad=null;try{vozPara();}catch(e){}}return true;}
+    if(y>=252&&y<=278){if(x>=12&&x<=90){if(gems()<TDTODAS){try{tone([300,240],.06,'square',.03);tdPop(90,240,(window.CVLANG==='en'?'Need ':'Faltam ')+(TDTODAS-gems())+'💎','#ff9a8a',9);}catch(e){}return true;}flags.gems=gems()-TDTODAS;try{saveGame();}catch(e){}tdTakeAll(T,cs);return true;}
+      if(x>=90&&x<=168){if(fpadCan(T))fpadStart(T);return true;}return true;}
+    return P.apply(this,arguments);};})();
 /* Torres: VENDER torres e energia que voa até o contador (inspirado nos tower defense clássicos: moedas voam pro placar e torres podem ser vendidas) */
 function tdSellVal(t){return Math.max(10,Math.round((t.spent||50)*.6));}
 function tdSell(t){const T=TD,v=tdSellVal(t),i=T.towers.indexOf(t);if(i<0)return;T.towers.splice(i,1);T.sel=null;T.energy+=v;
@@ -7723,7 +7739,7 @@ function tdCardsDraw(t){const T=TD,cs=T.cards;if(!cs)return;cs.t++;texts=[];b.fi
     const v=c.v(T);{const vy=y+38;rpath(tx,vy,tw2-2,12,3);b.fillStyle='rgba(8,6,20,.55)';b.fill();b.lineWidth=.6;b.strokeStyle=`rgba(${rs},.8)`;b.stroke();T_(`${v[0]}  ›  ${v[1]}`,tx+5,vy+2.4,6.2,'left',br,tw2-12,C.ink);}
     {const bx=x0+w-36,by=y+4.4,bc=c.noLv?'#d08a1a':lvl?'#3a5ad8':'#d0343a';tdBtn(bx,by,31,10.5,bc,{t:t+i*40});T_(c.noLv?'NA HORA':lvl?`NV ${lvl+1}`:'NOVO',bx+15.5,by+2.1,5.2,'center',C.white,27,C.ink);}
     b.restore();});
-  T_('Toque numa carta',90,264,6.5,'center','#ffe8a8',170);}
+  T_('Toque numa carta',90,288,6.5,'center','#ffe8a8',170);}
 function tdCamoDraw(e,t,sc){const r=10*sc/.46;b.save();
   for(let k=0;k<5;k++){const a=t/16+k*Math.PI*2/5+e.wob,lx=e.x+Math.cos(a)*r,ly=e.y-6+Math.sin(a)*r*.5;E(lx,ly,2.3,1.15,k%2?'#4f9a3a':'#7ac85a',a+1.2);}
   const ix=e.x,iy=e.y-(e.boss?44:31)+Math.sin(t/9)*1;E(ix,iy,4.6,3.1,'#ffffff');E(ix,iy,1.7,1.7,'#2a6a2a',0,false);ln([[ix-4.2,iy+2.8],[ix+4.2,iy-2.8]],1.1,'#c0283a');b.restore();}
@@ -15730,7 +15746,7 @@ try{Object.assign(window.CVEN=window.CVEN||{},{'+1 CARTA':'+1 CARD','LEVAR 2':'T
 const FPAD_EX=[['AGACHAMENTOS','SQUATS'],['FLEXÕES','PUSH-UPS'],['POLICHINELOS','JUMPING JACKS']],FPAD_S=30;
 const FPAD_IMG={};setTimeout(()=>{try{fpadImg('assets/fpad/simbolo.png');}catch(e){}},6000);function fpadImg(src){let im=FPAD_IMG[src];if(!im){im=new Image();im.decoding='async';im.src=src;FPAD_IMG[src]=im;}return im.complete&&im.naturalWidth?im:null;}
 function fpadL(pt,en){return window.CVLANG==='en'?en:pt;}
-/* ANUNCIO2_11NOV (Felipe: 'nas fases difíceis tem que assistir 1 ou 2 comerciais'): 2 anúncios por partida nas 2 fases antes/no chefe, 1 nas outras */function fpadMax(w){try{return STG&&STG.mode==='wall'&&STG.i!=null&&STG.i%5>=3?2:1;}catch(e){return 1;}}function fpadCan(w){const cs=w&&w.cards;return !!(cs&&!w.duo&&!w.duoG&&!cs.dois&&(w.fpadUsed||0)<fpadMax(w)&&!w.fpad&&cs.opts.length>1);}
+/* ANUNCIO2_11NOV (Felipe: 'nas fases difíceis tem que assistir 1 ou 2 comerciais'): 2 anúncios por partida nas 2 fases antes/no chefe, 1 nas outras */function fpadMax(w){try{return STG&&(STG.mode==='wall'||STG.mode==='td')&&STG.i!=null&&STG.i%5>=3?2:1;}catch(e){return 1;}}function fpadCan(w){const cs=w&&w.cards;return !!(cs&&!w.duo&&!w.duoG&&!cs.dois&&(w.fpadUsed||0)<fpadMax(w)&&!w.fpad&&cs.opts.length>1);}
 function fpadStart(w){const n=flags.fpadN||0;w.fpad={t0:performance.now(),ex:FPAD_EX[n%FPAD_EX.length],exi:n%FPAD_EX.length,cs:w.cards,ct:w.cards.t||0,vz:{}};flags.fpadN=n+1;w.fpadUsed=(w.fpadUsed||0)+1;try{tone([523,659,784],.06);}catch(e){}try{saveGame();}catch(e){}}
 /* FPADVOZ10NOV: voz do Felipe (ElevenLabs "Felipe P") — abertura, contagem 1..8 no ritmo do exercício (a cada 2,4s) e "Muito bem!".
    Abertura de flexão/polichinelo: entra quando o Felipe gravar (por enquanto só o agachamento tem abertura). Só em português. */
@@ -15738,7 +15754,7 @@ const FPAD_VD='assets/fpad/voz/',FPAD_AB=['fpad_abertura','fpad_abertura_flexao'
 function fpadVoz(A,k,f){if(A.vz[k])return;A.vz[k]=1;if(window.CVLANG==='en'||!f)return;try{vozPara();const a=vozA();a.src=FPAD_VD+f+'.mp3';a.currentTime=0;const p=a.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}}
 function fpadRep(A){const el=(performance.now()-A.t0)/1000;return el<FPAD_C0?0:Math.min(8,1+Math.floor((el-FPAD_C0)/FPAD_CS));}
 function fpadLeft(w){return Math.max(0,FPAD_S-(performance.now()-w.fpad.t0)/1000);}
-function fpadDone(w){const A=w.fpad,cs=A.cs;w.fpad=null;if(w.cards!==cs)return;flags.fpadTot=(flags.fpadTot||0)+1;try{saveGame();}catch(e){}mcTakeAll(w,cs);}
+function fpadDone(w){const A=w.fpad,cs=A.cs;w.fpad=null;if(w.cards!==cs)return;flags.fpadTot=(flags.fpadTot||0)+1;try{saveGame();}catch(e){}if(typeof TD!=='undefined'&&w===TD){tdTakeAll(w,cs);return;}mcTakeAll(w,cs);}
 function fpadDraw(w,t){const A=w.fpad;if(!A)return;if(w.cards!==A.cs){w.fpad=null;return;}A.cs.t=A.ct;/* o tempo da escolha fica parado durante o anúncio */
   const left=fpadLeft(w),done=left<=0,sec=Math.ceil(left),ex=fpadL(A.ex[0],A.ex[1]);texts=[];
   const rp=fpadRep(A);if(!done){if(performance.now()-A.t0>200)fpadVoz(A,'ab',FPAD_AB[A.exi]);if(rp>0)fpadVoz(A,'c'+rp,'fpad_'+rp);}else fpadVoz(A,'fim','fpad_fim');

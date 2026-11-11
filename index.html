@@ -10246,6 +10246,14 @@ function ljInfo(i){const o=LOJAREAL[i]||{},sub=String(o.sub||''),p=sub.lastIndex
 /* MOEDASREAL09NOV (Felipe 09/nov: 'coloca' pacotes de moedas): 2ª página da loja com 6 pacotes de moedas. Preços provisórios; pagamento ainda não ligado. */
 const LOJAMOEDAS=[{c:5000,pr:'US$ 0,99'},{c:12000,pr:'US$ 1,99'},{c:30000,pr:'US$ 4,99'},{c:70000,pr:'US$ 9,99'},{c:150000,pr:'US$ 19,99'},{c:400000,pr:'US$ 49,99'}];
 try{Object.assign(window.CVEN||{},{'MOEDAS':'COINS','PACOTE DE':'PACK OF','MAIS':'MORE','VOLTAR':'BACK'});}catch(e){}
+/* LOJAEN10NOV (chefe de tradução; roadmap "nomes da loja em português no modo inglês"): a Loja escrevia o texto direto, sem traduzir,
+   e os nomes vinham quebrados em 2 linhas ("PUNHADO DE<br>CRISTAIS"), então nem a tradução palavra por palavra pegava a frase inteira.
+   Agora: junta as linhas, traduz a frase INTEIRA, quebra de novo no meio; preço e milhar no formato inglês ($0.99 · 1,200). */
+try{Object.assign(window.CVEN=window.CVEN||{},{'ENERGIA CHEIA':'FULL ENERGY','Cheia + 30':'Full + 30','50 /dia':'50 /day','todos os modos':'all modes','Cristais':'Crystals','Moedas':'Coins','JÁ É SEU':'OWNED','MAIS MOEDAS':'MORE COINS','PACOTE DE MOEDAS':'COIN PACK','LOJA':'SHOP'});}catch(e){}
+function ljTr(t){t=String(t==null?'':t);if(window.CVLANG!=='en')return t;const br=/<br>/i.test(t),p=t.replace(/<br>/gi,' ').replace(/\s+/g,' ').trim();
+  let x=(typeof tr==='function')?tr(p):p;x=x.replace(/US\$ ?(\d+),(\d\d)/g,'$$$1.$2').replace(/(\d)\.(\d{3})(?!\d)/g,'$1,$2').replace(/(\d)\.(\d{3})(?!\d)/g,'$1,$2');
+  if(br&&x.indexOf(' ')>0){const w=x.split(' ');let best=1,bd=1e9;for(let i=1;i<w.length;i++){const d=Math.abs(w.slice(0,i).join(' ').length-w.slice(i).join(' ').length);if(d<bd){bd=d;best=i;}}x=w.slice(0,best).join(' ')+'<br>'+w.slice(best).join(' ');}
+  return x;}
 function lojaReal(pg0){return new Promise(res=>{
   if(document.getElementById('ljBox')){res();return;}
   const F="font-family:CadBaloo,Fredoka,'Baloo 2',Arial,sans-serif;font-weight:800;";
@@ -10254,7 +10262,7 @@ function lojaReal(pg0){return new Promise(res=>{
   const fit=()=>{const s=Math.min(innerWidth/1080,innerHeight/1920);st.style.transform=`translate(-50%,-50%) scale(${s})`;};fit();addEventListener('resize',fit);
   const el=(tag,r,css,par)=>{const e=document.createElement(tag);e.style.cssText=`position:absolute;left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px;`+(css||'');(par||st).appendChild(e);return e;};
   const img=(src,r,par,css)=>{const e=el('img',r,'pointer-events:none;'+(css||''),par);e.src=src;e.alt='';e.draggable=false;return e;};
-  const txt=(t,r,size,col,par,extra)=>{const e=el('div',r,F+`display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.02;font-size:${size}px;color:${col};pointer-events:none;`+(extra||''),par);e.innerHTML=t;return e;};
+  const txt=(t,r,size,col,par,extra)=>{const e=el('div',r,F+`display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.02;font-size:${size}px;color:${col};pointer-events:none;`+(extra||''),par);e.innerHTML=ljTr(t);return e;};
   const OUT='text-shadow:0 3px 0 #0a1a4a,2px 0 0 #0a1a4a,-2px 0 0 #0a1a4a,0 -2px 0 #0a1a4a,0 0 6px rgba(0,0,0,.5);';
   img(LJU.lj_painel,LJP.painel);
   img(LJU.lj_titulo,LJP.titulo);txt('LOJA',[LJP.titulo[0],LJP.titulo[1]+4,LJP.titulo[2],LJP.titulo[3]-14],84,'#fff',st,OUT+'letter-spacing:2px');
@@ -10262,7 +10270,7 @@ function lojaReal(pg0){return new Promise(res=>{
   const sal=()=>{const c=(typeof flags!=='undefined'&&flags.coins)||0,g=typeof gems==='function'?gems():0;return [c,g];};
   img(LJU.lj_moeda,[150,247,96,96]);const tM=txt('',[255,240,330,110],40,'#fff',st,OUT+'justify-content:flex-start');
   img(LJU.lj_cristal,[575,247,96,96]);const tG=txt('',[680,240,290,110],40,'#fff',st,OUT+'justify-content:flex-start');
-  const upd=()=>{const [c,g]=sal();tM.innerHTML='Moedas '+c;tG.innerHTML='Cristais '+g;};upd();
+  const upd=()=>{const [c,g]=sal();tM.innerHTML=ljTr('Moedas')+' '+ljTr(String(c));tG.innerHTML=ljTr('Cristais')+' '+ljTr(String(g));};upd();
   let sel=-1;const cards=[];
   const close=()=>{removeEventListener('resize',fit);clearInterval(tk);box.remove();res();};
   const CW=el('div',[0,0,1080,1920],'pointer-events:none');

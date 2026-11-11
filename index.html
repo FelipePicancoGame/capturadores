@@ -10154,10 +10154,10 @@ const JOY={on:false,id:null,ox:0,oy:0,x:0,y:0,last:null};const stickEl=document.
 function stickHome(){stickEl.style.margin='';stickEl.style.left='';stickEl.style.top='';stickEl.style.bottom='';knobEl.style.transform='';stickEl.classList.remove('on');}
 let stickFixed=false;
 /* ---------- touch: tap-to-move, tap UI, drag joystick ---------- */
-function walkable(tx,ty){const ch=tileAt(tx,ty);return !!ch&&!SOLID.includes(ch)&&!npcAt(tx,ty)&&!pushRockAt(tx,ty)&&!dunSolid(tx,ty);}
+function walkable(tx,ty){const ch=tileAt(tx,ty);if(!(!!ch&&!SOLID.includes(ch)&&!npcAt(tx,ty)&&!pushRockAt(tx,ty)&&!dunSolid(tx,ty)))return false;/* TRAVAMAPA11NOV (Felipe: 'quando clico pra ir à missão o herói trava em vários pontos'): no mapa pintado o caminho também respeita a colisão fina; antes ele passava por um quadradinho que a colisão fina bloqueia, o jogo puxava o herói de volta e ele ficava parado */try{if(typeof fineOf==='function'&&fineOf(G.map)&&typeof blocked==='function'&&!(MAPS[G.map].warps||[]).some(w=>w[0]===tx&&w[1]===ty)&&blocked(tx*16+8,ty*16+11))return false;}catch(e){}return true;}
 function findPath(goals){const start=[P.x,P.y],key=(x,y)=>x+','+y,gs=new Map(goals.map(g=>[key(g[0],g[1]),g]));if(gs.has(key(...start)))return{path:[],goal:gs.get(key(...start))};
   const prev=new Map([[key(...start),null]]),q=[start];let found=null;
-  while(q.length){const [x,y]=q.shift();for(const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){const nx=x+dx,ny=y+dy,k=key(nx,ny);if(prev.has(k)||!walkable(nx,ny))continue;prev.set(k,[x,y]);if(gs.has(k)){found=[nx,ny];q.length=0;break;}q.push([nx,ny]);if(prev.size>900){q.length=0;break;}}}
+  while(q.length){const [x,y]=q.shift();for(const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]){const nx=x+dx,ny=y+dy,k=key(nx,ny);if(prev.has(k)||!walkable(nx,ny))continue;prev.set(k,[x,y]);if(gs.has(k)){found=[nx,ny];q.length=0;break;}q.push([nx,ny]);if(prev.size>9000){q.length=0;break;}/* CAMINHOLONGO11NOV (Felipe: 'quando clico pra ir à missão o herói trava em vários pontos do mapa'): a busca parava em 900 quadradinhos e nos mapas grandes não achava o caminho */}}
   if(!found)return null;const path=[];let cur=found;while(cur&&!(cur[0]===start[0]&&cur[1]===start[1])){path.unshift(cur);cur=prev.get(key(...cur));}return{path,goal:gs.get(key(...found))};}
 function goTo(goals,onArrive){const r=findPath(goals);if(!r){P.mark={x:goals[0][0],y:goals[0][1],t:30,bad:true};return;}
   P.path=r.path;P.goal=r.goal;P.onArrive=onArrive||null;P.mark={x:r.goal[0],y:r.goal[1],t:0};}
@@ -14126,7 +14126,7 @@ function msMark(n,x,y){const nid=n.cid||n.look;if(!nid)return;const av=MISS.some
 /* toque na missão: o herói anda sozinho até ela (atravessa portas/caminhos se precisar) */
 let MSAUTO=null;
 function msGoStart(){const t=msTarget();if(!t){run(msJournal);return;}MSAUTO={n:0};tone([660,880],.05);msGoStep();}
-function msGoStep(){if(!MSAUTO)return;if(++MSAUTO.n>12){MSAUTO=null;return;}const t=msTarget();if(!t){MSAUTO=null;return;}const tx=Math.floor(t.x/16),ty=Math.floor(t.y/16);
+function msGoStep(){if(!MSAUTO)return;if(++MSAUTO.n>40){MSAUTO=null;return;}const t=msTarget();if(!t){MSAUTO=null;return;}const tx=Math.floor(t.x/16),ty=Math.floor(t.y/16);
   let goals=t.here?[[tx,ty+1],[tx,ty-1],[tx-1,ty],[tx+1,ty],[tx,ty]].filter(g=>walkable(g[0],g[1])):[[tx,ty]];if(!t.here&&!walkable(tx,ty))goals=[[tx,ty+1],[tx,ty-1],[tx-1,ty],[tx+1,ty]].filter(g=>walkable(g[0],g[1]));
   if(!goals.length){MSAUTO=null;return;}const r=findPath(goals);if(!r){MSAUTO=null;P.mark={x:tx,y:ty,t:30,bad:true};return;}
   if(!r.path.length){MSAUTO=null;if(t.here){const dx=tx-P.x,dy=ty-P.y;if(dx||dy){P.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');run(interact);}}return;}
@@ -15769,7 +15769,7 @@ function fpadL(pt,en){return window.CVLANG==='en'?en:pt;}
 /* ANUNCIO2_11NOV (Felipe: 'nas fases difíceis tem que assistir 1 ou 2 comerciais'): 2 anúncios por partida nas 2 fases antes/no chefe, 1 nas outras */function fpadMax(w){try{return STG&&(STG.mode==='wall'||STG.mode==='td')&&STG.i!=null&&STG.i%5>=3?2:1;}catch(e){return 1;}}function fpadCan(w){const cs=w&&w.cards;return !!(cs&&!w.duo&&!w.duoG&&!cs.dois&&(w.fpadUsed||0)<fpadMax(w)&&!w.fpad&&cs.opts.length>1);}
 function fpadStart(w){const n=flags.fpadN||0;w.fpad={t0:performance.now(),ex:FPAD_EX[n%FPAD_EX.length],exi:n%FPAD_EX.length,cs:w.cards,ct:w.cards.t||0,vz:{}};flags.fpadN=n+1;w.fpadUsed=(w.fpadUsed||0)+1;try{tone([523,659,784],.06);}catch(e){}try{saveGame();}catch(e){}}
 /* FPADVOZ10NOV: voz do Felipe (ElevenLabs "Felipe P") — abertura, contagem 1..8 no ritmo do exercício (a cada 2,4s) e "Muito bem!".
-   Abertura de flexão/polichinelo: entra quando o Felipe gravar (por enquanto só o agachamento tem abertura). Só em português. */
+   Aberturas de agachamento, flexão e polichinelo gravadas (11/nov). Só em português. */
 const FPAD_VD='assets/fpad/voz/',FPAD_AB=['fpad_abertura','fpad_abertura_flexao','fpad_abertura_polichinelo'],FPAD_C0=11,FPAD_CS=2.4;
 function fpadVoz(A,k,f){if(A.vz[k])return;A.vz[k]=1;if(window.CVLANG==='en'||!f)return;try{vozPara();const a=vozA();a.src=FPAD_VD+f+'.mp3';a.currentTime=0;const p=a.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}}
 function fpadRep(A){const el=(performance.now()-A.t0)/1000;return el<FPAD_C0?0:Math.min(8,1+Math.floor((el-FPAD_C0)/FPAD_CS));}

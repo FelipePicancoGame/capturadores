@@ -1,5 +1,5 @@
 /* Capturadores do Vale — guarda os arquivos do jogo no aparelho pra abrir rápido e funcionar sem internet */
-const CACHE='cv-v459';
+const CACHE='cv-v460';
 /* 03/nov: artes e sons ficam numa caixa separada que NÃO é apagada quando sai versão nova (senão o jogo baixado pra jogar offline sumia a cada versão).
    blobs/ têm nome único por conteúdo: nunca mudam. assets/ podem mudar: na versão nova o jogo pergunta ao servidor se mudou (resposta curta 304 se não mudou). */
 const ART='cv-arte-1';

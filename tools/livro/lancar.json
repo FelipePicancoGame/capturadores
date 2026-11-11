@@ -1,75 +1,299 @@
 {
  "_leia": "De onde cada monstrinho lança o poder e como, para as animações. ok=1 = já aprovado pelo Felipe/usado no jogo; os outros são proposta do Claude (09/11), feita olhando a arte de hoje. Sempre de frente (atacante) e de costas (defensor).",
- "fagulho": {"de": "boca", "ok": 1, "como": "Abre a boca e cospe uma roda de fogo; a chama da cabeça cresce no quadro do disparo."},
- "fornalho": {"de": "boca", "como": "Enche o peito (brilho laranja na barriga), abre a boca e cospe uma bola de fogo maior."},
- "infernalho": {"de": "mãos", "como": "Junta as duas mãos na frente do peito e solta 3 bolas de fogo em leque."},
- "marolo": {"de": "boca", "ok": 1, "como": "Abre a boca e solta o jato d'água; a crista balança para trás no disparo."},
- "maremoto": {"de": "boca", "como": "Estufa as bochechas e solta um jato forte; a crista fica em pé."},
- "tsunamor": {"de": "mãos", "como": "Empurra as duas mãos para a frente e uma onda nasce entre elas."},
- "trovim": {"de": "mãos (alternando)", "ok": 1, "como": "Estende uma mão de cada vez; a água eletrificada sai da palma, com faíscas amarelas."},
- "trovim2": {"de": "mãos", "como": "Estende as duas mãos juntas; chuva eletrificada sai das palmas."},
- "trovim3": {"de": "mãos e cauda", "como": "Levanta as mãos (nuvem de chuva) e a cauda dá o raio no fim do gesto."},
- "brotim": {"de": "folhas do topo da cabeça", "ok": 1, "como": "Inclina a cabeça para a frente e as duas folhas do topo atiram a semente."},
- "arvorito": {"de": "folhas da cabeça", "como": "Sacode a cabeça; as folhas maiores lançam sementes que viram raiz no alvo."},
- "florestao": {"de": "braços (cipós)", "como": "Bate os dois braços no chão; espinhos e raízes brotam do chão até o alvo."},
- "pipiu": {"de": "asas", "como": "Abre as asas para trás e bate uma vez para a frente soltando penas."},
- "ventania": {"de": "asas", "como": "Bate as duas asas com força; uma rajada de penas sai em linha reta."},
- "furacao": {"de": "asas", "como": "Abre as asas e gira o corpo; um tornado de penas sai do meio das asas."},
- "ratonga": {"de": "boca (dentes)", "como": "Dá um pulinho para a frente e morde no ar; o golpe sai dos dentes."},
- "ratangao": {"de": "boca (dentes)", "como": "Rosna, mostra os dentes e dá uma mordida rápida para a frente."},
- "ratorrei": {"de": "cauda", "como": "Gira e chicoteia a cauda grossa; o impacto sai da ponta da cauda."},
- "zumbel": {"de": "ferrão", "como": "Vira o corpo meio de lado, aponta o ferrão e dispara uma agulhinha."},
- "zumbirex": {"de": "ferrão", "como": "Bate as asas rápido (borrão) e dispara 2 ferrões seguidos."},
- "zumbitron": {"de": "ferrão e asas", "como": "Abre as asas: abelhinhas saem das asas; o ferrão dispara junto."},
- "pedrisco": {"de": "cauda", "ok": 1, "como": "Gira de lado, balança a cauda de pedra e arremessa a pedra por cima."},
- "pedregao": {"de": "cauda", "como": "Fica nas 4 patas, abaixa a cabeça e a cauda bate para a frente lançando uma rocha que rola."},
- "cordilhao": {"de": "placas das costas", "como": "Arqueia as costas; as placas soltam pedras para cima que caem nos inimigos."},
- "cascal": {"de": "corpo todo", "como": "Dá um pulinho e cai pesado; o cascalho sai do chão onde ele bate."},
- "rochedo": {"de": "pés (pisão)", "como": "Levanta uma perna e pisa forte; a rachadura sai do pé até o alvo."},
- "montanhao": {"de": "punhos", "como": "Levanta os dois punhos e soca o chão; o tremor sai dos punhos."},
- "choquinho": {"de": "cauda", "como": "A cauda acende amarela e solta o raio por cima da cabeça."},
- "trovoar": {"de": "cauda", "como": "Gira a cauda brilhante e o raio pula de um inimigo para outro."},
- "tempestor": {"de": "juba/coroa", "como": "A juba se ilumina e raios saem da coroa de pelos para cima e caem nos alvos."},
- "assombro": {"de": "corpo (chama)", "como": "A chama roxa do corpo cresce e solta uma lanterninha fantasma pela frente."},
- "assombrao": {"de": "mãos de fumaça", "como": "Abre os braços de fumaça; lanternas fantasmas saem das mãos."},
- "espectron": {"de": "tentáculos", "como": "Estica os tentáculos para a frente e solta espíritos roxos que atravessam."},
- "lesmagma": {"de": "casco das costas", "como": "O casco borbulha e cospe uma bola de lava em arco."},
- "vulcanela": {"de": "cratera das costas", "como": "A cratera das costas solta fumaça e depois um jato de lava que vira poça."},
- "magmorra": {"de": "cratera das costas", "como": "Treme o corpo inteiro e a cratera entra em erupção, lançando pedras de lava."},
- "florina": {"de": "pétalas da cabeça", "como": "Gira a cabeça como um cata-vento e as pétalas soltam pólen."},
- "florabela": {"de": "pétalas", "como": "Abre os braços; pétalas saem da flor e voam em espiral."},
- "floraia": {"de": "flores do corpo todo", "como": "Todas as flores se abrem ao mesmo tempo e soltam pétalas e pólen dourado."},
- "corujito": {"de": "boca (sopro)", "como": "A nuvem enche as bochechas e sopra uma brisa para a frente."},
- "corujao": {"de": "asas", "como": "Abre as asas brancas e solta névoa num bater de asas."},
- "corujarca": {"de": "asas", "como": "Gira com as asas abertas e a nuvem do corpo vira um redemoinho."},
- "auroril": {"de": "chifre", "como": "Abaixa a cabeça; o chifre brilha nas cores da aurora e dispara um raio."},
- "aurorion": {"de": "galhada", "como": "Levanta a cabeça; a galhada brilha e solta um leque de raios de aurora."},
- "peixonete": {"de": "galhos de coral", "como": "Os galhos de coral da cabeça balançam e soltam bolhas."},
- "tubarete": {"de": "boca", "como": "Avança a cabeça e morde; a mordida atravessa o primeiro alvo."},
- "tubarrei": {"de": "boca e cauda", "como": "Gira a cauda formando um redemoinho e cospe o jato no meio dele."},
- "caranguejo": {"de": "mãos (pinças)", "como": "Ergue a pinça e dispara um golpe rápido no inimigo mais forte."},
- "caranguerra": {"de": "punho", "como": "Recolhe o braço de metal e solta um soco-foguete para a frente."},
- "pincador": {"de": "punhos", "como": "Bate os dois punhos de metal um no outro e esmaga para a frente."},
- "cogumelim": {"de": "boca", "como": "Incha o corpo de gosma e cospe uma bolinha de veneno."},
- "cogumelao": {"de": "folhas da cabeça", "como": "As folhas da cabeça se abrem e soltam uma nuvem verde de veneno."},
- "cogumestre": {"de": "espinhos das costas", "como": "Arqueia as costas e os espinhos soltam esporos roxos."},
- "cabrito": {"de": "cabeça", "como": "Abaixa a cabeça e investe para a frente (cabeçada)."},
- "cabritao": {"de": "punhos", "como": "Fica em guarda e dá um soco direto para a frente."},
- "carneirao": {"de": "chifres", "como": "Abaixa os chifres e dá uma chifrada que empurra o alvo."},
- "flocolino": {"de": "pontas de gelo do corpo", "como": "As pontas de cristal brilham e disparam flocos de neve."},
- "nevascao": {"de": "boca (uivo)", "como": "Levanta a cabeça, uiva e solta um sopro de neve."},
- "glacimor": {"de": "boca (uivo)", "como": "Uiva forte; o gelo sai da boca e cristais crescem do chão nos alvos."},
- "pinguinho": {"de": "barriga (escorregão)", "como": "Escorrega de barriga para a frente deixando um rastro de gelo."},
- "pinguimperador": {"de": "nadadeiras", "como": "Ergue as nadadeiras e aponta; estilhaços de gelo saem delas."},
- "brasinha": {"de": "boca", "como": "Abre a boca e cospe faíscas rápidas."},
- "brasalor": {"de": "boca", "como": "Abaixa nas 4 patas e cospe uma chama que queima e passa para o vizinho."},
- "dracobrasa": {"de": "boca", "como": "Abre as asas, puxa o ar e solta um sopro de dragão em cone."},
- "sombrin": {"de": "olhos e cauda", "como": "Os olhos brilham e uma sombra sai da cauda até o alvo."},
- "sombrale": {"de": "cauda", "como": "Arrepia o pelo e a cauda solta uma névoa escura em volta do alvo."},
- "noctavio": {"de": "olhos (rugido)", "como": "Ruge com os olhos brilhando; o pesadelo sai como uma onda escura."},
- "psiuto": {"de": "testa", "como": "Fecha os olhos, a testa brilha rosa e solta ondas mentais."},
- "mentora": {"de": "antenas", "como": "As antenas brilham e uma onda rosa sai entre elas."},
- "psiquara": {"de": "mãos", "como": "Junta as mãos, flutua e solta uma esfera rosa brilhante."},
- "cacauzinho": {"de": "cauda", "como": "Sacode a cauda fofa e solta sementes por cima."},
- "cascopedra": {"de": "casco (plantas das costas)", "como": "Recolhe a cabeça; as plantinhas do casco soltam sementes e pedrinhas."}
+ "fagulho": {
+  "de": "boca",
+  "ok": 1,
+  "como": "Abre a boca e cospe uma roda de fogo; a chama da cabeça cresce no quadro do disparo."
+ },
+ "fornalho": {
+  "de": "boca",
+  "como": "Enche o peito (brilho laranja na barriga), abre a boca e cospe uma bola de fogo maior."
+ },
+ "infernalho": {
+  "de": "mãos",
+  "como": "Junta as duas mãos na frente do peito e solta 3 bolas de fogo em leque."
+ },
+ "marolo": {
+  "de": "boca",
+  "ok": 1,
+  "como": "Abre a boca e solta o jato d'água; a crista balança para trás no disparo."
+ },
+ "maremoto": {
+  "de": "boca",
+  "como": "Estufa as bochechas e solta um jato forte; a crista fica em pé."
+ },
+ "tsunamor": {
+  "de": "mãos",
+  "como": "Empurra as duas mãos para a frente e uma onda nasce entre elas."
+ },
+ "trovim": {
+  "de": "mãos (alternando)",
+  "ok": 1,
+  "como": "Estende uma mão de cada vez; a água eletrificada sai da palma, com faíscas amarelas."
+ },
+ "trovim2": {
+  "de": "mãos",
+  "como": "Estende as duas mãos juntas; chuva eletrificada sai das palmas."
+ },
+ "trovim3": {
+  "de": "mãos e cauda",
+  "como": "Levanta as mãos (nuvem de chuva) e a cauda dá o raio no fim do gesto."
+ },
+ "brotim": {
+  "de": "folhas do topo da cabeça",
+  "ok": 1,
+  "como": "Inclina a cabeça para a frente e as duas folhas do topo atiram a semente."
+ },
+ "arvorito": {
+  "de": "folhas da cabeça",
+  "como": "Sacode a cabeça; as folhas maiores lançam sementes que viram raiz no alvo."
+ },
+ "florestao": {
+  "de": "braços (cipós)",
+  "como": "Bate os dois braços no chão; espinhos e raízes brotam do chão até o alvo."
+ },
+ "pipiu": {
+  "de": "asas",
+  "como": "Abre as asas para trás e bate uma vez para a frente soltando penas."
+ },
+ "ventania": {
+  "de": "asas",
+  "como": "Bate as duas asas com força; uma rajada de penas sai em linha reta."
+ },
+ "furacao": {
+  "de": "asas",
+  "como": "Abre as asas e gira o corpo; um tornado de penas sai do meio das asas."
+ },
+ "ratonga": {
+  "de": "boca (dentes)",
+  "como": "Dá um pulinho para a frente e morde no ar; o golpe sai dos dentes."
+ },
+ "ratangao": {
+  "de": "boca (dentes)",
+  "como": "Rosna, mostra os dentes e dá uma mordida rápida para a frente."
+ },
+ "ratorrei": {
+  "de": "cauda",
+  "como": "Gira e chicoteia a cauda grossa; o impacto sai da ponta da cauda."
+ },
+ "zumbel": {
+  "de": "ferrão",
+  "como": "Vira o corpo meio de lado, aponta o ferrão e dispara uma agulhinha."
+ },
+ "zumbirex": {
+  "de": "ferrão",
+  "como": "Bate as asas rápido (borrão) e dispara 2 ferrões seguidos."
+ },
+ "zumbitron": {
+  "de": "ferrão e asas",
+  "como": "Abre as asas: abelhinhas saem das asas; o ferrão dispara junto."
+ },
+ "pedrisco": {
+  "de": "cauda",
+  "ok": 1,
+  "como": "Gira de lado, balança a cauda de pedra e arremessa a pedra por cima."
+ },
+ "pedregao": {
+  "de": "cauda",
+  "como": "Fica nas 4 patas, abaixa a cabeça e a cauda bate para a frente lançando uma rocha que rola."
+ },
+ "cordilhao": {
+  "de": "placas das costas",
+  "como": "Arqueia as costas; as placas soltam pedras para cima que caem nos inimigos."
+ },
+ "cascal": {
+  "de": "corpo todo",
+  "como": "Dá um pulinho e cai pesado; o cascalho sai do chão onde ele bate."
+ },
+ "rochedo": {
+  "de": "pés (pisão)",
+  "como": "Levanta uma perna e pisa forte; a rachadura sai do pé até o alvo."
+ },
+ "montanhao": {
+  "de": "punhos",
+  "como": "Levanta os dois punhos e soca o chão; o tremor sai dos punhos."
+ },
+ "choquinho": {
+  "de": "cauda",
+  "como": "A cauda acende amarela e solta o raio por cima da cabeça."
+ },
+ "trovoar": {
+  "de": "cauda",
+  "como": "Gira a cauda brilhante e o raio pula de um inimigo para outro."
+ },
+ "tempestor": {
+  "de": "juba/coroa",
+  "como": "A juba se ilumina e raios saem da coroa de pelos para cima e caem nos alvos."
+ },
+ "assombro": {
+  "de": "corpo (chama)",
+  "como": "A chama roxa do corpo cresce e solta uma lanterninha fantasma pela frente."
+ },
+ "assombrao": {
+  "de": "mãos de fumaça",
+  "como": "Abre os braços de fumaça; lanternas fantasmas saem das mãos."
+ },
+ "espectron": {
+  "de": "tentáculos",
+  "como": "Estica os tentáculos para a frente e solta espíritos roxos que atravessam."
+ },
+ "lesmagma": {
+  "de": "vulcãozinho das costas",
+  "ok": 1,
+  "como": "O vulcãozinho das costas borbulha e solta a lava por cima, em arco, até o alvo."
+ },
+ "vulcanela": {
+  "de": "vulcãozinho das costas",
+  "ok": 1,
+  "como": "O vulcãozinho solta fumaça e depois lava por cima, que cai no alvo e vira poça."
+ },
+ "magmorra": {
+  "de": "vulcãozinho das costas",
+  "ok": 1,
+  "como": "Treme o corpo e o vulcãozinho entra em erupção, soltando lava por cima nos inimigos."
+ },
+ "florina": {
+  "de": "pétalas da cabeça",
+  "como": "Gira a cabeça como um cata-vento e as pétalas soltam pólen."
+ },
+ "florabela": {
+  "de": "pétalas",
+  "como": "Abre os braços; pétalas saem da flor e voam em espiral."
+ },
+ "floraia": {
+  "de": "flores do corpo todo",
+  "como": "Todas as flores se abrem ao mesmo tempo e soltam pétalas e pólen dourado."
+ },
+ "corujito": {
+  "de": "boca (sopro)",
+  "como": "A nuvem enche as bochechas e sopra uma brisa para a frente."
+ },
+ "corujao": {
+  "de": "asas",
+  "como": "Abre as asas brancas e solta névoa num bater de asas."
+ },
+ "corujarca": {
+  "de": "asas",
+  "como": "Gira com as asas abertas e a nuvem do corpo vira um redemoinho."
+ },
+ "auroril": {
+  "de": "chifre",
+  "como": "Abaixa a cabeça; o chifre brilha nas cores da aurora e dispara um raio."
+ },
+ "aurorion": {
+  "de": "galhada",
+  "como": "Levanta a cabeça; a galhada brilha e solta um leque de raios de aurora."
+ },
+ "peixonete": {
+  "de": "galhos de coral",
+  "como": "Os galhos de coral da cabeça balançam e soltam bolhas."
+ },
+ "tubarete": {
+  "de": "boca",
+  "como": "Avança a cabeça e morde; a mordida atravessa o primeiro alvo."
+ },
+ "tubarrei": {
+  "de": "boca e cauda",
+  "como": "Gira a cauda formando um redemoinho e cospe o jato no meio dele."
+ },
+ "caranguejo": {
+  "de": "mãos (pinças)",
+  "como": "Ergue a pinça e dispara um golpe rápido no inimigo mais forte."
+ },
+ "caranguerra": {
+  "de": "punho",
+  "como": "Recolhe o braço de metal e solta um soco-foguete para a frente."
+ },
+ "pincador": {
+  "de": "punhos",
+  "como": "Bate os dois punhos de metal um no outro e esmaga para a frente."
+ },
+ "cogumelim": {
+  "de": "boca",
+  "como": "Incha o corpo de gosma e cospe uma bolinha de veneno."
+ },
+ "cogumelao": {
+  "de": "folhas da cabeça",
+  "como": "As folhas da cabeça se abrem e soltam uma nuvem verde de veneno."
+ },
+ "cogumestre": {
+  "de": "espinhos das costas",
+  "como": "Arqueia as costas e os espinhos soltam esporos roxos."
+ },
+ "cabrito": {
+  "de": "cabeça",
+  "como": "Abaixa a cabeça e investe para a frente (cabeçada)."
+ },
+ "cabritao": {
+  "de": "punhos",
+  "como": "Fica em guarda e dá um soco direto para a frente."
+ },
+ "carneirao": {
+  "de": "chifres",
+  "como": "Abaixa os chifres e dá uma chifrada que empurra o alvo."
+ },
+ "flocolino": {
+  "de": "pontas de gelo do corpo",
+  "como": "As pontas de cristal brilham e disparam flocos de neve."
+ },
+ "nevascao": {
+  "de": "boca (uivo)",
+  "como": "Levanta a cabeça, uiva e solta um sopro de neve."
+ },
+ "glacimor": {
+  "de": "boca (uivo)",
+  "como": "Uiva forte; o gelo sai da boca e cristais crescem do chão nos alvos."
+ },
+ "pinguinho": {
+  "de": "barriga (escorregão)",
+  "como": "Escorrega de barriga para a frente deixando um rastro de gelo."
+ },
+ "pinguimperador": {
+  "de": "nadadeiras",
+  "como": "Ergue as nadadeiras e aponta; estilhaços de gelo saem delas."
+ },
+ "brasinha": {
+  "de": "boca",
+  "como": "Abre a boca e cospe faíscas rápidas."
+ },
+ "brasalor": {
+  "de": "boca",
+  "como": "Abaixa nas 4 patas e cospe uma chama que queima e passa para o vizinho."
+ },
+ "dracobrasa": {
+  "de": "boca",
+  "como": "Abre as asas, puxa o ar e solta um sopro de dragão em cone."
+ },
+ "sombrin": {
+  "de": "olhos e cauda",
+  "como": "Os olhos brilham e uma sombra sai da cauda até o alvo."
+ },
+ "sombrale": {
+  "de": "cauda",
+  "como": "Arrepia o pelo e a cauda solta uma névoa escura em volta do alvo."
+ },
+ "noctavio": {
+  "de": "olhos (rugido)",
+  "como": "Ruge com os olhos brilhando; o pesadelo sai como uma onda escura."
+ },
+ "psiuto": {
+  "de": "testa",
+  "como": "Fecha os olhos, a testa brilha rosa e solta ondas mentais."
+ },
+ "mentora": {
+  "de": "antenas",
+  "como": "As antenas brilham e uma onda rosa sai entre elas."
+ },
+ "psiquara": {
+  "de": "mãos",
+  "como": "Junta as mãos, flutua e solta uma esfera rosa brilhante."
+ },
+ "cacauzinho": {
+  "de": "cauda",
+  "como": "Sacode a cauda fofa e solta sementes por cima."
+ },
+ "cascopedra": {
+  "de": "casco (plantas das costas)",
+  "como": "Recolhe a cabeça; as plantinhas do casco soltam sementes e pedrinhas."
+ }
 }

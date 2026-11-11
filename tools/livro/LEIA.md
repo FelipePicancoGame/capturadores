@@ -16,6 +16,8 @@ Saídas: `/tmp/livro/livro-monstrinhos.html` (o livro) e `/tmp/livro/problemas.j
 - linha que não aprende golpe depois do nível 20, 2 golpes no mesmo nível, golpe que ninguém usa;
 - tipo sem fraqueza; nome de golpe/especial sem inglês; arte com menos de 150 px; erro ao abrir o jogo.
 
+**Aprovações do Felipe:** app https://claude.ai/artifact/RYssaGnoYiQWRbF9he17HN (coleção `poder`, um doc por monstrinho: de, como, status proposta/aprovado/ajustar, comentario, por). O que ele aprova vai para `lancar.json` com ok:1; "ajustar" = reescrever pelo comentário e devolver como proposta. A vigia diária faz isso.
+
 `arte_notas.json` = notas de arte feitas olhando (não automáticas). Tirar a nota quando a arte nova entrar ou o Felipe decidir.
 
 ## Decisões do Felipe (não tratar como erro)

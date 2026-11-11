@@ -3156,7 +3156,7 @@ async function gainXP(m,g){await say(`${nm(m)} ganhou ${g} pontos de experiênci
     for(const [l,id] of SP[m.sp].learn)if(l===m.lv&&!m.moves.includes(id)){if(m.moves.length>=4){const old=m.moves.shift();await say(`${nm(m)} esqueceu ${MOVES[old].name}...`);}m.moves.push(id);await say(`${nm(m)} aprendeu ${MOVES[id].name}!`);}}delete m.dxp;}
 async function foeFainted(){for(let i=0;i<16;i++){B.eOff=i*3;await wait(1);}B.hideE=true;B.eOff=0;
   await say(`${lbl('e')} desmaiou!`);const f=foe();
-  creQAdd('catch');if(me().hp>0){afAdd(me(),2);await gainXP(me(),Math.max(1,Math.floor(SP[f.sp].xp*f.lv/11*(B.tr?1.5:.5/* XPNOVO11NOV: selvagem dá metade */)*xpScale(f.lv,me().lv)*(afH(me())>=2?1.2:1))+1));}
+  creQAdd('catch');if(me().hp>0){afAdd(me(),2);await gainXP(me(),Math.max(1,Math.floor(SP[f.sp].xp*f.lv/11*(B.tr?.75:.15/* XPNOVO11NOV: selvagem dá metade · XPMAPA11NOV (Felipe: 'xp pode dar menos, bem menos'): luta no mapa dá bem menos — selvagem 15%, treinador 75% */)*xpScale(f.lv,me().lv)*(afH(me())>=2?1.2:1))+1));}
   if(B.tr&&B.ei<B.foes.length-1){B.ei++;B.stage.e=0;B.hideE=false;await say(`${B.tr.name} mandou ${nm(foe())}!`);return false;}
   if(B.tr){B.showTr=true;B.trX=40;for(let i=0;i<5;i++){B.trX-=8;await wait(1);}await say(`Você venceu ${B.tr.name}!`);if(B.tr.after)await say(B.tr.after);}
   return true;}

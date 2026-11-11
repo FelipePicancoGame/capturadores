@@ -23,7 +23,7 @@ button.sec{background:transparent;color:var(--ink);border:1px solid var(--bd)}bu
 progress{width:100%;height:14px}
 </style></head><body><main>
 <h1>Gravador de Vozes</h1>
-<p class="s">Capturadores do Vale · Pausa da FP Impulse (agachamento) · 10 falas · ~200 letras (créditos)</p>
+<p class="s">Capturadores do Vale · Pausa da FP Impulse (agachamento, flexão, polichinelo) · 12 falas · ~420 letras (créditos)</p>
 
 <div class="card"><h2>1. Sua chave da ElevenLabs</h2>
 <input id="key" type="password" placeholder="Cole aqui a API key (sk_...)" autocomplete="off">
@@ -39,7 +39,7 @@ progress{width:100%;height:14px}
 <div id="lines"></div></div>
 </main>
 <script>
-const LINES=[{"id": "fpad_abertura", "role": "tio", "text": "Pausa da FP Impulse! Bora fazer 8 agachamentos comigo? Pés na largura do ombro, desce como se fosse sentar numa cadeira!", "tts": "Pausa da FP Impulse! Bora fazer 8 agachamentos comigo? Pés na largura do ombro, desce como se fosse sentar numa cadeira!"}, {"id": "fpad_1", "role": "tio", "text": "Um!", "tts": "Um!"}, {"id": "fpad_2", "role": "tio", "text": "Dois!", "tts": "Dois!"}, {"id": "fpad_3", "role": "tio", "text": "Três!", "tts": "Três!"}, {"id": "fpad_4", "role": "tio", "text": "Quatro!", "tts": "Quatro!"}, {"id": "fpad_5", "role": "tio", "text": "Cinco!", "tts": "Cinco!"}, {"id": "fpad_6", "role": "tio", "text": "Seis!", "tts": "Seis!"}, {"id": "fpad_7", "role": "tio", "text": "Sete!", "tts": "Sete!"}, {"id": "fpad_8", "role": "tio", "text": "Oito!", "tts": "Oito!"}, {"id": "fpad_fim", "role": "tio", "text": "Muito bem! Pode pegar suas três cartas!", "tts": "Muito bem! Pode pegar suas três cartas!"}];
+const LINES=[{"id": "fpad_abertura", "role": "tio", "text": "Pausa da FP Impulse! Bora fazer 8 agachamentos comigo? Pés na largura do ombro, desce como se fosse sentar numa cadeira!", "tts": "Pausa da FP Impulse! Bora fazer 8 agachamentos comigo? Pés na largura do ombro, desce como se fosse sentar numa cadeira!"}, {"id": "fpad_abertura_flexao", "role": "tio", "text": "Pausa da FP Impulse! Bora fazer 8 flexões comigo? Mãos no chão na largura do ombro. Se ficar pesado, apoia os joelhos!", "tts": "Pausa da FP Impulse! Bora fazer 8 flexões comigo? Mãos no chão na largura do ombro. Se ficar pesado, apoia os joelhos!"}, {"id": "fpad_abertura_polichinelo", "role": "tio", "text": "Pausa da FP Impulse! Bora fazer 8 polichinelos comigo? Pula abrindo braços e pernas, e volta fechando!", "tts": "Pausa da FP Impulse! Bora fazer 8 polichinelos comigo? Pula abrindo braços e pernas, e volta fechando!"}, {"id": "fpad_1", "role": "tio", "text": "Um!", "tts": "Um!"}, {"id": "fpad_2", "role": "tio", "text": "Dois!", "tts": "Dois!"}, {"id": "fpad_3", "role": "tio", "text": "Três!", "tts": "Três!"}, {"id": "fpad_4", "role": "tio", "text": "Quatro!", "tts": "Quatro!"}, {"id": "fpad_5", "role": "tio", "text": "Cinco!", "tts": "Cinco!"}, {"id": "fpad_6", "role": "tio", "text": "Seis!", "tts": "Seis!"}, {"id": "fpad_7", "role": "tio", "text": "Sete!", "tts": "Sete!"}, {"id": "fpad_8", "role": "tio", "text": "Oito!", "tts": "Oito!"}, {"id": "fpad_fim", "role": "tio", "text": "Muito bem! Pode pegar suas três cartas!", "tts": "Muito bem! Pode pegar suas três cartas!"}];
 const ROLES=[{"id": "tio", "nome": "Tio Felipe (você)", "mine": "felipe", "q": {"gender": "male", "age": "middle_aged"}}];
 const API='https://api.elevenlabs.io';
 let KEY='',MINE=[],CAND={},CAST={},AUD={},stop=false,added={};
@@ -94,5 +94,5 @@ $('bRec').onclick=async()=>{stop=false;$('bRec').disabled=true;$('bStop').disabl
   if(Object.keys(AUD).length===LINES.length)st('Pronto! Toque em Baixar ZIP e mande o arquivo para o Claude.');};
 $('bStop').onclick=()=>{stop=true;};
 $('bZip').onclick=async()=>{const z=new JSZip();const man=[];for(const l of LINES){if(!AUD[l.id])continue;z.file(l.id+'.mp3',AUD[l.id]);man.push({...l,voz:(CAST[l.role]||{}).name,modelo:MODEL});}
-  z.file('manifest.json',JSON.stringify(man,null,1));const b=await z.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='vozes_fpimpulse_agachamento.zip';document.body.append(a);a.click();a.remove();};
+  z.file('manifest.json',JSON.stringify(man,null,1));const b=await z.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='vozes_fpimpulse.zip';document.body.append(a);a.click();a.remove();};
 </script></body></html>

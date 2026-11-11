@@ -17540,7 +17540,7 @@ try{Object.assign(window.CVEN=window.CVEN||{},{
  'Presente especial: o TROVIM, raríssimo de Água e Elétrico, só seu! Ele foi pro Sítio do Vale.':'Special gift: THUNDIM, super rare Water and Electric type, all yours! It went to the Valley Farm.',
  'SUAS MOEDAS':'YOUR COINS','Carregando…':'Loading…','Carregando...':'Loading...','Medalhas':'Medals','Tempo':'Time','VIRAR':'FLIP','Sorte':'Luck','Cofrinho':'Piggy Bank',
  'Muralha forte':'Strong Wall','Olho certeiro':'Sharp Eye','Chuva':'Rain','Sem pontos: jogue Muralha, Torres ou Horda!':'No points: play Wall, Towers or Horde!',
- '🖐️ Tutoriais':'🖐️ Tutorials','Tutoriais':'Tutorials','O Rochedo Gigante':'The Giant Rochedo'});}catch(e){}
+ '🖐️ Tutoriais':'🖐️ Tutorials','Tutoriais':'Tutorials','O Rochedo Gigante':'The Giant Rochedo','HIPNOTIZADO':'HYPNOTIZED','QUEM VAI LUTAR?':'WHO WILL FIGHT?','CERCO':'SIEGE','Dentro estava o caderno do Vô! As últimas páginas estão em branco.':'Inside was Grandpa\'s notebook! The last pages are blank.','Arqueiros atacam o muro de longe':'Archers attack the wall from afar'});}catch(e){}
 function migTr(t){t=String(t||'');if(window.CVLANG!=='en')return t;const p=t.split(/ (?=Presente especial:|Ajuste do jogo:)/);return p.map(x=>tr(x)).join(' ');}
 (function(){try{const _t=window.tr;const RAR={COMUM:'COMMON',RARA:'RARE',RARO:'RARE','ÉPICA':'EPIC','ÉPICO':'EPIC','LENDÁRIA':'LEGENDARY','LENDÁRIO':'LEGENDARY'};
  const COR={BRONZE:'BRONZE',PRATA:'SILVER',OURO:'GOLD',DIAMANTE:'DIAMOND','ESMERALDA':'EMERALD','RUBI':'RUBY'};
@@ -17554,6 +17554,45 @@ function migTr(t){t=String(t||'');if(window.CVLANG!=='en')return t;const p=t.spl
   else if((m=/^(.+) · (COMUM|RARA|RARO|ÉPICA|ÉPICO|LENDÁRIA|LENDÁRIO)$/.exec(r)))r=_t(m[1])+' · '+RAR[m[2]];
   else if((m=/^(.*): (LIGADA|LIGADO|DESLIGADA|DESLIGADO)$/.exec(r)))r=m[1]+': '+(/^DES/.test(m[2])?'OFF':'ON');
   else if((m=/^Now: (.+)$/.exec(r)))r='Now: '+_t(m[1]);
+  else if((m=/^(.+) selvagem usou (.+)!$/.exec(r)))r='Wild '+m[1]+' used '+_t(m[2])+'!';
+  else if((m=/^(.+) usou (.+)!$/.exec(r)))r=m[1]+' used '+_t(m[2])+'!';
+  else if((m=/^(.+) selvagem desmaiou!$/.exec(r)))r='Wild '+m[1]+' fainted!';
+  else if((m=/^(.+) desmaiou!$/.exec(r)))r=m[1]+' fainted!';
+  else if((m=/^(.+) selvagem acordou!$/.exec(r)))r='Wild '+m[1]+' woke up!';
+  else if((m=/^(.+) acordou!$/.exec(r)))r=m[1]+' woke up!';
+  else if((m=/^(.+) selvagem caiu no sono!$/.exec(r)))r='Wild '+m[1]+' fell asleep!';
+  else if((m=/^(.+) caiu no sono!$/.exec(r)))r=m[1]+' fell asleep!';
+  else if((m=/^(.+) ficou (queimado|envenenado|paralisado|dormindo)!$/.exec(r)))r=(/ selvagem$/.test(m[1])?'Wild '+m[1].replace(/ selvagem$/,''):m[1])+' is '+{queimado:'burned',envenenado:'poisoned',paralisado:'paralyzed',dormindo:'asleep'}[m[2]]+'!';
+  else if((m=/^(.+) aprendeu (.+)!$/.exec(r)))r=m[1]+' learned '+_t(m[2])+'!';
+  else if((m=/^(.+) esqueceu (.+)\.\.\.$/.exec(r)))r=m[1]+' forgot '+_t(m[2])+'...';
+  else if((m=/^Volta, (.+)!$/.exec(r)))r='Come back, '+m[1]+'!';
+  else if((m=/^(.+) mandou (.+)!$/.exec(r)))r=m[1]+' sent out '+m[2]+'!';
+  else if((m=/^Pronto! (.+) foi capturad[oa]!$/.exec(r)))r='Gotcha! '+m[1]+' was caught!';
+  else if((m=/^(.+) fugiu\.\.\. Continue jogando bem que outro pode aparecer!$/.exec(r)))r=m[1]+' ran away... Keep playing well and another one may show up!';
+  else if((m=/^Chance de captura: (\d+)%(.*)$/.exec(r)))r='Catch chance: '+m[1]+'%'+(m[2]?_t(m[2]):'');
+  else if((m=/^Novo recorde: (.+)!$/.exec(r)))r='New record: '+m[1]+'!';
+  else if((m=/^Derrotados: (.+)$/.exec(r)))r='Defeated: '+m[1];
+  else if((m=/^(·\s+)?Medalhas (\d+)(\/\d+)?$/.exec(r)))r=(m[1]||'')+'Medals '+m[2]+(m[3]||'');
+  else if((m=/^(\d+) medalhas?$/.exec(r)))r=m[1]+(m[1]==='1'?' medal':' medals');
+  else if((m=/^Andar (\d+)$/.exec(r)))r='Floor '+m[1];
+  else if((m=/^Capturados (\d+)\/(\d+) · Vistos (\d+)$/.exec(r)))r='Caught '+m[1]+'/'+m[2]+' · Seen '+m[3];
+  else if((m=/^Mascote (.+?):? (\d+)\/(\d+)$/.exec(r)))r='Pet '+m[1]+(r.indexOf(':')>0?':':'')+' '+m[2]+'/'+m[3];
+  else if((m=/^\+(\d+) mascotes?$/.exec(r)))r='+'+m[1]+(m[1]==='1'?' pet':' pets');
+  else if((m=/^Objetivo: (.+)\.$/.exec(r)))r='Goal: '+_t(m[1])+'.';
+  else if((m=/^Falta pouco! (.+)\. Progresso: (\d+)\/(\d+)\.$/.exec(r)))r='Almost there! '+_t(m[1])+'. Progress: '+m[2]+'/'+m[3]+'.';
+  else if((m=/^Parceiro: (.+)  ❤ dividido$/.exec(r)))r='Partner: '+m[1]+'  ❤ shared';
+  else if((m=/^🔥 3x por (\d+) min$/.exec(r)))r='🔥 3x for '+m[1]+' min';
+  else if((m=/^🔥 FEBRE! PONTOS x2 · (\d+) jogadas?$/.exec(r)))r='🔥 FEVER! POINTS x2 · '+m[1]+(m[1]==='1'?' move':' moves');
+  else if((m=/^Escolha (\d+) melhorias?$/.exec(r)))r='Pick '+m[1]+(m[1]==='1'?' upgrade':' upgrades');
+  else if((m=/^(\d+)\/(\d+) conquistadas · bronze, prata e ouro$/.exec(r)))r=m[1]+'/'+m[2]+' earned · bronze, silver and gold';
+  else if((m=/^Nº (\d+) (.+), tipo (.+)\. (.*)$/.exec(r)))r='No. '+m[1]+' '+m[2]+', '+_t(m[3])+' type. '+_t(m[4]);
+  else if((m=/^Ms\. Lu: Ah, faltam (\d+) moedas\..*$/.exec(r)))r='Ms. Lu: Ah, you are '+m[1]+' coins short. Win stages in the mini games and missions and you\'ll have them in no time!';
+  else if((m=/^Ms\. Lu: Na creche .* O preço é (\d+) moedas\.$/.exec(r)))r='Ms. Lu: At the daycare your monsters train on their own, get stronger and even lay eggs! The price is '+m[1]+' coins.';
+  else if((m=/^Grandma Ipê: Que coleção linda! Tome: (.+)\.$/.exec(r)))r='Grandma Ipê: What a beautiful collection! Here: '+_t(m[1])+'.';
+  else if((m=/^Novidade: (.+)$/.exec(r)))r='New: '+m[1];
+  else if((m=/^(.+?) voltou (pra sua equipe|to your team|pro Sítio do Vale|to the Valley Farm)( e agora está no nível (\d+))?! Saiu da creche descansado, com o HP cheio\.(?: Treino de (.+): \+(\d+) de (.+)!)?$/.exec(r)))r=m[1]+' went back '+(/equipe|team/.test(m[2])?'to your team':'to the Valley Farm')+(m[4]?' and is now level '+m[4]:'')+'! It left the daycare rested, with full HP.'+(m[5]?' '+_t(m[5])+' training: +'+m[6]+' '+_t(m[7])+'!':'');
+  else if(/^Stage nova liberada no mapa!/.test(r))r=r.replace(/^Stage nova liberada no mapa!/,'New stage unlocked on the map!');
+  if(/ · Andar \d+$/.test(r))r=r.replace(/ · Andar (\d+)$/,' · Floor $1');
   return /\bto go\b|XP\b|coins\b/.test(r)?r.replace(/(\d)\.(\d{3})(?!\d)/g,'$1,$2').replace(/(\d)\.(\d{3})(?!\d)/g,'$1,$2'):r;};}catch(e){}})();
 </script>
 <script>/* LANGBTN (05/nov, Felipe: "como mudo de língua?" / "não tem essa opção no meu jogo"): botão 🌐 na tela inicial */

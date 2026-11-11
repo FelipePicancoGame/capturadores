@@ -17142,6 +17142,8 @@ try{const D={'PODERES 🔥':'POWERS 🔥','PODERES':'POWERS','MELHORIAS':'UPGRAD
 
 /* CARTAALCANCE09NOV (Felipe: 'carta long shot não tem utilidade pois não existe mais catapulta'): a carta 'Alcance' da Muralha não mudava nada no jogo, saiu */
 try{for(let i=MONCARDS.length-1;i>=0;i--)if(MONCARDS[i]&&MONCARDS[i].id==='mrng')MONCARDS.splice(i,1);}catch(e){}
+/* LUNETA10NOV (Felipe: 'tira as cartas que fortalecem a catapulta; tem uma que aumenta o tiro'): a carta 'Luneta' (+alcance) saiu da Muralha e da loja de cartas */
+try{for(let i=WC.length-1;i>=0;i--)if(WC[i]&&WC[i].id==='rng')WC.splice(i,1);}catch(e){}
 /* PULAR09NOV (Felipe: 'coloca um botão de pular, para quando a pessoa ficar travada, ela conseguir pular e destravar'): botão próprio na tela, no mapa e na Horda. O herói pula pro lugar livre mais perto (de preferência pra frente) */
 try{(function(){
   let el=null,last=[0,1],lp=null,busyJ=0;

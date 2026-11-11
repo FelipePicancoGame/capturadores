@@ -15723,34 +15723,40 @@ const FPAD_EX=[['AGACHAMENTOS','SQUATS'],['FLEXÕES','PUSH-UPS'],['POLICHINELOS'
 const FPAD_IMG={};setTimeout(()=>{try{fpadImg('assets/fpad/simbolo.png');}catch(e){}},6000);function fpadImg(src){let im=FPAD_IMG[src];if(!im){im=new Image();im.decoding='async';im.src=src;FPAD_IMG[src]=im;}return im.complete&&im.naturalWidth?im:null;}
 function fpadL(pt,en){return window.CVLANG==='en'?en:pt;}
 function fpadCan(w){const cs=w&&w.cards;return !!(cs&&!w.duo&&!w.duoG&&!cs.dois&&!w.fpadUsed&&!w.fpad&&cs.opts.length>1);}
-function fpadStart(w){const n=flags.fpadN||0;w.fpad={t0:performance.now(),ex:FPAD_EX[n%FPAD_EX.length],cs:w.cards,ct:w.cards.t||0};flags.fpadN=n+1;w.fpadUsed=1;try{tone([523,659,784],.06);}catch(e){}try{saveGame();}catch(e){}}
+function fpadStart(w){const n=flags.fpadN||0;w.fpad={t0:performance.now(),ex:FPAD_EX[n%FPAD_EX.length],exi:n%FPAD_EX.length,cs:w.cards,ct:w.cards.t||0,vz:{}};flags.fpadN=n+1;w.fpadUsed=1;try{tone([523,659,784],.06);}catch(e){}try{saveGame();}catch(e){}}
+/* FPADVOZ10NOV: voz do Felipe (ElevenLabs "Felipe P") — abertura, contagem 1..8 no ritmo do exercício (a cada 2,4s) e "Muito bem!".
+   Abertura de flexão/polichinelo: entra quando o Felipe gravar (por enquanto só o agachamento tem abertura). Só em português. */
+const FPAD_VD='assets/fpad/voz/',FPAD_AB=['fpad_abertura',null,null],FPAD_C0=11,FPAD_CS=2.4;
+function fpadVoz(A,k,f){if(A.vz[k])return;A.vz[k]=1;if(window.CVLANG==='en'||!f)return;try{vozPara();const a=vozA();a.src=FPAD_VD+f+'.mp3';a.currentTime=0;const p=a.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}}
+function fpadRep(A){const el=(performance.now()-A.t0)/1000;return el<FPAD_C0?0:Math.min(8,1+Math.floor((el-FPAD_C0)/FPAD_CS));}
 function fpadLeft(w){return Math.max(0,FPAD_S-(performance.now()-w.fpad.t0)/1000);}
 function fpadDone(w){const A=w.fpad,cs=A.cs;w.fpad=null;if(w.cards!==cs)return;flags.fpadTot=(flags.fpadTot||0)+1;try{saveGame();}catch(e){}mcTakeAll(w,cs);}
 function fpadDraw(w,t){const A=w.fpad;if(!A)return;if(w.cards!==A.cs){w.fpad=null;return;}A.cs.t=A.ct;/* o tempo da escolha fica parado durante o anúncio */
   const left=fpadLeft(w),done=left<=0,sec=Math.ceil(left),ex=fpadL(A.ex[0],A.ex[1]);texts=[];
+  const rp=fpadRep(A);if(!done){if(performance.now()-A.t0>200)fpadVoz(A,'ab',FPAD_AB[A.exi]);if(rp>0)fpadVoz(A,'c'+rp,'fpad_'+rp);}else fpadVoz(A,'fim','fpad_fim');
   b.save();b.fillStyle='rgba(12,10,34,.96)';b.fillRect(-20,-80,220,480);b.restore();
   const LG=fpadImg('assets/fpad/logo.png');
   if(LG){const lw=110,lh=lw*LG.naturalHeight/LG.naturalWidth;b.save();b.imageSmoothingEnabled=true;b.drawImage(LG,90-lw/2,-30,lw,Math.min(46,lh));b.restore();T(fpadL('PAUSA DO EXERCÍCIO','EXERCISE BREAK'),90,20,7,'center','#ffd23f',170,C.ink);}
   else{const SB=fpadImg('assets/fpad/simbolo.png');/* símbolo FP da marca do Felipe (Drive: Marca Felipe Picanço-01.png) */
     if(SB){const sh=26,sw=sh*SB.naturalWidth/SB.naturalHeight;b.save();b.imageSmoothingEnabled=true;b.drawImage(SB,90-sw/2,-40,sw,sh);b.restore();T('FP IMPULSE',90,-11,12,'center','#3fe0a0',170,C.ink);T(fpadL('PAUSA DO EXERCÍCIO','EXERCISE BREAK'),90,6,7.5,'center','#ffd23f',170,C.ink);}
     else{T('FP IMPULSE',90,-24,13,'center','#ff8a1e',170,C.ink);T(fpadL('PAUSA DO EXERCÍCIO','EXERCISE BREAK'),90,-6,8,'center','#ffd23f',170,C.ink);}}
-  T(fpadL('Faça quantos','Do as many'),90,32,7,'center','#e8e4ff',170);
-  T(ex,90,42,12,'center',C.white,172,C.ink);
-  T(fpadL('você conseguir em 30 segundos!','as you can in 30 seconds!'),90,59,7,'center','#e8e4ff',172);
+  T(fpadL('Faça comigo','Do with me'),90,32,7,'center','#e8e4ff',170);
+  T('8 '+ex,90,42,12,'center',C.white,172,C.ink);
+  T(fpadL('no ritmo da contagem!','following the count!'),90,59,7,'center','#e8e4ff',172);
   /* Tio Felipe animado (o personal do jogo) */
   try{const a=TIOA[done?'comemorar':'falar'],im=fpadImg(a[0]);if(im){const nf=a[1],fw=im.naturalWidth/nf,fr=Math.floor(t/ (60/a[2]))%nf,sz=118;b.save();b.imageSmoothingEnabled=true;b.drawImage(im,fr*fw,0,fw,im.naturalHeight,90-sz/2,70,sz,sz);b.restore();}}catch(e){}
-  if(!done){T(String(sec),90,192,30,'center','#ffd23f',80,C.ink);
+  if(!done){if(rp>0){T(rp+'/8',90,192,30,'center','#7cf08a',90,C.ink);}else{T(fpadL('PREPARA...','GET READY...'),90,198,14,'center','#ffd23f',170,C.ink);}
     const p=1-left/FPAD_S;rrect(20,226,140,7,3.5,'#2c2850',false);rrect(20,226,Math.max(7,140*p),7,3.5,'#ff8a1e',false);
     T(fpadL('Aproveite essa pausa e mexa o corpo!','Use this break to move your body!'),90,238,6.6,'center','#c8c4e8',170);
     rrect(55,262,70,12,6,'#4a4560',false);T(fpadL('FECHAR (sem prêmio)','CLOSE (no reward)'),90,264.6,5.4,'center','#d8d4ee',66);}
   else{T(fpadL('MUITO BEM!','GREAT JOB!'),90,196,16,'center','#7cf08a',170,C.ink);
-    T(fpadL('Quantos você fez? Tente bater na próxima!','How many did you do? Beat it next time!'),90,216,6.4,'center','#e8e4ff',172);
+    T(fpadL('Pode pegar suas três cartas!','Go ahead, take your three cards!'),90,216,6.4,'center','#e8e4ff',172);
     const pu=Math.sin(t/7)*1.2;rrect(20-pu,234-pu,140+pu*2,22+pu*2,9,'#2f9f4c',false);T(fpadL('PEGAR AS 3 CARTAS!','TAKE ALL 3 CARDS!'),90,240,10,'center',C.white,132,C.ink);}
   T(fpadL('FPimpulse · personal trainer','FPimpulse · personal trainer'),90,300,5.4,'center','#8f8ab0',170);}
 (function(){const D=mcDrawCardsUI;mcDrawCardsUI=function(w,t){D.apply(this,arguments);try{const cs=w.cards;if(!cs||w.duo||w.duoG)return;
     if(w.fpad){fpadDraw(w,t);return;}
     }catch(e){}};
-  const P=wTap;wTap=function(x,y){const w=WL;if(w&&w.fpad){if(fpadLeft(w)<=0){if(x>=18&&x<=162&&y>=230&&y<=260)fpadDone(w);}else if(x>=53&&x<=127&&y>=258&&y<=278){w.fpad=null;}return;}
+  const P=wTap;wTap=function(x,y){const w=WL;if(w&&w.fpad){if(fpadLeft(w)<=0){if(x>=18&&x<=162&&y>=230&&y<=260)fpadDone(w);}else if(x>=53&&x<=127&&y>=258&&y<=278){w.fpad=null;try{vozPara();}catch(e){}}return;}
     if(w&&w.cards&&!w.duo&&!w.duoG&&x>=136&&x<=179&&y>=233&&y<=250){if(fpadCan(w))fpadStart(w);return;}
     return P.apply(this,arguments);};})();
 /* /FPAD10NOV */

@@ -19,5 +19,5 @@ Saídas: `/tmp/livro/livro-monstrinhos.html` (o livro) e `/tmp/livro/problemas.j
 `arte_notas.json` = notas de arte feitas olhando (não automáticas). Tirar a nota quando a arte nova entrar ou o Felipe decidir.
 
 ## Decisões do Felipe (não tratar como erro)
-- Brasinha e Brasalor azuis (Fogo): escolha dele. Brasalor = dragãozinho azul de 4 patas; o com asas é a forma 3.
+- Brasinha e Brasalor são vermelhos desde 09/11 (RECOR09NOV pinta o azul de vermelho ao carregar). Brasalor = forma 2; o com asas grandes é a forma 3 (Dracobrasa).
 - Ratonga esverdeado é o que ele quer.

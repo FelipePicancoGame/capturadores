@@ -4686,6 +4686,7 @@ async function offlineGains(){if(!flags.expOn||!flags.lastSeen)return;const mins
     for(const [l,id] of SP[m.sp].learn)if(l===m.lv&&!m.moves.includes(id)){if(m.moves.length>=4)m.moves.shift();m.moves.push(id);}}});
   const h=Math.floor(mins/60),mm=mins%60,tempo=h?`${h}h${String(mm).padStart(2,'0')}`:`${mm} min`;
   EXRWSEEN=1;await rewardCard({exp:1,off:1,tempo,rows:[{ic:'off_moedas',l:'MOEDAS',v:coins},{ic:'off_xp',l:'EXPERIÊNCIA',v:party.slice(0,3).reduce((a,m,i)=>a+Math.max(0,m.xp-bxp[i]),0)},...(party.slice(0,3).some((m,i)=>m.lv>before[i])?[{ic:'off_itens',l:'NÍVEIS GANHOS',v:party.slice(0,3).reduce((a,m,i)=>a+(m.lv-before[i]),0)}]:[])],title:'EXPEDIÇÃO',sub:`Enquanto você esteve fora (${tempo}), sua equipe continuou explorando!`,items:[{ic:'coin',n:coins,l:'moedas'}],mons:party.slice(0,3).map((m,i)=>({m,lv0:before[i],xp0:bxp[i]}))});
+  try{await fpadExpDobro(coins,xp);}catch(e){}
   saveGame();}
 
 /* ---------- Defesa da Muralha v2: portrait tower defense with roguelike cards (inspired by Wall Brawl) ---------- */
@@ -16263,6 +16264,81 @@ function m3Score(){try{return M3&&M3.L&&M3.L.type==='score'&&!(typeof m3hTipo===
 {const _u=matchUpdate;matchUpdate=function(){const S=M3;if(S&&S.pwLock&&S.phase==='idle')S.pwLock=0;return _u.apply(this,arguments);};}
 Object.assign(window.CVEN=window.CVEN||{},{'Limite de moedas do dia':'Daily coin limit reached','Baú! Limite de moedas do dia':'Chest! Daily coin limit reached'});
 /* /ESTAT10NOV-D */
+/* FPADALL11NOV — anúncio de exercício da FPimpulse nos outros modos (Felipe 10/nov: "implementação de anúncios em todos os outros jogos").
+   Mesma pausa de 30s da Muralha (Tio Felipe, símbolo FP, contagem 1..8 com a voz), numa camada por cima do jogo.
+   Prêmio de cada modo (estudo da Estatística 10/nov): ARENA +200 de mana na onda do chefe · COMBINA +5 jogadas (resgate +15s, cerco empurra a horda) ao perder ·
+   HORDA leva todas as cartas · EXPEDIÇÃO dobra a coleta de quando você esteve fora (respeitando os limites do dia). 1 vez por partida. */
+let FPADON=null;
+function fpadDomRun(pPt,pEn){return new Promise(res=>{
+  if(FPADON){res(false);return;}const n=flags.fpadN||0,exi=n%FPAD_EX.length,ex=FPAD_EX[exi];flags.fpadN=n+1;try{saveGame();}catch(e){}
+  const A={t0:performance.now(),vz:{},exi},en=window.CVLANG==='en',L=(a,b)=>en?b:a;
+  const d=document.createElement('div');d.id='fpadDom';
+  d.style.cssText='position:fixed;inset:0;z-index:2147483000;background:rgba(12,10,34,.97);display:flex;align-items:center;justify-content:center;font-family:CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif;color:#fff;text-align:center;user-select:none;-webkit-user-select:none;touch-action:none';
+  const sh='text-shadow:0 .35vh 0 #1a1440';
+  d.innerHTML=`<div style="width:min(94vw,58vh);display:flex;flex-direction:column;align-items:center;gap:.6vh">
+   <img src="assets/fpad/simbolo.png" style="height:8vh;object-fit:contain" onerror="this.style.display='none'">
+   <div style="font-size:5.4vh;font-weight:800;color:#3fe0a0;line-height:1;${sh}">FP IMPULSE</div>
+   <div style="font-size:3vh;font-weight:800;color:#ffd23f;${sh}">${L('PAUSA DO EXERCÍCIO','EXERCISE BREAK')}</div>
+   <div style="font-size:2.4vh;color:#e8e4ff;margin-top:.6vh">${L('Faça comigo','Do with me')}</div>
+   <div style="font-size:4.6vh;font-weight:800;line-height:1;${sh}">8 ${L(ex[0],ex[1])}</div>
+   <div style="font-size:2.4vh;color:#e8e4ff">${L('no ritmo da contagem!','following the count!')}</div>
+   <div id="fpadTio" style="width:30vh;height:30vh;background-repeat:no-repeat;image-rendering:auto"></div>
+   <div id="fpadCnt" style="font-size:7vh;font-weight:800;line-height:1;min-height:7.5vh;${sh}"></div>
+   <div id="fpadBarW" style="width:80%;height:1.6vh;border-radius:1vh;background:#2c2850;overflow:hidden"><div id="fpadBar" style="height:100%;width:0;background:#ff8a1e;border-radius:1vh"></div></div>
+   <div id="fpadMsg" style="font-size:2.3vh;color:#c8c4e8">${L('Aproveite essa pausa e mexa o corpo!','Use this break to move your body!')}</div>
+   <button id="fpadBtn" style="display:none;margin-top:.8vh;border:0;border-radius:2vh;background:#2f9f4c;color:#fff;font:800 3.4vh CadBaloo,Fredoka,Arial,sans-serif;padding:1.6vh 4vh;box-shadow:0 .6vh 0 #1d6a31;${sh}"></button>
+   <button id="fpadX" style="margin-top:1vh;border:0;border-radius:2vh;background:#4a4560;color:#d8d4ee;font:700 2.1vh Fredoka,Arial,sans-serif;padding:1vh 3vh">${L('FECHAR (sem prêmio)','CLOSE (no reward)')}</button>
+   <div style="font-size:1.9vh;color:#8f8ab0;margin-top:1vh">FPimpulse · personal trainer</div></div>`;
+  for(const k of ['pointerdown','pointerup','pointermove','mousedown','mouseup','touchstart','touchend','touchmove','click','wheel'])d.addEventListener(k,e=>{e.stopPropagation();},false);
+  document.body.appendChild(d);FPADON=d;d.__A=A;
+  const $=id=>d.querySelector('#'+id),tio=$('fpadTio');let fin=false,shown=false;
+  const end=ok=>{if(fin)return;fin=true;clearInterval(iv);try{vozPara();}catch(e){}try{d.remove();}catch(e){}FPADON=null;if(ok){flags.fpadTot=(flags.fpadTot||0)+1;try{saveGame();}catch(e){}}res(!!ok);};
+  $('fpadX').onclick=()=>end(false);$('fpadBtn').onclick=()=>end(true);
+  const iv=setInterval(()=>{try{const left=Math.max(0,FPAD_S-(performance.now()-A.t0)/1000),done=left<=0,rp=fpadRep(A);
+    if(!done){if(performance.now()-A.t0>200)fpadVoz(A,'ab',FPAD_AB[A.exi]);if(rp>0)fpadVoz(A,'c'+rp,'fpad_'+rp);}else fpadVoz(A,'fim','fpad_fim');
+    const a=TIOA[done?'comemorar':'falar'];if(a){const nf=a[1],fr=Math.floor((performance.now()-A.t0)/1000*a[2])%nf;if(tio.dataset.src!==a[0]){tio.dataset.src=a[0];tio.style.backgroundImage=`url(${a[0]})`;tio.style.backgroundSize=`${nf*100}% 100%`;}tio.style.backgroundPosition=`${nf>1?fr/(nf-1)*100:0}% 0`;}
+    const c=$('fpadCnt');if(!done){c.textContent=rp>0?rp+'/8':L('PREPARA...','GET READY...');c.style.color=rp>0?'#7cf08a':'#ffd23f';c.style.fontSize=rp>0?'7vh':'4.4vh';$('fpadBar').style.width=(100*(1-left/FPAD_S))+'%';}
+    else if(!shown){shown=true;c.textContent=L('MUITO BEM!','GREAT JOB!');c.style.color='#7cf08a';c.style.fontSize='5.4vh';$('fpadBarW').style.display='none';$('fpadX').style.display='none';
+      $('fpadMsg').textContent=L('Pode pegar o seu prêmio!','Go ahead, take your reward!');const bt=$('fpadBtn');bt.textContent=L('PEGAR: ','TAKE: ')+L(pPt,pEn);bt.style.display='block';}}catch(e){console.log(e);}},100);});}
+/* botão flutuante que oferece o anúncio (Arena e Horda), na mesma posição relativa da tela do jogo */
+function fpadPill(key,txtPt,txtEn,yK,onTap){let p=document.getElementById('fpadPill');if(!key){if(p)p.remove();return;}
+  if(!p){p=document.createElement('button');p.id='fpadPill';p.style.cssText='position:fixed;z-index:2147482000;transform:translateX(-50%);border:0;border-radius:999px;background:#2f9f4c;color:#fff;font:800 2.2vh CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif;padding:1vh 2.6vh;box-shadow:0 .5vh 0 #1d6a31,0 0 2vh rgba(63,224,160,.6);text-shadow:0 .3vh 0 #1a1440;white-space:nowrap;animation:fpadPulse 1s ease-in-out infinite';
+    if(!document.getElementById('fpadPulseCss')){const s=document.createElement('style');s.id='fpadPulseCss';s.textContent='@keyframes fpadPulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.06)}}';document.head.appendChild(s);}
+    for(const k of ['pointerdown','pointerup','mousedown','mouseup','touchstart','touchend'])p.addEventListener(k,e=>e.stopPropagation(),false);document.body.appendChild(p);}
+  if(p.dataset.k!==key){p.dataset.k=key;p.textContent='📺 '+(window.CVLANG==='en'?txtEn:txtPt);p.onclick=e=>{e.stopPropagation();p.remove();onTap();};}
+  const cv=[...document.querySelectorAll('canvas')].map(c=>[c,c.getBoundingClientRect()]).filter(q=>q[1].width>50&&q[1].height>50).sort((p,q)=>q[1].width*q[1].height-p[1].width*p[1].height).map(q=>q[0])[0],r=cv?cv.getBoundingClientRect():{left:0,top:0,width:innerWidth,height:innerHeight};p.style.left=(r.left+r.width/2)+'px';p.style.top=(r.top+r.height*yK)+'px';}
+/* pausa os modos enquanto o anúncio está aberto */
+{const _u=arUpdate;arUpdate=function(){if(FPADON)return;return _u.apply(this,arguments);};}
+{const _u=matchUpdate;matchUpdate=function(){if(FPADON)return;return _u.apply(this,arguments);};}
+{const _u=svUpdate;svUpdate=function(){if(FPADON)return;return _u.apply(this,arguments);};}
+setInterval(()=>{try{
+  if(FPADON){fpadPill(null);return;}
+  /* ARENA (fases solo): na onda do chefe → +200 de mana */
+  const A=typeof AR!=='undefined'?AR:null;
+  if(A&&!A.over&&!A.result&&A.stgI>=0&&!A.mp&&A.wi&&A.wi.boss&&!A.bossDone&&!A.fpadUsed&&G.mode!=='world'){
+    fpadPill('ar'+A.wave,'+200 MANA · EXERCÍCIO 30s','+200 MANA · 30s EXERCISE',.2,()=>{if(AR!==A)return;A.fpadUsed=1;fpadDomRun('+200 MANA','+200 MANA').then(ok=>{if(ok&&AR===A&&!A.over){A.mana+=200;A.ann={t:0,txt:window.CVLANG==='en'?'+200 MANA!':'+200 DE MANA!'};try{tone([523,659,784,1047],.08);}catch(e){}}});});return;}
+  /* HORDA: escolha de cartas → leva todas */
+  const S=typeof SV!=='undefined'?SV:null,cs=S&&S.cards;
+  if(S&&cs&&!(cs.chest>1)&&cs.opts&&cs.opts.length>1&&!S.fpadUsed&&!S.ask){
+    fpadPill('sv'+S.t,'TODAS AS CARTAS · EXERCÍCIO 30s','ALL CARDS · 30s EXERCISE',.78,()=>{if(SV!==S||S.cards!==cs)return;S.fpadUsed=1;fpadDomRun('TODAS AS CARTAS','ALL CARDS').then(ok=>{if(ok&&SV===S&&S.cards===cs){cs.chest=cs.opts.length;let g=0;while(SV===S&&S.cards===cs&&cs.opts.length&&g++<20)svPick(0);S.banner={t:70,text:window.CVLANG==='en'?'TOOK ALL CARDS!':'LEVOU TODAS AS CARTAS!'};}});});return;}
+  fpadPill(null);}catch(e){}},250);
+/* COMBINA: ao perder, +5 jogadas (resgate +15s, cerco empurra a horda) */
+{const _e=m3End;m3End=async function(){const S=M3;
+  if(S&&!S.won&&!S.fpadUsed&&!FPADON&&S.lv>=2){S.fpadUsed=1;const t=typeof m3hTipo==='function'?m3hTipo():null,en=window.CVLANG==='en';
+    const pr=t==='resgate'?['+15 SEGUNDOS','+15 SECONDS']:t==='cerco'?['HORDA EMPURRADA','HORDE PUSHED BACK']:['+5 JOGADAS','+5 MOVES'];
+    const j=await choose([(en?pr[1]+' · 30s EXERCISE':pr[0]+' · EXERCÍCIO 30s'),en?'NO, THANKS':'NÃO, OBRIGADO'],{cadAsk:{q:en?'So close! Do a 30s exercise break and keep playing?':'Quase! Faça 30s de exercício e continue jogando?',nf:1,cols:['#1f7a3a','#8a2f2f']},noCancel:true});
+    if(j===0&&M3===S&&await fpadDomRun(pr[0],pr[1])&&M3===S){
+      if(t==='resgate'){S.tl=(S.tl||0)+15;S.hlose=0;S.moves=999;}else if(t==='cerco'){S.press=Math.min(S.press||0,.45);S.hlose=0;S.moves=999;}else S.moves=(S.moves||0)+5;
+      S.ending=0;S.fin=0;if(S.phase!=='idle')S.phase='idle';try{m3Pop(W/2,112,en?pr[1]+'!':pr[0]+'!','#7cf08a',9);tone([523,659,784,1047],.08);}catch(e){}return;}}
+  return _e.apply(this,arguments);};}
+/* EXPEDIÇÃO: dobrar a coleta de quando você esteve fora */
+async function fpadExpDobro(coins,xp){if(FPADON||!(coins>0||xp>0))return;const en=window.CVLANG==='en';
+  const j=await choose([en?'DOUBLE IT · 30s EXERCISE':'DOBRAR · EXERCÍCIO 30s','OK'],{cadAsk:{q:en?'Want to double what your team collected?':'Quer dobrar o que a sua equipe coletou?',nf:1,cols:['#1f7a3a','#5a5470']},noCancel:true});
+  if(j!==0||!await fpadDomRun('DOBRO DA COLETA','DOUBLE HAUL'))return;
+  const c2=expCoinCap(coins);flags.coins=(flags.coins||0)+c2;let x2=0;
+  party.slice(0,3).forEach(m=>{const g=expCapXP(m,Math.min(mgXP(m,xp),Math.max(0,(m.lv+1)**3-1-m.xp)));m.xp+=g;x2+=g;});saveGame();
+  await say(en?`Doubled! +${c2} coins`+(x2?` and +${x2} XP.`:' (today\'s XP is already at the max).'):`Dobrou! +${c2} moedas`+(x2?` e +${x2} de experiência.`:' (a experiência de hoje já está no máximo).'));}
+/* /FPADALL11NOV */
 
 const CTU_P='blobs/',CTU_S='.webp';/* CARTATIPO08NOV (R170): as 5 cartas do deck embaixo da Arena usam a moldura do TIPO do monstrinho (arte do Buchecha, 200x283):
    nível na faixa de cima, retrato no meio, custo na faixa de baixo. */

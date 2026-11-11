@@ -14055,7 +14055,7 @@ async function msRun(m){return msArtWrap(m,()=>msRun0(m));}
 /* MSART (03/nov, Buchecha: ARTES_MISSOES_HISTORIA, 45 cenas 3:2): a ilustração da missão aparece em cima da caixa de fala enquanto o personagem conversa (pedido e final). */
 const MSARTU={"aurorion": "blobs/fef1498a5c54d760a023d509275125c0.webp", "avalanche": "blobs/bcd6ede506d77148eb8282f037927caa.webp", "bento_ronda": "blobs/7f49210f5ca943d62d4bafe3ef2e15ee.webp", "bike_juca": "blobs/b0f01c8183b462f0fddae8f0328b98aa.webp", "bike_roubada": "blobs/59da91024373a68dea2645e0e466847d.webp", "bira_pedreira": "blobs/8d222de8efc189e35a5da6717f79c215.webp", "cabrito": "blobs/0749dc1a3defaee460497554a085d2c3.webp", "cais": "blobs/977a133f437f50ca9c0d8b00c393fa03.webp", "cesta": "blobs/10324ad5e84f56e645e871cecca7e32f.webp", "corvo": "blobs/d2ac439cf1769f8d6e1b054649e9e5ff.webp", "cristais": "blobs/c22e177e54f839e6f88cbeab45c44bdc.webp", "erupcao": "blobs/c132106656c12cd3695a893df3acfe87.webp", "fossil": "blobs/c92365f1809f2f8705400f0bf3c40038.webp", "frutas": "blobs/d60cd28f17109a7115e96d8d382a698a.webp", "garra": "blobs/3ee5a570815542f47fc4e517725ca60a.webp", "garra2": "blobs/56a52042766908c99ab5089a145934b7.webp", "geleira": "blobs/f137ea4fe18bbe0dc877562f79ecfc5d.webp", "ginasio": "blobs/f32c49be47e82893cacc8a0def3417d3.webp", "horda_vila": "blobs/253ab70695f0fac18e4f2080cb18613b.webp", "juca_oficina": "blobs/caf533e23d0bb32713ed527fa95f8e34.webp", "kai_batalha": "blobs/81c8efa7238f65ba28698fb8a0e86a80.webp", "lago": "blobs/b9bfc0348ee89a6e34b005f941290415.webp", "lanternas": "blobs/e43fb2b08a4c88395d21620b7d94f273.webp", "lunaria": "blobs/f1bc2d7bf0bf9f8f02fbb893b3dbaae3.webp", "luz_lago": "blobs/50460123a1b7362c9c187cfe89051a88.webp", "miragem": "blobs/fc74daf147811321a5bac5d7b7995c73.webp", "mirante_vista": "blobs/3471a47ea1e7fb48056973d09f978eba.webp", "nevasca": "blobs/5f1459eebf16bf351ed497521bf40da8.webp", "nina_dex": "blobs/794823bb598d380acff65e41052170c9.webp", "orion_torres": "blobs/c344be2716fec79846c7988043f46d8f.webp", "pedras": "blobs/c5f91b4b30d3b8f8b6a109b4c5d66fbc.webp", "pinguim": "blobs/4ba06e4495e2d02e4dc601a71a0581ab.webp", "porto": "blobs/23b472357790d2265481673a3af9cb8e.webp", "ratonga_ferida": "blobs/4aa624e937bcb06de31fc29c427e5d71.webp", "rival1": "blobs/d756a78e4cf071214b3c9af6c6b8b37f.webp", "rival2": "blobs/8685be511733b509318f1ad4eea75fad.webp", "rival3": "blobs/5cd68199ec3b4fb67a23295619934b05.webp", "rival4": "blobs/78c19d45274bd6e6da03109022950e02.webp", "templo": "blobs/ae52365b491a1b2696ea7e3d4eee660b.webp", "teo_revanche": "blobs/2a9fa61c8cf1e259431ece3d3806fc9c.webp", "tonho_serra": "blobs/34951d358c44e48b8cd8637ba3409af8.webp", "treino1": "blobs/853749a5fe18f204e18357e2b995b7a1.webp", "vara": "blobs/2b02e9814ebf5b6b2d9bd57002a024c6.webp", "yuki_treino": "blobs/d7477504ebf7caa9e125fe4cf91fdddb.webp", "ze_torneio": "blobs/71a4aa622e763223011b7f7b8f0545cb.webp"};let MSART=null;
 async function msArtWrap(m,f){const prev=MSART;MSART=(m&&MSARTU[m.id])?m.id:prev;try{return await f();}finally{MSART=prev;}}
-(function(){let el=null,cur=null,vis=false;const cv=()=>document.querySelector('#stage canvas')||document.querySelector('canvas');
+(function(){let el=null,cur=null,vis=false;const cv=()=>document.getElementById('screen')||document.querySelector('#stage canvas')||document.querySelector('canvas');
   function tick(){try{const top=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null,show=!!(MSART&&typeof G!=='undefined'&&G.mode==='world'&&top&&top.type==='dialog');
     if(show){if(!el){el=document.createElement('img');el.id='msArt';el.alt='';el.style.cssText='position:fixed;z-index:40;pointer-events:none;aspect-ratio:3/2;object-fit:cover;border-radius:14px;border:3px solid #f6d36a;box-shadow:0 8px 22px rgba(0,0,0,.45),0 0 0 2px #6a3a12 inset;background:#2a1a0a;opacity:0;transform:translateY(8px) scale(.97);transition:opacity .25s,transform .25s';document.body.appendChild(el);}
       if(cur!==MSART){cur=MSART;el.src=MSARTU[MSART];}
@@ -16699,6 +16699,35 @@ try{setTimeout(()=>{try{if(n13On())for(const k in N13U)n13(k);}catch(e){}},2500)
   hit13([19,1310,328,306],()=>{tone([660,880],.05);A.pick({k:'cartas'});});
   hit13([352,1014,476,739],()=>{tone([660,880],.05);A.pick({k:'dupla'});});
   msg13(A);};}
+
+/* MURLARGA11NOV (Felipe no carro: 'melhora essa tela' — o menu da Muralha era uma coluna em pé com as laterais embaçadas): na tela larga (carro, PC) o menu usa a tela inteira, montado com as peças do Buchecha (Muralha_Menu_13_Claude). Celular continua igual. */
+const MURP={titulo:[103,78,602,122],fechar:[723,77,100,99],fases:[33,600,788,381],historia:[31,1057,311,242],cartas:[19,1310,328,306],dupla:[352,1014,476,739]};
+const MURU={titulo:[349,0],fechar:[1200,11],fases:[0,146],dupla:[824,146],historia:[62,583],cartas:[397,551]},MURBW=1300,MURBH=885;let MURL=0;
+function murLarga(){try{const c=document.body.classList;return !c.contains('rot')&&innerWidth>innerHeight*1.15&&Math.min(innerWidth,innerHeight)>=480;}catch(e){return false;}}
+function mpI(k){const q='mp_'+k;if(!N13U[q])N13U[q]='assets/telas13/murp_'+k+'.webp';return n13(q);}
+function mpAll(){const EN=window.CVLANG==='en';let ok=!!mpI('fundo');for(const k in MURP){if(!mpI(EN?k+'_en':k))ok=false;}return ok;}
+try{setTimeout(()=>{try{if(murLarga())mpAll();}catch(e){}},3000);}catch(e){}
+{const _wh=wallHub;wallHub=async function(){if(!murLarga())return _wh.apply(this,arguments);mpAll();const ps=portraitScreen,al=arLobbyShow;arLobbyShow=async function(k){MURL=(k==='wall')?1:0;try{return await al.apply(this,arguments);}finally{MURL=0;}};
+  portraitScreen=function(){if(MURL&&murLarga()){document.body.classList.remove('rotp');setScreen(Math.max(260,Math.min(420,Math.round(216*innerWidth/innerHeight))),216);return;}return ps.apply(this,arguments);};
+  try{return await _wh.apply(this,arguments);}finally{MURL=0;portraitScreen=ps;arLobbyShow=al;}};}
+{const _w=wallHubDraw;wallHubDraw=function(A){if(!(W>H*1.15)||!mpAll())return _w(A);A.hits=[];const EN=window.CVLANG==='en',g=k=>mpI(EN?k+'_en':k);
+  b.save();b.imageSmoothingEnabled=true;try{b.imageSmoothingQuality='high';}catch(e){}
+  const F=mpI('fundo'),fs=Math.max(W/852,H/900);b.drawImage(F,(W-852*fs)/2,0,852*fs,900*fs);
+  const gr=b.createLinearGradient(0,H*.35,0,H);gr.addColorStop(0,'rgba(40,20,5,0)');gr.addColorStop(1,'rgba(40,20,5,.28)');b.fillStyle=gr;b.fillRect(0,0,W,H);
+  const k=Math.min(W*.96/MURBW,H*.97/MURBH),x0=(W-MURBW*k)/2,y0=(H-MURBH*k)/2;
+  const put=p=>{const P=MURP[p],U=MURU[p];N13C={k,ox:x0+U[0]*k-P[0]*k,oy:y0+U[1]*k-P[1]*k};return P;};
+  for(const p of ['titulo','fases','historia','cartas','dupla','fechar']){const P=put(p),I=g(p),q=q13(P);b.drawImage(I,q.x,q.y,q.w,q.h);}
+  b.restore();
+  if(EN)try{for(const t of (N13TXT.mur||[])){const p=Object.keys(MURP).find(n=>{const P=MURP[n];return t[1]>=P[0]&&t[1]<=P[0]+P[2]&&t[2]>=P[1]&&t[2]<=P[1]+P[3];});if(!p)continue;put(p);f13(t[0],t[1],t[2],t[3],t[4],t[5],t[6]);}}catch(e){}
+  const S=stgState('wall'),wd=Math.floor(S.next/STGN),fs2=S.next%STGN,tot=S.stars.reduce((a,x)=>a+x,0);
+  put('fases');f13(EN?`World ${wd+1} · Stage ${fs2+1} · ★${tot}`:`Mundo ${wd+1} · Fase ${fs2+1} · ★${tot}`,312+449/2,820+33,33,'#ffffff',430,'#0e2a6a');
+  put('fechar');hit13(MURP.fechar,()=>A.pick({k:'x'}));
+  put('fases');hit13(MURP.fases,()=>{tone([660,880],.05);A.pick({k:'fases'});});
+  put('historia');hit13(MURP.historia,()=>{tone([660,880],.05);A.pick({k:'hist'});});
+  put('cartas');hit13(MURP.cartas,()=>{tone([660,880],.05);A.pick({k:'cartas'});});
+  put('dupla');hit13(MURP.dupla,()=>{tone([660,880],.05);A.pick({k:'dupla'});});
+  msg13(A);};}
+/* /MURLARGA11NOV */
 
 /* MINIJOGOS · Atlas 04 */
 const N13MINI={'EXPEDIÇÃO':[35,298,455,390],'MURALHA':[490,280,368,374],'TORRES':[30,687,416,311],'HORDA':[483,685,376,315],'COMBINA':[28,1005,453,385],'ARENA':[495,1023,368,353],'FECHAR':[232,1597,438,141]};

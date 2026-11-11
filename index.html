@@ -822,6 +822,7 @@ const SP={
   brasinha:{name:'Brasinha',type:'fogo',base:[42,55,40,65],catch:120,xp:60,learn:[[1,'arranhao'],[1,'brasa'],[12,'labareda']],desc:'Salamandra do vulcão com a cauda em chamas.'},
   auroril:{name:'Auroril',type:'fantasma',base:[70,76,65,82],catch:20,xp:120,learn:[[1,'raioaurora'],[1,'chifrecristal'],[1,'tentaculo'],[10,'bolasombria']]},
 };
+const LVMAX=9999;/* XPNOVO11NOV: nível sem teto (Felipe: co-op e PvP) */
 function stats(m){const [h,a,d,s]=SP[m.sp].base,l=m.lv,B2=m.bon||{},cf=m.buf&&m.buf>Date.now();return{hp:Math.floor(h*2*l/100)+l+10+(B2.hp||0),atk:Math.floor((Math.floor(a*2*l/100)+5+(B2.atk||0))*(cf?1.1:1)),def:Math.floor(d*2*l/100)+5+(B2.def||0),spd:Math.floor((Math.floor(s*2*l/100)+5+(B2.spd||0))*(cf?1.15:1))};}
 function mk(sp,lv){const moves=[];for(const [l,mv] of SP[sp].learn)if(l<=lv&&!moves.includes(mv))moves.push(mv);while(moves.length>4)moves.shift();const m={sp,lv,xp:lv**3,moves};m.hp=stats(m).hp;m.dhp=m.hp;return m;}
 const nm=m=>SP[m.sp].name;
@@ -3149,13 +3150,13 @@ async function runTurn(pid){const eid=pickEnemyMove();let order=['e'];
   if(pid){let fst=B.nextFirst;B.nextFirst=null;if(!fst)fst=Math.random()<bSpdP()?'p':'e';order=fst==='p'?['p','e']:['e','p'];}
   for(const s of order){if(me().hp<=0||foe().hp<=0)break;await useMove(s,s==='p'?pid:eid);}}
 async function gainXP(m,g){await say(`${nm(m)} ganhou ${g} pontos de experiência!`);const tgt=m.xp+g;m.dxp=m.xp;
-  while(true){const cap=m.lv<50?(m.lv+1)**3:tgt,end=Math.min(tgt,cap);if(B&&me()===m)await animXP(m,end);m.xp=end;m.dxp=end;if(!(m.lv<50&&end>=cap&&tgt>=cap))break;
+  while(true){const cap=m.lv<LVMAX?(m.lv+1)**3:tgt,end=Math.min(tgt,cap);if(B&&me()===m)await animXP(m,end);m.xp=end;m.dxp=end;if(!(m.lv<LVMAX&&end>=cap&&tgt>=cap))break;
     const s0=stats(m);m.lv++;const s1=stats(m);m.hp+=s1.hp-s0.hp;m.dhp=m.hp;if(B&&me()===m){B.lvGlow=40;tone([523,659,784,1047],.07);bPop('p','NÍVEL '+m.lv+'!',C.yellow,true);}
     await say(`${nm(m)} subiu para o nível ${m.lv}!`);
     for(const [l,id] of SP[m.sp].learn)if(l===m.lv&&!m.moves.includes(id)){if(m.moves.length>=4){const old=m.moves.shift();await say(`${nm(m)} esqueceu ${MOVES[old].name}...`);}m.moves.push(id);await say(`${nm(m)} aprendeu ${MOVES[id].name}!`);}}delete m.dxp;}
 async function foeFainted(){for(let i=0;i<16;i++){B.eOff=i*3;await wait(1);}B.hideE=true;B.eOff=0;
   await say(`${lbl('e')} desmaiou!`);const f=foe();
-  creQAdd('catch');if(me().hp>0){afAdd(me(),2);await gainXP(me(),Math.max(1,Math.floor(SP[f.sp].xp*f.lv/11*(B.tr?1.5:1)*xpScale(f.lv,me().lv)*(afH(me())>=2?1.2:1))+1));}
+  creQAdd('catch');if(me().hp>0){afAdd(me(),2);await gainXP(me(),Math.max(1,Math.floor(SP[f.sp].xp*f.lv/11*(B.tr?1.5:.5/* XPNOVO11NOV: selvagem dá metade */)*xpScale(f.lv,me().lv)*(afH(me())>=2?1.2:1))+1));}
   if(B.tr&&B.ei<B.foes.length-1){B.ei++;B.stage.e=0;B.hideE=false;await say(`${B.tr.name} mandou ${nm(foe())}!`);return false;}
   if(B.tr){B.showTr=true;B.trX=40;for(let i=0;i<5;i++){B.trX-=8;await wait(1);}await say(`Você venceu ${B.tr.name}!`);if(B.tr.after)await say(B.tr.after);}
   return true;}
@@ -3503,7 +3504,7 @@ function drawStore(u){UKWAIT=null;{const S0=u.cfg&&u.cfg.store;if(S0){const c0=f
     if(a>.5)T(S.toast.txt,W/2+(S.toast.ic?8:0),y+5.5,7,'center',C.white,tw3-(S.toast.ic?26:10),C.ink);if(k>72)S.toast=null;}}
 async function useHeal(m,amt,key,label){const mx=stats(m).hp;if(m.hp<=0){await say(`A ${label} não reanima. Leve ao Centro de Cura.`);return false;}
   if(m.hp>=mx){await say(`${nm(m)} já está com o HP cheio.`);return false;}bag[key]--;const h=Math.min(amt,mx-m.hp);m.hp+=h;return h;}
-async function useCandy(m,q){if(m.lv>=50){await say(`${nm(m)} já está no nível máximo.`);return false;}/* DOCETRV (04/nov, Felipe: gastou 2 doces e não subiu) */if(typeof TRV==='function'&&TRV(m.sp)){await say(`${nm(m)} sempre fica no mesmo nível do seu monstrinho inicial. Dê o Doce Mágico pro seu inicial que o ${nm(m)} sobe junto!`);return false;}bag.candy--;const s0=stats(m);m.lv++;m.xp=Math.max(m.xp,m.lv**3);m.hp=Math.max(0,m.hp+stats(m).hp-s0.hp);m.dhp=m.hp;
+async function useCandy(m,q){if(m.lv>=LVMAX){await say(`${nm(m)} já está no nível máximo.`);return false;}/* DOCETRV (04/nov, Felipe: gastou 2 doces e não subiu) */if(typeof TRV==='function'&&TRV(m.sp)){await say(`${nm(m)} sempre fica no mesmo nível do seu monstrinho inicial. Dê o Doce Mágico pro seu inicial que o ${nm(m)} sobe junto!`);return false;}bag.candy--;const s0=stats(m);m.lv++;m.xp=Math.max(m.xp,m.lv**3);m.hp=Math.max(0,m.hp+stats(m).hp-s0.hp);m.dhp=m.hp;
   for(const [l,id] of SP[m.sp].learn)if(l===m.lv&&!m.moves.includes(id)){if(m.moves.length>=4)m.moves.shift();m.moves.push(id);}await flash(1);if(q){bagMsg(`✓ ${nm(m)} comeu o Doce Mágico: nível ${m.lv}!`);return true;}await say(`${nm(m)} comeu o Doce Mágico e subiu pro nível ${m.lv}!`);return true;}
 function bagList(battle){const L=[];if(battle){L.push(['ball',`Cápsula  x${bag.ball||0}`]);L.push(['sball',`Super Cápsula  x${bag.sball||0}`]);}else{if(bag.ball)L.push(['ball',`Cápsula  x${bag.ball}`]);if(bag.sball)L.push(['sball',`Super Cápsula  x${bag.sball}`]);}
   L.push(['potion',`Poção  x${bag.potion||0}`]);if(bag.super)L.push(['super',`Poção Forte  x${bag.super}`]);if(bag.fruta)L.push(['fruta',`Fruta Doce  x${bag.fruta}`]);if(bag.frutao)L.push(['frutao',`Fruta Dourada  x${bag.frutao}`]);if(bag.candy)L.push(['candy',`Doce Mágico  x${bag.candy}`]);if(!battle&&bag.petisco)L.push(['petisco',`Petisco  x${bag.petisco}`]);if(!battle)for(const k of ['cafe','vitc','proteina','sucoverde','isotonico'])if(bag[k])L.push([k,`${itemName(k)}  x${bag[k]}`]);return L;}
@@ -3756,7 +3757,7 @@ async function chooseAct2(i){
     return {type:'switch',i:k};}
   return {type:'run'};}
 async function battle(foes,tr){
-  if(tr&&foes.length){const L=teamAvg();foes.forEach((m,i)=>{const want=Math.min(50,i===foes.length-1?L+1:L-1);if(m.lv<want){m.lv=want;m.xp=want**3;m.hp=stats(m).hp;for(const [l,id] of SP[m.sp].learn)if(l<=want&&!m.moves.includes(id)){if(m.moves.length>=4)m.moves.shift();m.moves.push(id);}}});}
+  if(tr&&foes.length){const L=teamAvg();foes.forEach((m,i)=>{const want=Math.max(2,i===foes.length-1?L+1:L-1);if(m.lv<want){m.lv=want;m.xp=want**3;m.hp=stats(m).hp;for(const [l,id] of SP[m.sp].learn)if(l<=want&&!m.moves.includes(id)){if(m.moves.length>=4)m.moves.shift();m.moves.push(id);}}});}
   B={foes,ei:0,pi:Math.max(0,party.findIndex(m=>m.hp>0)),tr,zone:G.map,bg:G.map==='gym'?'gym':'field',stage:{p:0,e:0},hideE:false,hideP:true,ball:null,blinkE:0,blinkP:0,eX:0,pX:0,eOff:0,pOff:0};
   foes.forEach(m=>m.dhp=m.hp);party.forEach(m=>m.dhp=m.hp);flags.seen=flags.seen||{};foes.forEach(m=>flags.seen[m.sp]=1);
   B.showMe=true;B.meX=0;B.trX=0;if(tr){B.showTr=true;B.hideE=true;}B.wx=WXOUT.has(G.map)?curWx():'sol';
@@ -4157,14 +4158,14 @@ function expBuild(){if(EXP&&EXP.ctx)EXP.ctx.dmg=new Map();EXP.mvp=null;EXP.units
 function expLog(t){EXP.log.unshift(t);EXP.log.length=Math.min(EXP.log.length,3);}
 function expPop(x,y,t,col=C.white,size=8){EXP.pops.push({x,y,t,col,size,life:50});}
 function expSpawn(){const s=EXP.stage,boss=s%5===0&&EXP.wave===EXPW-1;
-  if(boss){const sp=RGN[expRB(s).k].boss;const m=mk(sp,Math.min(52,6+Math.round(s*2.1))/* EXPTETO10NOV: jogador para no 50; inimigo parava no 60 */);const u=expUnit(m,'e',1);u.boss=true;u.max=u.hp=Math.round(u.st.hp*8*Math.pow(1.045,s));u.y=116;fApply(u,true);EXP.foes=[u];for(const i of [0,2]){const mm=expUnit(mk('pipiu',Math.max(2,1+Math.round(s*1.1))),'e',i);mm.max=mm.hp=Math.round(mm.st.hp*1.3);EXP.foes.push(fApply(mm));}expLog(`Chefe da fase: ${nm(m)}!`);return;}
+  if(boss){const sp=RGN[expRB(s).k].boss;const m=mk(sp,6+Math.round(s*2.1)/* EXPTETO10NOV: jogador para no 50; inimigo parava no 60 */);const u=expUnit(m,'e',1);u.boss=true;u.max=u.hp=Math.round(u.st.hp*8*Math.pow(1.045,s));u.y=116;fApply(u,true);EXP.foes=[u];for(const i of [0,2]){const mm=expUnit(mk('pipiu',Math.max(2,1+Math.round(s*1.1))),'e',i);mm.max=mm.hp=Math.round(mm.st.hp*1.3);EXP.foes.push(fApply(mm));}expLog(`Chefe da fase: ${nm(m)}!`);return;}
   const pool=expPool(s),gold=EXP.goldNext;EXP.goldNext=0;
-  const nF=(s<3?2:3)+(s>=6?1:0)+(s>=10?1:0)+(s>=18?1:0);EXP.foes=Array.from({length:nF},(_,i)=>{const u=expUnit(mk(rgPick(expRB(s),pool),Math.max(2,Math.min(50,3+Math.round(s*2)+Math.floor(Math.random()*2)))),'e',i);u.max=u.hp=Math.round(u.st.hp*(s<3?3.5:4)*Math.pow(1.045,s));return fApply(u);});for(const f of EXP.foes)if(!EXP.seen.has(f.sp)){EXP.seen.add(f.sp);if(EXP.seen.size>1&&FTR[f.sp])expLog(`Novo: ${SP[f.sp].name} · ${FTR[f.sp].n}`);}
+  const nF=(s<3?2:3)+(s>=6?1:0)+(s>=10?1:0)+(s>=18?1:0);EXP.foes=Array.from({length:nF},(_,i)=>{const u=expUnit(mk(rgPick(expRB(s),pool),Math.max(2,3+Math.round(s*2)+Math.floor(Math.random()*2))),'e',i);u.max=u.hp=Math.round(u.st.hp*(s<3?3.5:4)*Math.pow(1.045,s));return fApply(u);});for(const f of EXP.foes)if(!EXP.seen.has(f.sp)){EXP.seen.add(f.sp);if(EXP.seen.size>1&&FTR[f.sp])expLog(`Novo: ${SP[f.sp].name} · ${FTR[f.sp].n}`);}
   if(!gold&&s>=4&&Math.random()<.18){const u=EXP.foes[Math.floor(Math.random()*EXP.foes.length)];u.elite=1;u.max=u.hp=Math.round(u.hp*2.6);EXP.eliteBan={t:0};expLog(`Um CAMPEÃO apareceu: ${SP[u.sp].name}! Vale 4x moedas`);try{tone([330,415,494,659],.08,'sawtooth',.035);}catch(e){}}
   if(gold){for(const f of EXP.foes)f.gold=1;EXP.goldBan={t:0};expLog('CHUVA DE OURO! Inimigos dourados dão 3x moedas');try{tone([988,1319,1568,2093],.07);}catch(e){}}}
 /* limite de XP dos mini games: cada monstrinho tem um 'fôlego' de XP que enche devagar com o tempo real */
 const MGCAPS=[8,9,10,11,13,14,16,17,18,19,20,22,23,24,27,28,30,31,32,33,34,50];/* ESTAT10NOV: a história tem 21 missões principais (sem arenas); antes o 50 nunca chegava e o limite parava em 36 depois do Aurorion */
-function mgCap(){const k=MISS.filter(m=>m.main&&!m.arena&&msSt(m.id)>=2).length;return MGCAPS[Math.min(MGCAPS.length-1,k)];}
+function mgCap(){return LVMAX;/* XPNOVO11NOV: sem limite pela história; a missão só recomenda nível */const k=MISS.filter(m=>m.main&&!m.arena&&msSt(m.id)>=2).length;return MGCAPS[Math.min(MGCAPS.length-1,k)];}
 /* XP dos mini games: sempre ganha um pouco, mas o teto vem da HISTÓRIA (capítulo). Perto do teto ganha menos, acima dele quase nada. */
 /* XP VARIÁVEL (22/10): se o monstrinho está bem mais fraco que a fase, ganha mais XP (até 2,5x) */
 function stgRecLv(){try{if(STG&&STG.i!=null)return stgRuler(STG.i);if(G.mode==='exp'&&flags.expStage)return Math.round(5+(flags.expStage-1)*1.5);}catch(e){}return null;}
@@ -4186,11 +4187,11 @@ const CANDYOLD={"chap":{"wall":[0,0,1,0,2,0,1,0,1,2,1,1,1,1,1],"td":[0,0,1,0,2,0
 setInterval(()=>{try{if(typeof G==='undefined'||G.mode!=='world'||!party||!party.length||flags.candyFix)return;flags.candyFix=1;const cc=o=>{const m=JSON.stringify(o||{}).match(/candy":(\d+)/);return m?+m[1]:0;};let d=0;for(const k in CANDYOLD.chap){const C3=chapState(k),L=(CHAPTERS[k]||{}).list||[];for(const i of C3.got||[])d+=(CANDYOLD.chap[k][i]||0)-cc(L[i]&&L[i].rw);}for(const m of MISS){if(msSt(m.id)>=2)d+=(CANDYOLD.miss[m.id]||0)-cc(m.rw);}for(let i=0;i<(flags.dexRw||0)&&i<DEXRW.length;i++)d+=(CANDYOLD.dex[i]||0)-cc(DEXRW[i]);if(flags.fr&&flags.fr.brasa&&flags.fr.brasa.g&&flags.fr.brasa.g[5])d+=1;const before=bag.candy||0;if(d>0&&before>0){bag.candy=Math.max(0,before-d);flags.migMsg=(flags.migMsg?flags.migMsg+' ':'')+`Ajuste do jogo: o Doce Mágico agora é bem mais raro. Seus doces foram ajustados pra nova regra (${before} → ${bag.candy}).`;}saveGame();}catch(e){console.log(e)}},3000);
 /* Expedição é passiva: no máximo ~1/2 nível por monstrinho por dia e nunca passa do teto do capítulo -5 */
 /* EXPTETO10NOV: com a história completa (limite 50) a Expedição também leva até o 50; antes parava no 45 */
-function expLvCap(){const c=mgCap();return c>=50?50:Math.max(1,c-5);}
+function expLvCap(){return LVMAX;}
 function expCapXP(m,g){if(!(g>0))return 0;const d=qDay(),E=flags.expXD&&flags.expXD.d===d?flags.expXD:(flags.expXD={d,g:{}});const k=m.sp,cap=expLvCap();E.w=E.w||{};if(m.lv>=cap){if(!E.w[k+'c']){E.w[k+'c']=1;try{expLog(`${nm(m)} chegou no nível máximo por agora: avance na HISTÓRIA pra liberar mais`);}catch(er){}}return 0;}
   const lim=Math.round(((m.lv+1)**3-m.lv**3)*.5),used=E.g[k]||0,ok=Math.max(0,Math.min(g,lim-used));E.g[k]=used+ok;if(E.g[k]>=lim&&!E.w[k]){E.w[k]=1;try{expLog(`${nm(m)} pegou o MÁXIMO de XP de hoje aqui. Amanhã ganha de novo!`);if(EXP)EXP.xpToast={t:0,txt:`${nm(m)}: XP MÁXIMO DE HOJE`};}catch(er){}}return Math.floor(ok);}
 function expMaxSt(m){try{const d=qDay(),E=flags.expXD;const cap=expLvCap();if(m.lv>=cap)return 'NV MÁX';if(E&&E.d===d){const lim=Math.round(((m.lv+1)**3-m.lv**3)*.5);if((E.g[m.sp]||0)>=lim)return 'MÁX HOJE';}}catch(e){}return '';}
-function expXP(u,g){const m=u.m;g=expCapXP(m,mgXP(m,g));if(!g)return;m.xp+=g;while(m.lv<50&&m.xp>=(m.lv+1)**3){const s0=stats(m);m.lv++;const s1=stats(m);m.hp+=s1.hp-s0.hp;m.dhp=m.hp;
+function expXP(u,g){const m=u.m;g=expCapXP(m,mgXP(m,g));if(!g)return;m.xp+=g;while(m.lv<LVMAX&&m.xp>=(m.lv+1)**3){const s0=stats(m);m.lv++;const s1=stats(m);m.hp+=s1.hp-s0.hp;m.dhp=m.hp;
   for(const [l,id] of SP[m.sp].learn)if(l===m.lv&&!m.moves.includes(id)){if(m.moves.length>=4)m.moves.shift();m.moves.push(id);expLog(`${nm(m)} aprendeu ${MOVES[id].name}!`);}
   u.lv=m.lv;u.st=s1;{const mul=2.5*(1+relB('vida')),nm2=Math.round(s1.hp*mul);u.hp=Math.min(nm2,u.hp+(nm2-u.max)+Math.round(nm2*.2));u.max=nm2;}expPop(u.x,u.y-34,'SUBIU DE NÍVEL!',C.yellow,8);expPart(u.x,u.y,C.yellow,1,{kind:'ring',sp:0,life:30,grav:0});expPart(u.x,u.y,C.yellow,10,{sp:1.6,up:1,life:26});expLog(`${nm(m)} subiu pro nível ${m.lv}!`);}}
 const RELK={dano:{n:'Garra',ic:'am_dano',d:'de dano'},vida:{n:'Casco',ic:'am_vida',d:'de vida'},rapido:{n:'Pena',ic:'am_rapido',d:'de velocidade'},sorte:{n:'Trevo',ic:'am_sorte',d:'de moedas'}},RELV=[5,10,20,40];
@@ -4681,7 +4682,7 @@ function drawReward(u){const st=u.cfg.reward;st.t++;if(st.off&&typeof drawOffCle
   u.rects.push({x:0,y:0,w:W,h:H,i:0});}
 async function offlineGains(){if(!flags.expOn||!flags.lastSeen)return;const mins=Math.min(480,Math.floor((Date.now()-flags.lastSeen)/60000));flags.expOn=false;
   if(mins<1||!party.length)return;let st=flags.expStage||1,coins=Math.round(mins*st*.02),xp=Math.round(mins*(1+st*.6)*XPMG);flags.coins=(flags.coins||0)+(coins=expCoinCap(coins));
-  const before=party.slice(0,3).map(m=>m.lv),bxp=party.slice(0,3).map(m=>m.xp);party.slice(0,3).forEach(m=>{m.xp+=expCapXP(m,Math.min(mgXP(m,xp),Math.max(0,(m.lv+1)**3-1-m.xp)));while(m.lv<50&&m.xp>=(m.lv+1)**3){const s0=stats(m);m.lv++;m.hp+=stats(m).hp-s0.hp;m.dhp=m.hp;
+  const before=party.slice(0,3).map(m=>m.lv),bxp=party.slice(0,3).map(m=>m.xp);party.slice(0,3).forEach(m=>{m.xp+=expCapXP(m,Math.min(mgXP(m,xp),Math.max(0,(m.lv+1)**3-1-m.xp)));while(m.lv<LVMAX&&m.xp>=(m.lv+1)**3){const s0=stats(m);m.lv++;m.hp+=stats(m).hp-s0.hp;m.dhp=m.hp;
     for(const [l,id] of SP[m.sp].learn)if(l===m.lv&&!m.moves.includes(id)){if(m.moves.length>=4)m.moves.shift();m.moves.push(id);}}});
   const h=Math.floor(mins/60),mm=mins%60,tempo=h?`${h}h${String(mm).padStart(2,'0')}`:`${mm} min`;
   EXRWSEEN=1;await rewardCard({exp:1,off:1,tempo,rows:[{ic:'off_moedas',l:'MOEDAS',v:coins},{ic:'off_xp',l:'EXPERIÊNCIA',v:party.slice(0,3).reduce((a,m,i)=>a+Math.max(0,m.xp-bxp[i]),0)},...(party.slice(0,3).some((m,i)=>m.lv>before[i])?[{ic:'off_itens',l:'NÍVEIS GANHOS',v:party.slice(0,3).reduce((a,m,i)=>a+(m.lv-before[i]),0)}]:[])],title:'EXPEDIÇÃO',sub:`Enquanto você esteve fora (${tempo}), sua equipe continuou explorando!`,items:[{ic:'coin',n:coins,l:'moedas'}],mons:party.slice(0,3).map((m,i)=>({m,lv0:before[i],xp0:bxp[i]}))});
@@ -6257,8 +6258,8 @@ async function wallMode(){if(!party.length)return;try{murPreload();}catch(e){}aw
   try{__fotoAplicar('wall',WL);}catch(e){}const res=await new Promise(r=>{WL.done=r;WL.running=true;});WL.running=false;WL.banner=null;WL.bossIntro=null;if(DUOH){try{duoHostEnd(res);}catch(e){console.error(e);}}
   const waves=res==='win'?10:WL.wave-1,coins=Math.round((WL.kills*.3+(res==='win'?15:0))*WL.coinMul*(1+.1*UP('coinMul')))+Math.round((WL.bonus||0)*.3);flags.coins=(flags.coins||0)+coins;
   if(res==='win'){WL.flash=1;await say('A muralha resistiu às 10 ondas! Você salvou o Vale!');}else if(res==='lose')await say(`A muralha caiu na onda ${WL.wave}...`);
-  let xp=Math.max(5,Math.round((waves*WL.avg*5+WL.kills*3)*XPMG));try{if(STG&&STG.mode==='wall'&&!STG.miss&&STG.i!=null){const A=Math.max(1,Math.min(49,WL.avg||1)),nd=(A+1)**3-A**3,d=A-stgRuler(STG.i),ok=d<=2?1:Math.max(.1,Math.pow(.75,d-2));xp=Math.max(5,Math.round(nd*.667*(1+Math.max(0,A-10)*.02)*(waves/10)*ok));}}catch(e){}const ups=[];
-  {const _dd=DUOH?WL.defs.filter(d=>party.includes(d.m)):WL.defs,_cx=DUOH?{dmg:new Map([...(((WL.ctx&&WL.ctx.dmg)||new Map()).entries())].filter(([k])=>party.includes(k)))}:WL.ctx;mgAward(_cx,_dd.map(d=>d.m),xp,ups,_dd.map(d=>d.wl||1));}
+  let xp=Math.max(5,Math.round((waves*WL.avg*5+WL.kills*3)*XPMG));try{if(STG&&STG.mode==='wall'&&!STG.miss&&STG.i!=null){const A=Math.max(1,Math.max(1,WL.avg||1)),nd=(A+1)**3-A**3,d=A-stgRuler(STG.i),ok=d<=2?1:Math.max(.1,Math.pow(.75,d-2));xp=Math.max(5,Math.round(nd*.667*(1+Math.max(0,A-10)*.02)*(waves/10)*ok));}}catch(e){}const ups=[];
+  {const _dd=DUOH?WL.defs.filter(d=>party.includes(d.m)):WL.defs,_cx=DUOH?{dmg:new Map([...(((WL.ctx&&WL.ctx.dmg)||new Map()).entries())].filter(([k])=>party.includes(k)))}:WL.ctx;XPN=res==="win"?1:Math.min(.9,waves/10);mgAward(_cx,_dd.map(d=>d.m),xp,ups,_dd.map(d=>d.wl||1));}
   flags.ls=flags.ls||{};flags.ls.wall=res==='win'?0:(flags.ls.wall||0)+1;qEv('wall_wave',waves);qEv('mg_kill',WL.kills);const best=flags.wallBest||0;if(waves>best)flags.wallBest=waves;
   const prizes=[];
   {const wf=WL.wall/WL.wallMax,st=res==='win'?1+(wf>=.5)+(wf>=.85):waves>=5?1:0,fch=wcuEarn(waves,res==='win',st);flags.wFichas=(flags.wFichas||0)+fch;saveGame();await showResult({key:'wall',...mvpOf(WL.ctx,WL.defs.map(d=>d.m)),win:res==='win',title:res==='win'?'VITÓRIA!':'FIM DA DEFESA',stars:st,mons:WL.defs.map(d=>monKey(d.m)),lines:[['Ondas vencidas',`${waves}/10`],['Inimigos derrotados',WL.kills],['Maior combo · Elites',`x${WL.comboMax||0} · ${WL.elites||0}`],['Barris explodidos · Ladrões',`${WL.booms||0} · ${WL.thieves||0}`],['Vida da muralha',`${Math.ceil(Math.max(0,WL.wall))}/${WL.wallMax}`],['Moedas','+'+coins],['Pontos de Treino','+'+(MGLAST?MGLAST.pts:0)],['🎟 Fichas da Muralha (cartas)','+'+fch]]});}
@@ -6813,8 +6814,8 @@ function drawMToast(){if(!MTOAST.length)return;const q=MTOAST[0];q.t++;const t=q
 /* ---------- CRECHE DO VALE e OVOS (inspirado na creche e nos ovos que chocam andando dos jogos de criaturas de GBA/DS) ---------- */
 const EGG_STEPS=180,EGG_MIN=8;
 function cre(){let C3=flags.creche;if(!C3||typeof C3!=='object'||!Array.isArray(C3.mons))C3=flags.creche={mons:[],eggT:0,egg:false};if(!Array.isArray(flags.eggs))flags.eggs=[];return C3;}
-function creRate(m){if(m.lv>=50)return 0;return ((m.lv+1)**3-m.lv**3)/(1440*5);}
-function creGain(m){const now=Date.now(),mins=Math.min(1440,Math.max(0,Math.floor((now-(m.t0||now))/60000))),bm=Math.min(mins,Math.max(0,Math.floor(((m.boostEnd||0)-(m.t0||now))/60000)));let xp=Math.round((m.bank||0)+(mins+bm*2)*creRate(m)),lv=m.lv;{const cc=Math.max(5,mgCap()-5);if(m.lv>=cc)xp=0;else xp=Math.min(xp,Math.max(0,cc**3-1-m.xp));}let x2=m.xp+xp;while(lv<50&&x2>=(lv+1)**3)lv++;return{mins:Math.max(0,Math.floor((now-(m.p0||m.t0||now))/60000)),boost:Math.max(0,Math.ceil(((m.boostEnd||0)-now)/60000)),xp,lv};}
+function creRate(m){if(m.lv>=LVMAX)return 0;return ((m.lv+1)**3-m.lv**3)/(1440*5);}
+function creGain(m){const now=Date.now(),mins=Math.min(1440,Math.max(0,Math.floor((now-(m.t0||now))/60000))),bm=Math.min(mins,Math.max(0,Math.floor(((m.boostEnd||0)-(m.t0||now))/60000)));let xp=Math.round((m.bank||0)+(mins+bm*2)*creRate(m)),lv=m.lv;{const cc=Math.max(5,mgCap()-5);if(m.lv>=cc)xp=0;else xp=Math.min(xp,Math.max(0,cc**3-1-m.xp));}let x2=m.xp+xp;while(lv<LVMAX&&x2>=(lv+1)**3)lv++;return{mins:Math.max(0,Math.floor((now-(m.p0||m.t0||now))/60000)),boost:Math.max(0,Math.ceil(((m.boostEnd||0)-now)/60000)),xp,lv};}
 const CRETR=[{k:'corrida',n:'Corrida',s:'hp',ic:'energy',col:'#3fae5a'},{k:'forca',n:'Força',s:'atk',ic:'sword',col:'#e8583a'},{k:'defesa',n:'Escudo',s:'def',ic:'shield',col:'#4a6ad8'},{k:'agil',n:'Agilidade',s:'spd',ic:'bolt',col:'#e0a83a'}];
 function creTr(m){return CRETR.find(q=>q.k===m.tr)||CRETR[0];}
 function crePts(m){return Math.min(4,Math.floor(Math.max(0,(Date.now()-(m.p0||m.t0||Date.now()))/60000)/45));}
@@ -6887,7 +6888,7 @@ async function crecheMenu(){cre();const st={t:0,burst:null};
     if(j>=20&&j<22){const m=C3.mons[j-20];if(!m)continue;
       if((bag.petisco||0)<=0){await say('Vovó Lina: Você não tem PETISCOS! Na EXPEDIÇÃO, de vez em quando passa uma árvore com frutinha brilhando: toque nela rápido pra pegar.');continue;}
       if(creFedToday(m)>=3){await say(`Vovó Lina: ${SP[m.sp].name} já comeu 3 vezes hoje e está de barriga cheia! Volte amanhã.`);continue;}
-      const before=m.boostEnd||0;const ld=(m.lv+1)**3-m.lv**3,lump=m.lv>=50?0:Math.round(ld*.04);creBank(m);m.bank+=lump;m.fedN++;m.boostEnd=Math.max(Date.now(),before)+3600000;bag.petisco--;creQAdd('feed');st.burst={t:0,k:j-20,food:1};tone([784,988,1175],.07);saveGame();
+      const before=m.boostEnd||0;const ld=(m.lv+1)**3-m.lv**3,lump=m.lv>=LVMAX?0:Math.round(ld*.04);creBank(m);m.bank+=lump;m.fedN++;m.boostEnd=Math.max(Date.now(),before)+3600000;bag.petisco--;creQAdd('feed');st.burst={t:0,k:j-20,food:1};tone([784,988,1175],.07);saveGame();
       await say(`${SP[m.sp].name} comeu o Petisco! +${lump} de experiência e treino 3x mais rápido por 1 hora. (${m.fedN}/3 hoje)`);continue;}
     if(j>=30&&j<33){const Q=creQ(),q=Q.list[j-30];if(!q)continue;const D2=CREQ[q.k];
       if(q.c){await say('Essa missão já foi concluída hoje.');continue;}
@@ -6896,7 +6897,7 @@ async function crecheMenu(){cre();const st={t:0,burst:null};
       await say(`Missão concluída! +1 Petisco, +15 moedas${C3.mons.length?' e um bônus de experiência pra quem está na creche':''}!`);continue;}
     const m=C3.mons[j];
     if(m){const g=creGain(m);const ok=await choose(['Buscar','Deixar aqui'],{box:{x:W/2-60,y:H/2-20,w:120,h:44},prompt:`${SP[m.sp].name} brincou por ${g.mins} min e ganhou ${g.xp} de experiência${g.lv>m.lv?` (vai pro nível ${g.lv})`:''}. Buscar agora?`});
-      if(ok!==0)continue;C3.mons.splice(j,1);const s0=stats(m);m.xp+=g.xp;const lv0=m.lv;while(m.lv<50&&m.xp>=(m.lv+1)**3){m.lv++;for(const [l,id] of SP[m.sp].learn)if(l===m.lv&&!m.moves.includes(id)){if(m.moves.length>=4)m.moves.shift();m.moves.push(id);}}
+      if(ok!==0)continue;C3.mons.splice(j,1);const s0=stats(m);m.xp+=g.xp;const lv0=m.lv;while(m.lv<LVMAX&&m.xp>=(m.lv+1)**3){m.lv++;for(const [l,id] of SP[m.sp].learn)if(l===m.lv&&!m.moves.includes(id)){if(m.moves.length>=4)m.moves.shift();m.moves.push(id);}}
       const trP=crePts(m),trS=creTr(m).s,trG=trP?addBon(m,trS,trP*BONSTEP[trS]):0;const nm2={sp:m.sp,lv:m.lv,xp:m.xp,hp:stats(m).hp,moves:[...m.moves],sh:m.sh||undefined,af:m.af||0,bon:m.bon,buf:m.buf};nm2.dhp=nm2.hp;if(party.length<6)party.push(nm2);else storage.push(nm2);st.burst={t:0,k:j};tone([660,880,1175],.07);saveGame();
       await say(`${SP[m.sp].name} voltou ${party.includes(nm2)?'pra sua equipe':'pro Sítio do Vale'}${m.lv>lv0?` e agora está no nível ${m.lv}`:''}! Saiu da creche descansado, com o HP cheio.${trG?` Treino de ${creTr(m).n}: +${trG} de ${BONN[trS]}!`:''}`);continue;}
     const pk=await sitioMenu(null,'creche');if(!pk||pk.q==null)continue;let p;if(pk.src===1){p=storage.splice(pk.q,1)[0];}
@@ -6979,6 +6980,9 @@ function drawHatch(){const A=EGGA;A.t++;const t=A.t,cx=W/2,cy=H*.45;b.fillStyle=
 const PRIZES=['lesmagma','choquinho','corujito','assombro','florina'];
 let REVEAL=null;
 function grantMon(sp,lv){const m=mk(sp,Math.max(5,lv));flags.dex=flags.dex||{};flags.dex[sp]=1;if(party.length<6){party.push(m);return 'party';}storage.push(m);return 'storage';}
+/* XPNOVO11NOV: nível recomendado da missão (não tranca) */
+const MSREC={treino1:5,rival1:6,horda_vila:7,frutas:7,bike_roubada:8,ginasio:11,lago:13,porto:14,arena_brisa:15,rival2:15,garra:16,avalanche:18,nevasca:20,arena_pico:21,rival3:21,corvo:23,erupcao:24,geleira:26,garra2:28,lunaria:29,arena_lunaria:30,rival4:30,templo:32,aurorion:34};
+async function msRecSay(m){try{const r=MSREC[m&&m.id];if(!r)return;const a=teamAvg();if(a>=r)return;await say(window.CVLANG==='en'?`Recommended level ${r} · Your team: ${a} — train in the minigames!`:`Nível recomendado ${r} · Seu time: ${a} — treine nos minijogos!`);}catch(e){}}
 function teamAvg(){return party.length?Math.round(party.slice(0,3).reduce((a,m)=>a+m.lv,0)/Math.min(3,party.length)):8;}
 function drawReveal(){const R=REVEAL,t=R.t,cx=W/2,cy=H*.4;b.fillStyle='rgba(10,8,30,.78)';b.fillRect(0,0,W,H);
   b.save();b.translate(cx,cy);b.rotate(t/50);for(let k=0;k<12;k++){b.rotate(Math.PI/6);b.fillStyle=k%2?'rgba(255,220,120,.18)':'rgba(255,255,255,.08)';b.beginPath();b.moveTo(0,0);b.lineTo(-14,-Math.max(W,H));b.lineTo(14,-Math.max(W,H));b.closePath();b.fill();}b.restore();
@@ -7836,7 +7840,7 @@ async function towerMode(){if(!party.length)return;tdSetLayout(STG&&STG.mode==='
   const waves=res==='win'?15:TD.wave-1,coins=Math.round((TD.kills*.3+waves*.6+(res==='win'?18:0))*(1+.1*UP('coinMul')));flags.coins=(flags.coins||0)+coins;
   if(res==='win')await say('O portão resistiu às 15 ondas! O Vale está a salvo!');else if(res==='lose')await say(`Os monstrinhos selvagens passaram na onda ${TD.wave}...`);
   const xp=Math.max(5,Math.round((waves*avg*4+TD.kills*2)*XPMG)),ups=[];
-  mgAward(TD.ctx,TD.towers.map(q=>q.m),xp,ups,TD.towers.map(q=>q.lvl||1));
+  XPN=res==="win"?1:Math.min(.9,waves/15);mgAward(TD.ctx,TD.towers.map(q=>q.m),xp,ups,TD.towers.map(q=>q.lvl||1));
   flags.ls=flags.ls||{};flags.ls.td=res==='win'?0:(flags.ls.td||0)+1;qEv('td_wave',waves);qEv('mg_kill',TD.kills);const best=flags.tdBest||0;if(waves>best)flags.tdBest=waves;
   {const L0=20+3*UP('tdLives'),lf=TD.lives/L0,st=res==='win'?1+(lf>=.5)+(lf>=.9):waves>=8?1:0;await showResult({key:'td',...mvpOf(TD.ctx,TD.towers.slice(0,5).map(q=>q.m)),win:res==='win',title:res==='win'?'VITÓRIA!':'FIM DA DEFESA',stars:st,mons:TD.towers.slice(0,5).map(q=>monKey(q.m)),lines:[['Ondas vencidas',`${waves}/15`],['Inimigos derrotados',TD.kills],['Vidas do portão',`${Math.max(0,TD.lives)}/${L0}`],['Moedas','+'+coins],...(TD.towers.length?[['Pontos de Treino','+'+(MGLAST?MGLAST.pts:0)]]:[])]});}
   await mgStatsShow();if(ups.length)await say(upsMsg(ups));if(waves>best)await say(`Novo recorde: ${waves} ondas!`);
@@ -8219,7 +8223,7 @@ async function survMode(){if(!party.length)return;let lead=party[0];if(party.len
   try{__fotoAplicar('surv',SV);}catch(e){}let res=await new Promise(r=>{SV.done=r;});if(res!=='win'&&SV.obj&&SV.obj.done)res='win';
   const secs=Math.floor(SV.time/60),EX=SV.extra,eK=Math.min(400,EX?EX.k0+.25*Math.min(150,SV.kills-EX.k0):SV.kills),eS=Math.min(480,EX?EX.t0/60+.25*Math.min(240,secs-EX.t0/60):secs),coins=Math.min(130,Math.round(eK*.18+eS*.07+(res==='win'?25:0)));flags.coins=(flags.coins||0)+coins;
   const team=[SV.pl.m,...SV.allies.map(a=>a.m)],xp=Math.max(5,Math.round((eS*SV.avg*.6+eK*3)*XPMG));const ups=[];
-  mgAward(SV.ctx,team,xp,ups,team.map(()=>SV.lv||1));
+  XPN=res==="win"?1:Math.min(.9,Math.max(secs/Math.max(60,SV.limit||300),SV.obj&&SV.obj.need?(SV.obj.prog||0)/SV.obj.need:0));mgAward(SV.ctx,team,xp,ups,team.map(()=>SV.lv||1));
   flags.ls=flags.ls||{};flags.ls.surv=res==='win'?0:(flags.ls.surv||0)+1;qEv('surv_end');qEv('mg_kill',SV.kills);const best=flags.survBest||0;if(secs>best)flags.survBest=secs;const mm=s2=>`${Math.floor(s2/60)}:${String(s2%60).padStart(2,'0')}`;
   const stars=res==='win'?1+(SV.pl.hp/SV.pl.max>=.4)+(SV.kills>=250):secs>=150?1:0;
   await showResult({key:'surv',...mvpOf(SV.ctx,team),win:res==='win',title:res==='win'?'SOBREVIVEU!':'FIM DA HORDA',stars,mons:team.slice(0,5).map(m=>monKey(m)),lines:[['Tempo',mm(secs)],['Inimigos derrotados',SV.kills],['Nível alcançado',SV.lv],['Moedas','+'+coins],['Pontos de Treino','+'+(MGLAST?MGLAST.pts:0)]]});
@@ -8759,7 +8763,7 @@ function matchUpdate(){const S=M3;if(!S)return;S.t++;if(S.shake>0)S.shake--;
 function m3Check(){const S=M3;if(S.ending||S.tutS)return;if(m3GoalOk()&&!S.won){S.won=true;S.ending=1;S.bonus=S.moves*60;S.score+=S.bonus;run(m3End);return;}
   if(S.moves<=0){S.ending=1;run(m3End);return;}if(!m3AnyMove()){m3Shuffle();m3Pop(W/2,112,'EMBARALHANDO!','#7fe0ff',9);S.phase='fall';for(const row of S.g)for(const q of row)q.fy=-.6-Math.random()*.6;}}
 function m3Stars(){const S=M3,g=S.goal;return !S.won?0:S.score>=g*1.8?3:S.score>=g*1.35?2:1;}
-async function m3End(){const S=M3,st=m3Stars(),P=m3St(),win=S.won;let coins=0;
+async function m3End(){const S=M3,st=m3Stars(),P=m3St(),win=S.won;let coins=0;try{const ups=[];const o=xpNovoTeam(party.slice(0,3),stgRuler(Math.max(0,(S.lv||1)-1)),win?1:Math.min(.9,(S.score||0)/Math.max(1,S.goal||1)),ups);QTOAST.push({t:0,txt:o.map(q=>`${nm(q.m)} +${q.g} XP`).join(' · '),ic:'star'});for(const u of ups)QTOAST.push({t:0,txt:u,ic:'star'});}catch(e){console.log(e)}
   if(win){coins=Math.min(150,25+Math.round(S.score/40));flags.coins=(flags.coins||0)+coins;P.stars[S.lv]=Math.max(P.stars[S.lv]||0,st);if(S.lv>=P.lv)P.lv=S.lv+1;}
   P.best[S.lv]=Math.max(P.best[S.lv]||0,S.score);saveGame();await new Promise(r=>setTimeout(r,500));
   const q=win?`Fase ${S.lv} completa! ${'⭐'.repeat(Math.max(1,st))}  ${S.score} pontos${S.bonus?` (bônus ${S.bonus} pelas jogadas que sobraram)`:''}  +${coins} moedas`:`Acabaram as jogadas! ${S.L.type==='collect'?'Faltou juntar os monstrinhos.':S.L.type==='ice'?(()=>{const n=S.ice.reduce((a,row)=>a+row.filter(v=>v).length,0);return `Ainda ${n===1?'ficou 1 pedra':'ficaram '+n+' pedras'} de gelo no tabuleiro (as que brilham em vermelho).`;})():`Você fez ${S.score} de ${S.goal} pontos.`}`;
@@ -9102,7 +9106,7 @@ function mAnswer(i){const Q=MT.q,M=mS();if(MT.fb||!Q)return;const pick=Q.opts[i]
   if(h.length>=10&&okN>=8&&M.lv<MLV.length-1){M.lv++;M.hist=[];MT.lvUp={t:0,up:true};tone([523,659,784,1047],.09);}
   else if(h.length>=6&&h.slice(-6).filter(x=>x).length<=2&&M.lv>0){M.lv--;M.hist=[];MT.lvUp={t:0,up:false};}
   saveGame();}
-function mGiveXP(m,frac){if(m.lv>=50)return;const g=mgXP(m,Math.max(1,Math.round(((m.lv+1)**3-m.lv**3)*frac)));if(!g)return;m.xp+=g;while(m.lv<50&&m.xp>=(m.lv+1)**3){const s0=stats(m);m.lv++;m.hp+=stats(m).hp-s0.hp;m.dhp=m.hp;mPop(45,90,mL(`${nm(m)} subiu pro Nv${m.lv}!`,`${nm(m)} reached Lv${m.lv}!`),'#ffd23f',8);}}
+function mGiveXP(m,frac){if(m.lv>=LVMAX)return;const g=mgXP(m,Math.max(1,Math.round(((m.lv+1)**3-m.lv**3)*frac)));if(!g)return;m.xp+=g;while(m.lv<LVMAX&&m.xp>=(m.lv+1)**3){const s0=stats(m);m.lv++;m.hp+=stats(m).hp-s0.hp;m.dhp=m.hp;mPop(45,90,mL(`${nm(m)} subiu pro Nv${m.lv}!`,`${nm(m)} reached Lv${m.lv}!`),'#ffd23f',8);}}
 function mtUpdate(){const T2=MT;if(!T2)return;T2.t++;T2.qt++;T2.foe.t++;
   for(const p of T2.pops){p.y+=p.vy;p.vy=Math.min(.1,p.vy+.05);p.life--;}T2.pops=T2.pops.filter(p=>p.life>0);
   for(const p of T2.parts){p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.life--;}T2.parts=T2.parts.filter(p=>p.life>0);
@@ -9812,13 +9816,23 @@ function drawTCard(u){UKWAIT=null;if(drawTCardArt(u)||ukWaitDraw(u))return;const
   const by=H-24;rrect(W/2-84,by,80,18,8,'#3a6ad0');T('VIRAR ⟲',W/2-44,by+4.5,7.5,'center',C.white,76,C.ink);u.rects.push({x:W/2-84,y:by,w:80,h:18,i:1});u.rects.push({x:cx,y:cy,w:cw,h:ch,i:1});backBtn(u,W/2+4,by,80,99);}
 /* ===== XP DOS MINI GAMES (18/10): cada monstrinho ganha XP pela % de dano que deu (bem menos que antes) + PONTOS DE TREINO para gastar no MENU › TREINO ===== */
 const MGDIRECT=.3;
-function mgLvUp(m,ups){const lv0=m.lv;while(m.lv<50&&m.xp>=(m.lv+1)**3){const s0=stats(m);m.lv++;m.hp+=stats(m).hp-s0.hp;m.dhp=m.hp;for(const [l,id] of SP[m.sp].learn)if(l===m.lv&&!m.moves.includes(id)){if(m.moves.length>=4)m.moves.shift();m.moves.push(id);}}if(m.lv>lv0&&ups)ups.push(`${nm(m)} foi pro nível ${m.lv}`);}
-function mgAward(ctx,mons,xp,ups,cls){const D=(ctx&&ctx.dmg)||new Map();{const ex=[...D.keys()].filter(k=>k&&k.sp&&!mons.includes(k)&&(D.get(k)||0)>0);if(ex.length)mons=mons.concat(ex);}const n=Math.max(1,mons.length),tot=mons.reduce((a,m)=>a+(D.get(m)||0),0),out=[];
+function mgLvUp(m,ups){const lv0=m.lv;while(m.lv<LVMAX&&m.xp>=(m.lv+1)**3){const s0=stats(m);m.lv++;m.hp+=stats(m).hp-s0.hp;m.dhp=m.hp;for(const [l,id] of SP[m.sp].learn)if(l===m.lv&&!m.moves.includes(id)){if(m.moves.length>=4)m.moves.shift();m.moves.push(id);}}if(m.lv>lv0&&ups)ups.push(`${nm(m)} foi pro nível ${m.lv}`);}
+/* XPNOVO11NOV (Felipe aprovou 10/nov): em todo minijogo, 5 partidas vencidas no nível da fase sobem 1 nível.
+   XP = (XP p/ subir 1 nível no nível da fase) ÷ 5 × progresso (vitória = 1). Time mais de 4 níveis acima da fase: 35%; mais de 10: 12%. */
+function xpNeed(L){L=Math.max(1,L|0);return (L+1)**3-L**3;}
+let XPN=null;
+function xpNovoG(m,R,frac){const d=m.lv-R,k=d<=4?1:d<=10?.35:.12;return Math.max(1,Math.round(xpNeed(R)/5*Math.max(0,Math.min(1,frac))*k));}
+function xpNovoTeam(mons,R,frac,ups){const out=[];for(const m of mons){if(!m)continue;const g=xpNovoG(m,R,frac);m.xp=Math.max(m.xp,m.lv**3)+g;mgLvUp(m,ups);out.push({m,g});}return out;}
+function mgAward(ctx,mons,xp,ups,cls){if(XPN!=null&&STG&&STG.i!=null&&!STG.miss){const fr=XPN;XPN=null;const D=(ctx&&ctx.dmg)||new Map();{const ex=[...D.keys()].filter(k=>k&&k.sp&&!mons.includes(k)&&(D.get(k)||0)>0);if(ex.length)mons=mons.concat(ex);}
+    const R=stgRuler(STG.i),n=Math.max(1,mons.length),tot=mons.reduce((a,m)=>a+(D.get(m)||0),0),out=[];
+    mons.forEach((m,mi)=>{const sh=tot>0?(D.get(m)||0)/tot:1/n,g=Math.max(1,Math.round(xpNovoG(m,R,fr)*(.5+.5*Math.min(2,n*sh))));m.xp=Math.max(m.xp,m.lv**3)+g;mgLvUp(m,ups);out.push({m,sh,g,d:Math.round(D.get(m)||0),cl:cls?cls[mi]:null});});
+    const pts=mgTrainPts();flags.xpPts=(flags.xpPts||0)+pts;MGLAST={out,pts};return MGLAST;}
+  XPN=null;const D=(ctx&&ctx.dmg)||new Map();{const ex=[...D.keys()].filter(k=>k&&k.sp&&!mons.includes(k)&&(D.get(k)||0)>0);if(ex.length)mons=mons.concat(ex);}const n=Math.max(1,mons.length),tot=mons.reduce((a,m)=>a+(D.get(m)||0),0),out=[];
   mons.forEach((m,mi)=>{const sh=tot>0?(D.get(m)||0)/tot:1/n,g=Math.max(1,Math.round(xp*MGDIRECT*n*sh));m.xp+=mgXP(m,g);mgLvUp(m,ups);out.push({m,sh,g,d:Math.round(D.get(m)||0),cl:cls?cls[mi]:null});});
   const pts=mgTrainPts();flags.xpPts=(flags.xpPts||0)+pts;MGLAST={out,pts};return MGLAST;}
 let MGLAST=null;
 /* PONTOS DE TREINO (22/10): sempre o suficiente pra subir 1 nível a cada 5 partidas, baseado no monstrinho mais forte da equipe */
-function mgTrainPts(){const lv=Math.min(49,Math.max(1,...party.map(m=>m.lv)));return Math.max(1,Math.ceil(((lv+1)**3-lv**3)/5));}
+function mgTrainPts(){const lv=Math.max(1,...party.map(m=>m.lv));return Math.max(1,Math.ceil(((lv+1)**3-lv**3)/5));}
 /* ESTATÍSTICA DA PARTIDA (todas as fases da Muralha, Torres e Horda): quem bateu mais, quanto e a % do dano */
 let DUOSTATS=null;/* DUOSTATS07NOV: na Muralha em dupla, embaixo da estatística vem o total de cada um */
 async function mgStatsShow(){if(!MGLAST||!MGLAST.out.length){DUOSTATS=null;return;}const st={t:0,L:MGLAST.out.slice().sort((a,c)=>c.d-a.d),pts:MGLAST.pts};if(DUOSTATS){const en=window.CVLANG==='en',f=n=>Math.round(n||0).toLocaleString(en?'en-US':'pt-BR');st.foot=`${en?'You':'Você'} ${f(DUOSTATS.me)}  ·  ${String(DUOSTATS.pn||(en?'Partner':'Parceiro')).slice(0,12)} ${f(DUOSTATS.pa)}`;DUOSTATS=null;}await choose(['x'],{mgstats:st});}
@@ -9902,7 +9916,7 @@ function drawTrain(u){UKWAIT=null;if(drawTrainArt(u)||ukWaitDraw(u))return;const
   {const pw=120,px0=W/2-pw/2;rrect(px0,26,pw,14,7,'rgba(255,255,255,.1)',false);T(`⭐ ${pts.toLocaleString('pt-BR')} pontos de treino`,W/2,28.5,6.6,'center',pts?'#bfe8ff':'#8a86a0',pw-6);}
   T('Segure o dedo no monstrinho para treinar',W/2,44,5.6,'center','#c8c4e8',W-10);
   const rh=Math.min(46,(H-100)/Math.max(1,party.length)),y0=56;
-  party.forEach((m,k)=>{const y=y0+k*rh,h=rh-4,x0=6,w=W-12,lo=m.lv**3,hi=(m.lv+1)**3,f=m.lv>=50?1:Math.max(0,Math.min(1,(m.xp-lo)/(hi-lo))),need=Math.max(0,hi-m.xp),gl=st.glow[k]||0;
+  party.forEach((m,k)=>{const y=y0+k*rh,h=rh-4,x0=6,w=W-12,lo=m.lv**3,hi=(m.lv+1)**3,f=m.lv>=LVMAX?1:Math.max(0,Math.min(1,(m.xp-lo)/(hi-lo))),need=Math.max(0,hi-m.xp),gl=st.glow[k]||0;
     const on=st.p&&st.p[1]>=y&&st.p[1]<=y+h&&st.p[0]>=x0&&st.p[0]<=x0+w;
     rpath(x0+1,y+2,w,h,8);b.fillStyle='rgba(0,0,0,.4)';b.fill();
     {const g=b.createLinearGradient(0,y,0,y+h);g.addColorStop(0,on?'#3a4a8a':'#2c2a5a');g.addColorStop(1,on?'#24306a':'#1c1a40');rpath(x0,y,w,h,8);b.fillStyle=g;b.fill();b.lineWidth=1;b.strokeStyle=gl>0?C.yellow:on?'#8fb8ff':'#4a4680';b.stroke();}
@@ -9912,9 +9926,9 @@ function drawTrain(u){UKWAIT=null;if(drawTrainArt(u)||ukWaitDraw(u))return;const
     const by=y+h-15,bh=8;rrect(bx,by,bw,bh,4,'#0e0c24',false);
     if(f>0){const g=b.createLinearGradient(bx,0,bx+bw,0);g.addColorStop(0,'#3fd1ff');g.addColorStop(1,'#7f8aff');rrect(bx,by,Math.max(bh,bw*f),bh,4,g,false);b.fillStyle='rgba(255,255,255,.35)';b.fillRect(bx+2,by+1.2,Math.max(0,bw*f-4),1.6);}
     if(gl>0){b.save();b.globalCompositeOperation='lighter';glowAt(bx+bw/2,by+bh/2,bw*.6,'255,220,120',gl/30);b.restore();rrect(bx,by,bw,bh,4,`rgba(255,240,170,${gl/40})`,false);st.glow[k]=gl-1;}
-    T(m.lv>=50?'MÁXIMO':m.lv>=mgCap()?`LIMITE Nv ${mgCap()} · avance na história`:`faltam ${need.toLocaleString('pt-BR')}`,bx+bw/2,by+.6,5.4,'center',C.white,bw-6,C.ink);
+    T(m.lv>=LVMAX?'MÁXIMO':m.lv>=mgCap()?`LIMITE Nv ${mgCap()} · avance na história`:`faltam ${need.toLocaleString('pt-BR')}`,bx+bw/2,by+.6,5.4,'center',C.white,bw-6,C.ink);
     /* segurando: entram pontos aos pouquinhos (vai acelerando) */
-    if(on&&pts>0&&m.lv<Math.min(50,mgCap())){st.hold++;const span=hi-lo,rate=Math.max(1,Math.ceil(span/110*Math.min(1,.25+st.hold/40)*(st.hold>150?2:1))),add=Math.min(rate,pts,need);if(add>0){flags.xpPts=pts-add;m.xp+=add;st.used=1;if(st.t%4===0)tone(520+f*500,.02,'sine',.02);
+    if(on&&pts>0&&m.lv<mgCap()){st.hold++;const span=hi-lo,rate=Math.max(1,Math.ceil(span/110*Math.min(1,.25+st.hold/40)*(st.hold>150?2:1))),add=Math.min(rate,pts,need);if(add>0){flags.xpPts=pts-add;m.xp+=add;st.used=1;if(st.t%4===0)tone(520+f*500,.02,'sine',.02);
       if(m.xp>=hi){const ups=[];mgLvUp(m,ups);st.glow[k]=30;st.pop.push({x:bx+bw/2,y:y+h/2,t:0,s:`NÍVEL ${m.lv}!`});tone([523,659,784,1047],.07);}}}});
   for(const p of st.pop){p.t++;T(p.s,p.x,p.y-p.t*.6,10,'center',C.yellow,W,C.ink);}st.pop=st.pop.filter(p=>p.t<40);
   if(!pts)T('Sem pontos: jogue Muralha, Torres ou Horda para ganhar!',W/2,H-44,5.8,'center','#ffb0a0',W-10);else T(`Nível máximo agora: ${mgCap()} (sobe com as missões principais)`,W/2,H-44,5.8,'center','#ffe7a0',W-10);
@@ -10653,11 +10667,11 @@ async function arenaStage(){if(!STG)return;await fadeTo(1);portraitScreen();docu
   await say(`FASE ${STG.i+1}: aguente ${AR.goal} ondas. A última tem um CHEFE!`);
   await new Promise(r=>{AR.done=r;});
   await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;saveGame();await fadeTo(0);}
-function arStgEnd(why){const A=AR;A.over=true;const win=why==='win',stars=win?Math.max(1,A.lives):0;STGRES={win,stars};A.result={stg:1,win,stars};tone(win?[523,659,784,1046]:[392,330,262],.15);}
+function arStgEnd(why){const A=AR;A.over=true;const win=why==='win',stars=win?Math.max(1,A.lives):0;try{if(STG&&STG.i!=null&&!STG.miss){const ups=[];const o=xpNovoTeam(party.slice(0,3),stgRuler(STG.i),win?1:Math.min(.9,(A.wave||0)/Math.max(1,A.goal||10)),ups);A.xpMsg=o.map(q=>`${nm(q.m)} +${q.g} XP`).join(' · ');for(const u of ups)QTOAST.push({t:0,txt:u,ic:'star'});}}catch(e){console.log(e)}STGRES={win,stars};A.result={stg:1,win,stars};tone(win?[523,659,784,1046]:[392,330,262],.15);}
 function arStgResultDraw(A){const R=A.result;b.fillStyle='rgba(10,6,30,.85)';b.fillRect(0,0,W,H);const cy=H*.32;
   T(R.win?'FASE CONCLUÍDA!':'NÃO FOI DESSA VEZ',W/2,cy,12,'center',R.win?'#7ae88a':'#ffd040',W-20,C.ink);
   if(R.win){for(let k=0;k<3;k++)star(W/2-22+k*22,cy+32,8,k<R.stars?'#ffd040':'#5a5070');}else T(`Chegou até a onda ${A.wave} de ${A.goal}`,W/2,cy+26,7.5,'center','#ffffff',W-20);
-  T('Os prêmios aparecem ao sair',W/2,cy+54,6,'center','#e0d8ff');rrect(W/2-50,cy+86,100,22,6,'#3fae5a');T('CONTINUAR',W/2,cy+92,7,'center',C.white);}
+  T('Os prêmios aparecem ao sair',W/2,cy+54,6,'center','#e0d8ff');if(A.xpMsg)T(A.xpMsg,W/2,cy+68,5.6,'center','#ffd040',W-16);rrect(W/2-50,cy+86,100,22,6,'#3fae5a');T('CONTINUAR',W/2,cy+92,7,'center',C.white);}
 /* ARENA MP (04/nov, Felipe: "cria o em dupla e o cooperativo tbm"): JUNTOS = os dois defendem ao mesmo tempo e dividem as 3 vidas;
    CONTRA = cada um no seu tabuleiro, as mesmas ondas, e a cada 8 abates você manda um monstro bônus pro outro. Quem perder as 3 vidas primeiro perde.
    Cada celular roda o próprio tabuleiro; o dono da sala comanda as ondas. Só no App (PeerJS). Mensagens: aj entrar · ah aceitar · as estado · aw onda · ac limpou · al vazou · ab bônus · ax fim */
@@ -13316,12 +13330,12 @@ function drawTrainArt(u){const st=u.cfg.train;if(!ukReady('treino'))return false
   PL.forEach((m,k)=>{const [ax,ay]=TRSLOT[k],on=ON[k];
     if(on){b.save();b.globalCompositeOperation='lighter';b.globalAlpha*=.35+Math.sin(t/4)*.1;b.fillStyle='#fff3a0';b.beginPath();b.ellipse(ax,ay,190,95,0,0,Math.PI*2);b.fill();b.restore();}
     const mk=monKey(m),sc=5.4,bob=on?-Math.abs(Math.sin(t/3))*14:Math.sin(t/14+k)*3;b.save();b.globalAlpha*=.28;b.fillStyle='#000';b.beginPath();b.ellipse(ax,ay+12,125,28,0,0,Math.PI*2);b.fill();b.restore();if(m.hp<=0){b.save();b.globalAlpha*=.5;}drawMon(mk,ax,ay+18-22*sc+bob,sc,k%2===1);if(m.hp<=0)b.restore();});
-  PL.forEach((m,k)=>{const [ax,ay]=TRSLOT[k],[lx,ly]=TRLAB[k],lo=m.lv**3,hi=(m.lv+1)**3,f=m.lv>=50?1:Math.max(0,Math.min(1,(m.xp-lo)/(hi-lo))),need=Math.max(0,hi-m.xp),gl=st.glow[k]||0,on=ON[k];
+  PL.forEach((m,k)=>{const [ax,ay]=TRSLOT[k],[lx,ly]=TRLAB[k],lo=m.lv**3,hi=(m.lv+1)**3,f=m.lv>=LVMAX?1:Math.max(0,Math.min(1,(m.xp-lo)/(hi-lo))),need=Math.max(0,hi-m.xp),gl=st.glow[k]||0,on=ON[k];
     ukD(K,'slot',lx,ly,240,70);ukBrown(nm(m),lx+120,ly+38,30,gl>0?'#c07a00':'#4a2a10','center',170);
     eqBar(K,'tr','fill',lx-80,ly+64,400,62,f);
     if(gl>0){b.save();b.globalCompositeOperation='lighter';b.globalAlpha*=gl/30;b.fillStyle='#ffe9a0';rpath(lx-86,ly+58,412,74,36);b.fill();b.restore();st.glow[k]=gl-1;}
-    ukArial2(m.lv>=50?'Nv 50 · MÁXIMO':m.lv>=mgCap()?`Nv ${m.lv} · LIMITE`:`Nv ${m.lv} · faltam ${need.toLocaleString('pt-BR')}`,lx+120,ly+96,32,'#fff',370);
-    if(on&&pts>0&&m.lv<Math.min(50,mgCap())){st.hold++;const span=hi-lo,rate=Math.max(1,Math.ceil(span/110*Math.min(1,.25+st.hold/40)*(st.hold>150?2:1))),add=Math.min(rate,pts,need);if(add>0){flags.xpPts=pts-add;m.xp+=add;st.used=1;if(st.t%4===0)tone(520+f*500,.02,'sine',.02);
+    ukArial2(m.lv>=LVMAX?'Nv 50 · MÁXIMO':m.lv>=mgCap()?`Nv ${m.lv} · LIMITE`:`Nv ${m.lv} · faltam ${need.toLocaleString('pt-BR')}`,lx+120,ly+96,32,'#fff',370);
+    if(on&&pts>0&&m.lv<mgCap()){st.hold++;const span=hi-lo,rate=Math.max(1,Math.ceil(span/110*Math.min(1,.25+st.hold/40)*(st.hold>150?2:1))),add=Math.min(rate,pts,need);if(add>0){flags.xpPts=pts-add;m.xp+=add;st.used=1;if(st.t%4===0)tone(520+f*500,.02,'sine',.02);
       if(m.xp>=hi){const ups=[];mgLvUp(m,ups);st.glow[k]=30;st.pop.push({x:ax,y:ay-120,t:0,s:`NÍVEL ${m.lv}!`});tone([523,659,784,1047],.07);}}}});
   for(const p of st.pop){p.t++;ukT(p.s,p.x,p.y-p.t*2,60,'#ffd23f','center',600,9,'#3a2008');}st.pop=st.pop.filter(p=>p.t<40);
   ukD(K,'nivel',240,1950,600,100);ukBrown(`Nível máximo: ${mgCap()}`,540,2003,40,'#4a2a10','center',480);
@@ -14050,7 +14064,7 @@ async function msArtWrap(m,f){const prev=MSART;MSART=(m&&MSARTU[m.id])?m.id:prev
 async function msRun0(m){const st=msSt(m.id);
   if(m.find&&st===1.5){if(m.nova){const ok=await window.CVNovasMissoes.start({id:m.nova,context:SAVE,gender:flags.heroGender||(flags.hero==='menina'?'menina':'menino')});if(!ok)return;}const C0=CHARS[m.npc];await say(`Você entregou pra ${C0?C0.n:'ele'}!`);await msDone(m);return;}
   if(m.find){if(st===1){await say(`📜 ${m.t}: procure o brilho em ${(VMAP[m.find.map]||{n:'algum lugar'}).n}.`);return;}for(const l of m.pre||[])await say(l);msSet(m.id,1);saveGame();await say(`📜 Missão aceita: ${m.t}! Procure o brilho no mapa.`);return;}
-  for(const l of m.pre||[])await say(l);flags.emJogo={k:'ms',id:m.id,t:Date.now()};saveGame();let ok=false;try{ok=await m.run();}finally{delete flags.emJogo;try{__fotoApagar();}catch(e){}}if(ok)await msDone(m);else if(m.fail)await say(m.fail);}
+  await msRecSay(m);for(const l of m.pre||[])await say(l);flags.emJogo={k:'ms',id:m.id,t:Date.now()};saveGame();let ok=false;try{ok=await m.run();}finally{delete flags.emJogo;try{__fotoApagar();}catch(e){}}if(ok)await msDone(m);else if(m.fail)await say(m.fail);}
 async function charTalk(n){const cid=n.cid,C0=CHARS[cid]||{n:cid,lines:['...']};
   const av=MISS.filter(m=>m.npc===cid&&m.map===G.map&&msSt(m.id)<2&&msAvail(m));if(av.length)return msRun(av.find(m=>m.id===flags.msTrack)||av[0]);
   const locked=MISS.find(m=>m.npc===cid&&m.map===G.map&&msSt(m.id)<2);if(locked&&!C0.fr){await say(C0.lines[0]);return;}
@@ -16353,7 +16367,7 @@ setTimeout(()=>{try{['cfg_fundo','cartao_opcao','botao_voltar','interruptor_liga
    do Mundo 2 em diante, na Muralha, se o seu time está mais de 5 níveis abaixo dos inimigos da fase, cada nível a menos deixa os inimigos 4% mais fortes (vida), no máximo o dobro (Felipe: 'desafiador, mas não impossível; aumento pequeno').
    Com o time no nível certo nada muda. E quando perde, o Tio Felipe aparece com dicas de como melhorar. */
 /* REGUA09NOV (Felipe 09/nov: 'cada mundo tem um limite pela história; pra passar: missões, muita Muralha ou comprar força'). Uma régua só: fase 1 = nv 2, fase 15 = nv 17, fase 30 = nv 34, fase 45 = nv 50. Mundo 1 = começo da história, Mundo 2 = resto, Mundo 3 = depois do Aurorion. */
-function stgRuler(i){return Math.min(50,Math.max(2,Math.round(2+48*(i|0)/44)));}
+function stgRuler(i){return Math.max(2,Math.round(2+48*(i|0)/44));}/* XPNOVO11NOV: régua sem teto */
 function stgFoeLv(i){return stgRuler(i);}
 function wGapK(){try{if(!(STG&&STG.mode==='wall'&&!STG.miss)||!WL||STG.i<15)return 1;const g=stgFoeLv(STG.i)+3-(WL.avg||1);return g>5?Math.min(2,Math.pow(1.04,g-5)):1;}catch(e){return 1;}}
 {const _ws=wSpawn;wSpawn=function(){const w=WL,n0=w?w.foes.length:0;const r=_ws.apply(this,arguments);try{const k=wGapK();if(k>1&&WL)for(let j=n0;j<WL.foes.length;j++){const e=WL.foes[j];if(e.gk)continue;e.gk=1;e.max=Math.round(e.max*k);e.hp=Math.round(e.hp*k);if(e.shield)e.shield=Math.round(e.shield*k);}}catch(e){}return r;};}

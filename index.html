@@ -15726,7 +15726,7 @@ function fpadCan(w){const cs=w&&w.cards;return !!(cs&&!w.duo&&!w.duoG&&!cs.dois&
 function fpadStart(w){const n=flags.fpadN||0;w.fpad={t0:performance.now(),ex:FPAD_EX[n%FPAD_EX.length],exi:n%FPAD_EX.length,cs:w.cards,ct:w.cards.t||0,vz:{}};flags.fpadN=n+1;w.fpadUsed=1;try{tone([523,659,784],.06);}catch(e){}try{saveGame();}catch(e){}}
 /* FPADVOZ10NOV: voz do Felipe (ElevenLabs "Felipe P") — abertura, contagem 1..8 no ritmo do exercício (a cada 2,4s) e "Muito bem!".
    Abertura de flexão/polichinelo: entra quando o Felipe gravar (por enquanto só o agachamento tem abertura). Só em português. */
-const FPAD_VD='assets/fpad/voz/',FPAD_AB=['fpad_abertura',null,null],FPAD_C0=11,FPAD_CS=2.4;
+const FPAD_VD='assets/fpad/voz/',FPAD_AB=['fpad_abertura','fpad_abertura_flexao','fpad_abertura_polichinelo'],FPAD_C0=11,FPAD_CS=2.4;
 function fpadVoz(A,k,f){if(A.vz[k])return;A.vz[k]=1;if(window.CVLANG==='en'||!f)return;try{vozPara();const a=vozA();a.src=FPAD_VD+f+'.mp3';a.currentTime=0;const p=a.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}}
 function fpadRep(A){const el=(performance.now()-A.t0)/1000;return el<FPAD_C0?0:Math.min(8,1+Math.floor((el-FPAD_C0)/FPAD_CS));}
 function fpadLeft(w){return Math.max(0,FPAD_S-(performance.now()-w.fpad.t0)/1000);}

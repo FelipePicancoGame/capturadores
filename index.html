@@ -10519,7 +10519,7 @@ const QCAP={};window.__QCAP=QCAP;if(!/semnitido/.test(location.hash)){const _bsQ
       if(t-t0>=2000){const fps=n*1000/(t-t0);n=0;t0=t;if(fps<45&&!(window.__SEM60)){low++;}else low=0;
         const base=Math.min(4,Math.max(3,_bsQ(W,H,GFXCAP)));if(low>=2&&S>base){QCAP[W+'x'+H+G.mode]=S-1;low=0;kt=t;try{window.__EV&&__EV('nitidez '+S+'→'+(S-1)+' ('+Math.round(fps)+' fps)');}catch(_){}const w=W,h=H;W=0;setScreen(w,h,GFXCAP);}}}catch(_){}return r;};}
 }
-const MGMODES={wall:1,td:1,surv:1,match:1,exp:1,math:1};
+const MGMODES={wall:1,td:1,surv:1,match:1,exp:1,math:1,arena:1};
 /* ARENA04NOV (04/nov, Felipe: "vamos fazer esse jogo" — modo no estilo Rush Royale dentro do Capturadores).
    Etapa 1: SOZINHO contra ondas. Tabuleiro 5x3, inimigos andam pelo caminho em volta.
    Comprar = monstrinho do deck numa casa vazia (custo sobe). Juntar 2 iguais com as mesmas estrelas = 1 de estrela a mais (tipo sorteado do deck).
@@ -12370,14 +12370,14 @@ async function gameCfg(hl){if(MGCFG)return;MGCFG=1;try{try{autoPause();}catch(e)
     break;}}finally{MGCFG=0;}}
 /* botão ⚙ dentro do minijogo: aparece no PAUSE (Muralha, Torre, Horda) e sempre nos que não têm pause */
 (function(){try{const el=document.createElement('button');el.id='mgCfg';el.setAttribute('aria-label','Ajustes');el.textContent='⚙ AJUSTES';
-  el.style.cssText='position:fixed;z-index:40;display:none;padding:8px 14px;border-radius:14px;border:2px solid #fff3c8;background:linear-gradient(#ffd23f,#e0a020);color:#3a2a10;font:700 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 0 rgba(0,0,0,.35);touch-action:none';
+  el.style.cssText='position:fixed;z-index:60;display:none;padding:8px 14px;border-radius:14px;border:2px solid #fff3c8;background:linear-gradient(#ffd23f,#e0a020);color:#3a2a10;font:700 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 0 rgba(0,0,0,.35);touch-action:none';
   el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();gameCfg().catch(()=>{});});
   (document.body||document.documentElement).appendChild(el);
-  setInterval(()=>{try{const m=G.mode,inMg=!!MGMODES[m]&&!MGCFG,pz=mgPausedNow(),always=m==='match'||m==='exp'||m==='math';let show=inMg&&(pz||(always&&!ui.length));
+  setInterval(()=>{try{const m=G.mode,inMg=!!MGMODES[m]&&!MGCFG,pz=mgPausedNow(),always=m==='match'||m==='exp'||m==='math'||m==='wall'||m==='td'||m==='surv'||m==='arena';/* AJUSTEMG12NOV (Felipe: 'o ajuste de volume não está nos minijogos'): o ⚙ fica sempre visível em todos os minijogos (antes Muralha/Torres/Horda só no pause e a Arena não tinha) */let show=inMg&&(pz||(always&&!ui.length));
       el.style.display=show?'block':'none';if(!show)return;
       if(pz){el.style.left='50%';el.style.transform='translateX(-50%)';el.style.top='';el.style.bottom='calc(14% + env(safe-area-inset-bottom))';el.style.opacity='1';el.style.fontSize='16px';}
-      else{el.style.left='calc(6px + env(safe-area-inset-left))';el.style.transform='';el.style.bottom='';el.style.top='42%';el.style.opacity='.8';el.style.fontSize='12px';el.textContent='⚙';}
-      if(pz)el.textContent='⚙ AJUSTES';}catch(e){}},250);
+      else{let L='calc(4px + env(safe-area-inset-left))',T='42%';try{const rp=document.getElementById('rpBtn');if(rp&&getComputedStyle(rp).display!=='none'){const q=rp.getBoundingClientRect();if(q.width>0){L=q.left+'px';T=(q.bottom+8)+'px';}}}catch(_){}el.style.left=L;el.style.transform='';el.style.bottom='';el.style.top=T;el.style.opacity='1';el.style.fontSize='17px';el.style.padding='0';el.style.width='34px';el.style.height='34px';el.style.borderRadius='50%';el.textContent='🔊';}
+      if(pz){el.textContent='⚙ AJUSTES';el.style.width='';el.style.height='';el.style.borderRadius='14px';el.style.padding='8px 14px';}}catch(e){}},250);
 }catch(e){}})();
 /* FPSVIGIA05NOV (05/nov, Felipe: "faz isso pra todas as partes do jogo... se o jogo ficar lento ele já avisa; se a pessoa não mexer, troca a qualidade na terceira vez").
    Vale em todo o jogo (mapa, batalha, minijogos). Lento = menos de 40 quadros/s por 8 s seguidos. Aparece um aviso no alto com o botão DIMINUIR.

@@ -5547,7 +5547,7 @@ const WCVAR={
   fury:{v:[[8,5],[10,6],[12,8],[15,10]],f:(w,v)=>{w.mDmg*=1+v[0]/100;w.mSpd*=1+v[1]/100;},d:v=>`+${v[0]}% de dano e +${v[1]}% de velocidade de ataque`},
   bulwark:{v:[25,30,40,50],f:(w,v)=>{w.wallMax+=v;w.wall=Math.min(w.wallMax,w.wall+v+15);},d:(v,w)=>`+${v} de vida máxima e conserta ${v+15} (${w.wallMax} → ${w.wallMax+v})`},
   sniper:{v:[[5,15],[6,20],[8,25],[10,30]],f:(w,v)=>{w.crit+=v[0]/100;w.critMul+=v[1]/100;},d:v=>`+${v[0]}% de crítico e +${v[1]}% de dano crítico`},
-  overcharge:{v:[[30,5],[40,8],[50,10],[60,15]],f:(w,v)=>{w.chargeMul*=1+v[0]/100;w.mDmg*=1+v[1]/100;},d:v=>`Especiais carregam ${v[0]}% mais rápido e +${v[1]}% de dano`},
+  overcharge_off:{v:[[30,5],[40,8],[50,10],[60,15]],/* SUPERCARGA11NOV (Felipe: 'carta muito forte pra ser normal'): Supercarga não tem mais versão comum/rara — sempre épica (50% e +10%) */f:(w,v)=>{w.chargeMul*=1+v[0]/100;w.mDmg*=1+v[1]/100;},d:v=>`Especiais carregam ${v[0]}% mais rápido e +${v[1]}% de dano`},
   lanche:{v:[5,8,10,15],f:(w,v)=>{w.waveHeal=(w.waveHeal||0)+v/100;},d:v=>`Ao vencer cada onda, a muralha conserta ${v}% da vida`},
   first:{v:[40,50,60,80],f:(w,v)=>{w.firstHit=(w.firstHit||0)+v/100;},d:v=>`+${v}% de dano em inimigos com a vida cheia`},
   lama:{v:[15,20,25,30],f:(w,v)=>{w.nearSlow=Math.min(.6,(w.nearSlow||0)+v/100);},d:v=>`Inimigos perto da muralha andam ${v}% mais devagar`},
@@ -6234,7 +6234,7 @@ function renderWall0(){const w=WL,t=w.t,sh=w.shake?((w.shake%4<2)?1:-1):0;
       const lv=WL.lv[cd.key||cd.id]||0;T(cd.noLv?'NA HORA':lv?`NV ${lv} → ${lv+1}`:'NOVA!',x+cw/2,y+ch-13,6.5,'center',lv?'#2f4a9e':'#c23b3b',cw-8);});
     {const EB=asImg('ui_bt_dourado'),pu=Math.sin(t/8)*.6;if(EB)nineBt(EB,22,213-pu,104,22);else{px(20,213,108,22,C.ink);px(21,214,106,20,'#f2b632');}T('ESCOLHER',74,219-pu,9.5,'center',C.white,96,C.ink);const ok=(w.rr||0)>0;(pillArt(130,214,44,20,ok?'#3f6ae0':(w.duo||w.duoG)?'#8a8aa0':'#7a3ad8')||rrect(130,214,44,20,7,ok?'#3f6ae0':(w.duo||w.duoG)?'#8a8aa0':'#7a3ad8'));T((ok||!(w.duo||w.duoG))?'TROCAR':'—',152,217.5,6.6,'center',C.white,40,C.ink);if(ok)T('grátis',152,225.5,4.8,'center','#e0ecff',40);else if(!(w.duo||w.duoG))T('5💎',152,225.5,4.8,'center','#f0e0ff',40);}
     {const left=Math.max(0,Math.ceil((1800-cs.t)/60));if(w.duo||w.duoG)T(`Toque numa carta e em ESCOLHER · sozinho em ${left}s`,90,238.5,6,'center',left<=10?'#ffb0a0':'#c8c4e8',172);else T(`sozinho em ${left}s`,74,229.2,4.4,'center',left<=10?'#ffb0a0':'#5a3a08',96);}
-    {const tg=cs.opts[cs.i]?cardTargets(cs.opts[cs.i]):[];T('NÍVEL NA MURALHA',90,251.5,6.2,'center',C.yellow,172);
+    {const tg=cs.opts[cs.i]?cardTargets(cs.opts[cs.i]):[];T('NÍVEL NA MURALHA',90,258.5,6.2,'center',C.yellow,172);
       w.defs.forEach((d,i)=>{const x=d.x,y=280,up=tg.includes(i),tc=spCol(d.sp);if(up){b.save();b.globalCompositeOperation='lighter';glowAt(x,y,20,hex2rgb(tc).join(','),.6);b.restore();}
         E(x,y+8,9,2.4,'rgba(0,0,0,.4)',0,false);drawMon(d.sp,x,y-(up?Math.abs(Math.sin(t/6))*3:0),.34);rrect(x-14,y+12,28,10,4,tc,false);
         T(up?`Nv ${d.wl}→${d.wl+1}`:`Nv ${d.wl}`,x,y+13.5,6,'center',C.white,26,C.ink);if(up)T('▲',x+12,y-14,8,'center',C.yellow,12,C.ink);});}}
@@ -15758,19 +15758,20 @@ wWallDmg=function(e,mult){const v=MC_O.wWallDmg.apply(this,arguments);const w=WL
 (function(){const B0=wcuBonus;wcuBonus=function(cd,w){try{const L=wcuLv(cd.id);if(!L||cd.mon!=null)return;const B2=WCU_B[cd.id];if(B2)B2[1](w,L*2);else w.mDmg*=1+.06*L;}catch(e){}};
   const T0=wcuBonusTxt;wcuBonusTxt=function(c){const s=T0(c);return s.replace(/(\d+(?:,\d+)?)/,m=>{const v=parseFloat(m.replace(',','.'))*2;return String(Math.round(v*10)/10).replace('.',',');});};})();
 /* desenho dos botões de cristais e da etiqueta do conjunto (por cima da tela de cartas) */
+/* BOTOESLONGE11NOV (Felipe: 'botões de gastar cristais estão muito perto, com 1 clique eu gasto' → 'só afastar um pouco dos outros botões'): a fileira de cristais/anúncio desceu 6 pontos, longe do ESCOLHER/TROCAR, e o toque não pega mais a sobra em volta */const MCBY=241;
 function mcDrawCardsUI(w,t){const cs=w.cards;if(!cs||w.duo||w.duoG)return;
   /* etiqueta do grupo em cada carta */
   const pitch=cs.opts.length>3?44:58,cw=cs.opts.length>3?41:54;
   cs.opts.forEach((cd,i)=>{if(!cd.mcTag)return;const x=4+i*pitch,n=mcCount(w,cd.mcTag)+1,nx=n<=3?3:5,col=mcTagCol(cd.mcTag),liga=n===3||n===5;
     rrect(x,55,cw,11,5,RAR[cd.r],false);rrect(x+1,56,cw-2,9,4,col,false);T(`${mcTagName(cd.mcTag)} ${Math.min(n,nx)}/${nx}${liga?' LIGA!':''}`,x+cw/2,57.2,5,'center',liga?C.yellow:C.white,cw-4,C.ink);if(liga&&(t>>3)%2)T('★',x+cw-4,52,7,'center',C.yellow,10,C.ink);});
   /* botões: +1 CARTA e LEVAR 2 (a TROCAR já existe no lugar dela) */
-  const g=gems(),y=235,bh=13;/* FPAD10NOV: 4 botões em 2 linhas (o 4º é o anúncio de exercício da FPimpulse) */const B=[['mais',['+1 CARTA',`${mcPrice('mais')}💎`],2,42,!(cs.mais||cs.opts.length>=4)],['dois',cs.dois?(cs.doisFeito?['LEVOU','✓']:['ESCOLHA','2!']):['LEVAR 2',`${mcPrice('dois')}💎`],47,42,!cs.dois],['tres',['TODAS',`${mcPrice('tres')}💎`],92,42,!cs.dois]];/* TODAS08NOV (Felipe: 'coloca a opção de pegar as 3 cartas por custo de cristais') */
+  const g=gems(),y=MCBY,bh=13;/* FPAD10NOV: 4 botões em 2 linhas (o 4º é o anúncio de exercício da FPimpulse) */const B=[['mais',['+1 CARTA',`${mcPrice('mais')}💎`],2,42,!(cs.mais||cs.opts.length>=4)],['dois',cs.dois?(cs.doisFeito?['LEVOU','✓']:['ESCOLHA','2!']):['LEVAR 2',`${mcPrice('dois')}💎`],47,42,!cs.dois],['tres',['TODAS',`${mcPrice('tres')}💎`],92,42,!cs.dois]];/* TODAS08NOV (Felipe: 'coloca a opção de pegar as 3 cartas por custo de cristais') */
   w._mcHits=[];for(const [k,txt,x,bw,on] of B){const can=on&&g>=mcPrice(k);rrect(x,y,bw,bh,5,on?(can?'#7a3ad8':'#5a5070'):'#2f9f4c',false);T(txt[0],x+bw/2,y+1.2,5.4,'center',C.white,bw-4,C.ink);T(txt[1],x+bw/2,y+6.9,5,'center','#f0e0ff',bw-4,C.ink);if(on)w._mcHits.push([k,x,y,bw,bh]);}
   {const on=typeof fpadCan==='function'&&fpadCan(w),pu=on?Math.sin(t/9)*.5:0;rrect(137-pu,y-pu,41+pu*2,bh+pu*2,5,on?'#2f9f4c':'#3d5a44',false);T(tr('TODAS'),157.5,y+1.2,5.4,'center',C.white,37,C.ink);T((w.fpadUsed||0)>=fpadMax(w)?'✓':((window.CVLANG==='en'?'📺 30s AD':'📺 ANÚNCIO')+(fpadMax(w)>1?' '+(fpadMax(w)-(w.fpadUsed||0)):'')),157.5,y+6.9,5,'center','#dcffe0',37,C.ink);}
   T(`💎 ${g}`,174,4,6.5,'right','#e8d8ff',40,C.ink);}
 /* toques: cartas com 4 opções e os botões novos */
 (function(){const P=wTap;wTap=function(x,y){const w=WL;if(w&&w.cards&&!w.duo&&!w.duoG){const cs=w.cards;
-    for(const [k,bx,by,bw,bh] of (w._mcHits||[]))if(x>=bx&&x<=bx+bw&&y>=by-2&&y<=by+bh+2){mcBuy(k);return;}
+    for(const [k,bx,by,bw,bh] of (w._mcHits||[]))if(x>=bx&&x<=bx+bw&&y>=by&&y<=by+bh){mcBuy(k);return;}
     if(y>=210&&y<=237&&x>=128&&x<=176&&!((w.rr||0)>0)){mcBuy('troca');return;}
     if(cs.opts.length>3&&y>=56&&y<=209){const i=Math.floor((x-4)/44);if(i>=0&&i<cs.opts.length)cs.i=i;return;}}
   return P.apply(this,arguments);};})();
@@ -15790,6 +15791,12 @@ function fpadStart(w){const n=flags.fpadN||0;w.fpad={t0:performance.now(),ex:FPA
    Aberturas de agachamento, flexão e polichinelo gravadas (11/nov). Só em português. */
 const FPAD_VD='assets/fpad/voz/',FPAD_AB=['fpad_abertura','fpad_abertura_flexao','fpad_abertura_polichinelo'],FPAD_C0=11,FPAD_CS=2.4;
 function fpadVoz(A,k,f){if(A.vz[k])return;A.vz[k]=1;if(window.CVLANG==='en'||!f)return;try{vozPara();const a=vozA();a.src=FPAD_VD+f+'.mp3';a.currentTime=0;const p=a.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}}
+/* TIOEXERC11NOV (Felipe: 'anúncio não está fazendo o exercício'): na contagem o Tio Felipe faz o exercício de verdade (agachamento, flexão ou polichinelo do Buchecha, 8 quadros), 1 repetição por número; antes da contagem ele fala, no fim comemora */
+const FPAD_EXS=['assets/tio/agachamento.webp','assets/tio/flexao.webp','assets/tio/polichinelo.webp'];
+function fpadTF(A,done){const el=(performance.now()-A.t0)/1000;if(done){const a=TIOA.comemorar;return {src:a[0],nf:a[1],fr:Math.floor(el*a[2])%a[1]};}
+  if(el>=FPAD_C0){const src=FPAD_EXS[A.exi||0];if(fpadImg(src))return {src,nf:8,fr:Math.floor(((el-FPAD_C0)/FPAD_CS)*8)%8};}
+  const a=TIOA.falar;return {src:a[0],nf:a[1],fr:Math.floor(el*a[2])%a[1]};}
+setTimeout(()=>{try{for(const s of FPAD_EXS)fpadImg(s);}catch(e){}},8000);
 function fpadRep(A){const el=(performance.now()-A.t0)/1000;return el<FPAD_C0?0:Math.min(8,1+Math.floor((el-FPAD_C0)/FPAD_CS));}
 function fpadLeft(w){return Math.max(0,FPAD_S-(performance.now()-w.fpad.t0)/1000);}
 function fpadDone(w){const A=w.fpad,cs=A.cs;w.fpad=null;if(w.cards!==cs)return;flags.fpadTot=(flags.fpadTot||0)+1;try{saveGame();}catch(e){}if(typeof TD!=='undefined'&&w===TD){tdTakeAll(w,cs);return;}mcTakeAll(w,cs);}
@@ -15806,7 +15813,7 @@ function fpadDraw(w,t){const A=w.fpad;if(!A)return;if(w.cards!==A.cs){w.fpad=nul
   T('8 '+ex,90,42,12,'center',C.white,172,C.ink);
   T(fpadL('no ritmo da contagem!','following the count!'),90,59,7,'center','#e8e4ff',172);
   /* Tio Felipe animado (o personal do jogo) */
-  try{const a=TIOA[done?'comemorar':'falar'],im=fpadImg(a[0]);if(im){const nf=a[1],fw=im.naturalWidth/nf,fr=Math.floor(t/ (60/a[2]))%nf,sz=118;b.save();b.imageSmoothingEnabled=true;b.drawImage(im,fr*fw,0,fw,im.naturalHeight,90-sz/2,70,sz,sz);b.restore();}}catch(e){}
+  try{const Q=fpadTF(A,done),a=[Q.src,Q.nf],im=fpadImg(a[0]);if(im){const nf=a[1],fw=im.naturalWidth/nf,fr=Q.fr,sz=118;b.save();b.imageSmoothingEnabled=true;b.drawImage(im,fr*fw,0,fw,im.naturalHeight,90-sz/2,70,sz,sz);b.restore();}}catch(e){}
   if(!done){if(rp>0){T(rp+'/8',90,192,30,'center','#7cf08a',90,C.ink);}else{T(fpadL('PREPARA...','GET READY...'),90,198,14,'center','#ffd23f',170,C.ink);}
     const p=1-left/FPAD_S;rrect(20,226,140,7,3.5,'#2c2850',false);rrect(20,226,Math.max(7,140*p),7,3.5,'#ff8a1e',false);
     T(fpadL('Aproveite essa pausa e mexa o corpo!','Use this break to move your body!'),90,238,6.6,'center','#c8c4e8',170);
@@ -15819,7 +15826,7 @@ function fpadDraw(w,t){const A=w.fpad;if(!A)return;if(w.cards!==A.cs){w.fpad=nul
     if(w.fpad){fpadDraw(w,t);return;}
     }catch(e){}};
   const P=wTap;wTap=function(x,y){const w=WL;if(w&&w.fpad){if(fpadLeft(w)<=0){if(x>=18&&x<=162&&y>=230&&y<=260)fpadDone(w);}else if(x>=53&&x<=127&&y>=258&&y<=278){w.fpad=null;try{vozPara();}catch(e){}}return;}
-    if(w&&w.cards&&!w.duo&&!w.duoG&&x>=136&&x<=179&&y>=233&&y<=250){if(fpadCan(w))fpadStart(w);return;}
+    if(w&&w.cards&&!w.duo&&!w.duoG&&x>=136&&x<=179&&y>=MCBY&&y<=MCBY+13){if(fpadCan(w))fpadStart(w);return;}
     return P.apply(this,arguments);};})();
 /* /FPAD10NOV */
 
@@ -16314,7 +16321,7 @@ function fpadDomRun(pPt,pEn){return new Promise(res=>{
   $('fpadX').onclick=()=>end(false);$('fpadBtn').onclick=()=>end(true);
   const iv=setInterval(()=>{try{const left=Math.max(0,FPAD_S-(performance.now()-A.t0)/1000),done=left<=0,rp=fpadRep(A);
     if(!done){if(performance.now()-A.t0>200)fpadVoz(A,'ab',FPAD_AB[A.exi]);if(rp>0)fpadVoz(A,'c'+rp,'fpad_'+rp);}else fpadVoz(A,'fim','fpad_fim');
-    const a=TIOA[done?'comemorar':'falar'];if(a){const nf=a[1],fr=Math.floor((performance.now()-A.t0)/1000*a[2])%nf;if(tio.dataset.src!==a[0]){tio.dataset.src=a[0];tio.style.backgroundImage=`url(${a[0]})`;tio.style.backgroundSize=`${nf*100}% 100%`;}tio.style.backgroundPosition=`${nf>1?fr/(nf-1)*100:0}% 0`;}
+    const Q=fpadTF(A,done),a=[Q.src,Q.nf];if(a){const nf=a[1],fr=Q.fr;if(tio.dataset.src!==a[0]){tio.dataset.src=a[0];tio.style.backgroundImage=`url(${a[0]})`;tio.style.backgroundSize=`${nf*100}% 100%`;}tio.style.backgroundPosition=`${nf>1?fr/(nf-1)*100:0}% 0`;}
     const c=$('fpadCnt');if(!done){c.textContent=rp>0?rp+'/8':L('PREPARA...','GET READY...');c.style.color=rp>0?'#7cf08a':'#ffd23f';c.style.fontSize=rp>0?'7vh':'4.4vh';$('fpadBar').style.width=(100*(1-left/FPAD_S))+'%';}
     else if(!shown){shown=true;c.textContent=L('MUITO BEM!','GREAT JOB!');c.style.color='#7cf08a';c.style.fontSize='5.4vh';$('fpadBarW').style.display='none';$('fpadX').style.display='none';
       $('fpadMsg').textContent=L('Pode pegar o seu prêmio!','Go ahead, take your reward!');const bt=$('fpadBtn');bt.textContent=L('PEGAR: ','TAKE: ')+L(pPt,pEn);bt.style.display='block';}}catch(e){console.log(e);}},100);});}
@@ -16337,7 +16344,7 @@ setInterval(()=>{try{
     fpadPill('ar'+A.wave,'+200 MANA · EXERCÍCIO 30s','+200 MANA · 30s EXERCISE',.2,()=>{if(AR!==A)return;A.fpadUsed=1;fpadDomRun('+200 MANA','+200 MANA').then(ok=>{if(ok&&AR===A&&!A.over){A.mana+=200;A.ann={t:0,txt:window.CVLANG==='en'?'+200 MANA!':'+200 DE MANA!'};try{tone([523,659,784,1047],.08);}catch(e){}}});});return;}
   /* HORDA: escolha de cartas → leva todas */
   const S=typeof SV!=='undefined'?SV:null,cs=S&&S.cards;
-  if(S&&cs&&!(cs.chest>1)&&cs.opts&&cs.opts.length>1&&!S.fpadUsed&&!S.ask){
+  if(S&&cs&&G.mode==='surv'&&!(cs.chest>1)&&cs.opts&&cs.opts.length>1&&!S.fpadUsed&&!S.ask){/* PILULAMUNDO11NOV (Felipe: 'botão de exercício tá na frente' no mapa): só aparece dentro da Horda */
     fpadPill('sv'+S.t,'TODAS AS CARTAS · EXERCÍCIO 30s','ALL CARDS · 30s EXERCISE',.78,()=>{if(SV!==S||S.cards!==cs)return;S.fpadUsed=1;fpadDomRun('TODAS AS CARTAS','ALL CARDS').then(ok=>{if(ok&&SV===S&&S.cards===cs){cs.chest=cs.opts.length;let g=0;while(SV===S&&S.cards===cs&&cs.opts.length&&g++<20)svPick(0);S.banner={t:70,text:window.CVLANG==='en'?'TOOK ALL CARDS!':'LEVOU TODAS AS CARTAS!'};}});});return;}
   fpadPill(null);}catch(e){}},250);
 /* COMBINA: ao perder, +5 jogadas (resgate +15s, cerco empurra a horda) */
@@ -16843,7 +16850,6 @@ try{setTimeout(()=>{try{if(murLarga())mpAll();}catch(e){}},3000);}catch(e){}
   put('dupla');hit13(MURP.dupla,()=>{tone([660,880],.05);A.pick({k:'dupla'});});
   msg13(A);};}
 /* /MURLARGA11NOV */
-
 /* MINIJOGOS · Atlas 04 */
 const N13MINI={'EXPEDIÇÃO':[35,298,455,390],'MURALHA':[490,280,368,374],'TORRES':[30,687,416,311],'HORDA':[483,685,376,315],'COMBINA':[28,1005,453,385],'ARENA':[495,1023,368,353],'FECHAR':[232,1597,438,141]};
 {const _m=drawTilesMini2;drawTilesMini2=function(u){const cf=u.cfg,L=cf.tiles;if(!L||!String(cf.title||'').startsWith('MINIGAMES'))return _m(u);if(!n13Tela('mini'))return _m(u);
@@ -16892,13 +16898,14 @@ wCatTap=function(){return false;};wCatStep=function(){};wCatDraw=function(){};
 {const _wd=wDmg;wDmg=function(d){return _wd.apply(this,arguments)*1.15;};}
 {const _wh=wHit;wHit=function(e,dm){try{if(e&&e.boss&&WL&&!WL.duo)arguments[1]=dm*1.087;}catch(_){}return _wh.apply(this,arguments);};}
 /* /SEMCATAPULTA2_08NOV */
+/* EN11NOV_REPORTS (reports do Felipe 11/nov: 'Supercarga' e 'Folhas Girando' em português no inglês) */try{Object.assign(window.CVEN,{"Folhas Girando": "Spinning Leaves", "Pedras Girando": "Spinning Rocks", "Bolhas Girando": "Spinning Bubbles", "Cristais de Gelo": "Ice Crystals", "Especiais carregam 30% mais rápido e +5% de dano": "Specials charge 30% faster and +5% damage", "Especiais carregam 40% mais rápido e +8% de dano": "Specials charge 40% faster and +8% damage", "Especiais carregam 50% mais rápido e +10% de dano": "Specials charge 50% faster and +10% damage", "Especiais carregam 60% mais rápido e +15% de dano": "Specials charge 60% faster and +15% damage", "Magias estouram em folhas e acertam em área": "Spells burst into leaves and hit an area", "Magias estouram em folhas e acertam em área (+25%)": "Spells burst into leaves and hit an area (+25%)", "Magias estouram em folhas e acertam em área (+50%)": "Spells burst into leaves and hit an area (+50%)", "Magias estouram em folhas e acertam em área (+75%)": "Spells burst into leaves and hit an area (+75%)", "Magias estouram em folhas e acertam em área (+100%)": "Spells burst into leaves and hit an area (+100%)", "Magias estouram em folhas e acertam em área (+125%)": "Spells burst into leaves and hit an area (+125%)"});}catch(e){}
+/* SEMCATAPULTA3_11NOV (Felipe: "tem carta da catapulta na muralha ainda... dá uma olhada você"): varredura — Novidades sem catapulta e a carta "Mira longa" (parecia de tiro longo) virou "Olho de Águia" */try{Object.assign(window.CVEN,{"Muralha: portão no fim da estrada com tochas; bandeiras balançando; braseiros, escudos e pedras de munição na muralha; postes, cerquinhas e placa no caminho. No máximo 4 inimigos atiradores ao mesmo tempo.": "Wall: gate at the end of the road with torches; waving flags; braziers, shields and ammo rocks on the wall; posts, little fences and a sign on the path. At most 4 shooter enemies at the same time.", "Olho de Águia": "Eagle Eye"});}catch(e){}
+
 /* CFG13_08NOV (08/nov, Buchecha: CONFIGURAÇÕES em caderno com controles integrados, base 941x1672, POSICOES.json):
    Narração / Música + volume / Sons + volume / Tremor / Tamanho dos ícones / Personagem / Salvar / Carregar / História / Tutoriais / Offline / Voltar
    + idioma (pílula ao lado do Voltar). Os 3 ajustes deslizantes ficam na própria página (sem o painel flutuante). Textos escritos pelo jogo (traduzem). */
 const CFG13U={},CFG13P='assets/cfg13/',CFG13K=['fundo_caderno','row','secao','on','off','trilho','preenchimento','cursor','character','save','load','back','atalho','music','sound','shake','profile','save_icon','load_icon','historia','tutoriais','offline'],CFG13I={};
 function cfg13(k){let i=CFG13I[k];if(!i){i=new Image();i.decoding='async';i.src=(CFG13U[k]||CFG13P+k+'.webp');CFG13I[k]=i;}return i.complete&&i.naturalWidth?i:null;}
-/* SEMCATAPULTA3_11NOV (Felipe: "tem carta da catapulta na muralha ainda... dá uma olhada você"): varredura — Novidades sem catapulta e a carta "Mira longa" (parecia de tiro longo) virou "Olho de Águia" */try{Object.assign(window.CVEN,{"Muralha: portão no fim da estrada com tochas; bandeiras balançando; braseiros, escudos e pedras de munição na muralha; postes, cerquinhas e placa no caminho. No máximo 4 inimigos atiradores ao mesmo tempo.": "Wall: gate at the end of the road with torches; waving flags; braziers, shields and ammo rocks on the wall; posts, little fences and a sign on the path. At most 4 shooter enemies at the same time.", "Olho de Águia": "Eagle Eye"});}catch(e){}
-/* EN11NOV_REPORTS (reports do Felipe 11/nov: 'Supercarga' e 'Folhas Girando' em português no inglês) */try{Object.assign(window.CVEN,{"Folhas Girando": "Spinning Leaves", "Pedras Girando": "Spinning Rocks", "Bolhas Girando": "Spinning Bubbles", "Cristais de Gelo": "Ice Crystals", "Especiais carregam 30% mais rápido e +5% de dano": "Specials charge 30% faster and +5% damage", "Especiais carregam 40% mais rápido e +8% de dano": "Specials charge 40% faster and +8% damage", "Especiais carregam 50% mais rápido e +10% de dano": "Specials charge 50% faster and +10% damage", "Especiais carregam 60% mais rápido e +15% de dano": "Specials charge 60% faster and +15% damage", "Magias estouram em folhas e acertam em área": "Spells burst into leaves and hit an area", "Magias estouram em folhas e acertam em área (+25%)": "Spells burst into leaves and hit an area (+25%)", "Magias estouram em folhas e acertam em área (+50%)": "Spells burst into leaves and hit an area (+50%)", "Magias estouram em folhas e acertam em área (+75%)": "Spells burst into leaves and hit an area (+75%)", "Magias estouram em folhas e acertam em área (+100%)": "Spells burst into leaves and hit an area (+100%)", "Magias estouram em folhas e acertam em área (+125%)": "Spells burst into leaves and hit an area (+125%)"});}catch(e){}
 
 
 try{setTimeout(()=>{try{CFG13K.forEach(cfg13);}catch(e){}},3500);}catch(e){}

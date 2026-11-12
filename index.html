@@ -15334,7 +15334,7 @@ function amgPainel(){if(!duoNoApp())return;const ini=document.getElementById('du
   L.forEach(a=>amgFala(a.tid,{k:'ping'},5000).then(r=>{const d=pn.querySelector(`[data-dot="${a.tid}"]`);if(d)d.classList.toggle('on',!!(r&&r.k==='pong'));if(r&&r.nome&&r.nome!==a.nome){a.nome=r.nome;const row=d&&d.parentNode,bb=row&&row.querySelector('.nm b');if(bb)bb.textContent=r.nome;}}));}
 async function amgConvidar(tid){const a=amgLista().find(x=>x.tid===tid),nm=(a&&a.nome)||('Nº '+tid);
   duoMsg('Chamando '+nm+'…');const r0=await amgFala(tid,{k:'ping'},5000);if(!r0||r0.k!=='pong'){duoMsg(nm+' não está com o App aberto no mapa agora. Peça pra ele abrir o jogo e tente de novo.',1);return;}
-  if(r0.livre===false){duoMsg(nm+' está no meio de outra coisa no jogo. Tente de novo daqui a pouco.',1);return;}
+  /* CONVITEOCUPADO12NOV: amigo ocupado (Arena, Muralha, menu…) recebe o convite mesmo assim — o balão aparece em qualquer tela */
   document.getElementById('duoCriar').click();let cod='';for(let i=0;i<60&&!cod;i++){await new Promise(r=>setTimeout(r,250));const t=(document.getElementById('duoCodTxt')||{}).textContent||'';if(/^[A-Z]{4}$/.test(t))cod=t;}
   if(!cod){duoMsg('A sala não abriu. Tente de novo.',1);return;}
   const r=await amgFala(tid,{k:'inv',cod},8000);if(r&&r.k==='recebi'){if(r.nome)amgAdd(tid,r.nome);duoMsg('Convite enviado pra '+((r&&r.nome)||nm)+'! Esperando aceitar…');}
@@ -15368,7 +15368,7 @@ function arAmgPainel(mode){if(!duoNoApp())return;const ini=document.getElementBy
   pn.querySelector('#arAmgLink').onclick=()=>{try{amgShare();}catch(e){}};}
 async function arAmgConvidar(mode,tid){const a=amgLista().find(x=>x.tid===tid),nm=(a&&a.nome)||('Nº '+tid);
   arAv('Chamando '+nm+'…');const r0=await amgFala(tid,{k:'ping'},5000);if(!r0||r0.k!=='pong'){arAv(nm+' não está com o App aberto no mapa agora. Peça pra ele abrir o jogo e tente de novo.',1);return;}
-  if(r0.livre===false){arAv(nm+' está no meio de outra coisa no jogo. Tente de novo daqui a pouco.',1);return;}
+  /* CONVITEOCUPADO12NOV: amigo ocupado (Arena, Muralha, menu…) recebe o convite mesmo assim — o balão aparece em qualquer tela */
   document.getElementById('arCriar').click();let cod='';for(let i=0;i<60&&!cod;i++){await new Promise(r=>setTimeout(r,250));const t=(document.getElementById('arCodTxt')||{}).textContent||'';if(/^[A-Z]{4}$/.test(t))cod=t;}
   if(!cod){arAv('A sala não abriu. Tente de novo.',1);return;}
   const r=await amgFala(tid,{k:'inv',cod,jogo:'arena-'+mode},8000);if(r&&r.k==='recebi'){if(r.nome)amgAdd(tid,r.nome);arAv('Convite enviado pra '+((r&&r.nome)||nm)+'! Esperando aceitar…');}
@@ -15392,7 +15392,7 @@ function amgJogoNome(j){const EN=window.CVLANG==='en',m=/^arena-(coop|pvp)$/.exe
   const i=document.createElement('i');i.style.cssText='position:absolute;left:12%;width:76%;top:42%;height:15%;display:flex;align-items:center;justify-content:center;text-align:center;background:#fcf0d2;border-radius:2cqw;font-style:normal;font-weight:700;font-size:3.9cqw;color:#1f5a4a;line-height:1.05';
   i.textContent=(EN?'invited you to play ':'te chamou pra jogar ')+amgJogoNome(jogo)+'!';el.appendChild(i);
   const sim=el.querySelector('#amgSim');if(!sim)return;const antes=sim.onclick;
-  sim.onclick=ev=>{try{if(G.mode!=='world'&&!DUOH&&!DUOG){el.hidden=true;el.innerHTML='';amgAdd(quem.tid,quem.nome);try{saveGame();}catch(_){}
+  sim.onclick=ev=>{try{/* CONVITEOCUPADO12NOV (Felipe: 'mando convite e a Gabi já aceitou mas não tá entrando'): no mapa com o MENU (ou outra tela) aberto, o aceite ficava esperando a tela fechar e nada acontecia. Agora qualquer tela aberta conta como ocupado: salva, recarrega e entra direto na sala */if((G.mode!=='world'||ui.some(u=>u.type!=='dialog'&&!u.say))&&!DUOH&&!DUOG){el.hidden=true;el.innerHTML='';amgAdd(quem.tid,quem.nome);try{saveGame();}catch(_){}
       const m=/^arena-(coop|pvp)$/.exec(jogo||'');let h=(location.hash||'').replace(/^#/,'').replace(/-?(dupla|arconv-(coop|pvp))-[A-Za-z]{4}/g,'');
       h=(h?h+'-':'')+(m?'arconv-'+m[1]+'-'+cod:'dupla-'+cod);location.hash=h;setTimeout(()=>location.reload(),200);return;}}catch(_){}
     return antes&&antes.call(sim,ev);};};}
@@ -15402,6 +15402,26 @@ setInterval(()=>{try{if(ARCONV_OK)return;const mm=/arconv-(coop|pvp)-([A-Za-z]{4
   if(G.mode==='title'){const u=ui[ui.length-1];if(!ARCONV_C&&u&&u.cfg&&u.cfg.title&&Array.isArray(u.opts)&&u.opts[0]==='CONTINUAR'&&hasSave()){ARCONV_C=1;ui.pop();u.res(0);}return;}
   if(G.mode==='world'&&party.length){ARCONV_OK=1;try{const h=(location.hash||'').replace(/-?arconv-(coop|pvp)-[A-Za-z]{4}/g,'');history.replaceState(null,'',location.pathname+location.search+(h&&h!=='#'?h:''));}catch(_){}ARINVP={mode:mm[1],cod:mm[2].toUpperCase()};arInvTenta();}}catch(e){}},700);
 /* /AMGCONV2 */
+/* DUOVOLTA12NOV (Felipe: 'o jogo dela fechou e fiquei sozinho, daí ela tentou entrar de novo mas não tinha a opção de voltar à partida'; Gabi: 'tá caindo no jogo em dupla, do nada sai e não volta'):
+   o celular guarda a sala da partida em dupla (Muralha: quem entrou; Arena: os dois). Se o jogo fechar no meio e for aberto de novo em até 15 min,
+   aparece no mapa o balão VOLTAR PRA PARTIDA, que entra de novo na mesma sala. Terminando a partida normalmente, a sala é esquecida. */
+function ultSalaSet(j,cod){try{if(cod&&cod!=='ROBO')localStorage.setItem('cv.ultSala',JSON.stringify({j,cod,t:Date.now()}));}catch(e){}}
+function ultSalaDel(){try{localStorage.removeItem('cv.ultSala');}catch(e){}}
+function ultSalaGet(){try{const o=JSON.parse(localStorage.getItem('cv.ultSala')||'null');if(o&&/^[A-Z]{4}$/.test(o.cod||'')&&Date.now()-o.t<15*60000)return o;}catch(e){}return null;}
+{const _g=duoGuestRun;duoGuestRun=async function(r){ultSalaSet('wall',r&&r.cod);const iv=setInterval(()=>{if(DUOG)ultSalaSet('wall',r.cod);},20000);try{return await _g.apply(this,arguments);}finally{clearInterval(iv);ultSalaDel();}};}
+{const _a=arMpRun;arMpRun=async function(mode,r){ultSalaSet('arena-'+mode,r&&r.cod);const iv=setInterval(()=>{if(AR&&AR.mp&&!AR.over)ultSalaSet('arena-'+mode,r.cod);},20000);try{return await _a.apply(this,arguments);}finally{clearInterval(iv);ultSalaDel();}};}
+let ULTSALA_VISTO=0;
+setInterval(()=>{try{if(ULTSALA_VISTO||G.mode!=='world'||!party.length||ui.length||DUOH||DUOG||(typeof AR!=='undefined'&&AR&&AR.mp)||ARINVP)return;
+  const o=ultSalaGet();if(!o)return;const inv=document.getElementById('amgInv');if(inv&&!inv.hidden)return;ULTSALA_VISTO=1;const EN=window.CVLANG==='en';
+  amgConvite({tid:0,nome:EN?'Your duo match':'Sua partida em dupla'},o.cod,o.j);const el=document.getElementById('amgInv');if(!el)return;
+  const b=el.querySelector('b');if(b)b.textContent=EN?'Your duo match':'Sua partida em dupla';
+  const i=el.querySelector('i');if(i)i.textContent=EN?'closed mid-match. Go back?':'fechou no meio. Quer voltar?';
+  const sim=el.querySelector('#amgSim'),nao=el.querySelector('#amgNao');
+  if(nao)nao.onclick=()=>{el.hidden=true;el.innerHTML='';ultSalaDel();};
+  if(sim)sim.onclick=()=>{el.hidden=true;el.innerHTML='';ultSalaDel();const m=/^arena-(coop|pvp)$/.exec(o.j||'');
+    if(m){ARINVP={mode:m[1],cod:o.cod};arInvTenta();return;}
+    try{DUO_HASHOK=0;const h=(location.hash||'').replace(/^#/,'').replace(/-?dupla-[A-Za-z]{4}/g,'');location.hash=(h?h+'-':'')+'dupla-'+o.cod;}catch(e){}};}catch(e){}},2500);
+/* /DUOVOLTA12NOV */
 
 /* DUORES (02/nov, Felipe: "colocar todas as minhas opções na barra de baixo; pra trocar é só arrastar lá pra cima; cada um controla as duas plataformas dele"):
    na Muralha em Dupla, a metade da barra que era das cartas do parceiro vira a RESERVA de quem está jogando (os outros monstrinhos da equipe dele).
@@ -15915,7 +15935,7 @@ function duoOverlay(){const w=WL;if(!w)return;const guest=!!w.duoG,G0=DUOG,n0=gu
   if(guest&&paused&&!off){texts=[];b.fillStyle='rgba(10,8,28,.78)';b.fillRect(0,0,W,H);T('PAUSADO',W/2,H*.36,14,'center',C.white,W-10,C.ink);T('Seu parceiro pausou o jogo.',W/2,H*.36+22,7.4,'center','#e0dcff',W-12,C.ink);}
   if(off||(guest&&G0&&!G0.got)){texts=[];b.fillStyle='rgba(10,8,28,.8)';b.fillRect(0,0,W,H);const cy=Math.round(H*.36);
     const t1=guest?(G0&&!G0.got?'Conectando…':'Sem sinal do dono da sala'):'Parceiro desconectou',t2=guest&&G0&&!G0.got?'Esperando a primeira imagem da partida':'Esperando voltar'+'.'.repeat(1+Math.floor(t/20)%3)+(guest?'':' (o jogo está pausado)');
-    T(t1,W/2,cy,10,'center',C.yellow,W-12,C.ink);T(t2,W/2,cy+18,7,'center',C.white,W-12,C.ink);
+    T(t1,W/2,cy,10,'center',C.yellow,W-12,C.ink);T(t2,W/2,cy+18,7,'center',C.white,W-12,C.ink);/* DUOVOLTA12NOV: quem ficou vê o código pra passar pro parceiro voltar */if(!guest&&off&&DUOH&&DUOH.cod&&!DUOH.bot)T((window.CVLANG==='en'?'To come back: WALL FOR TWO, code ':'Pra voltar: MURALHA EM DUPLA, código ')+DUOH.cod,W/2,cy+32,6.2,'center','#ffe27a',W-12,C.ink);
     if(guest&&G0){const r={x:W/2-45,y:cy+40,w:90,h:20};G0.quitR=r;rrect(r.x,r.y,r.w,r.h,8,'#c23b3b',false);T('SAIR',W/2,r.y+5.5,8.5,'center',C.white,80,C.ink);}}}
 {const _rwD=renderWall;renderWall=function(){_rwD();if(WL&&(WL.duo||WL.duoG))duoOverlay();if(WL&&WL.duo)duoHostFrame(WL);};}
 /* link direto pra teste: #dupla (depois de carregar o salvo abre a sala); #dupla-ABCD já entra na sala ABCD */
@@ -16139,6 +16159,9 @@ function lsGotLj(x,d){if(!d||x.mode==='legacy'||x.mode==='dead'||(d.id|0)<=(x.lj
     x.seq=0;x.out=[];x.uSent=0;x.ack=d.sq|0;x.rcv=new Set();x.pack=0;x.peerU=x.T;x.gotLi=1;x.solo=0;
     if(!x.fro)x.fro=new Proxy(flags,{set(){return true;},deleteProperty(){return true;},defineProperty(){return true;}});x.buf=x.buf||[];x.obuf=[];x.mode='ls';x.ljGot=(x.ljGot||0)+1;
     lsPill(null);try{portraitScreen();}catch(e){}lsSend(x,true);}catch(e){console.error('lsGotLj',e);}}
+/* ARSOLO12NOV (Felipe: 'jogo fechou de nada, diz que caiu'): o relógio antigo da Arena em dupla acabava a partida depois de 20 s sem sinal do outro,
+   mesmo com o jogo já seguindo SOZINHO (ARVOLTA11NOV) — aí quem ficou perdia a partida e quem caiu não achava mais a sala. Sozinho, não acaba mais. */
+{const _e=arMpEnd;arMpEnd=function(why){try{const x=X;if(why==='peergone'&&x&&x.mode==='ls'&&x.solo&&AR&&AR===x.my&&!AR.over){if(AR.mp)AR.mp.last=performance.now();return;}}catch(e){}return _e.apply(this,arguments);};}
 /* ganchos */
 {const _u=arUpdate;arUpdate=function(){const x=X;if(x&&AR&&AR.mp&&AR.mp.S===x.S2&&x.mode!=='legacy'&&x.mode!=='dead'){x.upd=x.upd||_u;if(x.mode==='ls')lsFrame(x);else lsPill(performance.now()-x.t0>1500?(window.CVLANG==='en'?'Syncing…':'Sincronizando…'):null);return;}return _u.apply(this,arguments);};}
 {const _r=arMpRun;arMpRun=async function(mode,r){if(/semls/.test(location.hash||'')||!r||!r.S)return _r.apply(this,arguments);const S=r.S;
@@ -16150,7 +16173,7 @@ function lsGotLj(x,d){if(!d||x.mode==='legacy'||x.mode==='dead'||(d.id|0)<=(x.lj
   S.on('lj',m=>{if(ok(m))lsGotLj(x,m.data);});x.cod=r.cod||'';x.rj=!!r.rj;
   S.on('aj',m=>{if(!ok(m))return;const d=m.data||{};if(d.m!==mode||x.mode!=='ls'||!x.my||x.my.over)return;try{S.emit('ah',{m:mode,n:x.me,rj:1});}catch(e){}});S.on('lr',m=>{if(ok(m))lsGotRs(x,m.data);});
   S.on('lx',m=>{if(ok(m)&&x.mode!=='legacy'&&x.mode!=='dead')lsLegacy(x);});S.on('lq',m=>{if(ok(m)&&x.mode==='ls'&&AR===x.my&&!AR.over)lsSolo(x,'saiu');});
-  setTimeout(()=>{if(X===x&&x.mode==='pend'&&!x.rj)lsLegacy(x);},6000);
+  /* LSESPERA12NOV (Felipe: 'não vejo animação dos monstrinhos da Gabi nem os ataques dela'): celular pela internet às vezes demora mais de 6 s pra se achar e a partida caía no jeito antigo (só fotos, sem animação nem ataques do parceiro). Espera até 14 s. */setTimeout(()=>{if(X===x&&x.mode==='pend'&&!x.rj)lsLegacy(x);},14000);
   try{return await _r.call(this,mode,Object.assign({},r,{S:x.S2}));}finally{if(X===x)X=null;lsPill(null);}};}
 /* LSTELA07NOV (R168/R169 'não está tela cheia'): cada celular usa a tela inteira dele; a partida roda numa tela virtual igual nos dois
    (JUNTOS 180x320, CONTRA 180x390) e é desenhada encaixada na tela real, com a sobra preenchida pela própria arte da Arena */

@@ -1,0 +1,108 @@
+<title>Livro dos Monstrinhos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Fredoka:wght@400;500;600&display=swap">
+<style>
+/* Layout: field guide — status panel first, then one band per evolution line, forms side by side */
+:root{
+  --bg:#f3f6ee; --card:#ffffff; --ink:#1f2a24; --muted:#5d6b62; --line:#d9e2d4;
+  --accent:#2f8f5b; --bad:#c8402f; --warn:#c78a12; --ok:#2f8f5b;
+  --display:"Lilita One","Trebuchet MS",sans-serif; --body:"Fredoka","Trebuchet MS",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a16;--card:#1b2620;--ink:#e6efe8;--muted:#9fb0a5;--line:#2e3d34;--accent:#5cc98a;--bad:#ff7a66;--warn:#f2b84a;--ok:#5cc98a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121a16;--card:#1b2620;--ink:#e6efe8;--muted:#9fb0a5;--line:#2e3d34;--accent:#5cc98a;--bad:#ff7a66;--warn:#f2b84a;--ok:#5cc98a;color-scheme:dark}
+%%TCSS%%
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;margin:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance;letter-spacing:.01em}
+h1{font-size:clamp(28px,6vw,44px);color:var(--accent)}
+header p{margin:6px 0 0;color:var(--muted);max-width:65ch}
+.stamp{font-size:13px;color:var(--muted)}
+.t{--tc:#999;display:inline-block;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--tc) 22%,transparent);color:var(--ink);border:1px solid color-mix(in srgb,var(--tc) 70%,transparent);font-style:normal;font-size:12px;font-weight:600;white-space:nowrap}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.panel h2{font-size:24px}
+.issues{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.issues li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+.sev{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:6px;color:#fff;white-space:nowrap}
+.sev.b{background:var(--bad)} .sev.w{background:var(--warn)} .sev.a{background:var(--accent)}
+.issues li div{min-width:0}
+.issues small{display:block;color:var(--muted)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;font-size:13px}
+th,td{padding:5px 7px;text-align:center;border:1px solid var(--line)}
+thead th{font-weight:500}
+td.x2{background:color-mix(in srgb,var(--ok) 25%,transparent);font-weight:600}
+td.x5{background:color-mix(in srgb,var(--bad) 18%,transparent)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:10px;z-index:5}
+.tools input{flex:1 1 200px;min-width:0;font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.chip{font:inherit;font-size:13px;cursor:pointer;padding:5px 11px;border-radius:999px;border:1px solid color-mix(in srgb,var(--tc,var(--line)) 70%,transparent);background:var(--card);color:var(--ink)}
+.chip[aria-pressed="true"]{background:color-mix(in srgb,var(--tc,var(--accent)) 35%,var(--card));font-weight:600}
+.chip:focus-visible,.tools input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.line{display:flex;flex-direction:column;gap:10px}
+.line h2{font-size:22px} .line h2 small{font-family:var(--body);font-size:13px;color:var(--muted)}
+.forms{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.mon{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;grid-template-columns:96px 1fr;gap:12px}
+.pic{width:96px;height:96px;display:grid;place-items:center;background:color-mix(in srgb,var(--line) 45%,transparent);border-radius:12px}
+.pic img{max-width:88px;max-height:88px;object-fit:contain}
+.info{min-width:0;display:flex;flex-direction:column;gap:6px}
+.nm{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.nm h3{font-size:19px}
+.evo{font-size:12px;color:var(--muted)}
+.stats{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.stats b{color:var(--ink)}
+.desc{margin:0;font-size:13px;color:var(--muted)}
+dl{margin:0;display:grid;gap:3px;font-size:13px}
+dt{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+dd{margin:0}
+.mv{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.mv .lv{display:inline-block;width:32px;color:var(--muted);font-variant-numeric:tabular-nums}
+.mv .lv::before{content:"nv "}
+.mv b{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:500}
+.flags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}
+.flag{font-size:11px;padding:2px 7px;border-radius:6px;background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad);font-weight:600}
+.id{font-size:11px;color:var(--muted);margin-left:auto}
+.empty{color:var(--muted)}
+.ok,.prop{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:5px;margin-left:4px}
+.ok{background:color-mix(in srgb,var(--ok) 20%,transparent);color:var(--ok)}
+.prop{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+@media (max-width:420px){.mon{grid-template-columns:72px 1fr}.pic{width:72px;height:72px}.pic img{max-width:66px;max-height:66px}}
+</style>
+<div class="wrap">
+<header>
+  <h1>Livro dos Monstrinhos</h1>
+  <p>Referência oficial de Capturadores do Vale: todos os monstrinhos, tipos, golpes, especiais da Muralha e poderes da Arena, lidos direto do jogo.</p>
+  <div class="stamp">Versão do App %%VER%% · conferido em %%DATA%% · %%N%% monstrinhos em %%NL%% linhas de evolução</div>
+</header>
+
+<section class="panel" aria-labelledby="p1">
+  <h2 id="p1">O que precisa de atenção</h2>
+  <p class="stamp">Os itens marcados "Automático" são conferidos sozinhos a cada versão nova. Os de arte são avaliação visual.</p>
+  <ul class="issues">%%ISSUES%%</ul>
+  <p class="stamp">%%OKLINE%%</p>
+</section>
+
+<section class="panel" aria-labelledby="p2">
+  <h2 id="p2">Tabela de tipos</h2>
+  <p class="stamp">Linha = quem ataca. Verde = dano dobrado (2×). Vermelho = metade (½).</p>
+  %%CHART%%
+</section>
+
+<div class="tools" role="search">
+  <label for="q" class="stamp">Buscar</label>
+  <input id="q" type="search" placeholder="Nome do monstrinho">
+  <button class="chip" data-f="" type="button" aria-pressed="true">Todos</button>
+  %%FILT%%
+  <button class="chip" data-f="!" type="button">Só com pendência</button>
+</div>
+
+<main class="wrap" id="lista">%%CARDS%%</main>
+<p class="empty" id="nada" hidden>Nenhum monstrinho com esse filtro.</p>
+</div>
+<script>
+(()=>{const q=document.getElementById('q'),chips=[...document.querySelectorAll('.chip')],mons=[...document.querySelectorAll('.mon')],lines=[...document.querySelectorAll('.line')],nada=document.getElementById('nada');let f='';
+function run(){const s=q.value.trim().toLowerCase();let n=0;
+ for(const m of mons){const okT=!f||(f==='!'?m.querySelector('.flag'):m.dataset.t===f);const ok=okT&&(!s||m.dataset.q.includes(s));m.hidden=!ok;if(ok)n++;}
+ for(const l of lines)l.hidden=![...l.querySelectorAll('.mon')].some(m=>!m.hidden);nada.hidden=n>0;}
+chips.forEach(c=>c.addEventListener('click',()=>{f=c.dataset.f;chips.forEach(x=>x.setAttribute('aria-pressed',x===c?'true':'false'));run();}));
+q.addEventListener('input',run);})();
+</script>

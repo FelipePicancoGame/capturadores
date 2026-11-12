@@ -6194,7 +6194,7 @@ function renderWall0(){const w=WL,t=w.t,sh=w.shake?((w.shake%4<2)?1:-1):0;
     else if(e.y>=stop&&!e.stun&&!e.root){const a=e.atk;if(a>24&&a<37){oy=-(a-24)*.4;sx=.9;sy=1.12;}else if(a>=37||e.hitAnim>0){oy=6;sx=1.22;sy=.82;}}
     if(e.fireAnim>0){e.fireAnim--;const k=e.fireAnim/12;oy-=k*4;sx*=1+.18*k;sy*=1+.18*k;}if(e.hitAnim>0)e.hitAnim--;if(e.stun>0)rot=Math.sin(t/3)*.18;if(e.hit>0){const k=e.hit/8;sx*=1+.22*k;sy*=1-.18*k;}
     const walk=0;
-    E(e.x,e.y+(e.boss?24:12*sc/.5),(e.boss?18:8*sc/.5)*grow*(1+oy*.04),2.2,'rgba(0,0,0,.35)',0,false);drawMonShadow(e.sp,e.x,e.y,sc*grow,e.flip,e.boss?.34:.28);
+    /* RATOVOA12NOV (Felipe: 'rato voando' — chefe da Muralha): a sombra comprida do chefe era projetada pra cima e longe do corpo, então ele parecia voar; no chefe a sombra fica embaixo dos pés */if(e.boss){E(e.x,e.y-1,22*sc*grow,5*sc*grow,'rgba(0,0,0,.32)',0,false);}else{E(e.x,e.y+12*sc/.5,8*sc/.5*grow*(1+oy*.04),2.2,'rgba(0,0,0,.35)',0,false);drawMonShadow(e.sp,e.x,e.y,sc*grow,e.flip,.28);}
     if(e.kind==='tank'){b.beginPath();b.ellipse(e.x,e.y,16+Math.sin(t/6),16+Math.sin(t/6),0,0,Math.PI*2);b.lineWidth=2;b.strokeStyle='rgba(242,182,50,.75)';b.stroke();}
     if(e.shield>0){b.beginPath();b.arc(e.x,e.y,15,0,Math.PI*2);b.fillStyle='rgba(120,190,255,.22)';b.fill();b.lineWidth=1.6;b.strokeStyle=`rgba(160,215,255,${.6+Math.sin(t/5)*.3})`;b.stroke();b.beginPath();b.arc(e.x-4,e.y-5,4,Math.PI*1.1,Math.PI*1.6);b.strokeStyle='rgba(255,255,255,.8)';b.stroke();}
     if(e.age<14){b.save();b.globalCompositeOperation='lighter';glowAt(e.x,e.y,18*(1-e.age/14)+6,'200,160,255',.5*(1-e.age/14));b.restore();}
@@ -17091,7 +17091,7 @@ function arEntry13(A){if(!n13Tela('are'))return false;const t=A.t;A.hits=[];
 
 /* CARTAS LOTE 08 (Brotim, Maremoto e Cordilhão: recortadas da prévia do lote 08) */try{['brotim','maremoto','cordilhao'].forEach(x=>ILUSET.add(x));}catch(e){}
 /* RATODANO08NOV (Felipe: 'Rato quando toma dano vira o rato antigo'): na Muralha a Ratonga não usa as animações antigas nem quando apanha */
-{const _dmf=drawMonFx;drawMonFx=function(sp){if(G&&G.mode==='wall'&&String(sp||'').replace('*','')==='ratonga'){const keep={};for(const k of ['ratonga','ratonga@costas','ratonga@e','ratonga@w'])if(MONANIM[k]){keep[k]=MONANIM[k];delete MONANIM[k];}try{return _dmf.apply(this,arguments);}finally{Object.assign(MONANIM,keep);}}return _dmf.apply(this,arguments);};}
+{const _dmf=drawMonFx;drawMonFx=function(sp){if(G&&G.mode==='wall'&&String(sp||'').replace('*','')==='ratonga'){const keep={};for(const k of ['ratonga','ratonga@costas','ratonga@e','ratonga@w'])if(MONANIM[k]){keep[k]=MONANIM[k];delete MONANIM[k];}try{const A2=Array.from(arguments);/* RATOVOA12NOV: o desenho parado do rato fica ~20 (×escala) mais baixo que os outros monstrinhos; sobe pra ficar no lugar dele (chefe: logo abaixo da barra de vida) */A2[2]=A2[2]-20*(A2[3]||1);return _dmf.apply(this,A2);}finally{Object.assign(MONANIM,keep);}}return _dmf.apply(this,arguments);};}
 /* SEMCATAPULTA2_08NOV (Felipe: 'tira a catapulta da muralha e refaz a dificuldade por isso'): a catapulta saiu de vez (não aparece, não atira, não avisa).
    Ela dava ~1 pedrada em área a cada 13 s (≈3x o dano médio de um monstrinho + atordoar). Pra compensar, os monstrinhos da Muralha batem 15% mais forte
    e os chefes ficam 8% menos resistentes. */

@@ -15452,7 +15452,7 @@ function duoUI(){let el=document.getElementById('duoBox');if(el)return el;el=doc
 #duoBox button.az{background:#3f6ae0;box-shadow:0 4px 0 #24409a}#duoBox button.vm{background:#8a5a5a;box-shadow:0 4px 0 #5a3434;font-size:15px;padding:9px}
 #duoBox input{width:100%;box-sizing:border-box;padding:11px;border-radius:12px;border:2px solid #8a7ad8;background:#15102e;color:#fff;font:inherit;font-size:22px;text-align:center;letter-spacing:6px;text-transform:uppercase;-webkit-user-select:text;user-select:text;touch-action:manipulation}
 #duoBox .cod{font-size:44px;letter-spacing:10px;color:#ffd23f;margin:4px 0;text-shadow:0 3px 0 #1a1036}#duoBox .av{min-height:20px;font-size:14px;color:#bfe8ff;margin-top:6px}#duoBox .av.ruim{color:#ffb0a0}#duoBox .ou{opacity:.7;font-size:13px;margin:10px 0 4px}</style>
-<button id="duoX" aria-label="Voltar" style="position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:10px;z-index:9001;width:auto;margin:0;padding:8px 14px;border-radius:99px;border:2px solid #fff3c8;background:linear-gradient(#ffd23f,#e0a020);color:#3a2a10;font-size:16px;font-weight:700;box-shadow:0 3px 0 #8a5a10">✕ Voltar</button><div class="dp"><h2>MURALHA EM DUPLA</h2><div id="duoIni"><p>Defenda a muralha com um amigo! Cada um leva 2 monstrinhos da própria equipe.</p><button id="duoCriar">Criar sala</button><div class="ou">ou entre na sala do seu amigo</div><input id="duoCod" maxlength="4" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" inputmode="text" enterkeyhint="go"><button id="duoEntrar" class="az">Entrar</button><p class="ou" id="duoOnde"></p><button id="duoLevarB" class="vm"></button></div>
+<button id="duoX" aria-label="Voltar" style="position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:10px;z-index:9001;width:auto;margin:0;padding:8px 14px;border-radius:99px;border:2px solid #fff3c8;background:linear-gradient(#ffd23f,#e0a020);color:#3a2a10;font-size:16px;font-weight:700;box-shadow:0 3px 0 #8a5a10">✕ Voltar</button><div class="dp"><h2>MURALHA EM DUPLA</h2><div id="duoIni"><p>Defenda a muralha com um amigo! Cada um leva 2 monstrinhos da própria equipe.</p><button id="duoCriar">Criar sala</button><button id="duoRobo" style="background:#8a5ad8;box-shadow:0 4px 0 #4a2a8a">🤖 Jogar com o robô</button><div class="ou">ou entre na sala do seu amigo</div><input id="duoCod" maxlength="4" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" inputmode="text" enterkeyhint="go"><button id="duoEntrar" class="az">Entrar</button><p class="ou" id="duoOnde"></p><button id="duoLevarB" class="vm"></button></div>
 <div id="duoEsp" hidden><p>Código da sala:</p><div class="cod" id="duoCodTxt">----</div><p id="duoEspTxt"></p></div><div class="av" id="duoAv"></div><button id="duoVoltar" class="vm">Voltar</button></div>`;
   /* 02/nov (Felipe: "dá erro na digitação do código"): o teclado do jogo (W A S D Z X, apagar, Enter) e os toques da tela pegavam as teclas antes da caixa de texto.
      Igual à caixa do nome do herói: tudo o que acontece dentro da sala fica na sala. Só aceita as letras do código, em maiúscula. */
@@ -15466,6 +15466,7 @@ async function duoLobby(){if(DUOH||DUOG||!party.length)return;const box=duoUI();
   try{const o=document.getElementById('duoOnde'),b=document.getElementById('duoLevarB');o.textContent=duoNoApp()?'Você está no App. Seu amigo também precisa abrir pelo App.':'Você está no jogo do Claude. Quem abrir pelo App não encontra esta sala: pra jogar com quem está no App, abram os dois pelo App.';b.textContent=duoNoApp()?'Trazer meu jogo do Claude':'Levar meu jogo pro App';b.onclick=()=>levOpen();}catch(e){}
   const r=await new Promise(fin=>{const $=id=>document.getElementById(id);let ocup=false;
     $('duoCriar').onclick=()=>{if(!ocup){ocup=true;duoCriar(fin).finally(()=>{ocup=false;});}};
+    try{$('duoRobo').onclick=()=>{if(!ocup){ocup=true;fin(duoRoboSala());}};}catch(e){}
     const ent=()=>{if(!ocup){ocup=true;duoEntrar($('duoCod').value,fin).finally(()=>{ocup=false;});}};$('duoEntrar').onclick=ent;$('duoCod').onkeydown=e=>{if(e.key==='Enter')ent();};
     $('duoVoltar').onclick=()=>{try{DUO_CUR&&DUO_CUR.cancel();}catch(e){}DUO_CUR=null;fin(null);};
     const mh=(location.hash||'').match(/dupla-([A-Za-z]{4})(?![A-Za-z0-9])/);if(mh){$('duoCod').value=mh[1].toUpperCase();ent();}});
@@ -15491,6 +15492,12 @@ async function duoEntrar(cod,fin){cod=(cod||'').toUpperCase().replace(/[^A-Z]/g,
   await new Promise(r=>setTimeout(r,12000));while(!ok&&achou&&DUO_CUR)await new Promise(r=>setTimeout(r,1000));if(!ok){clearInterval(iv);ok=true;duoMsg('Sala '+cod+' não encontrada. Confira o código e se os dois abriram o jogo pelo '+(duoNoApp()?'App':'Claude')+'.',1);try{S.leave();}catch(e){}}}
 /* ---------- DONO DA SALA ---------- */
 const DUOFMAX=60;
+/* DUOROBO11NOV (Felipe: 'coloca a opção do duo eu jogar com o robô'): a Muralha em dupla sem internet — o parceiro é um robô que usa 2 monstrinhos
+   do seu próprio time (os próximos mais fortes), solta os especiais sozinho e escolhe as cartas na hora. Mesmas fases da dupla. */
+function duoRoboSala(){const hm=duoElig(party).slice(0,2),pool=duoElig([...party,...(typeof storage!=='undefined'&&Array.isArray(storage)?storage:[])]).filter(m=>!hm.includes(m)).sort((a,c)=>(c.lv|0)-(a.lv|0));
+  let gm=pool.slice(0,2);if(gm.length<2)gm=gm.concat(hm).slice(0,2);gm=gm.map(m=>duoDes(duoSer(m))).filter(Boolean);
+  const S={emit(){return Promise.resolve();},on(){return()=>{};},onPeers(f){setTimeout(()=>{try{f({peers:[{peer:'robo',isMe:false,sameTab:false,presence:{r:'guest'}}]});}catch(e){}},0);return()=>{};},presence(){return Promise.resolve();},leave(){return Promise.resolve();},peers(){return [];},connected(){return true;}};
+  return {role:'host',bot:1,S,cod:'ROBO',gm,gj:{df:flags.duoFase|0,auto:1,nome:window.CVLANG==='en'?'Robot':'Robô',res:[],fl:{up:flags.up||{},wcs:flags.wcs||{},wcu:flags.wcu||{},pw:flags.pw||{}}}};}
 async function duoFaseGanhou(i){const f=flags.duoFase|0;if(i!==f)return;flags.duoFase=f+1;const g=3+(i%5===4?10:0);addGems(g);saveGame();
   try{await say(`Fase ${i+1} da dupla vencida! +${g} 💎${i%5===4?' (chefe)':''}. Próxima: fase ${i+2}.`);}catch(e){}}
 function duoFasePick(hdf,gdf,gn){return new Promise(fin=>{const box=duoUI();box.hidden=false;const dp=box.querySelector('.dp');let el=document.getElementById('duoFases');
@@ -15504,13 +15511,13 @@ function duoFasePick(hdf,gdf,gn){return new Promise(fin=>{const box=duoUI();box.
   L.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>done(+b.dataset.i));duoMsg('Escolha a fase da dupla');
   document.getElementById('duoVoltar').onclick=()=>done(null);});}
 async function duoHostRun(r){const hm=duoElig(party).slice(0,2);
-  const H0=DUOH={S:r.S,cod:r.cod,hm,gm:r.gm,gres:((r.gj&&Array.isArray(r.gj.res))?r.gj.res:[]).slice(0,6).map(duoDes).filter(Boolean),gAuto:!!(r.gj&&r.gj.auto),gfl:duoFlSan(r.gj&&r.gj.fl),cseq:0,cp:null,P:null,gnome:String((r.gj&&r.gj.nome)||'').slice(0,12),off:false,ack:0,wNow:1,k:0,ended:false};
+  const H0=DUOH={bot:!!r.bot,S:r.S,cod:r.cod,hm,gm:r.gm,gres:((r.gj&&Array.isArray(r.gj.res))?r.gj.res:[]).slice(0,6).map(duoDes).filter(Boolean),gAuto:!!(r.gj&&r.gj.auto),gfl:duoFlSan(r.gj&&r.gj.fl),cseq:0,cp:null,P:null,gnome:String((r.gj&&r.gj.nome)||'').slice(0,12),off:false,ack:0,wNow:1,k:0,ended:false};
   r.S.on('mda',m=>{if(m.isMe||m.sameTab||DUOH!==H0)return;try{duoHostAct(H0,m.data||{});}catch(e){console.error(e);}});
   r.S.onPeers(ch=>{if(DUOH!==H0)return;const tem=(ch.peers||[]).some(p=>!p.isMe&&!p.sameTab&&p.presence&&p.presence.r==='guest');
     if(!tem&&!H0.off)H0.off=true;else if(tem&&H0.off){H0.off=false;try{if(WL&&WL.duo===H0)wPop(90,140,'PARCEIRO VOLTOU!',C.yellow,10);}catch(e){}}});
   /* DUOFASES11NOV (Felipe: 'na dupla tem que ter uma progressão diferente do sozinho… se eu tiver no 20 e você no 5, você não faz a minha 20, mas eu refaço a sua 5; chefe a cada 5;
      o prêmio quando vencerem juntos'): cada um tem o próprio progresso da dupla (flags.duoFase = fases vencidas). O dono escolhe a fase até a menor das duas. */
-  const gdf=Math.max(0,Math.min(DUOFMAX-1,(r.gj&&r.gj.df)|0)),hdf=Math.max(0,Math.min(DUOFMAX-1,flags.duoFase|0));H0.picking=1;duoEmit(r.S,'mdp',{});
+  let gdf=Math.max(0,Math.min(DUOFMAX-1,(r.gj&&r.gj.df)|0)),hdf=Math.max(0,Math.min(DUOFMAX-1,flags.duoFase|0));H0.picking=1;duoEmit(r.S,'mdp',{});if(r.bot)gdf=hdf;
   const _pk=await duoFasePick(hdf,gdf,H0.gnome);H0.picking=0;if(_pk==null){duoEmit(r.S,'mdr',{res:'quit'});setTimeout(()=>{try{r.S.leave();}catch(e){}},1200);DUOH=null;return;}
   const wel={mons:[...hm,...r.gm].map(duoSer),n:hm.length,nome:String(flags.nome||'').slice(0,12),fase:_pk+1};
   const iv=setInterval(()=>{try{if(DUOH!==H0)return;H0.k++;if(H0.wNow||(!H0.ack&&H0.k%16===1)){H0.wNow=0;duoEmit(H0.S,'mdw',wel);}
@@ -15873,7 +15880,7 @@ function duoBothPicked(w,cd){const H0=w.duo,cp=H0.cp;if(!cp)return true;const p=
   H0.cp=null;w._duoTh=undefined;w.cards=null;return true;}
 /* se o parceiro não escolher a tempo (a tela dele escolhe sozinha em 30s), o dono escolhe a do meio por ele; parado enquanto ele está sem sinal */
 const DUO_CT=1800+240;
-function duoHostFrame(w){const H0=w.duo,cp=H0.cp;if(!cp||cp.done[1]||H0.off||cp.autoQ)return;if(++cp.gt>=DUO_CT){cp.autoQ=1;const q=cp.gc&&cp.gc.q;setTimeout(()=>{try{if(WL===w&&w.duo.cp===cp&&cp.gc&&cp.gc.q===q&&!cp.done[1])duoPick(w,1,cp.gc.i!=null?cp.gc.i:1);}catch(e){console.error(e);}cp.autoQ=0;},0);}}
+function duoHostFrame(w){const H0=w.duo,cp=H0.cp;if(!cp||cp.done[1]||H0.off||cp.autoQ)return;if(++cp.gt>=(H0.bot?45:DUO_CT)){cp.autoQ=1;const q=cp.gc&&cp.gc.q;setTimeout(()=>{try{if(WL===w&&w.duo.cp===cp&&cp.gc&&cp.gc.q===q&&!cp.done[1])duoPick(w,1,cp.gc.i!=null?cp.gc.i:1);}catch(e){console.error(e);}cp.autoQ=0;},0);}}
 /* PARCEIRO: a tela de cartas de verdade, montada com o que o dono mandou */
 function duoGotCards(d){const G0=DUOG,w=WL;if(!G0||!w||!w.duoG||!d||!Array.isArray(d.o))return;const q=d.q|0;duoEmit(G0.S,'mda',{k:'cack',q});if(q<=(G0.cq|0))return;
   const S=(v,n)=>String(v==null?'':v).slice(0,n);
@@ -15889,7 +15896,7 @@ function duoOverlay(){const w=WL;if(!w)return;const guest=!!w.duoG,G0=DUOG,n0=gu
   const cardsOpen=guest?!!(w.cards||w.duoCardsOn):!!(w.cards||w.duo.cp),paused=guest?w.duoPaused:!!w.paused,off=guest?(w.duoOff||(G0&&G0.lag)):w.duo.off;
   if(!cardsOpen&&!paused){w.defs.forEach((d,i)=>{const mine=guest?i>=n0:i<n0,col=mine?'#2fb855':'#3f6ae0';
     b.save();b.beginPath();b.ellipse(d.x,d.y+OY+10,15,4.6,0,0,Math.PI*2);b.lineWidth=1.4;b.strokeStyle=col;b.globalAlpha=.75+.25*Math.sin(t/8+i);b.stroke();b.restore();
-    let y=d.y+OY-48;try{if(murUI()){const r=murLU('c'+(d._mk!=null?d._mk:i));if(r)y=r.y+OY-10;const v=murLU('vida');if(v)y=Math.min(y,v.y+OY-8);}}catch(e){}duoPill(d.x,y,mine?'VOCÊ':'PARCEIRO',col);});}
+    let y=d.y+OY-48;try{if(murUI()){const r=murLU('c'+(d._mk!=null?d._mk:i));if(r)y=r.y+OY-10;const v=murLU('vida');if(v)y=Math.min(y,v.y+OY-8);}}catch(e){}duoPill(d.x,y,mine?'VOCÊ':(w.duo&&w.duo.bot?'ROBÔ':'PARCEIRO'),col);});}
   /* cartas (etapa 2): cada um escolhe na própria tela de cartas; quem já escolheu espera o outro */
   if(cardsOpen&&!off){const cp=guest?w.duoCp:w.duo.cp,meDone=guest?(!w.cards&&((G0&&G0.picked&&G0.picked===G0.cq)||(cp&&cp[1]))):!!(cp&&cp.done[0]),otherDone=guest?!!(cp&&cp[0]):!!(cp&&cp.done[1]);
     if(w.cards){if(otherDone)duoPill(W/2,Math.max(3,OY+14-24),'SEU PARCEIRO JÁ ESCOLHEU','#2f9f4c');}

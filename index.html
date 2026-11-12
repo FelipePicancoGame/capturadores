@@ -13831,6 +13831,11 @@ function musTick(){if(!ACX||ACX.state!=='running')return;musInit();const mfOn=mf
   while(MUS.next<now+.3){try{musStep(th,dest,MUS.next,MUS.step);}catch(e){}MUS.step++;MUS.next+=sp;}}
 const musKick=()=>{try{if(!ACX){const A=window.AudioContext||window.webkitAudioContext;if(A)ACX=new A();}try{sfxLoad();}catch(_){}if(ACX&&ACX.state==='suspended')ACX.resume().then(()=>{try{musTick();}catch(e){}});else if(ACX)musTick();}catch(e){}};['pointerdown','touchstart','keydown','click'].forEach(ev=>document.addEventListener(ev,musKick,{passive:true,capture:true}));
 document.addEventListener('visibilitychange',()=>{try{if(!ACX)return;if(document.hidden)ACX.suspend();else ACX.resume();}catch(e){}});
+/* MUSVOLTA12NOV (Felipe: 'a música para frequentemente, principalmente na Muralha e nos jogos'): no celular, quando a narração ou outro som do aparelho toca,
+   o sistema PAUSA o som do jogo ("interrompido") e ele só voltava no próximo toque. Agora: a narração toca por dentro do mesmo som do jogo
+   (não interrompe mais a música) e, se o som parar sozinho com o jogo aberto, ele é religado a cada segundo. */
+setInterval(()=>{try{if(ACX&&!document.hidden&&ACX.state!=='running'&&ACX.state!=='closed'){const p=ACX.resume();if(p&&p.then)p.then(()=>{try{musTick();}catch(e){}}).catch(()=>{});}}catch(e){}},1000);
+{const _va=vozA;vozA=function(){const a=_va.apply(this,arguments);try{if(ACX&&a&&!VZ.mes){VZ.mes=ACX.createMediaElementSource(a);VZ.mes.connect(ACX.destination);}}catch(e){VZ.mes=VZ.mes||1;}return a;};}
 
 /* ================= HISTÓRIA, MISSÕES, RIVAL, BANDIDOS E AMIZADES ================= */
 NPCS.route.push({x:15,y:13,dir:'right',look:'vend',cid:'bira'});NPCS.dunas.push({x:10,y:5,dir:'down',look:'caio',cid:'iara'},{x:21,y:8,dir:'left',look:'bandido',cid:'band3',ms:'miragem'});NPCS.town.push({x:16,y:14,dir:'left',look:'teo',cid:'teo',ms:'treino1'},{x:8,y:1,dir:'right',look:'teo',cid:'teo',after:'treino1'},{x:11,y:1,dir:'left',look:'rival',cid:'davi',after:'rival1'},{x:8,y:3,dir:'right',look:'guard',cid:'bento'},{x:22,y:8,dir:'left',look:'fe',cid:'fe'},{x:6,y:8,dir:'down',look:'lu',cid:'lu'});

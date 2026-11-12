@@ -5781,11 +5781,14 @@ function wThiefTap(x,y){const w=WL,T0=w.thief;if(!T0||Math.hypot(x-T0.x,y-(T0.y-
   part(T0.x,T0.y-4,C.yellow,6,{kind:'coin',sp:1.8,up:1.8,life:30,grav:.09});wPop(T0.x,T0.y-22,'+'+c3,C.yellow,8);tone(1100+(T0.max-T0.hp)*120,.04,'square',.03);
   if(T0.hp<=0){const big=25+w.wave*6;w.bonus+=big;w.thief=null;w.thieves=(w.thieves||0)+1;part(T0.x,T0.y,C.yellow,22,{kind:'coin',sp:2.6,up:2.2,life:40,grav:.09});part(T0.x,T0.y,'#fff6c0',1,{kind:'ring',sp:0,life:26,grav:0});
     wPop(Math.max(50,Math.min(130,T0.x)),T0.y-30,`PEGOU! +${big} moedas`,C.yellow,10);w.flash=Math.max(w.flash,.2);tone([988,1319,1568,2093],.07);}return true;}
+let PIPIUM=null;function PIPIUMI(){if(!PIPIUM){PIPIUM=new Image();PIPIUM.decoding='async';PIPIUM.src='assets/fx11/pipiu_moedas_lado.webp';}return PIPIUM.complete&&PIPIUM.naturalWidth?PIPIUM:null;}
 function wThiefDraw(w,t){const T0=w.thief;if(!T0)return;const hop=Math.abs(Math.sin(t/4))*3,x=T0.x,y=T0.y-hop;
   b.save();b.globalCompositeOperation='lighter';glowAt(x,y-4,18+Math.sin(t/5)*2,'255,210,80',.5);b.restore();E(T0.x,T0.y+8,8,2.2,'rgba(0,0,0,.3)',0,false);
-  drawMonFx('ratonga',x,y-8,.42,T0.dir<0,{act:'walk',white:T0.hit>0?T0.hit/8*.8:0,tint:{col:'#ffcf3f',a:.45}});
-  const sx=x-T0.dir*7,sy=y-8;E(sx,sy,5.5,5,'#c8843a');E(sx,sy-4.5,2.6,1.4,'#8a5532',0,false);E(sx-1.6,sy-1.6,1.6,1.2,'rgba(255,255,255,.4)',0,false);T('$',sx,sy-3.6,6,'center','#ffe08a',8);
-  poly([[x-5,y-20],[x+5,y-20],[x+4,y-17],[x-4,y-17]],'#2a2440',false);
+  /* PIPIUMOEDAS12NOV (Felipe: 'na Muralha faz a animação do Pipiu voando com as moedas'; arte do Buchecha PIPIU_VOANDO_MOEDAS_11nov): o ladrão agora é o Pipiu voando com o saquinho de moedas (8 quadros, virado pro lado em que vai) */
+  {const I=PIPIUMI();if(I){const D=36,fr=Math.floor(t/5.4)%8;b.save();b.translate(x,y-12);if(T0.dir<0)b.scale(-1,1);b.imageSmoothingEnabled=true;b.drawImage(I,fr*160,0,160,160,-D/2,-D/2,D,D);if(T0.hit>0){b.globalCompositeOperation='lighter';b.globalAlpha=Math.min(.8,T0.hit/8*.8);b.drawImage(I,fr*160,0,160,160,-D/2,-D/2,D,D);}b.restore();}
+  else{drawMonFx('ratonga',x,y-8,.42,T0.dir<0,{act:'walk',white:T0.hit>0?T0.hit/8*.8:0,tint:{col:'#ffcf3f',a:.45}});
+  const sx=x-T0.dir*7,sy=y-8;E(sx,sy,5.5,5,'#c8843a');E(sx,sy-4.5,2.6,1.4,'#8a5532',0,false);E(sx-1.6,sy-1.6,1.6,1.2,'rgba(255,255,255,.4)',0,false);T('$',sx,sy-3.6,6,'center','#ffe08a',8);}}
+  if(!PIPIUMI())poly([[x-5,y-20],[x+5,y-20],[x+4,y-17],[x-4,y-17]],'#2a2440',false);
   const bw=18;px(x-bw/2-.5,y-30,bw+1,3,C.ink);px(x-bw/2,y-29.5,bw*T0.hp/T0.max,2,'#ffd23f');if((t>>3)%2)T('TOQUE!',x,y-40,6,'center',C.yellow,30,C.ink);}
 /* CATAPULTA da Muralha (inspirado nas armas de cerco que você mira tocando no campo dos jogos de defesa de muralha) */
 const WCAT_X=90,WCAT_Y=274,WCAT_CD=780;
@@ -17036,6 +17039,9 @@ try{setTimeout(()=>{try{if(murLarga())mpAll();}catch(e){}},3000);}catch(e){}
   put('dupla');hit13(MURP.dupla,()=>{tone([660,880],.05);A.pick({k:'dupla'});});
   msg13(A);};}
 /* /MURLARGA11NOV */
+/* COSTASRETAS11NOV (Felipe: 'monstrinhos têm que estar virados na direção certa'): o parado de costas das evoluções Arvorito, Zumbirex, Fornalho, Maremoto, Assombrão e Montanhão é de lado (diagonal); em toda tela de costas (batalha, Horda, Torres...) parado usa o 1º quadro do ataque, de costas retas */
+{const _m=monAnimDraw;monAnimDraw=function(sp,act,oy,seed,fix){try{if(MONDIR==='costas'&&act==='idle'&&fix==null&&!(typeof G!=='undefined'&&G.mode==='battle')){const base=String(sp).replace('*','');if(MURPRONTO[base]){const S=MONANIM[base+'@costas'];if(S&&S.attack&&S.attack.ok)return _m(sp,'attack',oy,seed,0);}}}catch(e){}return _m.apply(this,arguments);};}
+try{setInterval(()=>{try{if(typeof party==='undefined')return;for(const m of party){const k=String(monKey(m)).replace('*','');if(MURPRONTO[k]){const S=MONANIM[k+'@costas'];if(S&&S.attack)S.attack.ok;}}}catch(e){}},3000);}catch(e){}/* carrega antes o ataque de costas dos que estão no time, pra não aparecer de lado no começo */
 /* MINIJOGOS · Atlas 04 */
 const N13MINI={'EXPEDIÇÃO':[35,298,455,390],'MURALHA':[490,280,368,374],'TORRES':[30,687,416,311],'HORDA':[483,685,376,315],'COMBINA':[28,1005,453,385],'ARENA':[495,1023,368,353],'FECHAR':[232,1597,438,141]};
 {const _m=drawTilesMini2;drawTilesMini2=function(u){const cf=u.cfg,L=cf.tiles;if(!L||!String(cf.title||'').startsWith('MINIGAMES'))return _m(u);if(!n13Tela('mini'))return _m(u);

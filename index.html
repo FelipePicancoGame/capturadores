@@ -10736,12 +10736,12 @@ async function arMpLobby(mode,autoCod){if(!duoNoApp()){await say('Jogar a Arena 
     $('arCriar').onclick=async()=>{if(ocup)return;ocup=true;arAv('Abrindo a sala…');const room=await duoRoom();if(!room){arAv('Não deu pra abrir a sala.',1);ocup=false;return;}
       const cod=Array.from({length:4},()=>DUO_LET[Math.floor(Math.random()*DUO_LET.length)]).join('');try{S=await room.join('arena-'+cod.toLowerCase());}catch(e){arAv('A sala não abriu. Tente de novo.',1);ocup=false;return;}
       $('arIni').hidden=true;$('arEsp').hidden=false;$('arCodTxt').textContent=cod;arAv('Esperando o amigo entrar…');let ok=false;
-      S.on('aj',m=>{if(m.isMe||m.sameTab||ok)return;const d=m.data||{};if(d.m!==mode){duoEmit(S,'ah',{err:'modo',m:mode});return;}ok=true;duoEmit(S,'ah',{m:mode,n:String(flags.nome||'').slice(0,12)});fin({role:'host',S,peerN:d.n});});
+      S.on('aj',m=>{if(m.isMe||m.sameTab||ok)return;const d=m.data||{};if(d.m!==mode){duoEmit(S,'ah',{err:'modo',m:mode});return;}ok=true;duoEmit(S,'ah',{m:mode,n:String(flags.nome||'').slice(0,12)});fin({role:'host',S,peerN:d.n,cod});});
       cancel=()=>{ok=true;try{S.leave();}catch(e){}};};
     const ent=async()=>{if(ocup)return;const cod=($('arCod').value||'').toUpperCase().replace(/[^A-Z]/g,'');if(cod.length!==4){arAv('O código tem 4 letras.',1);return;}ocup=true;arAv('Procurando a sala '+cod+'…');
       const room=await duoRoom();if(!room){arAv('Não deu pra conectar.',1);ocup=false;return;}try{S=await room.join('arena-'+cod.toLowerCase());}catch(e){arAv('Não deu pra entrar.',1);ocup=false;return;}
       let ok=false;const pay={m:mode,n:String(flags.nome||'').slice(0,12)};const iv=setInterval(()=>{if(!ok)duoEmit(S,'aj',pay);},1200);duoEmit(S,'aj',pay);
-      S.on('ah',m=>{if(m.isMe||m.sameTab||ok)return;const d=m.data||{};if(d.err){ok=true;clearInterval(iv);arAv('Essa sala é do outro modo ('+(d.m==='coop'?'JUNTOS':'CONTRA')+'). Entrem os dois no mesmo.',1);ocup=false;try{S.leave();}catch(e){}return;}ok=true;clearInterval(iv);fin({role:'guest',S,peerN:d.n});});
+      S.on('ah',m=>{if(m.isMe||m.sameTab||ok)return;const d=m.data||{};if(d.err){ok=true;clearInterval(iv);arAv('Essa sala é do outro modo ('+(d.m==='coop'?'JUNTOS':'CONTRA')+'). Entrem os dois no mesmo.',1);ocup=false;try{S.leave();}catch(e){}return;}ok=true;clearInterval(iv);fin({role:'guest',S,peerN:d.n,cod,rj:!!d.rj});});
       cancel=()=>{ok=true;clearInterval(iv);try{S.leave();}catch(e){}};
       setTimeout(()=>{if(!ok){ok=true;clearInterval(iv);arAv('Sala '+cod+' não encontrada. Confira o código.',1);ocup=false;try{S.leave();}catch(e){}}},30000);/* 05/nov report 'aceita o convite mas dá não encontrado': celular em outra rede demora mais pra achar a sala */setTimeout(()=>{if(!ok)arAv('Procurando a sala '+cod+'… (pode levar alguns segundos)');},8000);};
     $('arEntrar').onclick=ent;$('arCod').onkeydown=e=>{if(e.key==='Enter')ent();};
@@ -15149,7 +15149,11 @@ function duoPeer(){return {local:false,peer:true,async join(nome){
   if(eHub)pk.on('connection',c=>liga(c));
   function religa(){if(!vivo||eHub||ligado)return;const c=pk.connect(hubId,{reliable:true,serialization:'json'});liga(c);}
   if(!eHub)religa();
-  const iv=setInterval(()=>{if(!vivo)return;bcast({t:'__p',d:pres,from:me});const ag=Date.now();for(const k in peers)if(ag-peers[k].visto>6000)tira(k);if(!eHub&&!ligado)religa();},1500);
+  let semT=0,tomando=false;/* ARVOLTA11NOV: se quem criou a sala caiu (era o "centro" da conexão), quem ficou vira o centro — assim quem caiu consegue voltar com o mesmo código */
+  const vira=()=>{tomando=true;abre(hubId).then(r2=>{tomando=false;if(r2.err||!vivo||eHub||ligado){try{r2.p.destroy();}catch(e){}return;}const old=pk;pk=r2.p;me=r2.i;eHub=true;semT=0;
+    pk.on('disconnected',()=>{if(vivo)try{pk.reconnect();}catch(e){}});pk.on('connection',c=>liga(c));try{old.destroy();}catch(e){}});};
+  const iv=setInterval(()=>{if(!vivo)return;bcast({t:'__p',d:pres,from:me});const ag=Date.now();for(const k in peers)if(ag-peers[k].visto>6000)tira(k);
+    if(!eHub&&!ligado){if(!semT)semT=ag;if(ag-semT>5000&&!tomando)vira();else if(!tomando)religa();}else semT=0;},1500);
   addEventListener('pagehide',()=>{if(vivo)bcast({t:'__x',from:me});});
   return {emit(t,d){if(vivo)bcast({t,d,from:me});return Promise.resolve();},on(t,f){(ouv[t]=ouv[t]||[]).push(f);return()=>{ouv[t]=(ouv[t]||[]).filter(g=>g!==f);};},
     presence(p){Object.assign(pres,p);if(vivo)bcast({t:'__p',d:pres,from:me});return Promise.resolve();},onPeers(f){pf.push(f);setTimeout(()=>avisar([],[]),0);return()=>{};},
@@ -15518,7 +15522,7 @@ function duoSnap(w){const R=Math.round,H0=w.duo;for(const e of w.foes)if(!e._id)
   if(w.meteors&&w.meteors.length)s.mt=w.meteors.map(m=>[R(m.tx),R(m.ty),m.t]);
   if(w.lobs&&w.lobs.length)s.lb=w.lobs.slice(0,8).map(L=>[R(L.x0),R(L.y0),R(L.x1),R(L.y1),L.t|0,L.dur|0,L.col||'',L.type||'',L.flat?1:0]);
   if(w.storm)s.sm=w.storm.t|0;if(w.theme)s.th2=w.theme;if(w._wtW===w.wave&&w._wt)s.wt=Object.entries(w._wt).slice(0,6);
-  if(w.pops.length)s.p=w.pops.slice(-10).map(p=>[R(p.x),R(p.y),String(p.t).slice(0,24),typeof p.col==='string'?p.col:'#ffffff',+p.size||8,p.life|0,Math.round((p.vy||0)*100)/100]);
+  if(w.pops.length)s.p=w.pops.slice(-16).map(p=>[R(p.x),R(p.y),String(p.t).slice(0,24),typeof p.col==='string'?p.col:'#ffffff',+p.size||8,p.life|0,Math.round((p.vy||0)*100)/100]);
   if(H0.cp)s.cp=[H0.cp.done[0],H0.cp.done[1],H0.cp.gc?H0.cp.gc.q:0];
   const foes=w.foes.filter(e=>!e.dead).sort((a,c2)=>(c2.boss?999:0)+c2.y-a.y-(a.boss?999:0));
   s.f=foes.slice(0,70).map(e=>[e._id,e.sp,R(e.x),R(e.y),R(e.hp),R(e.max),(DUO_KIND.indexOf(e.boss?'boss':e.kind)&7)|(e.elite?8:0)|(e.archer?16:0)|(e.stun>0?32:0)|(e.slow>0?64:0)|(e.root>0?128:0)|(e.burn>0?256:0)|(e.frz>0?512:0)|(e.enr?1024:0)|(e.flip?2048:0)|(e.curse>0?4096:0),e.atk|0,e.hit|0,e.acd|0,R(e.shield||0)]);
@@ -15550,9 +15554,9 @@ function duoApply(s){const G0=DUOG,w=WL;if(!G0||!w||!w.duoG||!s||!Array.isArray(
   (s.d||[]).forEach((a,i)=>{const d=w.defs[i];if(!d||!Array.isArray(a))return;[d.charge,d.cd,d.cdMax,d.fire,d.lvT,d.wl,d.castT,d.throwT,d.stun,d.ultT]=a;d.aim=a[10]?{x:a[10][0],y:M(a[10][1]),t:a[10][2],t0:300}:null;});
   const old=new Map(w.foes.map(e=>[e._id,e])),nf=[];
   for(const a of (s.f||[])){const [id,sp,x,y,hp,max,bits,atk,hit,acd,sh]=a;if(typeof sp!=='string'||!SP[sp.replace('*','')])continue;let e=old.get(id);const ty=M(y);
-    if(e)old.delete(id);else{e={_id:id,sp,x,y:ty,hp,max,kind:DUO_KIND[bits&7]||'norm',boss:(bits&7)===4,age:0,wob:(id*1.7)%6,flip:!!(bits&2048),atk:0,hit:0,burn:0,slow:0,root:0,stun:0,shield:0,spd:.3,curse:0};fApply(e,true);}
+    if(e){old.delete(id);/* DUOGOLPE11NOV (report: quem entra no convite não via os ataques): os brilhos de acerto duram menos que o tempo entre fotos e as faíscas nem iam na foto. Agora o parceiro faz o brilho e as faíscas aqui mesmo quando a vida do inimigo cai */if(hp<e.hp-.5){const bg=(e.hp-hp)>=(max||1)*.12;w.fx.push({k:'hitfx',x:e.x+(Math.random()*6-3),y:e.y-6+(Math.random()*6-3),t:0,dur:9,col:bg?'#ffd23f':'#ffffff',big:bg?1:0,loc:1});try{part(e.x,e.y-6,bg?'#fff6c0':'#ffffff',bg?6:3,{sp:1.5,life:14});}catch(_){}}}else{e={_id:id,sp,x,y:ty,hp,max,kind:DUO_KIND[bits&7]||'norm',boss:(bits&7)===4,age:0,wob:(id*1.7)%6,flip:!!(bits&2048),atk:0,hit:0,burn:0,slow:0,root:0,stun:0,shield:0,spd:.3,curse:0};fApply(e,true);}
     {const nowT=performance.now();if(e.tx!=null&&e._st){const fr=Math.max(1,Math.min(20,(nowT-e._st)/16.7));e.vxs=Math.max(-3,Math.min(3,(x-e._sx)/fr));e.vys=Math.max(-3,Math.min(3,(ty-e._sy)/fr));}e._st=nowT;e._sx=x;e._sy=ty;}e.tx=x;e.ty=ty;e.hp=hp;e.max=max||1;e.elite=!!(bits&8);e.archer=!!(bits&16);e.stun=bits&32?20:0;e.slow=bits&64?20:0;e.root=bits&128?20:0;e.burn=bits&256?30:0;e.frz=bits&512?10:0;e.enr=!!(bits&1024);e.curse=bits&4096?20:0;e.atk=atk;e.hit=Math.max(e.hit||0,hit);e.acd=acd;e.shield=sh;nf.push(e);}
-  for(const e of old.values())w.dying.push({sp:e.sp,x:e.x,y:e.y,sc:eSc(e),flip:e.flip,t:0,col:'#ffffff'});w.foes=nf;
+  for(const e of old.values()){w.dying.push({sp:e.sp,x:e.x,y:e.y,sc:eSc(e),flip:e.flip,t:0,col:'#ffffff'});try{part(e.x,e.y-8,'#ffd23f',e.boss?16:8,{sp:2,up:.6,life:20});}catch(_){}}w.foes=nf;
   w.shots=Array.isArray(s.sh)?s.sh.map(q=>({x:q[0],y:M(q[1]),vx:+q[2]||0,vy:+q[3]||0,type:q[4],big:q[5]?1:0,tier:q[6]||1,rot:0,life:60,hspd:3.6})):[];
   w.thief=s.th?{x:s.th[0],y:M(s.th[1]),hp:s.th[2],max:s.th[3],dir:s.th[4],hit:s.th[5],t:0}:null;
   w.barrels=(s.br||[]).map(q=>({x:q[0],y:M(q[1]),t:q[2],seed:q[3]/100}));
@@ -15567,18 +15571,18 @@ function duoApply(s){const G0=DUOG,w=WL;if(!G0||!w||!w.duoG||!s||!Array.isArray(
   /* DUOLISO06NOV (Felipe: 'no celular da Gabi o poder anda de lado / frame a frame'): antes cada foto (8 por segundo) APAGAVA os efeitos e punha de novo onde estavam
    naquele instante — o poder parava entre as fotos e voltava pra trás quando a foto chegava atrasada. Agora o mesmo efeito continua andando sozinho aqui
    e a foto só corrige de leve (ou de vez, se ficou muito longe). */
-  {const prev=new Map();for(const f of w.fx)if(f._fid)prev.set(f._fid,f);const nx=[];
+  {const prev=new Map();for(const f of w.fx)if(f._fid)prev.set(f._fid,f);const nx=w.fx.filter(f=>f.loc);
    for(const f of (s.x||[])){if(!f||!DUO_FXOK.has(f.k))continue;for(const k of ['y','y0','y1','y2','ty','sy'])if(typeof f[k]==='number')f[k]=M(f[k]);if(Array.isArray(f.pts))f.pts=f.pts.map(p=>Array.isArray(p)?[p[0],M(p[1])]:p);
      const o=f._fid?prev.get(f._fid):null;if(!o){nx.push(f);continue;}prev.delete(f._fid);
      const lt=o.t|0,st=f.t|0,px=o.x,py=o.y;for(const k in f)o[k]=f[k];
      if(lt>=st&&lt-st<=10)o.t=lt;/* o daqui já andou um pouco à frente da foto: continua de onde está */
-     if(typeof px==='number'&&typeof f.x==='number'){const ahead=(lt-st)>0?(lt-st):0;
+     if(typeof px==='number'&&typeof f.x==='number'){const ahead=o.k==='shot'?0:((lt-st)>0?(lt-st):0);
        if(o.k==='lob'){}else if(o.k!=='shot'){const nowT=performance.now();if(o._st){const fr=Math.max(1,Math.min(20,(nowT-o._st)/16.7));o._vx=Math.max(-8,Math.min(8,(f.x-o._sx)/fr));o._vy=Math.max(-8,Math.min(8,(f.y-o._sy)/fr));}o._st=nowT;o._sx=f.x;o._sy=f.y;}
        if(o.k==='lob'){o.x=px;o.y=py;}/* a bomba anda pelo próprio tempo, igual no anfitrião */
        else{const vx=o.k==='shot'?(f.vx||0):(o._vx||0),vy=o.k==='shot'?(f.vy||0):(o._vy||0),tx=f.x+vx*ahead,ty=f.y+vy*ahead;
        if(Math.abs(tx-px)>40||Math.abs(ty-py)>40){o.x=tx;o.y=ty;}else{o.x=px+(tx-px)*.3;o.y=py+(ty-py)*.3;}}}
      nx.push(o);}
-   w.fx=nx;}}
+   w.fx=nx;if(w.ctx)w.ctx.fx=nx;/* DUOVER11NOV (report: quem entra não via ataque nenhum): o desenho usa w.ctx.fx e ele continuava apontando pra lista velha (vazia) — os efeitos chegavam mas nunca apareciam */}}
 function duoGuestStep(){const w=WL,G0=DUOG;if(!w||!G0)return;w.t++;
   for(const e of w.foes){if(e.tx==null)continue;if(e.vxs!=null&&e._st&&performance.now()-e._st<400){e.tx+=e.vxs;e.ty+=e.vys;}const dx=e.tx-e.x,dy=e.ty-e.y;if(Math.abs(dx)>40||Math.abs(dy)>40){e.x=e.tx;e.y=e.ty;}else{e.x+=dx*.22;e.y+=dy*.22;}e.age=(e.age||0)+1;if(e.hit>0)e.hit--;}
   for(const p of w.pops){p.y+=p.vy;p.vy=Math.min(.25,p.vy+.07);p.life--;}w.pops=w.pops.filter(p=>p.life>0);
@@ -16035,7 +16039,7 @@ const H2={as:m=>{const M=AR.mp;M.peer=Object.assign(M.peer,m.data||{});arGhosts(
   ad:m=>{if(AR.over)return;arCoopDmg(m.data||{});},
   ax:m=>{if(AR.over)return;arEnd(X&&X.mode0==='pvp'?'peerlost':'coop');}};
 function lsSend(x,force){if(x.left&&!force)return;const now=performance.now();if(!force&&now-(x.lsT||0)<33)return;x.lsT=now;const u=Math.max(x.uSent||0,x.T+DL-1);x.uSent=u;x.out=x.out.filter(a=>a.s>x.pack);
-  try{x.S.emit('li',{u,a:x.out.map(a=>[a.s,a.t,a.a,a.x]),k:x.ack,h:x.hq});}catch(e){}}
+  try{x.S.emit('li',{u,a:x.out.map(a=>[a.s,a.t,a.a,a.x]),k:x.ack,h:x.hq,sl:x.solo?1:0});}catch(e){}}
 function lsAct(type,...args){const x=X;if(!x||x.mode!=='ls'||!x.my||x.my.over)return;const t=Math.max(x.T+DL,(x.uSent||0)+1),a={s:++x.seq,t,p:x.mi,a:type,x:args};x.acts.push(a);x.out.push(a);lsSend(x,true);}
 function lsMine(){return !!(X&&X.mode==='ls'&&!X.inTick&&AR&&AR===X.my);}
 function lsDo(a){switch(a.a){case 'b':arBuy();break;case 'm':arMerge(a.x[0],a.x[1]);break;case 'v':arMove(a.x[0],a.x[1]);break;case 'u':arUpgrade(a.x[0]);break;case 'h':arHeroUse();break;
@@ -16062,12 +16066,13 @@ function lsGotLi(x,d){x.gotLi=1;const now=performance.now();if(x.M)x.M.last=now;
   while(x.rcv.has(x.ack+1)){x.rcv.delete(x.ack+1);x.ack++;}x.peerU=Math.max(x.peerU,d.u|0);x.pack=Math.max(x.pack,d.k|0);if(x.mode==='ls')for(const h of d.h||[])lsPeerHash(x,h);}
 function lsFrame(x){const now=performance.now();x.acc+=Math.min(250,now-(x.lf||now));x.lf=now;if(x.peerU-x.T>DL+4)x.acc+=TK*.25;if(x.acc>TK*12)x.acc=TK*12;
   if(x.my&&!x.my.over&&++x.cp%30===0){try{for(const sp of x.my.deck||[]){const l=x.cardLv(sp);if(((x.my._lsc||{})[sp]|0||1)!==l&&x.clq[sp]!==l){x.clq[sp]=l;lsAct('c',sp,l);}}}catch(e){}}
-  let k=0;while(x.acc>=TK&&k<12&&x.my&&!x.my.over){if(x.T+1>x.peerU){if(!x.stall)x.stall=now;break;}x.stall=0;lsTick(x);x.acc-=TK;k++;}
-  lsSend(x,false);lsPill(x.stall&&now-x.stall>700&&!x.my.over?(window.CVLANG==='en'?'Waiting for your partner…':'Esperando o parceiro…'):null);}
+  if(x.mode==='ls'&&!x.solo&&x.gotLi&&x.M&&!x.my.over&&now-(x.M.last||now)>6000)lsSolo(x,'sinal');if(x.solo&&x.M)x.M.last=now;
+  let k=0;while(x.acc>=TK&&k<12&&x.my&&!x.my.over){if(!x.solo&&x.T+1>x.peerU){if(!x.stall)x.stall=now;break;}x.stall=0;lsTick(x);x.acc-=TK;k++;}
+  lsSend(x,false);if(x.solo&&!x.my.over){lsSoloPill(x);return;}lsPill(x.stall&&now-x.stall>700&&!x.my.over?(window.CVLANG==='en'?'Waiting for your partner…':'Esperando o parceiro…'):null);}
 function lsLegacy(x){if(x.mode==='legacy')return;x.mode='legacy';x.scr=false;lsPill(null);try{portraitScreen();}catch(e){}
   const B=x.buf,O=x.obuf;x.buf=[];x.obuf=[];for(const [fn,m] of B)try{fn(m);}catch(e){}for(const [t,d] of O)try{x.S.emit(t,d);}catch(e){}try{x.S.emit('lx',{});}catch(e){}}
 function lsHello(x){if(X!==x||x.mode!=='pend'||x.st)return;const A=AR;if(!A||!A.mp||A.mp.S!==x.S2){setTimeout(()=>lsHello(x),300);return;}
-  x.M=A.mp;x.my=A;const lc={},lp={};try{for(const sp of A.deck||[])lc[sp]=x.cardLv(sp);for(const k in (flags.arCard||{}))lc[k]=x.cardLv(k);}catch(e){}try{for(const m of party)if(m&&m.sp)lp[m.sp]=Math.max(lp[m.sp]||0,m.lv|0);}catch(e){}
+  x.M=A.mp;x.my=A;if(x.ljq){const q=x.ljq;x.ljq=null;lsGotLj(x,q);return;}const lc={},lp={};try{for(const sp of A.deck||[])lc[sp]=x.cardLv(sp);for(const k in (flags.arCard||{}))lc[k]=x.cardLv(k);}catch(e){}try{for(const m of party)if(m&&m.sp)lp[m.sp]=Math.max(lp[m.sp]||0,m.lv|0);}catch(e){}
   A._lsc=lc;A._lsp=lp;if(x.role==='host')x.seed=(Math.random()*2147483647)|0;try{x.sk=arSk();}catch(e){x.sk=null;}x.st=lsSer(A);
   const pay={v:LSV,r:x.role,st:x.st,seed:x.seed,sk:x.sk,n:x.me};const snd=()=>{try{x.S.emit('ls0',pay);}catch(e){}};snd();
   const iv=setInterval(()=>{if(X!==x||x.gotLi||x.mode==='legacy'||performance.now()-x.t0>15000){clearInterval(iv);return;}snd();},500);lsTryStart(x);}
@@ -16082,6 +16087,25 @@ function lsEmitMine(x,t,d){if(x.mode==='legacy')return x.S.emit(t,d);if(x.mode==
 function lsOn(x,t,fn){x.H[t]=fn;x.S.on(t,m=>{if(X!==x)return;if(x.mode==='legacy')fn(m);else if(x.mode==='pend')x.buf.push([fn,m]);});if(t==='ax')setTimeout(()=>lsHello(x),0);}
 function lsLeave(x){if(x.left)return;x.left=1;lsPill(null);const ls=x.mode==='ls';if(ls){if(x.my&&!x.my.over){try{x.S.emit('lq',{});}catch(e){}}lsSend(x,true);x.mode='dead';}
   setTimeout(()=>{try{x.S.leave();}catch(e){}},ls?500:0);}
+/* ARVOLTA11NOV (reports: 'na arena está saindo quando jogo junto' + Felipe: 'quando alguém cair poder voltar pra partida ou a pessoa que continua poder terminar sozinha'):
+   antes, 20 s sem sinal do outro = fim de jogo pros dois. Agora: 6 s sem sinal (ou o outro saiu) = você CONTINUA SOZINHO (o tabuleiro do parceiro
+   segue defendendo com o que tinha). Quem caiu volta pra MESMA partida entrando com o mesmo código: quem ficou manda o jogo inteiro e os dois seguem juntos. */
+function lsSolo(x,why){if(x.mode!=='ls'||x.solo||!x.my||x.my.over)return;x.solo=1;x.soloT=performance.now();}
+function lsSoloPill(x){const c=x.cod?(window.CVLANG==='en'?' · code '+x.cod:' · código '+x.cod):'';lsPill((window.CVLANG==='en'?'Your partner dropped — keep playing! They can come back'+c:'O parceiro caiu — continue jogando! Ele pode voltar'+c));}
+function lsSendLj(x){const now=performance.now();if(x.mode!=='ls'||!x.my||x.my.over||now-(x.ljT||0)<1500)return;x.ljT=now;
+  const d={id:++x.rid,t:x.T,i:x.pi,s:[lsSer(x.sims[0]),lsSer(x.sims[1])],m:[lsSerM(x.sims[0].mp),lsSerM(x.sims[1].mp)],q:JSON.stringify(x.q),a:x.acts.filter(a=>a.t>x.T).map(a=>[a.s,a.t,a.p,a.a,a.x]),sq:x.seq,sk:x.skin,n:x.me};
+  try{x.S.emit('lj',d);}catch(e){console.error(e);return;}
+  x.solo=0;x.peerU=x.T;x.ack=0;x.rcv=new Set();x.out=[];x.pack=x.seq;x.hm.clear();x.ph.clear();x.cd.clear();x.hq=[];x.rsT=x.T;x.gotLi=0;if(x.M)x.M.last=now;x.ljSent=(x.ljSent||0)+1;lsPill(null);}
+function lsGotLj(x,d){if(!d||x.mode==='legacy'||x.mode==='dead'||(d.id|0)<=(x.lj0|0)&&x.ljFrom===d.n)return;if(x.mode==='pend'&&!x.my){x.ljq=d;return;}if(x.my&&x.my.over)return;
+  x.lj0=d.id|0;x.ljFrom=d.n;
+  try{x.mi=d.i|0;x.pi=1-x.mi;x.role=x.mi===0?'host':'guest';const my=x.my,M=x.M;lsApply(my,lsDeser(d.s[x.mi]));my.mp=M;{const o=JSON.parse(d.m[x.mi]);delete o.S;Object.assign(M,o);}M.last=performance.now();
+    let P=x.pr;if(P){const pm=P.mp;lsApply(P,lsDeser(d.s[x.pi]));P.mp=pm;}else{const fakeP={emit:(t,dd)=>{if(x.inTick&&x.cur===x.pr)x.q[x.mi].push([t,lsFix(t,dd,x.pn)]);},on(){},leave(){},presence(){}};
+      P=lsDeser(d.s[x.pi]);P.mp=Object.assign({},JSON.parse(d.m[x.pi]),{S:fakeP,last:performance.now(),off:0});P.done=null;P.sel=-1;P.drag=null;lsInit(P);x.pr=P;}
+    if(d.n)x.pn=String(d.n).slice(0,12);x.sims=x.mi===0?[my,P]:[P,my];x.rf=[rngOf(x.sims[0]),rngOf(x.sims[1])];x.skin=d.sk||x.skin;x.q=JSON.parse(d.q);
+    x.T=d.t|0;x.acc=0;x.lf=performance.now();x.hm.clear();x.ph.clear();x.cd.clear();x.hq=[];x.rsT=x.T;x.acts=(d.a||[]).map(q=>({s:q[0],t:q[1],p:q[2],a:q[3],x:q[4]||[]}));
+    x.seq=0;x.out=[];x.uSent=0;x.ack=d.sq|0;x.rcv=new Set();x.pack=0;x.peerU=x.T;x.gotLi=1;x.solo=0;
+    if(!x.fro)x.fro=new Proxy(flags,{set(){return true;},deleteProperty(){return true;},defineProperty(){return true;}});x.buf=x.buf||[];x.obuf=[];x.mode='ls';x.ljGot=(x.ljGot||0)+1;
+    lsPill(null);try{portraitScreen();}catch(e){}lsSend(x,true);}catch(e){console.error('lsGotLj',e);}}
 /* ganchos */
 {const _u=arUpdate;arUpdate=function(){const x=X;if(x&&AR&&AR.mp&&AR.mp.S===x.S2&&x.mode!=='legacy'&&x.mode!=='dead'){x.upd=x.upd||_u;if(x.mode==='ls')lsFrame(x);else lsPill(performance.now()-x.t0>1500?(window.CVLANG==='en'?'Syncing…':'Sincronizando…'):null);return;}return _u.apply(this,arguments);};}
 {const _r=arMpRun;arMpRun=async function(mode,r){if(/semls/.test(location.hash||'')||!r||!r.S)return _r.apply(this,arguments);const S=r.S;
@@ -16089,9 +16113,11 @@ function lsLeave(x){if(x.left)return;x.left=1;lsPill(null);const ls=x.mode==='ls
     acts:[],out:[],seq:0,ack:0,rcv:new Set(),pack:0,peerU:-1,T:0,acc:0,cp:0,hm:new Map(),ph:new Map(),cd:new Set(),hq:[],ok:0,bad:0,rs:0,rsGot:0,rid:0,rid0:0,clq:{},t0:performance.now(),cardLv:x0=>CLV(x0)};
   x.S2={emit:(t,d)=>lsEmitMine(x,t,d),on:(t,fn)=>lsOn(x,t,fn),leave:()=>lsLeave(x),presence:()=>{}};
   const ok=m=>X===x&&m&&!m.isMe&&!m.sameTab;
-  S.on('ls0',m=>{if(ok(m))lsGot0(x,m.data||{});});S.on('li',m=>{if(ok(m)&&x.mode!=='legacy')lsGotLi(x,m.data||{});});S.on('lr',m=>{if(ok(m))lsGotRs(x,m.data);});
-  S.on('lx',m=>{if(ok(m)&&x.mode!=='legacy'&&x.mode!=='dead')lsLegacy(x);});S.on('lq',m=>{if(ok(m)&&x.mode==='ls'&&AR===x.my&&!AR.over){try{arEnd('peergone');}catch(e){}}});
-  setTimeout(()=>{if(X===x&&x.mode==='pend')lsLegacy(x);},6000);
+  S.on('ls0',m=>{if(!ok(m))return;if(x.mode==='ls'){lsSendLj(x);return;}lsGot0(x,m.data||{});});S.on('li',m=>{if(!ok(m)||x.mode==='legacy')return;const d=m.data||{};if(x.solo){if(d.sl&&((d.u|0)>(x.uSent|0)||((d.u|0)===(x.uSent|0)&&x.mi===1)))return;lsSendLj(x);return;}lsGotLi(x,d);});
+  S.on('lj',m=>{if(ok(m))lsGotLj(x,m.data);});x.cod=r.cod||'';x.rj=!!r.rj;
+  S.on('aj',m=>{if(!ok(m))return;const d=m.data||{};if(d.m!==mode||x.mode!=='ls'||!x.my||x.my.over)return;try{S.emit('ah',{m:mode,n:x.me,rj:1});}catch(e){}});S.on('lr',m=>{if(ok(m))lsGotRs(x,m.data);});
+  S.on('lx',m=>{if(ok(m)&&x.mode!=='legacy'&&x.mode!=='dead')lsLegacy(x);});S.on('lq',m=>{if(ok(m)&&x.mode==='ls'&&AR===x.my&&!AR.over)lsSolo(x,'saiu');});
+  setTimeout(()=>{if(X===x&&x.mode==='pend'&&!x.rj)lsLegacy(x);},6000);
   try{return await _r.call(this,mode,Object.assign({},r,{S:x.S2}));}finally{if(X===x)X=null;lsPill(null);}};}
 /* LSTELA07NOV (R168/R169 'não está tela cheia'): cada celular usa a tela inteira dele; a partida roda numa tela virtual igual nos dois
    (JUNTOS 180x320, CONTRA 180x390) e é desenhada encaixada na tela real, com a sobra preenchida pela própria arte da Arena */
@@ -16113,7 +16139,7 @@ const CLV=arCardLv;{arCardLv=function(sp){if(X&&X.inTick&&AR&&AR._lsc)return Mat
 {const _l=arSpLv;arSpLv=function(sp){if(X&&X.inTick&&AR&&AR._lsp)return AR._lsp[sp]|0;return _l(sp);};}
 {const _s=arMpSnap;arMpSnap=function(A){if(X&&X.mode!=='legacy'&&X.mode!=='dead'&&!X.inTick&&A&&A.mp&&A.mp.S===X.S2)return;return _s.apply(this,arguments);};}
 function lsPeerEnd(why){const A=AR,M=A.mp;if(A.over)return;A.over=true;if(why!=='peerlost'&&why!=='peergone')try{M.S.emit('ax',{lost:1,w:A.wave});}catch(e){}A.result={mp:1,mode:M.mode};}
-{const _e=arEnd;arEnd=function(why){if(X&&X.inTick&&AR&&AR===X.pr)return lsPeerEnd(why);return _e.apply(this,arguments);};}
+{const _e=arEnd;arEnd=function(why){if(X&&X.inTick&&AR&&AR===X.pr)return lsPeerEnd(why);if(why==='peergone'&&X&&X.mode==='ls'&&AR===X.my&&!X.inTick){lsSolo(X,'tempo');return;}return _e.apply(this,arguments);};}
 {const _m=arMpEnd;arMpEnd=function(why){if(X&&X.inTick&&AR&&AR===X.pr)return lsPeerEnd(why);return _m.apply(this,arguments);};}
 {const _b=arBurst;arBurst=function(){if(X&&X.inTick){const R=Math.random;Math.random=X.rnd0;try{return _b.apply(this,arguments);}finally{Math.random=R;}}return _b.apply(this,arguments);};}
 /* toques: no lockstep viram "pedidos" marcados para daqui a ~150 ms */

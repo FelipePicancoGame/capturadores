@@ -5439,7 +5439,7 @@ function wBossHUD(w,t){wDangerDraw(w,t);const e=w.foes.find(f=>f.boss&&!f.dead);
   rrect(x0+12,y0+7,bw-14,5,2.5,'#3a2030',false);rrect(x0+12,y0+7,(bw-14)*tr,5,2.5,'#ffe0a0',false);const g=b.createLinearGradient(0,y0+7,0,y0+12);g.addColorStop(0,'#ff9a7a');g.addColorStop(1,e.enr?'#c81a1a':'#e8402a');b.fillStyle=g;rpath(x0+12,y0+7,Math.max(1,(bw-14)*f),5,2.5);b.fill();
   for(let k=1;k<4;k++)px(x0+12+(bw-14)*k/4,y0+7,.6,5,'rgba(0,0,0,.35)');px(x0+12+(bw-14)/2,y0+6,1,7,'#ffd23f');
   E(x0+5,y0+6,6,6,e.enr?'#c81a1a':'#5a2a2a',0,false);b.save();b.beginPath();b.arc(x0+5,y0+6,5.4,0,Math.PI*2);b.clip();drawMon(e.sp,x0+5,y0+9,.2,true);b.restore();b.restore();
-  T((((SP[e.sp]&&SP[e.sp].name)||'Rochedo').toUpperCase()+' GIGANTE')+(e.enr?' · FURIOSO!':''),x0+14,y0-WOY-1.5,5.6,'left',e.enr?'#ff8a6a':'#ffe8c0',bw-16,C.ink);
+  T(/* TRADDUPLA12NOV: barra do chefe da Muralha em inglês */window.CVLANG==='en'?('GIANT '+String(tr((SP[e.sp]&&SP[e.sp].name)||'Rochedo')).toUpperCase()+(e.enr?' · FURIOUS!':'')):((((SP[e.sp]&&SP[e.sp].name)||'Rochedo').toUpperCase()+' GIGANTE')+(e.enr?' · FURIOSO!':'')),x0+14,y0-WOY-1.5,5.6,'left',e.enr?'#ff8a6a':'#ffe8c0',bw-16,C.ink);
   if(w.redF>0){b.save();b.translate(0,-WOY);b.fillStyle=`rgba(255,40,30,${.25*w.redF})`;b.fillRect(0,0,W,H);b.restore();}}
 function wMinion(x,y){const w=WL,m=mk('pipiu',Math.max(2,w.avg-2+w.wave)),st=stats(m),hp=Math.round(st.hp*1.4*w.dda);w.foes.push({m,sp:'pipiu',lv:m.lv,st,x,y,hp,max:hp,shield:0,spd:(.17+st.spd/250)*1.8,kind:'fast',boss:false,hit:0,burn:0,slow:0,root:0,stun:0,atk:0,age:0,flip:Math.random()<.5,wob:Math.random()*6});fApply(w.foes[w.foes.length-1]);part(x,y,'rgba(235,235,245,.9)',6,{kind:'smoke',sp:.6,life:20,grav:-.02,size:3});}
 function wHit(e,dmgBase,type,isSplash,shot){const w=WL;if(e.dead||e.y<30-(w.ext||0))return;dmgBase*=defF(e,w.avg);{const fm=fDef(e,type,isSplash);if(fm<=0){fDodgePop(wPop,e,fm);return;}dmgBase*=fm;}
@@ -10824,7 +10824,7 @@ function arRushDraw(A,G2){const t=A.t;
   /* pedra nos monstrinhos */
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u||!(u.stone>0))continue;const p=arCellXY(i);if(window.ARSTY===0){b.save();b.globalAlpha=.62;rrect(p.x-13,p.y-16,26,31,5,'#7a7068',false);b.restore();}T('🪨',p.x+8,p.y-14,6,'center','#ffffff');T(String(Math.ceil(u.stone/60)),p.x-9,p.y-14,5,'center','#ffffff',0,C.ink);}
   /* chefe: ícone do poder e aviso */
-  for(const e of A.en){if(!e.boss||e.hp<=0||!e.pw)continue;const p=arPos(G2,e.d),P=ARBP[e.pw];T(P.ic,p.x+17,p.y-50,6,'center','#ffffff');if(e.warn>0&&Math.floor(t/5)%2){E(p.x,p.y-60,6,6,'#ff3040',0,false);T('!',p.x,p.y-64.5,8,'center','#ffffff',0,C.ink);}}
+  for(const e of A.en){if(!e.boss||e.hp<=0||!e.pw)continue;const p=arPos(G2,e.d),P=ARBP[e.pw];/* ARICONE12NOV (Felipe: 'tem uma pedra voando perto do Boss'): o ícone do poder ficava solto bem acima do chefe (medida dos desenhos antigos); agora fica colado na barra de vida, do lado do CHEFE */const by=p.y-arEB(e.sp,true);T(P.ic,p.x+17,by-8.5,6,'center','#ffffff');if(e.warn>0&&Math.floor(t/5)%2){E(p.x,by-17,6,6,'#ff3040',0,false);T('!',p.x,by-21.5,8,'center','#ffffff',0,C.ink);}}
   /* números de dano */
   for(const d of A.dn||[]){b.globalAlpha=Math.min(1,d.life/12);T(String(d.v),d.x,d.y,d.big?6:4.6,'center',d.big?'#fff3a0':d.col,0,C.ink);}b.globalAlpha=1;
   if(A.bfx&&A.bfx.t>0){b.save();b.globalAlpha=A.bfx.t/24*.22;b.fillStyle='#ff2040';b.fillRect(0,0,W,H);b.restore();}
@@ -15443,7 +15443,7 @@ function duoResDraw(w,t){if(!duoIsDuo(w)||!murUI())return;const R=duoResRect(w);
   if(!cells.length)T('sem outros monstrinhos',R.x+R.w/2,R.y+R.h/2,4.4,'center','#cfc6ff',R.w-6,C.ink);
   const dr=w.resDrag;
   for(const c of cells){if(dr&&dr.m===c.m&&dr.on)b.globalAlpha=.35;const tc=spCol(c.m.sp)||'#7aa0ff';rrect(c.x,c.y,c.w,c.h,4,darkHex(tc,.55),false);b.strokeStyle=tc;b.lineWidth=.9;rpath(c.x+.5,c.y+.5,c.w-1,c.h-1,4);b.stroke();
-    {const k0=c.m.sp.replace('*',''),M=murImg('a_'+k0)||murImg('s_'+k0)||MONIMG[k0],CI=(typeof cardIlu==='function')&&cardIlu(k0);if(CI)cardIluDraw(CI,c.x+c.w*.06,c.y+c.h*.05,c.w*.88,c.h*.7,3);else if(M&&M.complete&&M.naturalWidth)murImgBig(M,c.x+c.w*.08,c.y+c.h*.03,c.w*.84,c.h*.72,0);else drawMon(c.m.sh?c.m.sp+'*':c.m.sp,c.x+c.w/2,c.y+c.h*.6,c.h*.011);}T(`${nm(c.m)} · Nv${c.m.lv}`,c.x+c.w/2,c.y+c.h-6.2,Math.min(5,c.h*.14),'center',C.white,c.w-3,C.ink);b.globalAlpha=1;}
+    {const k0=c.m.sp.replace('*',''),M=murImg('a_'+k0)||murImg('s_'+k0)||MONIMG[k0],CI=(typeof cardIlu==='function')&&cardIlu(k0);if(CI)cardIluDraw(CI,c.x+c.w*.06,c.y+c.h*.05,c.w*.88,c.h*.7,3);else if(M&&M.complete&&M.naturalWidth)murImgBig(M,c.x+c.w*.08,c.y+c.h*.03,c.w*.84,c.h*.72,0);else drawMon(c.m.sh?c.m.sp+'*':c.m.sp,c.x+c.w/2,c.y+c.h*.6,c.h*.011);}T(`${nm(c.m)} · ${window.CVLANG==='en'?'Lv':'Nv'}${c.m.lv}`,c.x+c.w/2,c.y+c.h-6.2,Math.min(5,c.h*.14),'center',C.white,c.w-3,C.ink);b.globalAlpha=1;}
   if(dr&&dr.on){const tg=duoResTarget(w,dr.x,dr.y);if(tg>=0){const d=w.defs[tg];b.beginPath();b.arc(d.x,d.y-12,19+Math.sin(t/4)*1.5,0,Math.PI*2);b.lineWidth=2.4;b.strokeStyle='rgba(255,226,122,.95)';b.stroke();}
     drawMon(dr.m.sh?dr.m.sp+'*':dr.m.sp,dr.x,dr.y,.32);}
   b.restore();}
@@ -15527,7 +15527,7 @@ function duoRoboSala(){const hm=duoElig(party).slice(0,2),pool=duoElig([...party
   const S={emit(){return Promise.resolve();},on(){return()=>{};},onPeers(f){setTimeout(()=>{try{f({peers:[{peer:'robo',isMe:false,sameTab:false,presence:{r:'guest'}}]});}catch(e){}},0);return()=>{};},presence(){return Promise.resolve();},leave(){return Promise.resolve();},peers(){return [];},connected(){return true;}};
   return {role:'host',bot:1,S,cod:'ROBO',gm,gj:{df:flags.duoFase|0,auto:1,nome:window.CVLANG==='en'?'Robot':'Robô',res:[],fl:{up:flags.up||{},wcs:flags.wcs||{},wcu:flags.wcu||{},pw:flags.pw||{}}}};}
 async function duoFaseGanhou(i){const f=flags.duoFase|0;if(i!==f)return;flags.duoFase=f+1;const g=3+(i%5===4?10:0);addGems(g);saveGame();
-  try{await say(`Fase ${i+1} da dupla vencida! +${g} 💎${i%5===4?' (chefe)':''}. Próxima: fase ${i+2}.`);}catch(e){}}
+  try{/* TRADDUPLA12NOV (report 'Tradução': saía 'Stage 2 da dupla vencida! … Próxima: stage 3') */const EN=window.CVLANG==='en';await say(EN?`Duo stage ${i+1} cleared! +${g} 💎${i%5===4?' (boss)':''}. Next: stage ${i+2}.`:`Fase ${i+1} da dupla vencida! +${g} 💎${i%5===4?' (chefe)':''}. Próxima: fase ${i+2}.`);}catch(e){}}
 function duoFasePick(hdf,gdf,gn){return new Promise(fin=>{const box=duoUI();box.hidden=false;const dp=box.querySelector('.dp');let el=document.getElementById('duoFases');
   if(!el){el=document.createElement('div');el.id='duoFases';dp.insertBefore(el,document.getElementById('duoAv'));}
   document.getElementById('duoIni').hidden=true;document.getElementById('duoEsp').hidden=true;el.hidden=false;const mx=Math.min(hdf,gdf);
@@ -15924,7 +15924,7 @@ function duoOverlay(){const w=WL;if(!w)return;const guest=!!w.duoG,G0=DUOG,n0=gu
   const cardsOpen=guest?!!(w.cards||w.duoCardsOn):!!(w.cards||w.duo.cp),paused=guest?w.duoPaused:!!w.paused,off=guest?(w.duoOff||(G0&&G0.lag)):w.duo.off;
   if(!cardsOpen&&!paused){w.defs.forEach((d,i)=>{const mine=guest?i>=n0:i<n0,col=mine?'#2fb855':'#3f6ae0';
     b.save();b.beginPath();b.ellipse(d.x,d.y+OY+10,15,4.6,0,0,Math.PI*2);b.lineWidth=1.4;b.strokeStyle=col;b.globalAlpha=.75+.25*Math.sin(t/8+i);b.stroke();b.restore();
-    let y=d.y+OY-48;try{if(murUI()){const r=murLU('c'+(d._mk!=null?d._mk:i));if(r)y=r.y+OY-10;const v=murLU('vida');if(v)y=Math.min(y,v.y+OY-8);}}catch(e){}duoPill(d.x,y,mine?'VOCÊ':(w.duo&&w.duo.bot?'ROBÔ':'PARCEIRO'),col);});}
+    let y=d.y+OY-48;try{if(murUI()){const r=murLU('c'+(d._mk!=null?d._mk:i));if(r)y=r.y+OY-10;const v=murLU('vida');if(v)y=Math.min(y,v.y+OY-8);}}catch(e){}duoPill(d.x,y,mine?'VOCÊ':(w.duo&&w.duo.bot?(window.CVLANG==='en'?'ROBOT':'ROBÔ'/* TRADDUPLA12NOV */):(window.CVLANG==='en'?'PARTNER':'PARCEIRO')),col);});}
   /* cartas (etapa 2): cada um escolhe na própria tela de cartas; quem já escolheu espera o outro */
   if(cardsOpen&&!off){const cp=guest?w.duoCp:w.duo.cp,meDone=guest?(!w.cards&&((G0&&G0.picked&&G0.picked===G0.cq)||(cp&&cp[1]))):!!(cp&&cp.done[0]),otherDone=guest?!!(cp&&cp[0]):!!(cp&&cp.done[1]);
     if(w.cards){if(otherDone)duoPill(W/2,Math.max(3,OY+14-24),'SEU PARCEIRO JÁ ESCOLHEU','#2f9f4c');}

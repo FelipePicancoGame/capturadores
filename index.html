@@ -9983,7 +9983,7 @@ async function openMenu(){if(flags.migMsg){const t=flags.migMsg;delete flags.mig
     if(i===-7){await stageMap('surv');continue;}
     if(i===-5){flags.newsSeen=NOVIDADES.length;const list=NOVIDADES.slice().reverse();let pg=0;while(true){const j=await choose(['◀','▶','Voltar'],{news:{list,pg}});if(j===0)pg=Math.max(0,pg-1);else if(j===1)pg=Math.min(Math.ceil(list.length/4)-1,pg+1);else if(j>=10&&j<14){const n=list[pg*4+j-10];if(n){if(n.hq)await hqPlay(hqAll());else await say(n.t);}}else break;}continue;}
     if(i===-2){await stageMap('exp');continue;}
-    if(i===-3){await stageMap('wall');continue;}
+    if(i===-3){await wallHub();continue;}
     if(i===0){let k=await partyPick(storage.length?`Equipe (${storage.length} no Sítio)`:'Sua equipe',false,true);if(k===-50){await cmpMenu();continue;}if(k===-51){await trainMenu();continue;}if(k>=0){let o,j;while(true){o=[];if(k>0)o.push('Pôr na frente');if(storage.length)o.push('Trocar com o Sítio');o.push('Comparar');o.push('Voltar');
       j=await choose(o,{card:party[k],actions:o,nav:true});if(j===100){k=(k-1+party.length)%party.length;continue;}if(j===101){k=(k+1)%party.length;continue;}break;}
       if(o[j]==='Pôr na frente'){if(k>0){[party[0],party[k]]=[party[k],party[0]];await say(`${nm(party[0])} vai na frente agora.`);}else await say(`${nm(party[0])} já está na frente.`);}
@@ -15464,6 +15464,9 @@ function duoUI(){let el=document.getElementById('duoBox');if(el)return el;el=doc
   ['pointerdown','pointerup','pointermove','touchstart','touchend','touchmove','mousedown','mouseup','click','keydown','keyup','keypress'].forEach(ev=>el.addEventListener(ev,e=>e.stopPropagation()));
   {const ci=el.querySelector('#duoCod');if(ci)ci.addEventListener('input',()=>{const v=ci.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,4);if(v!==ci.value)ci.value=v;});}
   try{el.querySelector('#duoX').onclick=()=>{const v=el.querySelector('#duoVoltar');if(v)v.click();};}catch(e){}
+  /* DUOCABE12NOV (Felipe no carro: 'tela cortada' na Muralha em Dupla): em tela deitada (carro, PC) a caixa encolhe pra caber inteira, sem precisar rolar */
+  {const dp=el.querySelector('.dp');const fitDp=()=>{try{if(el.hidden||!dp)return;dp.style.transform='';dp.style.marginBottom='';if(!(innerWidth>innerHeight))return;const avail=innerHeight-28,h=dp.offsetHeight;if(h>avail){const s=Math.max(.5,avail/h);dp.style.transformOrigin='top center';dp.style.transform='scale('+s+')';dp.style.marginBottom=(-h*(1-s))+'px';}}catch(e){}};
+   addEventListener('resize',fitDp);setInterval(fitDp,400);}
   /* NUMVOLTA */document.body.appendChild(el);return el;}
 function duoMsg(t,ruim){const a=document.getElementById('duoAv');if(a){a.textContent=t||'';a.className='av'+(ruim?' ruim':'');}}
 function duoStep(k){document.getElementById('duoIni').hidden=k!=='ini';document.getElementById('duoEsp').hidden=k!=='esp';}

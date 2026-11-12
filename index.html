@@ -15477,27 +15477,45 @@ async function duoCriar(fin){duoMsg('Abrindo a sala…');const room=await duoRoo
   duoStep('esp');document.getElementById('duoCodTxt').textContent=cod;duoMsg('Esperando o parceiro entrar…');
   document.getElementById('duoEspTxt').textContent=room.local?'Modo local (teste): abra outra aba deste navegador e digite o código.':'Mande esse código pro seu parceiro. A partida começa quando ele entrar.';
   duoPres(S,{r:'host'});let comecou=false;
-  S.on('mdj',m=>{if(m.isMe||m.sameTab)return;if(DUOH&&DUOH.S===S){DUOH.wNow=1;if(DUOH.cp)DUOH.cp.ack=0;return;}if(comecou)return;const d=m.data||{},gm=(Array.isArray(d.mons)?d.mons:[]).slice(0,2).map(duoDes).filter(Boolean);if(!gm.length)return;comecou=true;fin({role:'host',S,cod,gm,gj:d});});
+  S.on('mdj',m=>{if(m.isMe||m.sameTab)return;if(DUOH&&DUOH.S===S){if(DUOH.picking){duoEmit(S,'mdp',{});return;}DUOH.wNow=1;if(DUOH.cp)DUOH.cp.ack=0;return;}if(comecou){duoEmit(S,'mdp',{});return;}const d=m.data||{},gm=(Array.isArray(d.mons)?d.mons:[]).slice(0,2).map(duoDes).filter(Boolean);if(!gm.length)return;comecou=true;fin({role:'host',S,cod,gm,gj:d});});
   DUO_CUR={cancel:()=>{try{S.leave();}catch(e){}}};}
 async function duoEntrar(cod,fin){cod=(cod||'').toUpperCase().replace(/[^A-Z]/g,'');if(cod.length!==4)return duoMsg('O código tem 4 letras.',1);
   duoMsg('Procurando a sala '+cod+'…');const room=await duoRoom();if(!room)return duoMsg('Não deu pra conectar neste aparelho.',1);let S;
   try{S=await room.join('mduo-'+cod.toLowerCase());}catch(e){return duoMsg('Não deu pra entrar. Tente de novo.',1);}
   duoPres(S,{r:'guest'});const mons=duoGuestPick();
-  const pay={mons:mons.map(duoSer),res:duoElig(party).slice(0,6).map(duoSer),auto:flags.wallAuto?1:0,nome:String(flags.nome||'').slice(0,12),fl:{up:flags.up||{},wcs:flags.wcs||{},wcu:flags.wcu||{},pw:flags.pw||{}}};
+  const pay={df:flags.duoFase|0,mons:mons.map(duoSer),res:duoElig(party).slice(0,6).map(duoSer),auto:flags.wallAuto?1:0,nome:String(flags.nome||'').slice(0,12),fl:{up:flags.up||{},wcs:flags.wcs||{},wcu:flags.wcu||{},pw:flags.pw||{}}};
   let ok=false;const iv=setInterval(()=>{if(!ok)duoEmit(S,'mdj',pay);},1500);duoEmit(S,'mdj',pay);
+  let achou=false;S.on('mdr',m=>{if(m.isMe||m.sameTab||ok||!achou)return;ok=true;clearInterval(iv);duoMsg('O parceiro saiu da sala.',1);try{S.leave();}catch(e){}});S.on('mdp',m=>{if(m.isMe||m.sameTab||ok)return;if(!achou){achou=true;duoMsg('Sala encontrada! O parceiro está escolhendo a fase…');}});
   S.on('mdw',m=>{if(m.isMe||m.sameTab||ok)return;const d=m.data||{};if(!Array.isArray(d.mons)||d.mons.length<2)return;ok=true;clearInterval(iv);fin({role:'guest',S,cod,wel:d});});
   DUO_CUR={cancel:()=>{clearInterval(iv);ok=true;try{S.leave();}catch(e){}}};
-  await new Promise(r=>setTimeout(r,12000));if(!ok){clearInterval(iv);ok=true;duoMsg('Sala '+cod+' não encontrada. Confira o código e se os dois abriram o jogo pelo '+(duoNoApp()?'App':'Claude')+'.',1);try{S.leave();}catch(e){}}}
+  await new Promise(r=>setTimeout(r,12000));while(!ok&&achou&&DUO_CUR)await new Promise(r=>setTimeout(r,1000));if(!ok){clearInterval(iv);ok=true;duoMsg('Sala '+cod+' não encontrada. Confira o código e se os dois abriram o jogo pelo '+(duoNoApp()?'App':'Claude')+'.',1);try{S.leave();}catch(e){}}}
 /* ---------- DONO DA SALA ---------- */
+const DUOFMAX=60;
+async function duoFaseGanhou(i){const f=flags.duoFase|0;if(i!==f)return;flags.duoFase=f+1;const g=3+(i%5===4?10:0);addGems(g);saveGame();
+  try{await say(`Fase ${i+1} da dupla vencida! +${g} 💎${i%5===4?' (chefe)':''}. Próxima: fase ${i+2}.`);}catch(e){}}
+function duoFasePick(hdf,gdf,gn){return new Promise(fin=>{const box=duoUI();box.hidden=false;const dp=box.querySelector('.dp');let el=document.getElementById('duoFases');
+  if(!el){el=document.createElement('div');el.id='duoFases';dp.insertBefore(el,document.getElementById('duoAv'));}
+  document.getElementById('duoIni').hidden=true;document.getElementById('duoEsp').hidden=true;el.hidden=false;const mx=Math.min(hdf,gdf);
+  const card=i=>{const n=i+1,boss=i%5===4,ok=i<=mx,feita=i<hdf;return `<button data-i="${i}" ${ok?'':'disabled'} style="display:flex;align-items:center;gap:10px;text-align:left;margin:6px 0;padding:10px 12px;font-size:17px;${ok?(boss?'background:#b8402a;box-shadow:0 4px 0 #6a2010':(i===mx?'background:#2f9f4c':'background:#4a6ab0;box-shadow:0 4px 0 #2a3a70')):'background:#3a3456;box-shadow:none;opacity:.6'}"><span style="font-size:22px">${ok?(boss?'👑':(feita?'⭐':'⚔️')):'🔒'}</span><span style="flex:1">Fase ${n}${boss?' · CHEFE':''}<br><small style="font-size:12px;opacity:.85">${!ok?(i<hdf?'o parceiro ainda não chegou':'vocês ainda não chegaram'):i===mx?'próxima da dupla':'vocês podem refazer'}</small></span></button>`;};
+  const top=Math.min(DUOFMAX-1,Math.max(hdf,mx)+2);let h=`<p style="margin:2px 0 8px">Você: fase ${hdf+1} · ${gn||'Parceiro'}: fase ${gdf+1}<br><b>Vocês podem jogar até a fase ${mx+1}</b></p><div id="duoFL" style="max-height:52vh;overflow-y:auto;padding:0 2px">`;
+  for(let i=top;i>=0;i--)h+=card(i);h+='</div>';el.innerHTML=h;
+  const L=el.querySelector('#duoFL'),cur=L.querySelector(`[data-i="${mx}"]`);setTimeout(()=>{try{cur&&cur.scrollIntoView({block:'center'});}catch(e){}},30);
+  const done=v=>{el.hidden=true;el.innerHTML='';box.hidden=true;document.getElementById('duoVoltar').onclick=null;fin(v);};
+  L.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>done(+b.dataset.i));duoMsg('Escolha a fase da dupla');
+  document.getElementById('duoVoltar').onclick=()=>done(null);});}
 async function duoHostRun(r){const hm=duoElig(party).slice(0,2);
   const H0=DUOH={S:r.S,cod:r.cod,hm,gm:r.gm,gres:((r.gj&&Array.isArray(r.gj.res))?r.gj.res:[]).slice(0,6).map(duoDes).filter(Boolean),gAuto:!!(r.gj&&r.gj.auto),gfl:duoFlSan(r.gj&&r.gj.fl),cseq:0,cp:null,P:null,gnome:String((r.gj&&r.gj.nome)||'').slice(0,12),off:false,ack:0,wNow:1,k:0,ended:false};
   r.S.on('mda',m=>{if(m.isMe||m.sameTab||DUOH!==H0)return;try{duoHostAct(H0,m.data||{});}catch(e){console.error(e);}});
   r.S.onPeers(ch=>{if(DUOH!==H0)return;const tem=(ch.peers||[]).some(p=>!p.isMe&&!p.sameTab&&p.presence&&p.presence.r==='guest');
     if(!tem&&!H0.off)H0.off=true;else if(tem&&H0.off){H0.off=false;try{if(WL&&WL.duo===H0)wPop(90,140,'PARCEIRO VOLTOU!',C.yellow,10);}catch(e){}}});
-  const wel={mons:[...hm,...r.gm].map(duoSer),n:hm.length,nome:String(flags.nome||'').slice(0,12)};
+  /* DUOFASES11NOV (Felipe: 'na dupla tem que ter uma progressão diferente do sozinho… se eu tiver no 20 e você no 5, você não faz a minha 20, mas eu refaço a sua 5; chefe a cada 5;
+     o prêmio quando vencerem juntos'): cada um tem o próprio progresso da dupla (flags.duoFase = fases vencidas). O dono escolhe a fase até a menor das duas. */
+  const gdf=Math.max(0,Math.min(DUOFMAX-1,(r.gj&&r.gj.df)|0)),hdf=Math.max(0,Math.min(DUOFMAX-1,flags.duoFase|0));H0.picking=1;duoEmit(r.S,'mdp',{});
+  const _pk=await duoFasePick(hdf,gdf,H0.gnome);H0.picking=0;if(_pk==null){duoEmit(r.S,'mdr',{res:'quit'});setTimeout(()=>{try{r.S.leave();}catch(e){}},1200);DUOH=null;return;}
+  const wel={mons:[...hm,...r.gm].map(duoSer),n:hm.length,nome:String(flags.nome||'').slice(0,12),fase:_pk+1};
   const iv=setInterval(()=>{try{if(DUOH!==H0)return;H0.k++;if(H0.wNow||(!H0.ack&&H0.k%16===1)){H0.wNow=0;duoEmit(H0.S,'mdw',wel);}
       if(WL&&WL.duo===H0&&!H0.ended){const s=duoSnap(WL);if(s)duoEmit(H0.S,'mds',s);const cp=H0.cp;if(cp&&cp.gc&&!cp.done[1]&&!H0.off&&cp.ack!==cp.gc.q&&H0.k-cp.sentK>=16)duoSendCards(H0,WL);}}catch(e){console.error(e);}},125);
-  /* DUOFASE09NOV (Felipe: 'primeira fase da muralha em dupla tá impossível'): a dupla usava a conta antiga da Muralha livre — inimigos do nível do time, ameaça subindo +15% por onda e 100 inimigos na onda 5. Agora a dupla usa a mesma régua das FASES da Muralha: começa na fase 1 e cada vitória da dupla libera a próxima. */const _di=Math.max(0,Math.min(60,flags.duoFase|0)),_stg0=STG;STG={mode:'wall',i:_di,bio:BIOMES[Math.floor(_di/3)%BIOMES.length],mult:.85+Math.min(_di,15)*.1,duo:1};H0.fase=_di+1;try{await wallMode();if(H0.res==='win'){flags.duoFase=_di+1;saveGame();}}finally{STG=_stg0;clearInterval(iv);if(DUOH===H0)DUOH=null;setTimeout(()=>{try{r.S.leave();}catch(e){}},1500);}}
+  /* DUOFASE09NOV (Felipe: 'primeira fase da muralha em dupla tá impossível'): a dupla usava a conta antiga da Muralha livre — inimigos do nível do time, ameaça subindo +15% por onda e 100 inimigos na onda 5. Agora a dupla usa a mesma régua das FASES da Muralha: começa na fase 1 e cada vitória da dupla libera a próxima. */const _di=_pk,_stg0=STG;STG={mode:'wall',i:_di,bio:BIOMES[Math.floor(_di/3)%BIOMES.length],mult:(.85+Math.min(_di,15)*.1+Math.max(0,_di-15)*.04)*(_di%5===4?1.15:1),duo:1};H0.fase=_di+1;try{await wallMode();if(H0.res==='win')await duoFaseGanhou(_di);}finally{STG=_stg0;clearInterval(iv);if(DUOH===H0)DUOH=null;setTimeout(()=>{try{r.S.leave();}catch(e){}},1500);}}
 function duoHostAct(H0,a){const w=WL;if(a.k==='hb'){H0.gAuto=!!a.auto;H0.ack=1;return;}
   if(a.k==='cack'||a.k==='pick'||a.k==='rr'){const cp=H0.cp;if(!w||w.duo!==H0||!cp||!cp.gc||(a.q|0)!==cp.gc.q)return;if(a.k==='cack')cp.ack=cp.gc.q;else if(a.k==='pick')duoPick(w,1,a.i);else duoReroll(w,1,false);return;}if(!w||w.duo!==H0||!w.running||w.cards||w.paused||H0.off)return;if(ui.length&&a.k==='tap')return;/* 06/nov: um menu aberto na tela do dono não segura mais o especial nem as trocas do parceiro */
   if(a.k==='mv'){const i=a.i|0,j=a.j|0,d=w.defs[i],e=w.defs[j];if(!d||!e||i===j||d._ow!==1||e._ow!==1)return;duoMoveDo(w,i,j);return;}
@@ -15620,7 +15638,7 @@ async function duoGuestRun(r){const wel=r.wel,mons=wel.mons.map(duoDes).filter(B
   let R;try{R=await endP;}finally{clearInterval(hb);}
   WL.cards=null;WL.duoCardsOn=false;WL.duoOff=false;WL.duoPaused=false;G0.lag=false;
   const res=R.res,wv=R.wave|0;
-  if(R.me)await say('Você saiu da partida em dupla.');else if(res==='win'){WL.flash=1;await say('VITÓRIA EM DUPLA! A muralha resistiu às 10 ondas!');}else if(res==='lose')await say(`A muralha caiu na onda ${wv}... Boa defesa em dupla! (${R.kills|0} inimigos derrotados)`);else await say('O dono da sala encerrou a partida.');
+  if(R.me)await say('Você saiu da partida em dupla.');else if(res==='win'){WL.flash=1;await say('VITÓRIA EM DUPLA! A muralha resistiu às 10 ondas!');if(wel.fase)await duoFaseGanhou((wel.fase|0)-1);}else if(res==='lose')await say(`A muralha caiu na onda ${wv}... Boa defesa em dupla! (${R.kills|0} inimigos derrotados)`);else await say('O dono da sala encerrou a partida.');
   try{if(!R.me&&Array.isArray(R.gl)&&R.gl.length){const out=R.gl.map(([sp,lv,d])=>({m:party.find(p=>p.sp===sp)||mk(sp,lv|0||1),sh:0,g:null,d:d|0,cl:null}));MGLAST={out,pts:null};const dm=R.dm||[0,0];DUOSTATS={me:dm[1],pa:dm[0],pn:(r.wel&&r.wel.nome)||''};await mgStatsShow();}}catch(e){console.warn(e);}
   try{r.S.leave();}catch(e){}DUOG=null;await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';WL=null;await fadeTo(0);}
 /* ---------- ETAPA 2: lugares, status e cartas de cada jogador ---------- */

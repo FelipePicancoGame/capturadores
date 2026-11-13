@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gravador — Falas novas 13/nov</title>
+<script src="jszip.min.js"></script>
+<style>
+:root{--bg:#f6f1e6;--card:#fff;--ink:#2b2418;--mut:#6d6250;--ac:#2f7a36;--bd:#ddd2bd;--err:#b3261e}
+@media (prefers-color-scheme:dark){:root{--bg:#1c1a16;--card:#27241f;--ink:#f1eadb;--mut:#b3a88f;--ac:#6cc070;--bd:#3d382f;--err:#ff8a80}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 2px}p.s{margin:0 0 14px;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin:0 0 14px}
+.card h2{font-size:16px;margin:0 0 10px}
+input,select,button{font:inherit}input[type=password],input[type=text]{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--ink)}
+button{padding:10px 14px;border:0;border-radius:10px;background:var(--ac);color:#fff;font-weight:600;cursor:pointer}
+button.sec{background:transparent;color:var(--ink);border:1px solid var(--bd)}button:disabled{opacity:.45}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.role{display:grid;grid-template-columns:90px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--bd)}
+.role:first-of-type{border-top:0}.role b{font-size:14px}.role select{width:100%;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--ink);min-width:0}
+.mini{padding:6px 10px;font-size:14px}
+#st{white-space:pre-wrap;color:var(--mut);font-size:14px}.err{color:var(--err)}
+.ln{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;padding:7px 0;border-top:1px solid var(--bd);font-size:14px}
+.ln small{color:var(--mut);display:block}.ok{color:var(--ac)}
+progress{width:100%;height:14px}
+</style></head><body><main>
+<h1>Gravador de Vozes — Falas novas (08/nov)</h1>
+<p class="s">Capturadores do Vale · 10 falas em português que ainda não têm voz (Tio Felipe, Téo e Guarda Bento)</p>
+
+<div class="card"><h2>1. Sua chave da ElevenLabs</h2>
+<input id="key" type="password" placeholder="Cole aqui a API key (sk_...)" autocomplete="off">
+<div class="row"><label><input id="lembrar" type="checkbox" checked> lembrar neste aparelho</label><button id="bLoad">Entrar</button></div>
+<div id="cred" class="s"></div>
+<p class="s" style="font-size:13px">A chave fica só neste navegador. Ela não é enviada para ninguém além da ElevenLabs.</p></div>
+
+<div class="card"><h2>2. Vozes de cada personagem</h2><div id="cast"><p class="s">Entre primeiro com a chave.</p></div></div>
+
+<div class="card"><h2>3. Gravar</h2>
+<div class="row"><button id="bRec" disabled>Gravar tudo</button><button id="bZip" class="sec" disabled>Baixar ZIP</button><button id="bStop" class="sec" disabled>Parar</button></div>
+<progress id="pg" value="0" max="1"></progress><div id="st"></div>
+<div id="lines"></div></div>
+</main>
+<script>
+const LINES=[{"id": "501_teo", "role": "teo", "text": "Oi! Você achou um monstrinho lá na floresta? Que demais!", "tts": "Oi! Você achou um monstrinho lá na floresta? Que demais!", "key": "oivoceachouummonstrinholanaflorestaquedemais", "g": ""}, {"id": "502_bento", "role": "bento", "text": "Os meus monstrinhos, a Ratonga e o Pedrisco, vão lutar do seu lado!", "tts": "Os meus monstrinhos, a Ratonga e o Pedrisco, vão lutar do seu lado!", "key": "osmeusmonstrinhosaratongaeopedriscovaolutardoseulado", "g": ""}, {"id": "503_bento", "role": "bento", "text": "Eles derrubaram a muralha! Mas tudo bem: respire, treine e tente de novo.", "tts": "Eles derrubaram a muralha! Mas tudo bem: respire, treine e tente de novo.", "key": "elesderrubaramamuralhamastudobemrespiretreineetentedenovo", "g": ""}, {"id": "504_tio", "role": "tio", "text": "Ei, vi que essa fase tá difícil! Já foram várias tentativas. Calma, faz parte do treino. Bora ver o que dá pra melhorar?", "tts": "Ei, vi que essa fase tá difícil! Já foram várias tentativas. Calma, faz parte do treino. Bora ver o que dá pra melhorar?", "key": "eiviqueessafasetadificiljaforamvariastentativascalmafazpartedotreinoboraveroquedapramelhorar", "g": ""}, {"id": "505_tio", "role": "tio", "text": "Opa, para tudo! Os inimigos dessa fase estão muito mais fortes que o seu time. Assim fica muito pesado! Primeiro fique mais forte: Expedição, batalhas no mato alto e Doces Mágicos dão nível!", "tts": "Opa, para tudo! Os inimigos dessa fase estão muito mais fortes que o seu time. Assim fica muito pesado! Primeiro fique mais forte: Expedição, batalhas no mato alto e Doces Mágicos dão nível!", "key": "opaparatudoosinimigosdessafaseestaomuitomaisfortesqueoseutimeassimficamuitopesadoprimeirofiquemaisforteexpedicaobatalhasnomatoaltoedocesmagicosdaonivel", "g": ""}, {"id": "506_tio", "role": "tio", "text": "Escolha monstrinhos de tipo FORTE contra os inimigos dessa fase. Fogo contra planta, água contra fogo... cada tipo tem o seu ponto fraco!", "tts": "Escolha monstrinhos de tipo FORTE contra os inimigos dessa fase. Fogo contra planta, água contra fogo... cada tipo tem o seu ponto fraco!", "key": "escolhamonstrinhosdetipofortecontraosinimigosdessafasefogocontraplantaaguacontrafogocadatipotemoseupontofraco", "g": ""}, {"id": "507_tio", "role": "tio", "text": "Na LOJA, em PODERES, você deixa cada tipo de monstrinho mais forte. Vale muito a pena!", "tts": "Na LOJA, em PODERES, você deixa cada tipo de monstrinho mais forte. Vale muito a pena!", "key": "nalojaempoderesvocedeixacadatipodemonstrinhomaisfortevalemuitoapena", "g": ""}, {"id": "508_tio", "role": "tio", "text": "Use o ESPECIAL quando a barrinha do monstrinho encher. Guarde pros momentos de aperto!", "tts": "Use o ESPECIAL quando a barrinha do monstrinho encher. Guarde pros momentos de aperto!", "key": "useoespecialquandoabarrinhadomonstrinhoencherguardeprosmomentosdeaperto", "g": ""}, {"id": "509_tio", "role": "tio", "text": "Nas cartas do meio da partida, escolha as que ajudam o seu melhor monstrinho. Foco no mais forte!", "tts": "Nas cartas do meio da partida, escolha as que ajudam o seu melhor monstrinho. Foco no mais forte!", "key": "nascartasdomeiodapartidaescolhaasqueajudamoseumelhormonstrinhofoconomaisforte", "g": ""}, {"id": "510_tio", "role": "tio", "text": "Repetir fases que você já venceu dá moedas e cristais pra melhorar o time. Treino é assim mesmo: um pouquinho por dia!", "tts": "Repetir fases que você já venceu dá moedas e cristais pra melhorar o time. Treino é assim mesmo: um pouquinho por dia!", "key": "repetirfasesquevocejavenceudamoedasecristaispramelhorarotimetreinoeassimmesmoumpouquinhopordia", "g": ""}];
+const ROLES=[{"id": "tio", "nome": "Tio Felipe (você)", "mine": "felipe", "q": {"gender": "male", "age": "middle_aged"}}, {"id": "teo", "nome": "Téo (amigo)", "q": {"gender": "male", "age": "young"}}, {"id": "bento", "nome": "Guarda Bento", "q": {"gender": "male", "age": "middle_aged"}}];
+const API='https://api.elevenlabs.io';
+let KEY='',MINE=[],CAND={},CAST={},AUD={},stop=false,added={};
+const $=id=>document.getElementById(id);
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const st=(t,err)=>{$('st').innerHTML=err?'<span class="err">'+t+'</span>':t;};
+async function api(path,opt={}){const r=await fetch(API+path,{...opt,headers:{'xi-api-key':KEY,...(opt.body?{'Content-Type':'application/json'}:{}),...(opt.headers||{})}});
+  if(!r.ok){let t='';try{t=await r.text()}catch(e){}throw new Error(r.status+' '+t.slice(0,240));}return r;}
+async function credits(){try{const s=await (await api('/v1/user/subscription')).json();$('cred').textContent='Créditos: '+(s.character_limit-s.character_count).toLocaleString('pt-BR')+' sobrando de '+s.character_limit.toLocaleString('pt-BR')+' (plano '+s.tier+')';}catch(e){$('cred').textContent='';}}
+$('key').value=ls.get('cv_el_key')||'';
+$('bLoad').onclick=async()=>{KEY=$('key').value.trim();if(!KEY){st('Cole a chave primeiro.',1);return;}
+  if($('lembrar').checked)ls.set('cv_el_key',KEY);else ls.del('cv_el_key');
+  st('Carregando vozes...');try{
+    MINE=(await (await api('/v1/voices')).json()).voices||[];
+    for(const r of ROLES){CAND[r.id]=[];
+      if(r.mine){const v=MINE.find(v=>v.name.toLowerCase().startsWith(r.mine.toLowerCase()));if(v)CAND[r.id].push({id:v.voice_id,name:v.name,prev:v.preview_url,mine:1});}
+      if(r.q){const tries=[...(r.kid?(r.q.gender==='male'?['menino','criança','infantil','child','boy','kid']:['menina','criança','infantil','child','girl','kid']).map(w=>({language:'pt',gender:r.q.gender,search:w})):[]),{language:'pt',locale:'pt-BR',...r.q},{language:'pt',...r.q},{language:'pt',gender:r.q.gender,age:r.q.age},{language:'pt',gender:r.q.gender}];const seen=new Set();
+        for(const t of tries){if(CAND[r.id].filter(c=>!c.mine).length>=8)break;const q=new URLSearchParams({page_size:'20',sort:'usage_character_count_1y',...t});
+          try{let vs=(await (await api('/v1/shared-voices?'+q)).json()).voices||[];
+            vs=vs.filter(v=>/bra[sz]il|pt-br/i.test((v.accent||'')+' '+(v.locale||'')+' '+(v.verified_languages||[]).map(x=>(x.accent||'')+' '+(x.locale||'')).join(' '))&&!/indian|hindi|india|african|nigeria|american|british|spanish|mexic/i.test((v.accent||'')+' '+(v.description||'')+' '+v.name));
+            vs.sort((a,b)=>(/bra[sz]il|pt-br/i.test((b.accent||'')+(b.locale||''))?1:0)-(/bra[sz]il|pt-br/i.test((a.accent||'')+(a.locale||''))?1:0));
+            for(const v of vs){if(seen.has(v.voice_id))continue;seen.add(v.voice_id);CAND[r.id].push({id:v.voice_id,owner:v.public_owner_id,name:v.name.split(' - ')[0]+' · '+(v.accent||v.locale||'pt')+(v.description?' — '+v.description.slice(0,40):''),prev:v.preview_url});}}catch(e){console.warn(e);}}}
+      {const ex=MINE.filter(v=>!CAND[r.id].some(c=>c.id===v.voice_id)&&!/premade/i.test(v.category||'')).map(v=>({id:v.voice_id,name:'(minha) '+v.name,prev:v.preview_url,mine:1,extra:1}));const k=CAND[r.id].findIndex(c=>!c.mine);CAND[r.id].splice(k<0?CAND[r.id].length:k,0,...ex);}
+    }
+    drawCast();drawLines();credits();$('bRec').disabled=false;st('Pronto. Escute as vozes (▶), troque se quiser e toque em Gravar tudo.');
+  }catch(e){st('Não consegui entrar: '+e.message,1);}};
+function drawCast(){const saved=JSON.parse(ls.get('cv_el_cast')||'{}');const used=new Set();const box=$('cast');box.innerHTML='';
+  for(const r of ROLES){const c=CAND[r.id]||[];let pick=c.find(x=>x.id===saved[r.id])||(r.mine&&c.find(x=>x.mine&&x.name.replace(/^\(minha\) /,'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').startsWith(r.mine.toLowerCase())))||c.find(x=>!x.extra&&!used.has(x.id))||c.find(x=>!x.extra)||c[0];
+    if(pick)used.add(pick.id);CAST[r.id]=pick;
+    const d=document.createElement('div');d.className='role';d.innerHTML='<b>'+r.nome+'</b>';const s=document.createElement('select');
+    c.forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=x.name;if(x===pick)o.selected=true;s.append(o);});
+    s.onchange=()=>{CAST[r.id]=c[s.value];const sv=JSON.parse(ls.get('cv_el_cast')||'{}');sv[r.id]=CAST[r.id].id;ls.set('cv_el_cast',JSON.stringify(sv));};
+    const p=document.createElement('button');p.className='sec mini';p.textContent='▶';p.onclick=()=>{const x=CAST[r.id];if(x&&x.prev)new Audio(x.prev).play();};
+    d.append(s,p);box.append(d);}}
+function drawLines(){const box=$('lines');box.innerHTML='';for(const l of LINES){const d=document.createElement('div');d.className='ln';d.id='l_'+l.id;
+  d.innerHTML='<span class="ic">'+(AUD[l.id]?'<span class="ok">✓</span>':'·')+'</span><div><small>'+(ROLES.find(r=>r.id===l.role)||{}).nome+'</small>'+l.text.replace(/</g,'&lt;')+'</div>';
+  const bt=document.createElement('div');bt.className='row';bt.style.margin='0';const p=document.createElement('button');p.className='sec mini';p.textContent='▶';p.onclick=()=>{if(AUD[l.id])new Audio(URL.createObjectURL(AUD[l.id])).play();};
+  const r=document.createElement('button');r.className='sec mini';r.textContent='↻';r.title='Gravar de novo';r.onclick=async()=>{r.disabled=true;try{await gen(l);credits();}catch(e){st(e.message,1);}r.disabled=false;};
+  bt.append(p,r);d.append(bt);box.append(d);}}
+async function ensure(v){if(!v||v.mine||!v.owner||added[v.id])return;try{await api('/v1/voices/add/'+v.owner+'/'+v.id,{method:'POST',body:JSON.stringify({new_name:v.name.split(' — ')[0]})});}catch(e){console.warn('add',e.message);}added[v.id]=1;}
+let MODEL='eleven_v3';
+async function gen(l){const v=CAST[l.role];if(!v)throw new Error('Sem voz para '+l.role);await ensure(v);
+  let text=l.tts;if(MODEL!=='eleven_v3')text=text.replace(/\[[^\]]*\]\s*/g,'');
+  let r;try{r=await api('/v1/text-to-speech/'+v.id+'?output_format=mp3_44100_64',{method:'POST',body:JSON.stringify({text,model_id:MODEL})});}
+  catch(e){if(MODEL==='eleven_v3'&&/model/i.test(e.message)){MODEL='eleven_multilingual_v2';return gen(l);}throw e;}
+  AUD[l.id]=await r.blob();const ic=document.querySelector('#l_'+l.id+' .ic');if(ic)ic.innerHTML='<span class="ok">✓</span>';$('bZip').disabled=false;}
+$('bRec').onclick=async()=>{stop=false;$('bRec').disabled=true;$('bStop').disabled=false;const todo=LINES.filter(l=>!AUD[l.id]);$('pg').max=LINES.length;
+  for(const l of todo){if(stop)break;st('Gravando '+(Object.keys(AUD).length+1)+' de '+LINES.length+'...');
+    let ok=0;for(let t=0;t<3&&!ok;t++){try{await gen(l);ok=1;}catch(e){if(t===2){st('Erro na fala "'+l.text.slice(0,40)+'": '+e.message,1);stop=true;}else await new Promise(r=>setTimeout(r,2000*(t+1)));}}
+    $('pg').value=Object.keys(AUD).length;}
+  $('bRec').disabled=false;$('bStop').disabled=true;credits();
+  if(Object.keys(AUD).length===LINES.length)st('Pronto! Toque em Baixar ZIP e mande o arquivo para o Claude.');};
+$('bStop').onclick=()=>{stop=true;};
+$('bZip').onclick=async()=>{const z=new JSZip();const man=[];for(const l of LINES){if(!AUD[l.id])continue;z.file(l.id+'.mp3',AUD[l.id]);man.push({...l,voz:(CAST[l.role]||{}).name,modelo:MODEL});}
+  z.file('manifest.json',JSON.stringify(man,null,1));const b=await z.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='vozes_novas_13nov.zip';document.body.append(a);a.click();a.remove();};
+</script></body></html>

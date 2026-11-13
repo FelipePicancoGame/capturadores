@@ -15739,6 +15739,21 @@ function amgLinkUrl(){return 'https://felipepicancogame.github.io/capturadores/#
 function amgLinkTxt(){return (flags.nome?flags.nome+' te chamou pra':'Vem')+' jogar Capturadores do Vale comigo! Toque no link e a gente vira amigo no jogo:';}
 async function amgShare(){const url=amgLinkUrl(),text=amgLinkTxt();try{if(navigator.share){await navigator.share({title:'Capturadores do Vale',text,url});return;}}catch(e){if(e&&e.name==='AbortError')return;}
   try{await navigator.clipboard.writeText(text+' '+url);duoMsg('Link copiado! Cole na conversa com seu amigo.');}catch(e){duoMsg(url,1);}}
+/* AMGQR13NOV (Felipe no carro: 'Mandar link pro amigo' não envia): no carro/PC não existe o menu de compartilhar do celular; mostra um QR CODE com o link pro amigo ler com a câmera do celular, e o link escrito embaixo */
+function amgQR(url,text){return new Promise(res=>{const EN=window.CVLANG==='en';let el=document.getElementById('amgQR');if(el)el.remove();el=document.createElement('div');el.id='amgQR';
+  el.style.cssText='position:fixed;inset:0;z-index:99995;background:rgba(8,6,24,.88);display:flex;align-items:center;justify-content:center;font-family:Fredoka,system-ui,sans-serif';
+  el.innerHTML=`<div style="background:#fff8e6;border:4px solid #6a4a2a;border-radius:20px;padding:18px;max-width:92vw;text-align:center;color:#3a2614">
+<div style="font-size:22px;font-weight:800;color:#5a2aa0;margin-bottom:6px">${EN?'Scan with your friend\'s phone':'Leia com o celular do amigo'}</div>
+<div style="font-size:14px;margin-bottom:10px">${EN?'Point the phone camera at the code to open the invite':'Aponte a câmera do celular para o código e abra o convite'}</div>
+<div id="amgQRc" style="display:inline-block;background:#fff;padding:10px;border-radius:12px"></div>
+<div style="font-size:12px;word-break:break-all;margin:10px 0;max-width:360px">${url.replace(/[<>&]/g,'')}</div>
+<button style="font:800 18px Fredoka,system-ui,sans-serif;padding:11px 30px;border:0;border-radius:14px;background:#1f7a3a;color:#fff;box-shadow:0 4px 0 #0e4a20">${EN?'CLOSE':'FECHAR'}</button></div>`;
+  document.body.appendChild(el);['pointerdown','pointerup','touchstart','touchend','mousedown'].forEach(k=>el.addEventListener(k,e=>e.stopPropagation()));
+  el.querySelector('button').onclick=()=>{el.remove();res();};
+  const draw=()=>{try{const Q=window.QRMini,q=new Q(-1,Q.L.M);q.addData(url);q.make();const n=q.getModuleCount(),px=Math.floor(240/n),cv=document.createElement('canvas');cv.width=cv.height=n*px;const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.fillStyle='#000';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))x.fillRect(c*px,r*px,px,px);el.querySelector('#amgQRc').appendChild(cv);}catch(e){}};
+  if(window.QRMini)draw();else{const s=document.createElement('script');s.src='assets/lib/qrmini.js';s.onload=draw;document.head.appendChild(s);}
+  try{navigator.clipboard&&navigator.clipboard.writeText(text+' '+url).catch(()=>{});}catch(e){}});}
+{const _as=amgShare;amgShare=async function(){try{const big=Math.min(innerWidth,innerHeight)>=600||!('ontouchstart' in window)||!navigator.share;if(big)return amgQR(amgLinkUrl(),amgLinkTxt());}catch(e){}return _as.apply(this,arguments);};}
 function amgZap(){try{window.open('https://wa.me/?text='+encodeURIComponent(amgLinkTxt()+' '+amgLinkUrl()),'_blank');}catch(e){}}
 (function(){try{const m=/amigo-(\d{4,6})(?:-([^#&-]*))?/.exec(location.hash||'');if(!m)return;
   localStorage.setItem('cv.amglink',JSON.stringify({tid:+m[1],nome:decodeURIComponent(m[2]||'').slice(0,14)}));

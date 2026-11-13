@@ -10054,9 +10054,9 @@ function honraAdd(n,why){flags.honra=(flags.honra||0)+n;MGHONRA=(MGHONRA||0)+n;r
 let MGHONRA=0;
 async function honraMenu(){const TY=[...new Set(DEXLIST.map(sp=>SP[sp]&&SP[sp].type).filter(Boolean))];
   while(true){const h=flags.honra||0,D=flags.dex||{};
-    const rowsT=TY.map(t=>{const L=DEXLIST.filter(sp=>SP[sp]&&SP[sp].type===t),own=L.filter(sp=>D[sp]).length,mn=Math.min(...L.map(honraPrice));return{t,mn,n:TYPES[t],d:`${L.length} monstrinhos · você tem ${own}`,ic:PWIC[t],bg:TYPECOL[t]+'33',badge:`${mn}+ 🏅`,bcol:h>=mn?'#2f8f4c':'#8a4ad8'};});
+    const rowsT=TY.map(t=>{const L=DEXLIST.filter(sp=>SP[sp]&&SP[sp].type===t&&!TRV(sp)),own=L.filter(sp=>D[sp]).length,mn=Math.min(...L.map(honraPrice));return{t,mn,n:TYPES[t],d:`${L.length} monstrinhos · você tem ${own}`,ic:PWIC[t],bg:TYPECOL[t]+'33',badge:`${mn}+ 🏅`,bcol:h>=mn?'#2f8f4c':'#8a4ad8'};});
     const k=await (UIK.honra&&rowsT.length<=9?choose([...rowsT.map(i=>i.n),'Voltar'],{shop:rowsT,honraArt:1}):shopPick(rowsT,`LOJA DE HONRA · ${h} 🏅`,'Escolha o tipo · compre QUALQUER monstrinho'));if(k==null||k<0||k>=TY.length)return;
-    while(true){const h2=flags.honra||0,L=DEXLIST.filter(sp=>SP[sp]&&SP[sp].type===TY[k]);
+    while(true){const h2=flags.honra||0,L=DEXLIST.filter(sp=>SP[sp]&&SP[sp].type===TY[k]&&!TRV(sp));
       const rowsM=L.map(sp=>{const p=honraPrice(sp),own=!!(flags.dex||{})[sp];return{n:SP[sp].name,d:own?'Você já tem · pode pegar outro':'Ainda não tem!',mon:sp,own,bg:TYPECOL[TY[k]]+'33',badge:`${p} 🏅`,bcol:h2>=p?'#2f8f4c':'#8a4ad8'};});
       const c=await shopPick(rowsM,`${TYPES[TY[k]]} · ${h2} 🏅`,'Toque no monstrinho pra comprar');if(c==null||c<0||c>=L.length)break;
       const sp=L[c],p=honraPrice(sp);if(h2<p){tone([300],.06);shopToast(`Faltam ${p-h2} 🏅 pro ${SP[sp].name}`,1);continue;}
@@ -17218,6 +17218,17 @@ function wDdaK(){return 1;}/* PAGAPOUCO (08/nov): dificuldade adaptativa desliga
     try{for(const mo of party)if(mo&&typeof TRV==='function'&&TRV(mo.sp)&&typeof trvSync==='function')trvSync();}catch(_){}hit=1;try{__EV('nivel presente '+N);}catch(_){}}
   if(hit){p.itens=it.replace(re,'').replace(/^[\s,;]+|[\s,;]+$/g,'');if(!p.msg)p.msg='Seu time subiu de nível! 💪';saveGame();}}}catch(e){}return _je.apply(this,arguments);};}
 /* /NIVELPRESENTE13NOV */
+/* TROVIMSO13NOV (Felipe: "ninguém pode ganhar o Trovim, só quem eu der"): o Trovim (e Trovoar/Tempestor) só chega pelos Presentes da planilha.
+   Sai o presente automático da loja (PRESENTES), sai da Loja de Honra (filtro no honraMenu) e deixa de ser carta livre na Arena. Quem já tem continua com ele. */
+try{giftReady=function(){return false;};trovimGift=function(){};}catch(e){}
+try{const i=ARSTARTS.indexOf('trovim');if(i>=0)ARSTARTS.splice(i,1);}catch(e){}
+/* Ninguém fica com 2 Trovins (o presente automático + o presente do Felipe): fica só o de nível mais alto. */
+function trovDedup(){try{if(!Array.isArray(party))return;const all=[...party.map(m=>[party,m]),...(storage||[]).map(m=>[storage,m])].filter(([,m])=>m&&TRV(m.sp));
+  if(all.length<2)return;all.sort((a,b)=>(b[1].lv||0)-(a[1].lv||0));
+  for(const [arr,m] of all.slice(1)){const i=arr.indexOf(m);if(i>=0&&!(arr===party&&party.length<=1))arr.splice(i,1);}
+  saveGame();try{__EV('trovim duplicado removido '+(all.length-1));}catch(_){}}catch(e){}}
+setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode==='world')trovDedup();}catch(e){}},3000);
+/* /TROVIMSO13NOV */
 
 /* PAGAPOUCO (08/nov, Felipe: "se alguém gastar dinheiro pra passar de fase tem que ficar um pouco mais forte, mas não pode passar demais"):
    a dificuldade das fases é fixa (não reage a vitória/derrota). As compras e melhorias (PODERES dos tipos do time, cartas que já começam ativas,

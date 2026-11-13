@@ -17209,6 +17209,15 @@ function wDdaK(){return 1;}/* PAGAPOUCO (08/nov): dificuldade adaptativa desliga
   while((m=re.exec(it))){const key=m[1].toLowerCase(),n=Math.max(0,Math.min(STGT,+m[2]));const A=stgArr(key);A.length=Math.min(A.length,n);if(key==='wall')flags.wDda=1;hit=1;try{__EV('fase ajustada '+key+' '+n);}catch(_){}}
   if(hit){p.itens=it.replace(re,'').replace(/^[\s,;]+|[\s,;]+$/g,'');saveGame();}}}catch(e){}return _je.apply(this,arguments);};}
 /* /FASECERTA */
+/* NIVELPRESENTE13NOV (Felipe: "tem que poder aumentar o lvl"): presente da planilha que sobe o nível do time.
+   Na coluna Itens: nivel:15 (ou lvl:15 / level:15) → todo monstrinho do time abaixo do nível 15 vai para o 15 (quem já está acima fica igual).
+   O Trovim que acompanha o inicial segue o inicial. */
+{const _je=jogEntrega;jogEntrega=async function(){try{for(const p of JOGPEND){const it=String(p.itens||'');const re=/(?:nivel|nível|lvl|level)\s*[:=x]?\s*(\d+)/gi;let m,hit=0;
+  while((m=re.exec(it))){const N=Math.max(1,Math.min(LVMAX,+m[1]));for(const mo of party){if(!mo||mo.lv>=N)continue;try{if(typeof TRV==='function'&&TRV(mo.sp))continue;}catch(_){}
+    const s0=stats(mo);mo.lv=N;mo.xp=Math.max(mo.xp||0,N**3);mo.hp=Math.max(1,mo.hp+stats(mo).hp-s0.hp);mo.dhp=mo.hp;}
+    try{for(const mo of party)if(mo&&typeof TRV==='function'&&TRV(mo.sp)&&typeof trvSync==='function')trvSync();}catch(_){}hit=1;try{__EV('nivel presente '+N);}catch(_){}}
+  if(hit){p.itens=it.replace(re,'').replace(/^[\s,;]+|[\s,;]+$/g,'');if(!p.msg)p.msg='Seu time subiu de nível! 💪';saveGame();}}}catch(e){}return _je.apply(this,arguments);};}
+/* /NIVELPRESENTE13NOV */
 
 /* PAGAPOUCO (08/nov, Felipe: "se alguém gastar dinheiro pra passar de fase tem que ficar um pouco mais forte, mas não pode passar demais"):
    a dificuldade das fases é fixa (não reage a vitória/derrota). As compras e melhorias (PODERES dos tipos do time, cartas que já começam ativas,

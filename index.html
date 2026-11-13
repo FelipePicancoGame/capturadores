@@ -13303,6 +13303,144 @@ let tries=0;const iv=setInterval(async()=>{tries++;let ready=false;try{ready=Arr
   try{if(flags.fp&&flags.fp.uid&&localStorage.getItem('cv-fp-auth')){const r=await sync();if(r&&(r.gc||r.gg))toast('💪 FPimpulse: '+rewTxt(r));}}catch(e){}
 },1000);
 })();
+/* PROMO13NOV (Felipe: "crie promoção de cartas nos jogos, tipo anúncio pra comprar com desconto, coloque sempre que abrir o jogo" +
+   "promoções pra pegar cartas lendárias, carta específica pra Muralha, carta pra ganhar mais cartas na Arena… faz diversas formas pra gente treinar nossa venda" +
+   "crie também a venda de cartas permanentes, por um preço muito mais alto. Crie vários tipos de promoções").
+   Toda vez que o jogo abre (depois de Continuar) aparece UMA oferta. 10 formas de venda:
+     inicio    — SÓ UMA VEZ: Pacote do Capturador -70% (aparece primeiro até comprar)
+     volta     — QUE BOM QUE VOLTOU: quem ficou 3+ dias sem jogar, -60%
+     fichas    — OFERTA DO DIA: fichas 🎟 das cartas da Muralha, -30% a -60%
+     lend      — CARTA LENDÁRIA: uma lendária específica, 3 partidas da Muralha
+     arena     — ARENA EM DOBRO: 5 partidas com o dobro de cartas
+     combo3    — LEVE 3, PAGUE 2: trio de lendárias, 2 partidas cada
+     perm      — PARA SEMPRE: lendária PERMANENTE (toda Muralha começa com ela) — preço bem mais alto
+     escolha   — ESCOLHA SEU PACOTE: 3 tamanhos (âncora: o do meio "MAIS VENDIDO", o grande "MELHOR VALOR")
+     relampago — OFERTA RELÂMPAGO: vale 30 minutos de verdade, contados desde que apareceu
+     bogo      — COMPRE 1, LEVE 2: lendária 3 partidas + 3 grátis
+   Paga com 💎 (sem 💎: abre a loja de cristais). Descontos e prazos são de verdade (nenhum relógio falso). 1 compra de cada por dia.
+   flags.promoStats[forma] = {v vista, b compras, x "agora não", semgema} — pra comparar qual forma vende mais. ?nopromo desliga. */
+(function(){
+const EN=()=>window.CVLANG==='en',T=(p,e)=>EN()?e:p;
+const LEG=[{id:'phoenix',e:'🔥',en:'Wall Phoenix',den:'If the wall falls, it REVIVES once with 60% HP'},{id:'starfall',e:'🌠',en:'Starfall',den:'Specials READY at once and +25% charge'},
+  {id:'titan',e:'💪',en:'Titan Strength',den:'+30% damage on every shot'},{id:'crystal',e:'🛡️',en:'Crystal Shield',den:'Blocks the next 15 hits on the wall, +6 blocks each wave'},
+  {id:'focus',e:'👁️',en:"Hunter's Eye",den:'Each monster attacks FIRST whoever is weak to its type'}];
+const card=id=>{try{return (typeof WLEG!=='undefined'&&WLEG.find(c=>c.id===id))||WC.find(c=>c.id===id);}catch(e){return null;}};
+const legN=L=>{const c=card(L.id);return EN()?L.en:(c&&c.n)||L.en;},legD=L=>{const c=card(L.id);return EN()?L.den:(c&&typeof c.d==='string'?c.d:L.den);};
+function hoje(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function seed(){let h=0;for(const c of hoje())h=(h*31+c.charCodeAt(0))|0;return Math.abs(h);}
+const FG=()=>typeof FICHA_GEM==='number'?FICHA_GEM:1;
+const P=()=>{flags.promo=flags.promo||{};const p=flags.promo;if(p.dia!==hoje()){p.dia=hoje();p.hoje={};}p.hoje=p.hoje||{};return p;};
+const ST=(f,k)=>{flags.promoStats=flags.promoStats||{};const s=flags.promoStats[f]=flags.promoStats[f]||{v:0,b:0,x:0};s[k]=(s[k]||0)+1;};
+const giveLeg=(id,n)=>{flags.promoCartas=flags.promoCartas||{};flags.promoCartas[id]=(flags.promoCartas[id]||0)+n;};
+const fichas=n=>{flags.wFichas=(flags.wFichas||0)+n;};
+const perms=()=>flags.legPerm||{};
+const RELMIN=30;
+/* ARTE (Felipe: 'usa uma arte que a gente já tenha'): ícones das cartas da Muralha (ASSRC/ICONSPR) e cartas dos monstrinhos (assets/cartas) */
+const icU=k=>{try{return ASSRC[ICONSPR[k]]||'';}catch(e){return '';}};const legU=L=>{const c=card(L.id);return c?icU(c.ic):'';};
+const IC=k=>({u:icU(k)}),LG=L=>({u:legU(L)}),MC=sp=>({u:'assets/cartas/'+sp+'.webp',m:1});
+const MCS=['brasinha','auroril','fagulho','arvorito','choquinho','flocolino','corujito','brotim'];
+const meus=()=>{const out=[];try{for(const m of party){const sp=m.sp||m.id;if(sp&&MCS.concat(['brasalor_a']).length&&out.length<3)out.push(sp);}}catch(e){}return out;};
+const tresMon=()=>{const s=seed(),b=[MCS[s%8],MCS[(s+3)%8],MCS[(s+5)%8]];return b;};
+function oferta(forma){const s=seed(),p=P();
+  if(forma==='inicio'){const L=LEG[0];return {forma,tag:T('SÓ UMA VEZ','ONE TIME ONLY'),cor:'verde',title:T('Pacote do Capturador','Catcher Pack'),sub:T('A melhor oferta do jogo. Só aparece até você comprar.','The best deal in the game. Only until you buy it.'),
+    vis:[IC('k_dmg'),LG(L),MC(tresMon()[0])],lista:[`100 🎟 ${T('fichas de cartas','card tokens')}`,`<img class="li" src="${legU(L)}" alt="">${legN(L)} · 3 ${T('partidas da Muralha','Wall matches')}`,`🏟️ ${T('Arena em dobro','Double Arena')} · 5 ${T('partidas','matches')}`],
+    full:100*FG()+90+60,pr:75,give(){fichas(100);giveLeg(L.id,3);flags.promoArena=(flags.promoArena||0)+5;}};}
+  if(forma==='volta'){const L=LEG[s%5];return {forma,tag:T('QUE BOM QUE VOLTOU!','WELCOME BACK!'),cor:'verde',title:T('Presente de Volta','Welcome Back Pack'),sub:T('Uma oferta especial porque você voltou pro Vale','A special deal because you came back to the Valley'),
+    vis:[IC('k_spd'),LG(L),MC(tresMon()[1])],lista:[`150 🎟 ${T('fichas de cartas','card tokens')}`,`<img class="li" src="${legU(L)}" alt="">${legN(L)} · 3 ${T('partidas da Muralha','Wall matches')}`],full:150*FG()+90,pr:96,give(){fichas(150);giveLeg(L.id,3);}};}
+  if(forma==='fichas'){const b=[40,100,250][s%3],d=Math.min(60,[30,40,50][s%3]+[0,5,10][(s>>3)%3]),full=b*FG();
+    return {forma,tag:T('OFERTA DO DIA','DEAL OF THE DAY'),title:T('Pacote de Cartas','Card Pack'),sub:T('Fichas para melhorar as cartas da Muralha','Tokens to upgrade your Wall cards'),
+    vis:[IC('k_dmg'),IC('k_spd'),IC('k_crit')],big:`${b} 🎟`,bigs:T('fichas','tokens'),full,pr:Math.max(1,Math.round(full*(1-d/100))),give(){fichas(b);}};}
+  if(forma==='lend'){const L=LEG[((p.k||0)+s)%LEG.length];
+    return {forma,tag:T('CARTA LENDÁRIA','LEGENDARY CARD'),cor:'ouro',title:legN(L),sub:legD(L),leg:L,big:'3',bigs:T('partidas da Muralha','Wall matches'),
+    nota:T('Você começa as próximas 3 partidas da Muralha já com esta carta lendária.','You start your next 3 Wall matches with this legendary card.'),full:90,pr:54,give(){giveLeg(L.id,3);}};}
+  if(forma==='bogo'){const L=LEG[(s+2)%LEG.length];
+    return {forma,tag:T('COMPRE 1, LEVE 2','BUY 1, GET 1 FREE'),cor:'ouro',title:legN(L),sub:legD(L),leg:L,big:'3+3',bigs:T('partidas da Muralha (3 grátis)','Wall matches (3 free)'),
+    nota:T('Pague 3 partidas com esta lendária e ganhe mais 3 de presente.','Pay for 3 matches with this legendary and get 3 more free.'),full:180,pr:90,give(){giveLeg(L.id,6);}};}
+  if(forma==='arena')return {forma,tag:T('ARENA EM DOBRO','DOUBLE ARENA'),cor:'azul',title:T('Dobro de Cartas na Arena','Double Arena Cards'),sub:T('Mais cartas para evoluir seus monstrinhos','More cards to level up your monsters'),
+    vis:tresMon().map(MC),big:'x2',bigs:T('nas próximas 5 partidas','for your next 5 matches'),nota:T('Cada partida da Arena dá o DOBRO de cartas (fragmentos).','Every Arena match gives DOUBLE cards (fragments).'),full:60,pr:35,give(){flags.promoArena=(flags.promoArena||0)+5;}};
+  if(forma==='combo3'){const i=s%LEG.length,tr=[LEG[i],LEG[(i+1)%5],LEG[(i+2)%5]];
+    return {forma,tag:T('LEVE 3, PAGUE 2','BUY 3, PAY FOR 2'),cor:'ouro',title:T('Trio Lendário','Legendary Trio'),sub:T('3 cartas lendárias da Muralha, 2 partidas cada','3 legendary Wall cards, 2 matches each'),
+    vis:tr.map(LG),lista:tr.map(L=>`<img class="li" src="${legU(L)}" alt="">${legN(L)}`),full:180,pr:120,give(){for(const L of tr)giveLeg(L.id,2);}};}
+  if(forma==='perm'){const falta=LEG.filter(L=>!perms()[L.id]);if(!falta.length)return null;const L=falta[s%falta.length],d=[0,0,20][(s>>2)%3];
+    return {forma,tag:T('PARA SEMPRE','FOREVER'),cor:'rubi',title:legN(L),sub:legD(L),leg:L,big:'∞',bigs:T('em toda Muralha','in every Wall match'),
+    nota:T('Carta PERMANENTE: toda partida da Muralha já começa com ela. Para sempre.','PERMANENT card: every Wall match starts with it. Forever.'),full:900,pr:Math.round(900*(1-d/100)),give(){flags.legPerm=flags.legPerm||{};flags.legPerm[L.id]=1;}};}
+  if(forma==='escolha')return {forma,tag:T('ESCOLHA SEU PACOTE','PICK YOUR PACK'),title:T('Fichas de Cartas','Card Tokens'),sub:T('Quanto maior o pacote, mais barato sai cada ficha','The bigger the pack, the cheaper each token'),
+    vis:[IC('k_hp'),IC('k_dmg'),IC('k_crit')],opcoes:[{n:40,pr:32,full:40},{n:120,pr:78,full:120,sel:T('MAIS VENDIDO','MOST POPULAR')},{n:300,pr:165,full:300,sel:T('MELHOR VALOR','BEST VALUE')}].map(o=>({...o,lb:`${o.n} 🎟`,give(){fichas(o.n);}}))};
+  if(forma==='relampago'){p.relT=p.relT||Date.now();const fim=p.relT+RELMIN*60e3;if(Date.now()>fim)return null;
+    return {forma,tag:T('OFERTA RELÂMPAGO','FLASH DEAL'),cor:'rubi',title:T('Relâmpago do Vale','Valley Flash Deal'),sub:T(`Só por ${RELMIN} minutos, contados de quando ela apareceu`,`Only for ${RELMIN} minutes, counted from when it appeared`),
+    vis:[IC('k_energy'),IC('k_dmg'),MC(tresMon()[2])],lista:[`200 🎟 ${T('fichas de cartas','card tokens')}`,`🏟️ ${T('Arena em dobro','Double Arena')} · 5 ${T('partidas','matches')}`],fim,full:200*FG()+60,pr:115,give(){fichas(200);flags.promoArena=(flags.promoArena||0)+5;}};}
+}
+function escolher(){const p=P();
+  if(!(flags.promoStats&&flags.promoStats.inicio&&flags.promoStats.inicio.b)&&!p.hoje.inicioV){p.hoje.inicioV=1;return 'inicio';}
+  const ult=p.ult||0;p.ult=Date.now();if(ult&&Date.now()-ult>3*864e5&&!p.hoje.volta){return 'volta';}
+  const ord=['fichas','lend','arena','perm','escolha','combo3','relampago','bogo'];
+  for(let t=0;t<ord.length;t++){const f=ord[((p.k||0)+t)%ord.length];if(p.hoje[f])continue;if(!oferta(f))continue;p.k=((p.k||0)+t+1)%ord.length;return f;}
+  return null;/* já comprou tudo hoje */}
+window.promoHud=function(){try{if(flags.bike&&typeof RAIL!=='undefined')RAIL[1].go();}catch(e){}const f=escolher()||(oferta('perm')?'perm':'fichas');return window.promoOpen(f);};
+window.promoOpen=function(forma){return new Promise(res=>{if(document.getElementById('prBox')){res();return;}
+  forma=forma||escolher();if(!forma){res();return;}const o=oferta(forma);if(!o){res();return;}ST(forma,'v');try{saveGame();}catch(e){}
+  const comprado=forma==='inicio'?!!(flags.promoStats.inicio.b):!!P().hoje[forma];const off=o.full?Math.round((1-o.pr/o.full)*100):0;
+  const el=document.createElement('div');el.id='prBox';
+  const im=v=>v&&v.u?`<span class="${v.m?'mc':''}"><img src="${v.u}" alt="" onerror="this.remove()"></span>`:'<span></span>';
+  const visual=o.leg?`<div class="lg">${im(LG(o.leg))}</div>`:`<div class="cards">${o.vis.map(im).join('')}</div>`;
+  const corpo=o.opcoes?`<div class="pk">${visual}</div><div class="ops">${o.opcoes.map((q,i)=>`<button class="op${q.sel?' hl':''}" data-a="op" data-i="${i}" ${comprado?'disabled':''}>${q.sel?`<em>${q.sel}</em>`:''}<b>${q.lb}</b><span><s>${q.full} 💎</s> ${q.pr} 💎</span></button>`).join('')}</div>`
+    :(o.lista?`<div class="pk">${visual}</div><ul>${o.lista.map(t=>`<li>${t}</li>`).join('')}</ul>`:`<div class="pk">${visual}<div class="big">${o.big}<small>${o.bigs}</small></div></div>`);
+  el.innerHTML=`<style>#prBox{position:fixed;inset:0;z-index:99985;background:rgba(10,6,24,.82);display:flex;align-items:center;justify-content:center;padding:16px;font-family:'Fredoka','Lilita One',system-ui,sans-serif;animation:prIn .35s ease-out}
+@keyframes prIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}@keyframes prGl{0%,100%{box-shadow:0 0 18px #ffc94a,0 6px 14px rgba(0,0,0,.5)}50%{box-shadow:0 0 34px #fff1a0,0 6px 14px rgba(0,0,0,.5)}}
+#prBox .cd{position:relative;width:min(380px,100%);max-height:94vh;overflow:auto;background:linear-gradient(#3b1a6e,#21104a);border:4px solid #ffc94a;border-radius:22px;padding:22px 18px 16px;color:#fff;text-align:center;box-shadow:0 0 0 4px #5a2aa0,0 14px 40px rgba(0,0,0,.7)}
+#prBox.c-ouro .cd{background:linear-gradient(#5a3a08,#2a1604);box-shadow:0 0 0 4px #a8761a,0 14px 40px rgba(0,0,0,.7)}#prBox.c-azul .cd{background:linear-gradient(#0f4a6e,#082a44);box-shadow:0 0 0 4px #1f6aa0,0 14px 40px rgba(0,0,0,.7)}
+#prBox.c-verde .cd{background:linear-gradient(#0f5a3a,#06301e);box-shadow:0 0 0 4px #1f9a5a,0 14px 40px rgba(0,0,0,.7)}#prBox.c-rubi .cd{background:linear-gradient(#6e0f2a,#3a0614);box-shadow:0 0 0 4px #b01f4a,0 14px 40px rgba(0,0,0,.7)}
+#prBox .tag{position:sticky;top:-22px;display:table;margin:-36px auto 8px;background:#e8323a;border:3px solid #fff;border-radius:999px;padding:4px 16px;font-size:16px;font-weight:800;letter-spacing:1px;white-space:nowrap;box-shadow:0 4px 0 #8a1218}
+#prBox h2{margin:6px 0 2px;font-size:26px;color:#ffd75a;text-shadow:0 3px 0 #6a3a00}#prBox .sb{margin:0 0 12px;font-size:14px;opacity:.92}
+#prBox .pk{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 auto 8px}
+#prBox .cards{position:relative;width:120px;height:110px}#prBox .cards span{position:absolute;width:62px;height:88px;border-radius:9px;border:3px solid #ffc94a;background:linear-gradient(#7a4fd8,#3f8fe0);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 4px 10px rgba(0,0,0,.5)}
+#prBox .cards span:nth-child(1){left:4px;top:14px;transform:rotate(-14deg)}#prBox .cards span:nth-child(2){left:30px;top:4px;z-index:1;background:linear-gradient(#e0a020,#e8323a)}#prBox .cards span:nth-child(3){left:56px;top:14px;transform:rotate(14deg);z-index:2;background:linear-gradient(#3fbf6a,#1f7a3a)}
+#prBox .lg span{display:flex;width:86px;height:118px;border-radius:12px;border:4px solid #ffc94a;background:radial-gradient(circle at 50% 35%,#fff3b0,#e0a020 45%,#8a4a08);align-items:center;justify-content:center;font-size:46px;animation:prGl 1.6s infinite}
+#prBox .cards span img{width:84%;height:84%;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}#prBox .cards span.mc{overflow:hidden;background:#222}#prBox .cards span.mc img{width:100%;height:100%;object-fit:cover;filter:none}
+#prBox .lg span img{width:88%;height:88%;object-fit:contain;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}#prBox.c-rubi .lg span{background:radial-gradient(circle at 50% 35%,#ffd0dc,#e8325a 45%,#5a0620)}
+#prBox .big{font-size:40px;font-weight:800;color:#fff;text-shadow:0 3px 0 #2a0a5a;line-height:1}#prBox .big small{font-size:16px;display:block;color:#ffd75a;max-width:130px}
+#prBox ul{list-style:none;padding:0;margin:0 0 8px;font-size:15px;text-align:left;display:inline-block}#prBox li{margin:3px 0}#prBox li:before{content:'✔ ';color:#7aff5a}
+#prBox li img.li{width:22px;height:22px;vertical-align:-5px;margin-right:4px;object-fit:contain}#prBox .nt{font-size:13px;margin:0 0 6px;opacity:.9}#prBox .tm{font-size:18px;font-weight:800;color:#fff;background:rgba(0,0,0,.35);border-radius:10px;display:table;margin:0 auto 8px;padding:3px 12px}
+#prBox .off{display:table;background:#e8323a;border-radius:10px;padding:2px 10px;font-weight:800;font-size:22px;margin:4px auto 8px;transform:rotate(-3deg)}
+#prBox .pr{font-size:15px;margin:0 0 12px}#prBox .pr s{opacity:.6;margin-right:6px}#prBox .pr b{font-size:24px;color:#ffd75a}
+#prBox button{width:100%;font:800 20px Fredoka,system-ui,sans-serif;padding:13px;border:0;border-radius:14px;margin:0 0 9px;color:#fff;cursor:pointer;background:#1fa04a;box-shadow:0 5px 0 #0e5a26}
+#prBox .ops{display:flex;gap:8px;margin:0 0 10px}#prBox button.op{flex:1;padding:10px 4px;font-size:15px;background:#2f5fa8;box-shadow:0 5px 0 #1b3a6a;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+#prBox button.op b{font-size:18px}#prBox button.op span{font-size:13px}#prBox button.op s{opacity:.6}#prBox button.op.hl{background:#1fa04a;box-shadow:0 5px 0 #0e5a26;transform:scale(1.06)}
+#prBox button.op em{font-style:normal;font-size:10px;background:#e8323a;border-radius:6px;padding:1px 5px;white-space:nowrap}
+#prBox button.no{background:transparent;box-shadow:none;font-size:15px;font-weight:600;opacity:.8;padding:6px;margin:0}
+#prBox .ms{min-height:18px;font-size:14px;color:#ffd75a;margin:0 0 6px}#prBox .ft{font-size:12px;opacity:.7;margin:4px 0 0}</style>
+<div class="cd"><div class="tag">${o.tag}</div><h2>${o.title}</h2><p class="sb">${o.sub}</p>${corpo}
+${o.nota?`<p class="nt">${o.nota}</p>`:''}${o.fim?`<div class="tm">⚡ <span class="tmv"></span></div>`:''}
+${o.opcoes?'':`${off>0?`<div class="off">-${off}%</div>`:''}<p class="pr">${off>0?`<s>${o.full} 💎</s> ${T('hoje','today')} `:''}<b>${o.pr} 💎</b></p>`}<p class="ms"></p>
+${o.opcoes?'':`<button data-a="buy" ${comprado?'disabled style="opacity:.55"':''}>${comprado?T('JÁ COMPRADO','ALREADY BOUGHT'):T('COMPRAR','BUY')}</button>`}
+<button class="no" data-a="x">${T('Agora não','Not now')}</button>
+<p class="ft">${forma==='inicio'?T('Oferta única: some quando você comprar.','One-time deal: gone once you buy it.'):forma==='perm'?T('Compra única: a carta fica com você para sempre.','One-time purchase: the card is yours forever.'):o.fim?T('Quando o tempo acabar, esta oferta some.','When time runs out, this deal is gone.'):T('Ofertas novas todo dia. Esta vale até meia-noite.','New deals every day. This one lasts until midnight.')} · ${T('Você tem','You have')} ${typeof gems==='function'?gems():(flags.gems||0)} 💎</p></div>`;
+  el.className='f-'+forma+(o.cor?' c-'+o.cor:'');document.body.appendChild(el);['pointerdown','pointerup','touchstart','touchend','mousedown','keydown'].forEach(k=>el.addEventListener(k,e=>e.stopPropagation()));
+  let tk=null;if(o.fim){const tv=el.querySelector('.tmv');const up=()=>{const r=Math.max(0,o.fim-Date.now()),m=Math.floor(r/60e3),sx=Math.floor(r/1e3)%60;tv.textContent=`${m}:${String(sx).padStart(2,'0')}`;if(r<=0){clearInterval(tk);const b=el.querySelector('[data-a=buy]');if(b){b.disabled=true;b.style.opacity='.55';b.textContent=T('ACABOU O TEMPO','TIME IS UP');}}};up();tk=setInterval(up,1000);}
+  const close=()=>{if(tk)clearInterval(tk);el.remove();res();};const msg=t=>{el.querySelector('.ms').textContent=t;};
+  const pagar=(pr,give,b)=>{const g=typeof gems==='function'?gems():(flags.gems||0);
+    if(g<pr){ST(forma,'semgema');msg(T(`Faltam ${pr-g} 💎. Abrindo a loja…`,`You need ${pr-g} more 💎. Opening the shop…`));setTimeout(async()=>{if(tk)clearInterval(tk);el.remove();try{await lojaReal();}catch(_){}res();},900);return;}
+    flags.gems=g-pr;give();P().hoje[forma]=1;ST(forma,'b');try{saveGame();}catch(_){}try{tone([523,659,784,1047],.08);}catch(_){}
+    msg(forma==='arena'?T('Pronto! Suas próximas partidas da Arena dão o dobro de cartas.','Done! Your next Arena matches give double cards.'):forma==='perm'?T('É sua para sempre! Toda Muralha já começa com ela.','Yours forever! Every Wall match starts with it.'):(forma==='fichas'||forma==='escolha')?T('Fichas recebidas! Melhore suas cartas na Loja de Fichas da Muralha.','Tokens received! Upgrade your cards in the Wall token shop.'):T('Pronto! Os prêmios entram sozinhos nas suas próximas partidas.','Done! The rewards join your next matches.'));
+    el.querySelectorAll('button:not(.no)').forEach(x=>{x.disabled=true;x.style.opacity='.55';});if(b)b.textContent=T('COMPRADO!','BOUGHT!');setTimeout(close,2000);};
+  el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const a=b.dataset.a;
+    if(a==='x'){ST(forma,'x');try{saveGame();tone([392],.04);}catch(_){}return close();}
+    if(a==='buy'){if(o.fim&&Date.now()>o.fim)return;pagar(o.pr,()=>o.give(),b);}
+    if(a==='op'){const q=o.opcoes[+b.dataset.i];ST(forma,'op'+b.dataset.i);pagar(q.pr,()=>q.give(),null);}});
+});};
+/* MURALHA: começa com as lendárias permanentes (sempre) e com as compradas por partida (gasta 1 de cada) */
+try{const _wa=wcuApply;wcuApply=function(w){_wa(w);try{if(w&&w.duo)return;const PC=flags.promoCartas||{},PM=perms(),nomes=[];
+  const ids=new Set([...Object.keys(PM).filter(k=>PM[k]),...Object.keys(PC).filter(k=>PC[k]>0)]);
+  for(const id of ids){const c=card(id);if(!c)continue;c.f(w);w.lv[c.id]=(w.lv[c.id]||0)+1;if(!w.owned.some(o=>(o.key||o.id)===c.id))w.owned.push({...c,key:c.id});if(!PM[id]&&PC[id]>0)PC[id]--;nomes.push(c.n);}
+  if(nomes.length){w.banner={t:150,text:T('CARTA LENDÁRIA!','LEGENDARY CARD!'),sub:nomes.map(n=>typeof tr==='function'?tr(n):n).join(' · ')};try{saveGame();}catch(e){}}}catch(e){}};}catch(e){}
+/* ARENA: dobro de cartas (fragmentos) enquanto tiver partidas compradas */
+try{const _fg=arFragGive;arFragGive=function(A,why){_fg(A,why);try{if(!(flags.promoArena>0)||!A||!A.fragGot)return;flags.promoArena--;
+  for(const sp in A.fragGot){const n=A.fragGot[sp];flags.arFrag[sp]=(flags.arFrag[sp]|0)+n;A.fragGot[sp]=n*2;}A.fragN*=2;try{saveGame();}catch(e){}}catch(e){}};}catch(e){}
+/* aparece sempre que o jogo abre, quando o jogador já está no jogo e nada mais está aberto */
+try{if(/[?&]nopromo/.test(location.search))return;}catch(e){}
+let tries=0;const iv=setInterval(()=>{tries++;let ok=false;try{ok=Array.isArray(party)&&party.length>0&&G&&G.mode!=='title'&&!(typeof ui!=='undefined'&&ui.length)&&!document.getElementById('fpBox')&&!document.getElementById('vincBox')&&!document.getElementById('ljBox');}catch(e){}
+  if(tries>900||window.__X){clearInterval(iv);return;}/* robôs e check-up não abrem a oferta sozinhos */if(!ok)return;clearInterval(iv);setTimeout(()=>{try{window.promoOpen();}catch(e){}},1200);},1000);
+})();
 /* LOJA2PECAS (09-10/nov, Felipe: "tela cheia, artes separadas pra ficar leve, sem desalinhar"; "no carro dá pra colocar 2 estantes?"):
    Loja do Vale montada com as peças do Buchecha (entregas/LOJA_PECAS_v1, POSICOES.json):
    cenário cobrindo a tela toda + estante montada peça por peça (topo, faixa das abas, 4 prateleiras, base).
@@ -14661,7 +14799,7 @@ function CADON(){return CAD.ready||CAD.wait;}
   E.menu=mk('button','cb','menu');E.menu.setAttribute('aria-label','Abrir menu');act(E.menu,()=>{P.path=null;P.mark=null;run(openMenu);});E.cfg=mk('button','cb',null);{const im=document.createElement('img');im.src=window.CVLANG==='en'?'blobs/en_cad_config.webp':'blobs/407997afb0a9520d7de56d6d64a70236.webp';im.alt='';im.draggable=false;E.cfg.appendChild(im);}E.cfg.setAttribute('aria-label','Configurações');act(E.cfg,()=>{P.path=null;P.mark=null;run(cfgMenu);});
   E.saldo=[0,1,2].map(()=>img('saldo'));E.ico=['moeda','cristal','essencia'].map(img);E.val=[0,1,2].map(tx);
   E.mini=mk('button','cb','minijogos');E.mini.setAttribute('aria-label','Minijogos');act(E.mini,()=>{tone([660,880],.04);P.path=null;P.mark=null;run(RAIL[0].go);});
-  E.bike=mk('button','cb','bicicleta');E.bike.setAttribute('aria-label','Bicicleta');act(E.bike,()=>{tone([660,880],.04);P.path=null;P.mark=null;run(RAIL[1].go);});
+  /* PROMOHUD13NOV (Felipe: 'tira a bicicleta, ninguém usa; bota ali o ícone de vendas, a promoção fica ali') */E.bike=mk('button','cb',null);{const im=document.createElement('img');im.src=window.CVLANG==='en'?'assets/promo/hud_promo_en.webp':'assets/promo/hud_promo.webp';im.alt='';im.draggable=false;E.bike.appendChild(im);}E.bike.setAttribute('aria-label',window.CVLANG==='en'?'Deals':'Promoção');act(E.bike,()=>{tone([660,880],.04);P.path=null;P.mark=null;try{window.promoHud&&window.promoHud();}catch(e){}});
   /* CONVHUD (05/nov, Felipe: "coloca o invite na tela inicial abaixo da bike") */E.conv=mk('button','cb cbconv',null);{const im=document.createElement('img');im.src='blobs/conv_icone.webp';im.alt='';im.draggable=false;E.conv.appendChild(im);const lb=document.createElement('div');lb.className='cvl';lb.textContent=window.CVLANG==='en'?'INVITE':'CONVIDAR';E.conv.appendChild(lb);const st=document.createElement('style');st.textContent='#cad .cbconv{overflow:visible}#cad .cbconv .cvl{position:absolute;left:50%;bottom:-6%;transform:translateX(-50%) rotate(-3deg);background:#fffaf0;border:2px solid #154c5e;border-radius:9px;color:#154c5e;font-family:CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif;font-weight:800;padding:0 6px;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.35);pointer-events:none}';document.head.appendChild(st);}E.conv.setAttribute('aria-label','Convidar amigos');act(E.conv,()=>{tone([660,880],.04);P.path=null;P.mark=null;run(convAbrir);});
   E.mis=mk('button','cb','missao_painel');E.mis.setAttribute('aria-label','Ir para a missão');act(E.mis,()=>{if(busy||ui.length)return;tone([660,880],.04);P.path=null;P.mark=null;msGoStart();});E.lst=document.createElement('button');E.lst.className='cb cbt';E.lst.textContent='☰ MISSÕES';E.lst.setAttribute('aria-label','Ver todas as missões');E.mis.parentNode.appendChild(E.lst);act(E.lst,()=>{if(busy||ui.length)return;tone([660,880],.04);P.path=null;P.mark=null;MSAUTO=null;run(msJournal);});{const st=document.createElement('style');st.textContent='#cad .cbt{background:#fffaf0;border:2px solid #154c5e;border-radius:9px;color:#154c5e;font-family:CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif;font-weight:800;box-shadow:0 2px 0 rgba(0,0,0,.35);transform:rotate(-3deg);white-space:nowrap}';document.head.appendChild(st);}
   E.hist=img('historia');E.pin=img('pin');E.dlg=img('dialogo');E.map=img('mapa');E.t1=tx();E.t2=tx();E.t3=tx();
@@ -15247,7 +15385,7 @@ function tutWorld(){const E=CAD.E,w=()=>G.mode==='world';let p0=null,u0=0;const 
   {t:'Esse botão é dos <b>MINIJOGOS</b>: são <b>vários jogos diferentes</b> dentro do jogo! Tenho certeza que você vai achar o <b>seu estilo</b> aqui. 😉 <b>Toque</b> pra ver!',when:()=>!!tutEl(E.mini),r:()=>tutEl(E.mini),g:'tap',act:opened('tiles'),hint:'toque em MINIJOGOS',chip:'abrindo…',after:500},
   {t:'Muralha, Torres, Horda, Expedição, Combina... cada um é um <b>jogo diferente</b>. E todos <b>se completam</b>: os monstrinhos e níveis que você conquista no Vale lutam nos minijogos, e as moedas, itens e experiência dos minijogos voltam pro Vale! <b>Escolha o que mais te agrada e aproveite!</b> Na <b>primeira vez</b> de cada um, eu apareço e te ensino. 🎮',when:opened('tiles'),r:()=>{const i=tutUOpt(/^fechar$/i);return tutURs(q=>q.i!==i);}},
   {t:'Agora toque em <b>Voltar</b> pra fechar.',when:opened('tiles'),...tutClose(/^fechar$/i),hint:'toque em VOLTAR'},
-  {t:'A <b>BICICLETA</b> faz você andar bem mais rápido! <b>Toque</b> pra subir! 🚲',when:()=>!!tutEl(E.bike)&&WXOUT.has(G.map)&&!flags.bike,start:()=>{flags.bikeTip=1;},r:()=>tutEl(E.bike),g:'tap',act:()=>!!flags.bike&&!ui.length,hint:'toque na bicicleta',chip:'🚲 trim-trim!',after:700},
+  {t:'A <b>BICICLETA</b> faz você andar bem mais rápido! <b>Toque</b> pra subir! 🚲',when:()=>false/* PROMOHUD13NOV: sem bicicleta */&&!!tutEl(E.bike)&&WXOUT.has(G.map)&&!flags.bike,start:()=>{flags.bikeTip=1;},r:()=>tutEl(E.bike),g:'tap',act:()=>!!flags.bike&&!ui.length,hint:'toque na bicicleta',chip:'🚲 trim-trim!',after:700},
   {t:'Isso! Cardio garantido! 🚲 Pra <b>descer</b>, é só tocar nela de novo.',when:()=>!!flags.bike,r:()=>tutEl(E.bike)},
   {t:'No <b>MENU</b> ficam os monstrinhos, a mochila e a loja. <b>Toque</b> pra abrir!',when:()=>!!tutEl(E.menu),r:()=>tutEl(E.menu),g:'tap',act:opened('tiles'),hint:'toque em MENU',chip:'abrindo…',after:500},
   {t:'<b>EQUIPE</b> mostra os seus monstrinhos, a <b>MOCHILA</b> guarda os itens e na <b>LOJA</b> você compra coisas. 🎒',when:opened('tiles'),r:()=>tutURs(q=>q.i<=2)},

@@ -3471,7 +3471,7 @@ let UPF=null;const MODEUPS={wall:['wallHp','wallDmg','wallSpd','wallCrit','wallC
 function upsList(){const L=UPS.filter(u=>!UPOFF.has(u.k));return UPF?L.filter(u=>UPF.includes(u.k)):L;}
 async function shopMenu(UF){UPF=UF||null;flags.up=flags.up||{};const S={tab:UF?1:0,t:0,shown:flags.coins||0,toast:null,bump:null,coins:[]};
   while(true){const rows=storeRows(S.tab);const j=await choose([...rows.map(r=>r.n),'ITENS','MELHORIAS','SAIR','HONRA','PRESENTES'],{store:S,rows});const n=rows.length;
-    if(j<0||j===n+2){UPF=null;return;}if(j===n+3){await honraMenu();S.shown=flags.coins||0;continue;}if(j===n+4){await giftMenu();S.shown=flags.coins||0;continue;}if(j===n){if(UPF){await powersMenu();if(SHOPJMP){const q=SHOPJMP;SHOPJMP=null;if(q==='SAIR'){UPF=null;return;}if(q==='HONRA'){await honraMenu();}else if(q==='PRESENTES'){await giftMenu();}else if(q==='ITENS')S.tab=0;else if(q==='MELHORIAS')S.tab=1;S.tt=0;}continue;}S.tab=0;S.tt=0;continue;}if(j===n+1){if(!UPF){await powersMenu();if(SHOPJMP){const q=SHOPJMP;SHOPJMP=null;if(q==='SAIR'){UPF=null;return;}if(q==='HONRA'){await honraMenu();}else if(q==='PRESENTES'){await giftMenu();}else if(q==='ITENS')S.tab=0;else if(q==='MELHORIAS')S.tab=1;S.tt=0;}continue;}S.tab=1;S.tt=0;continue;}
+    if(j<0||j===n+2){UPF=null;return;}if(j===n+3){await honraMenu();S.shown=flags.coins||0;continue;}if(j===n+4){await giftMenu();S.shown=flags.coins||0;continue;}if(j===n+5){await roupasMenu();continue;}if(j===n){if(UPF){await powersMenu();if(SHOPJMP){const q=SHOPJMP;SHOPJMP=null;if(q==='SAIR'){UPF=null;return;}if(q==='HONRA'){await honraMenu();}else if(q==='PRESENTES'){await giftMenu();}else if(q==='ITENS')S.tab=0;else if(q==='MELHORIAS')S.tab=1;S.tt=0;}continue;}S.tab=0;S.tt=0;continue;}if(j===n+1){if(!UPF){await powersMenu();if(SHOPJMP){const q=SHOPJMP;SHOPJMP=null;if(q==='SAIR'){UPF=null;return;}if(q==='HONRA'){await honraMenu();}else if(q==='PRESENTES'){await giftMenu();}else if(q==='ITENS')S.tab=0;else if(q==='MELHORIAS')S.tab=1;S.tt=0;}continue;}S.tab=1;S.tt=0;continue;}
     if(S.tab===0){const it=SHOPITEMS[j],pc=shopPrice(it);if((flags.coins||0)<pc){S.toast={t:0,txt:`Faltam ${pc-(flags.coins||0)} moedas`,bad:1};/* FALTALOJA09NOV (Felipe: 'quando clicar pra comprar e não tiver, já direciona pra compra') */try{await lojaReal(1);}catch(e){}continue;}
       flags.coins-=pc;flags.shopBuy=flags.shopBuy||{};flags.shopBuy[it.k]=(flags.shopBuy[it.k]||0)+1;bag[it.k]=(bag[it.k]||0)+1;S.toast={t:0,txt:`+1 ${it.n}! Agora tem ${bag[it.k]}`,ic:it.k};S.bump={k:j,t:0};S.coins.push({k:j,t:0});saveGame();}
     else{const u=upsList()[j];if(UP(u.k)>=u.max){S.toast={t:0,txt:`${u.n} já está no máximo`,bad:1};continue;}const c2=upGem(u);
@@ -13143,6 +13143,51 @@ function drawStoreArt(u){const S=u.cfg.store,L=u.cfg.rows,n=L.length;if(UPF&&UPF
   if(S.bump)S.bump.t++;
   {const pl=1+Math.sin(S.t/16)*.012;b.save();b.translate(470,1568);b.scale(pl,pl);b.translate(-470,-1568);ukD('loja','sair',210,1505,520,126);b.restore();u.rects.push(V.R(210,1505,520,126,n+2));}
   lojToast(S.toast);V.end();return true;}
+/* ROUPAS12NOV (Felipe 12/nov aprovou a LOJA DE ROUPAS do Buchecha, LOJA_ROUPAS_AJUSTE_12nov): aba ROUPAS na Loja do Vale.
+   10 visuais (5 menino + 5 menina) em 2 colunas x 5 linhas (cada linha um estilo). Grátis. Escolher muda o retrato do herói
+   nas conversas e telas (c_jogador / c_jogadora). Andar e bicicleta continuam com a roupa de sempre (ainda não há folhas). */
+const RPOP=[['menino_original','menina_original','Original','Original'],['menino_esportivo','menina_esportiva','Esportivo','Esportiva'],['menino_explorador','menina_exploradora','Explorador','Exploradora'],['menino_festa','menina_festa','Festa','Festa'],['menino_inverno','menina_inverno','Inverno','Inverno']];
+const RPIM={};function rpImg(id){let i=RPIM[id];if(!i){i=new Image();i.decoding='async';i.src='assets/roupas/v_'+id+'.webp';RPIM[id]=i;}return i.complete&&i.naturalWidth?i:null;}
+function rpCur(){try{const r=flags&&flags.roupa;return r&&!/_original$/.test(r)?r:null;}catch(e){return null;}}
+{const _ai=asImg;asImg=function(k){if(k==='c_jogador'||k==='c_jogadora'){const r=rpCur();if(r){const I=rpImg(r);if(I)return I;}}return _ai.apply(this,arguments);};}
+try{setTimeout(()=>{const r=rpCur();if(r)rpImg(r);},2500);}catch(e){}
+function roupasMenu(){return new Promise(res=>{if(document.getElementById('rpLoja')){res();return;}const EN=window.CVLANG==='en',t=s=>{try{return window.tr?window.tr(s):s;}catch(e){return s;}};
+  const NM={Original:'Original',Esportivo:'Sport',Esportiva:'Sport',Explorador:'Explorer',Exploradora:'Explorer',Festa:'Party',Inverno:'Winter'},nm=s=>EN?(NM[s]||s):s;
+  const girl=(()=>{try{return flags.hero==='menina';}catch(e){return false;}})();let cur=(flags.roupa)||(girl?'menina_original':'menino_original'),sel=cur;
+  const A='assets/roupas/',el=document.createElement('div');el.id='rpLoja';
+  const P=(x,y,w,h)=>`left:${x/10.8}%;top:${y/23.4}%;width:${w/10.8}%;height:${h/23.4}%`;
+  let meio='';for(let y=378;y<2034;y+=72)meio+=`<img src="${A}painel_meio_repete.webp" style="position:absolute;${P(90,y,900,Math.min(72,2034-y)+1)}">`;
+  let grid='';RPOP.forEach((r,ri)=>[0,1].forEach(c=>{const id=r[c],x=c?590:330,y=810+ri*245;grid+=`<div class="op" data-id="${id}" style="position:absolute;${P(x,y,160,220)}"><img src="${A}moldura_item.webp" class="fr"><img src="${A}${id}_recorte.webp" class="ic"><div class="nm">${nm(r[c+2])}</div><div class="ck">✓</div></div>`;}));
+  el.innerHTML=`<style>#rpLoja{position:fixed;inset:0;z-index:99990;background:#2a1a10;display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Lilita One',Georgia,serif;user-select:none;-webkit-user-select:none}
+#rpLoja .bg{position:absolute;inset:0;background:url(${A}cenario.webp) center/cover no-repeat}
+#rpLoja .bx{position:relative;height:min(100vh,calc(100vw*2340/1080));aspect-ratio:1080/2340;container-type:size}
+#rpLoja .bx>img{pointer-events:none}
+#rpLoja .tx{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;color:#38251e;font-weight:700;white-space:nowrap}
+#rpLoja .op{cursor:pointer}#rpLoja .op img{position:absolute;pointer-events:none}#rpLoja .op .fr{left:0;top:0;width:100%;height:100%}
+#rpLoja .op .ic{left:12%;top:15.3%;width:76%;height:70.5%;object-fit:contain}
+#rpLoja .op .nm{position:absolute;left:8%;right:8%;top:88.5%;height:8.5%;display:flex;align-items:center;justify-content:center;color:#fff9df;font-weight:700;font-size:1.25cqh;text-shadow:0 1px 0 #3a2410}
+#rpLoja .op .ck{position:absolute;right:-4%;top:-3%;width:26%;aspect-ratio:1;border-radius:50%;background:#3fb04a;border:3px solid #fff;color:#fff;font-weight:900;display:none;align-items:center;justify-content:center;font-size:1.5cqh}
+#rpLoja .op.on{filter:drop-shadow(0 0 .5cqh #ffd23a) drop-shadow(0 0 .3cqh #ffd23a)}#rpLoja .op.eq .ck{display:flex}
+#rpLoja .bt{position:absolute;cursor:pointer}#rpLoja .bt img{width:100%;height:100%;pointer-events:none}#rpLoja .bt span{position:absolute;inset:0 0 6% 0;display:flex;align-items:center;justify-content:center;color:#fff9df;font-weight:700;font-size:1.75cqh;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+</style><div class="bg"></div><div class="bx"><img src="${A}cenario.webp" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+<img src="${A}painel_base.webp" style="position:absolute;${P(90,2034,900,107)}">${meio}<img src="${A}painel_topo.webp" style="position:absolute;${P(90,100,900,278)}">
+<div class="tx" style="${P(210,250,660,65)};font-size:2.6cqh">${EN?'CLOTHES SHOP':'LOJA DE ROUPAS'}</div>
+<div class="tx" style="${P(200,392,680,45)};font-size:1.55cqh">${EN?'10 outfits · choose your look':'10 opções · escolha seu visual'}</div>
+<img id="rpPrev" style="position:absolute;${P(250,445,300,310)};object-fit:contain;object-position:center bottom">
+<img src="${A}vendedora_frente.webp" style="position:absolute;${P(655,455,145,305)}">
+<div class="tx" id="rpNome" style="${P(185,758,710,40)};font-size:1.45cqh"></div>${grid}
+<div class="bt" id="rpVoltar" style="${P(130,2190,350,124)}"><img src="${A}botao_voltar.webp"><span>${EN?'BACK':'VOLTAR'}</span></div>
+<div class="bt" id="rpUsar" style="${P(570,2190,350,124)}"><img src="${A}botao_aplicar.webp"><span id="rpUsarT"></span></div></div>`;
+  document.body.appendChild(el);const $=q=>el.querySelector(q);
+  const nmOf=id=>{for(const r of RPOP){if(r[0]===id)return nm(r[2]);if(r[1]===id)return nm(r[3]);}return '';};
+  const draw=()=>{el.querySelectorAll('.op').forEach(o=>{o.classList.toggle('on',o.dataset.id===sel);o.classList.toggle('eq',o.dataset.id===cur);});
+    $('#rpPrev').src=A+'v_'+sel+'.webp';$('#rpNome').textContent=(sel===cur?(EN?'Wearing: ':'Usando: '):(EN?'Preview: ':'Prévia: '))+nmOf(sel);
+    $('#rpUsarT').textContent=sel===cur?(EN?'WEARING ✓':'USANDO ✓'):(EN?'WEAR':'VESTIR');$('#rpUsar').style.opacity=sel===cur?.75:1;};
+  el.querySelectorAll('.op').forEach(o=>o.addEventListener('click',()=>{sel=o.dataset.id;try{tone([660,880],.04);}catch(e){}draw();}));
+  $('#rpUsar').addEventListener('click',()=>{if(sel===cur)return;cur=sel;try{if(/_original$/.test(cur))delete flags.roupa;else flags.roupa=cur;saveGame();tone([523,659,784],.07);}catch(e){}rpImg(cur);draw();});
+  $('#rpVoltar').addEventListener('click',()=>{el.remove();res();});draw();});}
+try{window.CVEN=window.CVEN||{};if(!CVEN['ROUPAS'])CVEN['ROUPAS']='CLOTHES';}catch(e){}
+/* /ROUPAS12NOV */
 /* LOJA2PECAS (09-10/nov, Felipe: "tela cheia, artes separadas pra ficar leve, sem desalinhar"; "no carro dá pra colocar 2 estantes?"):
    Loja do Vale montada com as peças do Buchecha (entregas/LOJA_PECAS_v1, POSICOES.json):
    cenário cobrindo a tela toda + estante montada peça por peça (topo, faixa das abas, 4 prateleiras, base).
@@ -13166,8 +13211,8 @@ function drawStoreArt2(u){const S=u.cfg.store,L=u.cfg.rows,n=L.length;if(UPF)ret
   for(const X of cols){im(P.base,X,T+1461);for(let r=3;r>=0;r--)im(P.prateleira,X,T+315+r*LJ2.sh);im(P.faixa_abas,X,T+209);im(P.topo,X,T);}
   ukT(tr('LOJA DO VALE'),450,T+148,58,'#fff3c8','center',430,9,'#4a1f08');
   /* abas na faixa da 1ª estante (posições do POSICOES) */
-  {const tabs=[{n:'ITENS',i:n},{n:'PODERES 🔥',i:n+1,dot:pwBuyN()},{n:'HONRA',i:n+3,dot:(flags.honra||0)>=4?1:0},{n:'PRESENTES',i:n+4,dot:giftReady()?1:0}];
-    tabs.forEach((tb,j)=>{const x=105+j*175,y=T+230,w=166,h=52,on=j===0;ukPill(x,y,w,h,on?'#ffe27a':'#4a4ca0',on?'#ffb81e':'#2c2e74',on?'#fff6c8':'#8288da');
+  {const tabs=[{n:'ITENS',i:n},{n:'PODERES 🔥',i:n+1,dot:pwBuyN()},{n:'HONRA',i:n+3,dot:(flags.honra||0)>=4?1:0},{n:'PRESENTES',i:n+4,dot:giftReady()?1:0},{n:'ROUPAS',i:n+5}];
+    tabs.forEach((tb,j)=>{const x=100+j*142,y=T+230,w=136,h=52,on=j===0;ukPill(x,y,w,h,on?'#ffe27a':'#4a4ca0',on?'#ffb81e':'#2c2e74',on?'#fff6c8':'#8288da');
       b.save();b.font='bold 24px Arial,Helvetica,sans-serif';b.textAlign='center';b.textBaseline='middle';const s=tr(tb.n),mw=w-20,t2=b.measureText(s).width;b.translate(x+w/2,y+h/2+1);if(t2>mw)b.scale(mw/t2,1);b.fillStyle=on?'#101a46':'#dce6ff';b.fillText(s,0,0);b.restore();
       if(tb.dot>0&&!on){b.save();b.translate(x+w-2,y-2);b.scale(3.4,3.4);redDot(0,0,tb.dot,.9);b.restore();}u.rects.push(V.R(x,y,w,h,tb.i));});}
   /* saldo: 1 estante = no alto à direita; 2 estantes = na placa da 2ª estante */

@@ -1,5 +1,5 @@
 /* Capturadores do Vale — guarda os arquivos do jogo no aparelho pra abrir rápido e funcionar sem internet */
-const CACHE='cv-v500';
+const CACHE='cv-v501';
 /* 03/nov: artes e sons ficam numa caixa separada que NÃO é apagada quando sai versão nova (senão o jogo baixado pra jogar offline sumia a cada versão).
    blobs/ têm nome único por conteúdo: nunca mudam. assets/ podem mudar: na versão nova o jogo pergunta ao servidor se mudou (resposta curta 304 se não mudou). */
 const ART='cv-arte-1';
@@ -19,8 +19,16 @@ async function artGet(r,isA,ev){const c=await caches.open(ART);const m=await c.m
     if(res.status===304&&m){const nr=await artTag(m);await c.put(r.url,nr.clone());return nr;}
     if(res.ok){const nr=await artTag(res);try{await c.put(r.url,nr.clone());}catch(e){}return nr;}
     return m||res;}catch(e){if(m)return m;throw e;}}
+async function swRange(r){try{let m=null;for(const k of [ART,CACHE]){const c=await caches.open(k);m=await c.match(r.url,{ignoreVary:true});if(m)break;}
+  if(!m){return fetch(r);}const buf=await m.arrayBuffer(),n=buf.byteLength,mm=/bytes=(\d*)-(\d*)/.exec(r.headers.get('range')||'');if(!mm)return fetch(r);
+  let s0=mm[1]===''?Math.max(0,n-(+mm[2]||0)):+mm[1],e0=(mm[1]!==''&&mm[2]!=='')?Math.min(+mm[2],n-1):n-1;if(s0>=n)return new Response(null,{status:416,headers:{'Content-Range':'bytes */'+n}});
+  return new Response(buf.slice(s0,e0+1),{status:206,statusText:'Partial Content',headers:{'Content-Type':m.headers.get('content-type')||'audio/mpeg','Content-Range':'bytes '+s0+'-'+e0+'/'+n,'Content-Length':String(e0-s0+1),'Accept-Ranges':'bytes'}});}
+  catch(e){return fetch(r);}}
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return;const pn=new URL(r.url).pathname;if(pn.endsWith('/version.json'))return;
   const isPage=r.mode==='navigate'||r.url.endsWith('/index.html');
   if(isPage){/* 29/out: busca a página sempre no servidor (sem cópia guardada do navegador), pra versão nova chegar na hora */e.respondWith(fetch(r,{cache:'no-cache'}).then(res=>{const cp=res.clone();caches.open(CACHE).then(c=>c.put(r,cp));return res;}).catch(()=>caches.match(r).then(m=>m||caches.match('./index.html'))));return;}
   if(!r.headers.has('range')&&(pn.includes('/blobs/')||pn.includes('/assets/'))){e.respondWith(artGet(r,pn.includes('/assets/'),e));return;}
+  /* SOMIOS13NOV (Felipe: 'no celular os áudios não entram, no Tesla entram na hora'): o iPhone toca som pedindo PEDAÇOS do arquivo (Range) e só aceita resposta 206;
+     a cópia guardada voltava o arquivo inteiro (200) e o Safari travava/cancelava a voz. O Chrome do Tesla aceita os dois. Agora devolve o pedaço certo (206). */
+  if(r.headers.has('range')){e.respondWith(swRange(r));return;}
   e.respondWith(caches.match(r).then(m=>m||fetch(r).then(res=>{if(res.ok){const cp=res.clone();caches.open(CACHE).then(c=>c.put(r,cp));}return res;})));});

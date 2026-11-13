@@ -17229,6 +17229,11 @@ function trovDedup(){try{if(!Array.isArray(party))return;const all=[...party.map
   saveGame();try{__EV('trovim duplicado removido '+(all.length-1));}catch(_){}}catch(e){}}
 setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode==='world')trovDedup();}catch(e){}},3000);
 /* /TROVIMSO13NOV */
+/* CHEFEFIM13NOV (Felipe: 'na Muralha em dupla já mataram o boss final e fica vindo mais bichos'): desde que o chefe entra no meio da onda (BOSSCEDO13NOV),
+   o resto da onda 10 continuava nascendo depois dele. Agora, derrotado o chefe da onda 10, não nasce mais ninguém e os que sobraram fogem/caem. */
+{const _wk=wKill;wKill=function(e,type,src){const r=_wk.apply(this,arguments);try{const w=WL;if(e&&e.boss&&w&&w.wave>=10&&!w.fimBoss){w.fimBoss=1;w.spawned=w.toSpawn;w.bossHold=1;
+  for(const f of w.foes.slice())if(f&&!f.dead&&!f.boss)_wk(f,type);w.banner={t:120,text:'CHEFE DERROTADO!',sub:'Os outros fugiram!'};try{__EV('muralha chefe final: fim da onda');}catch(_){}}}catch(er){}return r;};}
+/* /CHEFEFIM13NOV */
 
 /* PAGAPOUCO (08/nov, Felipe: "se alguém gastar dinheiro pra passar de fase tem que ficar um pouco mais forte, mas não pode passar demais"):
    a dificuldade das fases é fixa (não reage a vitória/derrota). As compras e melhorias (PODERES dos tipos do time, cartas que já começam ativas,

@@ -362,8 +362,8 @@ window.CVNovasHistoriasDados={"versao": 1, "status": "PROPOSTAS_NOVAS_EM_COPIA_D
  }
  function openBoard(){
   if(root)return;context=game?game.context:'previa';const all=read();mount();
-  root.innerHTML=header('Histórias novas')+`<main class="nv-board"><p>13 aventuras: as três primeiras histórias e mais dez missões interativas.</p>${!game?'<a class="nv-game-link" href="../index_novas_missoes.html?nv_demo=1">Jogar também nos mapas do jogo · teste livre</a>':''}<div class="nv-cards">${window.vincRever&&window.vincN?`<article><small>Seu primeiro parceiro · ${window.vincN?window.vincN():0}/25</small><h2>Histórias com seu parceiro</h2><p>As páginas desenhadas que você já viveu com ele pelo Vale. Elas aparecem sozinhas quando vocês chegam em cada lugar.</p><button class="nv-primary" data-vinc>Ver de novo</button></article>`:''}${data.historias.map((s,i)=>{const info=game?.info(s.id),done=info?info.done:all[s.id]?.done,available=info?info.available:true;return `<article><small>${i<3?'Primeiras histórias':'Mais 10 missões'} · ${esc(s.local)}</small><h2>${esc(s.titulo)}</h2><p>${esc(s.resumo)}</p><span class="nv-badge">${done?'✓ Concluída':!available?'Avance na história':'Disponível'}</span><button class="nv-primary" data-play="${s.id}" ${game&&(!available||done)?'disabled':''}>${game?'Rastrear no jogo':done?'Rejogar história':'Jogar história'}</button>${game?.demo&&available&&!done?`<button class="nv-quiet" data-travel="${s.id}">Ir ao ponto · teste livre</button>`:''}</article>`;}).join('')}</div></main>`;
-  root.querySelector('[data-close]').onclick=()=>close(false);root.querySelector('[data-close]').hidden=!game;{const vb=root.querySelector('[data-vinc]');if(vb)vb.onclick=()=>{close(false);setTimeout(()=>window.vincRever(),50);};}
+  root.innerHTML=header('Histórias novas')+`<main class="nv-board"><p>13 aventuras: as três primeiras histórias e mais dez missões interativas.</p>${!game?'<a class="nv-game-link" href="../index_novas_missoes.html?nv_demo=1">Jogar também nos mapas do jogo · teste livre</a>':''}<div class="nv-cards">${window.vincRever&&window.vincN?`<article><small>Seu primeiro parceiro · ${window.vincN?window.vincN():0}/25</small><h2>Histórias com seu parceiro</h2><p>As páginas desenhadas que você já viveu com ele pelo Vale. Elas aparecem sozinhas quando vocês chegam em cada lugar.</p><button class="nv-primary" data-vinc>Ver de novo</button></article>`:''}${window.fpOpen?`<article><small>FPimpulse · ${window.CVLANG==='en'?'workouts':'treinos'}</small><h2>${window.CVLANG==='en'?'Workouts become rewards':'Treino vira prêmio'}</h2><p>${window.CVLANG==='en'?'Connect your FPimpulse app account: every workout you finish there gives coins and 💎 here.':'Conecte sua conta do app FPimpulse: cada treino que você termina lá dá moedas e 💎 aqui.'}</p><button class="nv-primary" data-fp>${window.CVLANG==='en'?'Connect':'Conectar'}</button></article>`:''}${data.historias.map((s,i)=>{const info=game?.info(s.id),done=info?info.done:all[s.id]?.done,available=info?info.available:true;return `<article><small>${i<3?'Primeiras histórias':'Mais 10 missões'} · ${esc(s.local)}</small><h2>${esc(s.titulo)}</h2><p>${esc(s.resumo)}</p><span class="nv-badge">${done?'✓ Concluída':!available?'Avance na história':'Disponível'}</span><button class="nv-primary" data-play="${s.id}" ${game&&(!available||done)?'disabled':''}>${game?'Rastrear no jogo':done?'Rejogar história':'Jogar história'}</button>${game?.demo&&available&&!done?`<button class="nv-quiet" data-travel="${s.id}">Ir ao ponto · teste livre</button>`:''}</article>`;}).join('')}</div></main>`;
+  root.querySelector('[data-close]').onclick=()=>close(false);root.querySelector('[data-close]').hidden=!game;{const vb=root.querySelector('[data-vinc]');if(vb)vb.onclick=()=>{close(false);setTimeout(()=>window.vincRever(),50);};}{const fb=root.querySelector('[data-fp]');if(fb)fb.onclick=()=>{close(false);setTimeout(()=>window.fpOpen(),50);};}
   if(!game){const reset=document.createElement('button');reset.className='nv-quiet';reset.textContent='Recomeçar prévia';reset.onclick=()=>{memory[key()]={};try{localStorage.removeItem(key());}catch(_){}close(false);openBoard();};root.querySelector('.nv-board>p').after(reset);}
   if(!game)for(const b of root.querySelectorAll('[data-play]'))if(all[b.dataset.play]&&!all[b.dataset.play].done)b.textContent=window.CVLANG==='en'?'Continue story':'Continuar história';
   for(const b of root.querySelectorAll('[data-play]'))b.onclick=()=>{const id=b.dataset.play;if(game){close(false);game.track(id);}else{const a=read();if(a[id]?.done){delete a[id];memory[key()]=a;try{localStorage.setItem(key(),JSON.stringify(a));}catch(_){}}close(false);start({id,returnToBoard:true});}};
@@ -13230,6 +13230,79 @@ function roupasMenu(){return new Promise(res=>{if(document.getElementById('rpLoj
   $('#rpVoltar').addEventListener('click',()=>{el.remove();res();});draw();});}
 try{window.CVEN=window.CVEN||{};if(!CVEN['ROUPAS'])CVEN['ROUPAS']='CLOTHES';}catch(e){}
 /* /ROUPAS12NOV */
+/* FPLINK13NOV (Felipe: "conecta o jogo com o meu FPimpulse app" — mesma conta, treino feito vira prêmio, botão do jogo no app).
+   O jogo entra com a MESMA conta do app (código por e-mail, Supabase do app). Cada treino terminado no app = +100 moedas e +10 💎 (até 2 treinos por dia). 1ª conexão: +30 💎.
+   Abrir: window.fpOpen() · link ?fp=1 (botão do app) · cartão nas Novas Missões. Ao abrir o jogo já conectado, recebe sozinho. */
+(function(){
+const SB_URL='https://zcryoastnfolmsvoceqh.supabase.co',SB_KEY='sb_publishable_iSy9Fgfx0wGa0Ka0viqxTQ_jAXrSjLh',APP='https://fpimpulse.netlify.app/';
+const REW={c:100,g:10,perDay:2,first:30};
+const EN=()=>window.CVLANG==='en',T=(p,e)=>EN()?e:p;
+let sb=null;
+function lib(){return new Promise((ok,no)=>{if(window.supabase&&window.supabase.createClient)return ok();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';s.onload=()=>ok();s.onerror=()=>no(new Error('net'));document.head.appendChild(s);});}
+async function cli(){if(sb)return sb;await lib();sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'cv-fp-auth'}});return sb;}
+async function sess(){try{const c=await cli();const {data}=await c.auth.getSession();return data&&data.session||null;}catch(e){return null;}}
+async function nameOf(c,uid){try{const {data}=await c.from('docs').select('data').eq('path','people/'+uid).maybeSingle();return (data&&data.data&&data.data.name)||'';}catch(e){return '';}}
+async function logs(c,uid){const {data,error}=await c.from('docs').select('path,data').eq('parent','logs/'+uid+'/sessions').limit(2000);if(error)throw error;
+  return (data||[]).map(r=>({id:r.path.split('/').pop(),at:+(r.data&&r.data.at)||0,day:(r.data&&r.data.day)||''}));}
+async function sync(){const s=await sess();if(!s)return null;const c=await cli(),uid=s.user.id;
+  flags.fp=flags.fp||{};const F=flags.fp;
+  if(F.uid!==uid){F.uid=uid;F.seen=[];F.days={};F.since=Date.now()-7*864e5;F.first=0;F.name='';}/* treinos dos últimos 7 dias contam na 1ª conexão */
+  const L=await logs(c,uid);F.total=L.length;F.days=F.days||{};F.seen=F.seen||[];
+  const novos=L.filter(x=>x.at>=F.since&&!F.seen.includes(x.id)).sort((a,b)=>a.at-b.at);let n=0;
+  for(const x of novos){F.seen.push(x.id);const d=x.day||new Date(x.at).toISOString().slice(0,10);if((F.days[d]||0)>=REW.perDay)continue;F.days[d]=(F.days[d]||0)+1;n++;}
+  const lim=new Date(Date.now()-40*864e5).toISOString().slice(0,10);for(const d in F.days)if(d<lim)delete F.days[d];
+  if(F.seen.length>3000)F.seen=F.seen.slice(-2000);
+  let gc=n*REW.c,gg=n*REW.g;if(!F.first){F.first=1;gg+=REW.first;}
+  if(gc)flags.coins=(flags.coins||0)+gc;if(gg)try{addGems(gg);}catch(e){flags.gems=(flags.gems||0)+gg;}
+  if(!F.name)F.name=await nameOf(c,uid);F.email=s.user.email||'';F.last=Date.now();
+  try{saveGame();}catch(e){}try{cloudFlush();}catch(e){}
+  return {n,gc,gg,total:L.length};}
+function rewTxt(r){if(!r)return '';if(!r.gc&&!r.gg)return T('Nenhum treino novo por enquanto. Termine um treino no app e volte aqui!','No new workouts yet. Finish a workout in the app and come back!');
+  const p=[];if(r.n)p.push(T(`${r.n} treino${r.n>1?'s':''} novo${r.n>1?'s':''}`,`${r.n} new workout${r.n>1?'s':''}`));return (p.length?p.join('')+': ':'')+`+${r.gc} ${T('moedas','coins')} · +${r.gg} 💎`;}
+function toast(t){const d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:99995;background:#0f3b2e;color:#fff;border:3px solid #ffc94a;border-radius:14px;padding:10px 16px;font:700 15px Fredoka,system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.5);max-width:90vw;text-align:center;pointer-events:none';document.body.appendChild(d);setTimeout(()=>{d.style.transition='opacity .6s';d.style.opacity='0';},4200);setTimeout(()=>d.remove(),5000);try{tone([660,880,1100],.08);}catch(e){}}
+function box(){let el=document.getElementById('fpBox');if(el)el.remove();el=document.createElement('div');el.id='fpBox';
+  el.innerHTML=`<style>#fpBox{position:fixed;inset:0;z-index:99990;background:rgba(8,20,16,.86);display:flex;align-items:center;justify-content:center;font-family:'Fredoka','Lilita One',system-ui,sans-serif;padding:16px}
+#fpBox .cd{background:linear-gradient(#fff8e6,#f3e2b8);border:4px solid #6a4a2a;border-radius:20px;width:min(420px,100%);max-height:92vh;overflow:auto;padding:18px 18px 16px;color:#3a2614;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+#fpBox h2{margin:0 0 4px;font-size:22px;color:#0f6b4e;text-align:center}#fpBox .sb{text-align:center;font-size:14px;margin:0 0 12px;opacity:.85}
+#fpBox .rw{background:#0f6b4e;color:#fff;border-radius:12px;padding:10px 12px;font-size:15px;text-align:center;margin:0 0 12px}
+#fpBox input{width:100%;box-sizing:border-box;font:600 18px system-ui,sans-serif;padding:11px 12px;border:3px solid #6a4a2a;border-radius:12px;margin:0 0 10px;background:#fff;color:#222}
+#fpBox button{width:100%;font:700 18px Fredoka,system-ui,sans-serif;padding:12px;border:0;border-radius:14px;margin:0 0 9px;color:#fff;background:#1f7a3a;box-shadow:0 4px 0 #0e4a20;cursor:pointer}
+#fpBox button.b2{background:#2f5fa8;box-shadow:0 4px 0 #1b3a6a}#fpBox button.b3{background:#8a6a4a;box-shadow:0 4px 0 #5a4028}#fpBox button:disabled{opacity:.5}
+#fpBox .ms{min-height:20px;font-size:14px;text-align:center;margin:0 0 8px;color:#8a2f2f}#fpBox .ok{color:#0f6b4e}#fpBox .who{text-align:center;font-size:16px;margin:0 0 10px}</style><div class="cd"></div>`;
+  document.body.appendChild(el);['pointerdown','pointerup','touchstart','touchend','mousedown','keydown'].forEach(k=>el.addEventListener(k,e=>e.stopPropagation()));return el;}
+window.fpOpen=function(){return new Promise(async res=>{const el=box(),cd=el.querySelector('.cd');const close=()=>{el.remove();res();};
+  const head=`<h2>💪 FPimpulse</h2><p class="sb">${T('Treino feito no app vira prêmio no jogo','Workouts in the app become rewards in the game')}</p><div class="rw">${T(`Cada treino terminado no app FPimpulse = <b>+${REW.c} moedas</b> e <b>+${REW.g} 💎</b> (até ${REW.perDay} por dia)`,`Each workout finished in the FPimpulse app = <b>+${REW.c} coins</b> and <b>+${REW.g} 💎</b> (up to ${REW.perDay} a day)`)}</div>`;
+  async function draw(msg,okMsg){const s=await sess();
+    if(s){const F=flags.fp||{};cd.innerHTML=head+`<p class="who">${T('Conectado como','Connected as')} <b>${(F.name||s.user.email||'').replace(/[<>&]/g,'')}</b>${F.total!=null?`<br><small>${T('Treinos no app','Workouts in the app')}: ${F.total}</small>`:''}</p><p class="ms ${okMsg?'ok':''}">${msg||''}</p>
+<button data-a="sync">${T('RECEBER PRÊMIOS','GET REWARDS')}</button><button class="b2" data-a="app">${T('ABRIR O APP FPIMPULSE','OPEN THE FPIMPULSE APP')}</button><button class="b3" data-a="out">${T('DESCONECTAR','DISCONNECT')}</button><button class="b3" data-a="x">${T('VOLTAR','BACK')}</button>`;}
+    else{cd.innerHTML=head+`<p class="sb">${T('Entre com o mesmo e-mail da sua conta do app FPimpulse. Vamos mandar um código para o seu e-mail.','Sign in with the same email as your FPimpulse app account. We will email you a code.')}</p>
+<input type="email" id="fpEm" placeholder="${T('seu e-mail','your email')}" autocomplete="email"><button data-a="send">${T('ENVIAR CÓDIGO','SEND CODE')}</button>
+<input inputmode="numeric" id="fpCd" placeholder="${T('código do e-mail','code from the email')}" autocomplete="one-time-code" maxlength="10"><button class="b2" data-a="code">${T('ENTRAR','SIGN IN')}</button>
+<p class="ms ${okMsg?'ok':''}">${msg||''}</p><button class="b3" data-a="app">${T('AINDA NÃO TENHO CONTA','I DON\'T HAVE AN ACCOUNT YET')}</button><button class="b3" data-a="x">${T('VOLTAR','BACK')}</button>`;
+      const em=cd.querySelector('#fpEm');if(em&&window.__fpEm)em.value=window.__fpEm;}
+    cd.querySelectorAll('button').forEach(b=>b.onclick=()=>act(b.dataset.a,b));}
+  async function act(a,b){const say=(t,ok)=>{const m=cd.querySelector('.ms');if(m){m.textContent=t;m.className='ms'+(ok?' ok':'');}};
+    try{if(a==='x')return close();
+      if(a==='app'){window.open(APP,'_blank');return;}
+      const c=await cli();b.disabled=true;
+      if(a==='send'){const em=(cd.querySelector('#fpEm').value||'').trim();window.__fpEm=em;if(!/^\S+@\S+\.\S+$/.test(em)){b.disabled=false;return say(T('Escreva o seu e-mail.','Type your email.'));}
+        const {error}=await c.auth.signInWithOtp({email:em,options:{shouldCreateUser:false}});b.disabled=false;
+        if(error)return say(/signups? not allowed|not found|otp/i.test(error.message)?T('Esse e-mail ainda não tem conta no app FPimpulse.','This email has no FPimpulse app account yet.'):error.message);
+        return say(T('Código enviado! Olhe o seu e-mail.','Code sent! Check your email.'),1);}
+      if(a==='code'){const em=window.__fpEm||(cd.querySelector('#fpEm').value||'').trim(),tk=(cd.querySelector('#fpCd').value||'').replace(/\s/g,'');
+        const {data,error}=await c.auth.verifyOtp({email:em,token:tk,type:'email'});b.disabled=false;if(error||!data.session)return say(T('Código errado ou vencido. Tente de novo.','Wrong or expired code. Try again.'));
+        const r=await sync();return draw(rewTxt(r),1);}
+      if(a==='sync'){const r=await sync();b.disabled=false;return draw(rewTxt(r),1);}
+      if(a==='out'){await c.auth.signOut();if(flags.fp)flags.fp.uid=null;try{saveGame();}catch(e){}return draw(T('Desconectado.','Disconnected.'),1);}
+    }catch(e){b.disabled=false;say(T('Sem internet agora. Tente de novo.','No internet right now. Try again.'));}}
+  draw();});};
+/* abre pelo botão do app (?fp=1) e recebe sozinho quando o jogo abre já conectado */
+let tries=0;const iv=setInterval(async()=>{tries++;let ready=false;try{ready=Array.isArray(party)&&party.length>0&&typeof flags==='object';}catch(e){}
+  if(!ready&&tries<600)return;clearInterval(iv);if(!ready)return;
+  try{if(new URLSearchParams(location.search).get('fp')){window.fpOpen();return;}}catch(e){}
+  try{if(flags.fp&&flags.fp.uid&&localStorage.getItem('cv-fp-auth')){const r=await sync();if(r&&(r.gc||r.gg))toast('💪 FPimpulse: '+rewTxt(r));}}catch(e){}
+},1000);
+})();
 /* LOJA2PECAS (09-10/nov, Felipe: "tela cheia, artes separadas pra ficar leve, sem desalinhar"; "no carro dá pra colocar 2 estantes?"):
    Loja do Vale montada com as peças do Buchecha (entregas/LOJA_PECAS_v1, POSICOES.json):
    cenário cobrindo a tela toda + estante montada peça por peça (topo, faixa das abas, 4 prateleiras, base).

@@ -12134,6 +12134,8 @@ arDrawMon=function(sp,x,y,sc,act,dir,seed,fix){if(act==='walk'&&arWalk(sp))retur
 {let bz=0;setInterval(()=>{try{if(typeof G==='undefined'||G.mode!=='world'||!busy||ui.length||document.getElementById('nomeBox')||document.querySelector('#arBox:not([hidden]),#duoBox:not([hidden]),#convO,#rpBox,#sdBox')){bz=0;return;}if(++bz>=15){bz=0;busy=false;try{__EV&&__EV('destravou mapa');}catch(_){}}}catch(e){}},1000);}
 
 /* ARBOSS (05/nov, report: 'Boss está andando fora da estrada'): inimigo com arte vista de cima fica no meio da estrada e no tamanho certo (chefe no máx. ~1,4 casa) */function arEY(sp,bo){return ARV.has(sp)?3:(bo?16:9);}function arES(sp,sc,bo){return ARV.has(sp)?Math.min(sc,bo?.42:.3):sc;}function arEB(sp,bo){return ARV.has(sp)?(bo?25:17):(bo?42:22);}
+/* ARCHEFEJUNTOS12NOV (R349, report: chefe com a vida dentro do tabuleiro do parceiro no JUNTOS): na estrada única do meio a faixa é estreita, então a vida do chefe fica colada na cabeça dele e não sobe pro tabuleiro de cima */
+{const _eb=arEB;arEB=function(sp,bo){const v=_eb(sp,bo);try{if(bo&&AR&&AR.mp&&arCoop(AR))return Math.min(v,13);}catch(e){}return v;};}
 
 /* ARPRE (05/nov, Felipe: 'pq o jogo dela tá assim?' — a Arena abriu sem a arte, com a parede de tijolo): a arte da Arena começa a baixar já no mapa, e figura que falhou tenta de novo sozinha */
 setInterval(()=>{try{if(typeof G==='undefined'||G.mode!=='world'||ARPRE.ok)return;const s=arSk();const a=m6img(s,'menu'),b2=m6img(s,'solo');if(a&&b2)ARPRE.ok=1;}catch(e){}},5000);const ARPRE={ok:0};

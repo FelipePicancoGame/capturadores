@@ -10868,7 +10868,7 @@ async function arMpRun(mode,r){const S=r.S;
   S.on('ab',m=>{if(m.isMe||m.sameTab||!mine()||AR.over)return;arMpSpawnBonus((m.data||{}).hp|0||100);});
   S.on('ad',m=>{if(m.isMe||m.sameTab||!mine()||AR.over)return;arCoopDmg(m.data||{});});
   S.on('ax',m=>{if(m.isMe||m.sameTab||!mine()||AR.over)return;arEnd(mode==='pvp'?'peerlost':'coop');});
-  const iv=setInterval(()=>{if(!mine()){clearInterval(iv);return;}if(AR.over)return;arMpSnap(AR);const gap=performance.now()-M.last;M.off=gap>3000?Math.floor(gap/33):0;if(gap>20000)arEnd('peergone');},150);/* ARMPRAPIDO 06/nov: era 500ms — os ataques e a onda do outro chegavam atrasados e aos pulos */
+  const iv=setInterval(()=>{if(!mine()){clearInterval(iv);return;}if(AR.over)return;arMpSnap(AR);const gap=performance.now()-M.last;M.off=gap>3000?Math.floor(gap/33):0;if(gap>35000)arEnd('peergone');/* TURNDUPLA13NOV: espera mais antes de dar o parceiro por perdido (era 20 s) */},150);/* ARMPRAPIDO 06/nov: era 500ms — os ataques e a onda do outro chegavam atrasados e aos pulos */
   duoEmit(S,'as',{g:[],l:3,w:0,k:0,e:0,n:String(flags.nome||'').slice(0,12)});
   await new Promise(res=>{AR.done=res;});clearInterval(iv);try{S.leave();}catch(e){}
   await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;saveGame();await fadeTo(0);}
@@ -15769,6 +15769,13 @@ function amgQR(url,text){return new Promise(res=>{const EN=window.CVLANG==='en';
     const t=performance.now();if(key!==k){key=k;t0=t;tent=0;return;}if(t-t0<(tent<3?4000:15000)||tent>8)return;
     const base=String(im.src||'').split('?')[0].replace(location.origin+location.pathname.replace(/[^/]*$/,''),'');tent++;t0=t;
     const alt=tent>=2&&LOW[base];im.src=alt?alt:(base+'?r='+Date.now());try{window.__EV&&__EV('mapa recarregado '+k+(alt?' (menor)':''));}catch(e){}}catch(e){}},1000);})();
+/* TURNDUPLA13NOV (Felipe: 'na arena em dupla minha mãe joga com a Dinha e está caindo muito'): a ligação direta entre dois celulares no 4G
+   muitas vezes não passa (operadora bloqueia). Antes só havia o servidor que acha o caminho (STUN); agora tem também servidores de retransmissão (TURN)
+   gratuitos: quando a ligação direta falha, a conversa passa por eles. */
+window.__DUOPEERCFG=window.__DUOPEERCFG||{config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'},
+  {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}]}};
 function amgZap(){try{window.open('https://wa.me/?text='+encodeURIComponent(amgLinkTxt()+' '+amgLinkUrl()),'_blank');}catch(e){}}
 (function(){try{const m=/amigo-(\d{4,6})(?:-([^#&-]*))?/.exec(location.hash||'');if(!m)return;
   localStorage.setItem('cv.amglink',JSON.stringify({tid:+m[1],nome:decodeURIComponent(m[2]||'').slice(0,14)}));

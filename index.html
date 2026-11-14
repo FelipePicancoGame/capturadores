@@ -18396,7 +18396,7 @@ function _partG(x,y,c,n,o){try{part(x,y,c,n,o);}catch(e){}}
 const CV13A='assets/convite/';
 /* até o Felipe aprovar as fotos: só liga com #cvnovo no link (fica lembrado no aparelho) */
 (function(){try{if(/[?#&]cvnovo/.test(location.href))localStorage.setItem('cv.cv13','1');if(/[?#&]cvold/.test(location.href))localStorage.removeItem('cv.cv13');}catch(e){}})();
-const CV13PADRAO=false;
+const CV13PADRAO=true;
 function cv13On(){if(/[?#&]cvold/.test(location.href))return false;if(CV13PADRAO)return true;try{return localStorage.getItem('cv.cv13')==='1';}catch(e){return false;}}
 function cv13Css(){if(document.getElementById('cv13css'))return;const st=document.createElement('style');st.id='cv13css';st.textContent=`
 #cv13L{position:fixed;inset:0;z-index:9100;background:rgba(14,10,4,.82);display:flex;align-items:center;justify-content:center;font-family:Arial,Helvetica,Liberation Sans,sans-serif}

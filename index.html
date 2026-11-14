@@ -10058,13 +10058,17 @@ function drawTrain(u){UKWAIT=null;if(drawTrainArt(u)||ukWaitDraw(u))return;const
   if(!pts)T('Sem pontos: jogue Muralha, Torres ou Horda para ganhar!',W/2,H-44,5.8,'center','#ffb0a0',W-10);else T(mgCap()>=999?'Treine à vontade: o nível não tem limite':`Nível máximo agora: ${mgCap()} (sobe com as missões principais)`,W/2,H-44,5.8,'center','#ffe7a0',W-10);
   backBtn(u,W/2-40,H-26,80,99);}
 /* ===== MOEDA DE HONRA: rara (1 a cada 5 fases vencidas pela 1ª vez em cada mini game, +2 por medalha). Compra QUALQUER monstrinho ===== */
+const LUZGEM=500;
 function honraPrice(sp){const st=EVOSTG[sp]||1;return st>=3?10:st===2?7:4;}
 function honraAdd(n,why){flags.honra=(flags.honra||0)+n;MGHONRA=(MGHONRA||0)+n;return n;}
 let MGHONRA=0;
 async function honraMenu(){const TY=[...new Set(DEXLIST.map(sp=>SP[sp]&&SP[sp].type).filter(Boolean))];
   while(true){const h=flags.honra||0,D=flags.dex||{};
-    const rowsT=TY.map(t=>{const L=DEXLIST.filter(sp=>SP[sp]&&SP[sp].type===t&&!TRV(sp)),own=L.filter(sp=>D[sp]).length,mn=Math.min(...L.map(honraPrice));return{t,mn,n:TYPES[t],d:`${L.length} monstrinhos · você tem ${own}`,ic:PWIC[t],bg:TYPECOL[t]+'33',badge:`${mn}+ 🏅`,bcol:h>=mn?'#2f8f4c':'#8a4ad8'};});
+    const rowsT=TY.map(t=>{const L=DEXLIST.filter(sp=>SP[sp]&&SP[sp].type===t&&!TRV(sp)),own=L.filter(sp=>D[sp]).length,mn=Math.min(...L.map(honraPrice));if(t==='luz')return{t,mn:LUZGEM,n:TYPES[t],d:`Estrelim · só com cristais · você tem ${own}`,ic:PWIC[t],bg:TYPECOL[t]+'33',badge:`${LUZGEM} 💎`,bcol:gems()>=LUZGEM?'#2f8f4c':'#8a4ad8'};return{t,mn,n:TYPES[t],d:`${L.length} monstrinhos · você tem ${own}`,ic:PWIC[t],bg:TYPECOL[t]+'33',badge:`${mn}+ 🏅`,bcol:h>=mn?'#2f8f4c':'#8a4ad8'};});
     const k=await (UIK.honra&&rowsT.length<=9?choose([...rowsT.map(i=>i.n),'Voltar'],{shop:rowsT,honraArt:1}):shopPick(rowsT,`LOJA DE HONRA · ${h} 🏅`,'Escolha o tipo · compre QUALQUER monstrinho'));if(k==null||k<0||k>=TY.length)return;
+    if(TY[k]==='luz'){/* LUZCRISTAL14NOV (Felipe: 'só com cristais'): o Estrelim é comprado com cristais; Estrelux e Estelarion só evoluindo */
+      const ok=await choose(['Comprar','Cancelar'],{box:{x:W/2-60,y:H/2-20,w:120,h:44},prompt:`Comprar Estrelim por ${LUZGEM} 💎?`});if(ok!==0)continue;
+      if(gems()<LUZGEM){shopToast(`Faltam ${LUZGEM-gems()} 💎`,1);try{await lojaReal(1);}catch(e){}continue;}addGems(-LUZGEM);const where=grantMon('estrelim',teamAvg());saveGame();await revealMon('estrelim',where);continue;}
     while(true){const h2=flags.honra||0,L=DEXLIST.filter(sp=>SP[sp]&&SP[sp].type===TY[k]&&!TRV(sp));
       const rowsM=L.map(sp=>{const p=honraPrice(sp),own=!!(flags.dex||{})[sp];return{n:SP[sp].name,d:own?'Você já tem · pode pegar outro':'Ainda não tem!',mon:sp,own,bg:TYPECOL[TY[k]]+'33',badge:`${p} 🏅`,bcol:h2>=p?'#2f8f4c':'#8a4ad8'};});
       const c=await shopPick(rowsM,`${TYPES[TY[k]]} · ${h2} 🏅`,'Toque no monstrinho pra comprar');if(c==null||c<0||c>=L.length)break;

@@ -12227,8 +12227,9 @@ const PV6E={};function pv6Smooth(P){const now=performance.now(),seen={};const ou
     if(!s||Math.abs(s.f-tf)>.06)s=PV6E[id]={f:tf,v,tq:P.q};else if(s.tq!==P.q){s.f+=(tf-s.f)*.35;s.v=v;s.tq=P.q;}s.e=e;s.seen=now;out.push(s);}
   for(const k in PV6E)if(!seen[k]||now-PV6E[k].seen>1500)delete PV6E[k];return out;}
 function pv6Step(){for(const k in PV6E){const s=PV6E[k];s.f=Math.min(1,s.f+(s.v||0));}}
-function pv6Foe(sp,x,y,boss,dir,seed,hp){if(boss){if(x<W*.22)x-=5;else if(x>W*.78)x+=5;}E(x,y+2,boss?10:5,boss?3:2,'rgba(0,0,0,.3)',0,false);arDrawMon(sp,x,y-arEY(sp,boss),arES(sp,boss?.5:.28,boss),'walk',dir,seed);if(hp!=null)arHpBar(x,y-arEB(sp,boss),hp/100,!!boss);}
+function pv6Foe(sp,x,y,boss,dir,seed,hp){let _mf=null;if(boss){if(x<W*.22)x-=5;else if(x>W*.78)x+=5;/* MCHINIMIGO14NOV: chefe no tabuleiro do inimigo (CONTRA) com posição própria */try{if(typeof CHEFEPOSM!=='undefined'&&CHEFEPOSM.conI){const lg=x<W*.22?'L':x>W*.78?'R':'T',o=CHEFEPOSM.conI[lg]||[0,0];x+=o[0];y+=o[1];_mf=MCHFORCE;MCHFORCE='conI';}}catch(e){}}try{E(x,y+2,boss?10:5,boss?3:2,'rgba(0,0,0,.3)',0,false);arDrawMon(sp,x,y-arEY(sp,boss),arES(sp,boss?.5:.28,boss),'walk',dir,seed);if(hp!=null)arHpBar(x,y-arEB(sp,boss),hp/100,!!boss);}finally{if(boss)MCHFORCE=_mf;}}
 {const _u=arPvpUnder;arPvpUnder=function(A,G2,t){if(!pvp6())return _u(A,G2,t);const P=A.mp.peer||{},V=m6s().pvp,pts=V.rpath.map(q=>m7P(q[0],q[1])),foes=[];
+  if(A.mch&&A.gh&&A.gh.length){const PL=arPathLen(arGeo());for(const g of A.gh){const q=pv6At(pts,g.d/PL);foes.push(q);pv6Foe(g.sp,q.x,q.y,true,q.dir,g.id*10,100);}pv6Partner(A,t,foes);return;}/* MCHINIMIGO14NOV: montador mostra os chefes do inimigo */
   if(A.t!==A._pv6t){A._pv6t=A.t;pv6Step();}for(const s of pv6Smooth(P)){const e=s.e,q=pv6At(pts,s.f);foes.push(q);pv6Foe(e[1],q.x,q.y,e[2],q.dir,e[3]!=null?e[3]*7:e[0],e[4]);}pv6Partner(A,t,foes);};}
 {const _c=arCoopUnder;arCoopUnder=function(A,G2,t){if(!pvp6())return _c(A,G2,t);const V=m6s().pvp,pts=V.rpath.map(q=>m7P(q[0],q[1])),PL=arPathLen(arGeo()),foes=[];
   for(const g of A.gh||[]){const q=pv6At(pts,g.d/PL);foes.push(q);b.save();if(g.hit>0)b.filter='brightness(1.8)';pv6Foe(g.sp,q.x,q.y,g.boss,q.dir,g.id*10,g.hp/g.max*100);b.restore();}pv6Partner(A,t,foes);};}
@@ -18504,9 +18505,11 @@ function cv13Lobby(mode){if(!cv13On())return;const $=id=>document.getElementById
 const CHEFEPOS0={sc:.38,L:[-5,0],T:[0,-5],R:[5,0]};
 let CHEFEPOS=(()=>{try{const o=JSON.parse(localStorage.getItem('cv.chefePos')||'null');if(o&&o.sc)return Object.assign({},CHEFEPOS0,o);}catch(e){}return Object.assign({},CHEFEPOS0);})();
 /* MCHMODOS14NOV (Felipe: 'coloca pra eu poder montar da arena masmorra, juntos e contra tbm'): uma posição de chefe por modo (sem fim, masmorra, juntos, contra) */
-const MCHNM={sem:'SEM FIM',mas:'MASMORRA',jun:'JUNTOS',con:'CONTRA'};
-function mchKey(){try{if(AR&&AR.mp)return AR.mp.mode==='pvp'?'con':'jun';if(AR&&AR.goal>0)return 'mas';}catch(e){}return 'sem';}
-const CHEFEPOSM=(()=>{let m=null;try{m=JSON.parse(localStorage.getItem('cv.chefePosM')||'null');}catch(e){}m=m||{};for(const k of ['sem','mas','jun','con'])if(!m[k]||!m[k].sc)m[k]=JSON.parse(JSON.stringify(CHEFEPOS));return m;})();
+const MCHNM={sem:'SEM FIM',mas:'MASMORRA',jun:'JUNTOS',con:'CONTRA',conI:'CONTRA (inimigo)'};
+let MCHFORCE=null;function mchKey(){if(MCHFORCE)return MCHFORCE;try{if(AR&&AR.mp)return AR.mp.mode==='pvp'?'con':'jun';if(AR&&AR.goal>0)return 'mas';}catch(e){}return 'sem';}
+const CHEFEPOSM=(()=>{let m=null;try{m=JSON.parse(localStorage.getItem('cv.chefePosM')||'null');}catch(e){}m=m||{};/* CHEFEPOSFELIPE14NOV: posições que o Felipe montou e mandou (JUNTOS e CONTRA); SEM FIM e MASMORRA usam as do JUNTOS até ele mandar */
+const J={sc:.3,L:[-1,-10.5],T:[2,-11],R:[-.5,-9.5],hb:19},C2={sc:.3,L:[-1,-10.5],T:[3,-13.5],R:[-.5,-9.5],hb:19},D={sem:J,mas:J,jun:J,con:C2,conI:{sc:.3,L:[0,0],T:[0,0],R:[0,0],hb:19}};
+for(const k of ['sem','mas','jun','con','conI'])if(!m[k]||!m[k].sc||!m._v14)m[k]=JSON.parse(JSON.stringify(D[k]));m._v14=1;return m;})();
 function cpSel(){const k=mchKey();if(CHEFEPOSM[k]!==CHEFEPOS)CHEFEPOS=CHEFEPOSM[k];return CHEFEPOS;}
 function arBossLeg(G2,p){if(p.y<=G2.ty+.5)return 'T';if(p.x<=G2.lx+.5)return 'L';if(p.x>=G2.rx-.5)return 'R';return null;}
 function arBossOff(G2,p){try{cpSel();const k=arBossLeg(G2,p);if(k&&CHEFEPOS[k])return CHEFEPOS[k];}catch(e){}return [0,0];}
@@ -18532,16 +18535,18 @@ function mchStart(){const A=AR;if(!A||A.mch)return;A.mch=1;A.over=false;A.wave=1
   const bt=(t,c)=>`<button data-k="${c}" style="margin:3px;padding:10px 14px;font:700 16px Arial;border:0;border-radius:12px;color:#fff;background:${c==='salvar'?'#2f9f4c':c==='sair'?'#8a3a2a':'#3f6ae0'}">${t}</button>`;
   el.innerHTML=`<div id="mchTx" style="margin-bottom:6px">Arraste cada chefe até o PÉ ficar no meio da estrada</div>${bt('TAMANHO −','menos')}${bt('TAMANHO +','mais')}${bt('OUTRO CHEFE','troca')}<br>${bt('VIDA ↑','vcima')}${bt('VIDA ↓','vbaixo')}<br>${bt('SEM FIM','solo')}${bt('JUNTOS','coop')}${bt('CONTRA','pvp')}<br>${bt('ZERAR','zera')}${bt('SALVAR E MANDAR','salvar')}${bt('SAIR','sair')}`;
   document.body.appendChild(el);const tx=el.querySelector('#mchTx');
-  const info=()=>{cpSel();tx.textContent=`${MCHNM[mchKey()]} · Tamanho ${CHEFEPOS.sc.toFixed(2)} · vida ${CHEFEPOS.hb!=null?CHEFEPOS.hb:'auto'} · esquerda ${CHEFEPOS.L.map(v=>v.toFixed(1))} · cima ${CHEFEPOS.T.map(v=>v.toFixed(1))} · direita ${CHEFEPOS.R.map(v=>v.toFixed(1))}`;};
+  const info=()=>{MCHFORCE=(AR&&AR.mchSide==='conI')?'conI':null;cpSel();const _t=`${MCHNM[mchKey()]} · Tamanho ${CHEFEPOS.sc.toFixed(2)} · vida ${CHEFEPOS.hb!=null?CHEFEPOS.hb:'auto'} · esquerda ${CHEFEPOS.L.map(v=>v.toFixed(1))} · cima ${CHEFEPOS.T.map(v=>v.toFixed(1))} · direita ${CHEFEPOS.R.map(v=>v.toFixed(1))}`;tx.textContent=(AR&&AR.mp&&AR.mp.mode==='pvp'?'(toque num chefe pra escolher: o SEU ou o do INIMIGO) ':'')+_t;MCHFORCE=null;};
   ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click'].forEach(ev=>el.addEventListener(ev,e=>e.stopPropagation()));
-  el.onclick=async e=>{const k=e.target&&e.target.dataset&&e.target.dataset.k;if(!k)return;
+  el.onclick=async e=>{const k=e.target&&e.target.dataset&&e.target.dataset.k;if(!k)return;if(['menos','mais','vcima','vbaixo','zera'].includes(k)&&A.mchSide==='conI'){MCHFORCE='conI';cpSel();}else{MCHFORCE=null;cpSel();}
     if(k==='menos')CHEFEPOS.sc=Math.max(.2,CHEFEPOS.sc-.02);if(k==='mais')CHEFEPOS.sc=Math.min(.7,CHEFEPOS.sc+.02);if(k==='troca'){A.mchI++;put();}if(k==='vcima'||k==='vbaixo'){const G2=arGeo();const cur=CHEFEPOS.hb!=null?CHEFEPOS.hb:arEB(A.en[0].sp,true);CHEFEPOS.hb=Math.max(0,Math.min(70,cur+(k==='vcima'?2:-2)));}
     /* MCHFASE14NOV (Felipe: 'não consigo entrar no juntos e contra porque precisa de alguém' / 'abre só a fase pra mim'): abre o desenho da fase de JUNTOS/CONTRA sozinho, sem parceiro (o jogo fica parado no montador) */
-    if(k==='coop'||k==='pvp'){A.mp={mode:k,role:'host',S:null,peer:{n:'—'},peerClr:0,waitT:0,sentClr:-1,off:0,last:performance.now(),mchFake:1};A.lobby=false;A.mchI=A.mchI||0;put();}
-    if(k==='solo'){if(A.mp&&A.mp.mchFake)A.mp=null;put();}
+    if(k==='coop'||k==='pvp'){A.mp={mode:k,role:'host',S:null,peer:{n:'—'},peerClr:0,waitT:0,sentClr:-1,off:0,last:performance.now(),mchFake:1};A.lobby=false;A.mchI=A.mchI||0;A.mchSide=null;put();
+      if(k==='pvp'){const PL=arPathLen(arGeo()),sp=A.mchSps[A.mchI%A.mchSps.length];A.gh=[.12,.5,.88].map((f,i)=>({sp,d:PL*f,hp:100,max:100,boss:true,id:90+i,hit:0,spd:0}));}else A.gh=[];}
+    if(k==='solo'){if(A.mp&&A.mp.mchFake)A.mp=null;A.gh=[];A.mchSide=null;put();}
+    if(k==='troca'&&A.gh&&A.gh.length){const sp=A.mchSps[A.mchI%A.mchSps.length];A.gh.forEach(g=>g.sp=sp);}
     if(k==='zera'){CHEFEPOS=Object.assign({},CHEFEPOS0,{L:[0,0],T:[0,0],R:[0,0]});CHEFEPOSM[mchKey()]=CHEFEPOS;}
     if(k==='salvar'){try{localStorage.setItem('cv.chefePosM',JSON.stringify(CHEFEPOSM));if(mchKey()==='sem')localStorage.setItem('cv.chefePos',JSON.stringify(CHEFEPOS));}catch(_){}/* MCHTEMPO14NOV (Felipe: 'ele nunca termina de mandar'): foto e envio com tempo máximo; os números ficam na tela pra tirar print se não der */
-      const NUM=MCHNM[mchKey()]+' '+JSON.stringify(CHEFEPOS),TO=(pr,ms)=>Promise.race([Promise.resolve().then(()=>pr),new Promise(r=>setTimeout(()=>r(null),ms))]);tx.innerHTML='Mandando…<br><b style="font-size:15px;user-select:all">'+NUM+'</b>';
+      const NUM=(AR&&AR.mp&&AR.mp.mode==='pvp')?('CONTRA '+JSON.stringify(CHEFEPOSM.con)+' INIMIGO '+JSON.stringify(CHEFEPOSM.conI)):(MCHNM[mchKey()]+' '+JSON.stringify(CHEFEPOS)),TO=(pr,ms)=>Promise.race([Promise.resolve().then(()=>pr),new Promise(r=>setTimeout(()=>r(null),ms))]);tx.innerHTML='Mandando…<br><b style="font-size:15px;user-select:all">'+NUM+'</b>';
       const r=Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:new Date().toISOString(),texto:'MONTADOR CHEFE: '+NUM,tela_jogo:'',print:''},rpCtx());try{const ft=await TO((async()=>rpShrink(rpShot(),360,.66))(),5000);if(ft)r.tela_jogo=ft;}catch(_){}
       if(!r.tela_jogo){try{const c=document.createElement('canvas');c.width=8;c.height=8;r.tela_jogo=c.toDataURL('image/jpeg',.5);}catch(_){}}
       let ok=false;try{ok=!!(await TO(rpSend(r),20000));}catch(_){}
@@ -18554,8 +18559,10 @@ if(MCH_ON){
   let D=null;const pos=e=>{const [x,y]=toCanvas(e);return [x,y];};
   stage.addEventListener('pointerdown',e=>{const A=AR;if(!A||!A.mch)return;const [x,y]=pos(e),G2=arGeo();let best=null,bd=1e9;
     for(const en of A.en){const p=arPos(G2,en.d),o=arBossOff(G2,p),qx=p.x+o[0],qy=p.y+o[1]-14,dd=Math.hypot(qx-x,qy-y);if(dd<bd){bd=dd;best={en,leg:arBossLeg(G2,p)};}}
-    if(best&&best.leg&&bd<40){D={x,y,leg:best.leg,o0:CHEFEPOS[best.leg].slice()};e.stopPropagation();e.preventDefault();}},true);
-  stage.addEventListener('pointermove',e=>{if(!D||!AR||!AR.mch)return;const [x,y]=pos(e);CHEFEPOS[D.leg]=[Math.round((D.o0[0]+x-D.x)*2)/2,Math.round((D.o0[1]+y-D.y)*2)/2];try{AR.mchInfo&&AR.mchInfo();}catch(_){}e.stopPropagation();},true);
+    try{if(A.gh&&A.gh.length&&typeof pvp6==='function'&&pvp6()){const V=m6s().pvp,pts=V.rpath.map(q=>m7P(q[0],q[1])),PL=arPathLen(G2);
+      for(const g of A.gh){const q=pv6At(pts,g.d/PL);let qx=q.x;if(qx<W*.22)qx-=5;else if(qx>W*.78)qx+=5;const lg=q.x<W*.22?'L':q.x>W*.78?'R':'T',o=CHEFEPOSM.conI[lg]||[0,0],dd=Math.hypot(qx+o[0]-x,q.y+o[1]-14-y);if(dd<bd){bd=dd;best={leg:lg,side:'conI'};}}}}catch(_){}
+    if(best&&best.leg&&bd<40){const SET=best.side?CHEFEPOSM.conI:CHEFEPOSM[mchKey()];A.mchSide=best.side||null;D={x,y,leg:best.leg,side:best.side,o0:SET[best.leg].slice()};try{A.mchInfo&&A.mchInfo();}catch(_){}e.stopPropagation();e.preventDefault();}},true);
+  stage.addEventListener('pointermove',e=>{if(!D||!AR||!AR.mch)return;const [x,y]=pos(e);(D.side?CHEFEPOSM.conI:CHEFEPOSM[mchKey()])[D.leg]=[Math.round((D.o0[0]+x-D.x)*2)/2,Math.round((D.o0[1]+y-D.y)*2)/2];try{AR.mchInfo&&AR.mchInfo();}catch(_){}e.stopPropagation();},true);
   const up=e=>{if(D){D=null;e.stopPropagation();}};stage.addEventListener('pointerup',up,true);stage.addEventListener('pointercancel',up,true);
   /* linha do meio da estrada pra ajudar */
   {const _ra=renderArena;renderArena=function(){_ra.apply(this,arguments);try{const A=AR;if(!A||!A.mch)return;const G2=arGeo();b.save();b.strokeStyle='rgba(255,40,40,.9)';b.lineWidth=1.2;b.setLineDash([3,2]);b.beginPath();G2.pts.forEach((q,i)=>i?b.lineTo(q[0],q[1]):b.moveTo(q[0],q[1]));b.stroke();b.restore();}catch(e){}};}

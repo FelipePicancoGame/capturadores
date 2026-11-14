@@ -18574,7 +18574,7 @@ setTimeout(function cvTesla(){try{if(typeof flags==='undefined'||!flags||!party|
 /* MONTACARTAS14NOV (Felipe: 'está desalinhado, me dá o montador'): Montador das Cartas da Muralha. Abrir o App com #montacartas.
    Escolhe a parte (nome da carta, texto da carta, título de baixo, texto de baixo, botão de baixo), move com as setas, muda tamanho e largura, e SALVAR E MANDAR manda os números pelo Report. */
 var MCC=(()=>{const D={nome:{x:0,y:0,s:0,w:0},texto:{x:0,y:0,s:0,w:0},titulo:{x:0,y:0,s:0,w:0},baixo:{x:0,y:0,s:0,w:0},botao:{x:0,y:0,s:0,w:0}};try{const j=JSON.parse(localStorage.getItem('cv.mcc')||'null');if(j)for(const k in D)Object.assign(D[k],j[k]||{});}catch(_){}return D;})();
-(function(){let on=false;try{if(/[?#&]montacartas/.test(location.href))localStorage.setItem('cv.mcm','1');on=localStorage.getItem('cv.mcm')==='1';}catch(_){on=/[?#&]montacartas/.test(location.href);}if(!on)return;
+(function(){/* 14/nov (Felipe: 'para de me mandar pra dentro do jogo pra mexer no montador' / 'no X ele não fecha'): montador dentro do jogo desligado — agora é a página Montador das Cartas */try{localStorage.removeItem('cv.mcm');}catch(_){}return;
   const NM={nome:'NOME DA CARTA',texto:'TEXTO DA CARTA',titulo:'TÍTULO DE BAIXO',baixo:'TEXTO DE BAIXO',botao:'BOTÃO DE BAIXO'};let sel='nome';
   function abre(){try{if(typeof G==='undefined'||!G||['boot','title','intro','starter'].includes(G.mode)||typeof wallCardShop!=='function'){setTimeout(abre,800);return;}
     if(!document.getElementById('mccP')){wallCardShop();painel();}}catch(e){setTimeout(abre,1000);}}

@@ -18585,7 +18585,7 @@ function ftDraw(w,t){const cs=w.cards,G=ftGeo(),k=G.k,X=v=>G.ox+v*k,Y=v=>G.oy+v*
     const lv=w.lv[cd.key||cd.id]||0;
     /* CORESV2_14NOV (Buchecha, CORES_CARTAS_FORTALEZA_13nov): molduras novas 512x1024 por raridade (cinza, azul, roxa, dourada), janela (70,115,372,249);
        o jogo escreve nome, nível e efeito. Só na tela de teste (#fortnovo); se a moldura não carregou, usa a carta antiga. */
-    const MV=ftImg('moldura_v2_'+Math.min(3,cd.r|0));
+    const MV=/[?#&]moldv2/.test(location.href)?ftImg('moldura_v2_'+Math.min(3,cd.r|0)):null;/* 14/nov (Felipe: 'eu gosto das cartas antigas'): molduras v2 só com #moldv2 */
     if(MV){const cx0=X(x),cy0=Y(712+(sl.y-709)+lift+enter),fw=S(cw),f=fw/512,R=(a,b2,c,d)=>[cx0+a*f,cy0+b2*f,c*f,d*f];
       if(cd.r===3){b.save();b.globalCompositeOperation='lighter';glowAt(cx0+fw/2,cy0+fw,fw*.75+Math.sin(t/6)*5,'255,170,60',.35);b.restore();}
       const J=R(70,115,372,249);b.fillStyle='#24384a';b.fillRect(J[0],J[1],J[2],J[3]);

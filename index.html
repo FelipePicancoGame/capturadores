@@ -5536,7 +5536,7 @@ function wHoldDraw(w,t){const d=wHoldOn(w);if(!d)return;const [R0,,desc]=bRange(
   T(`${nm(d.m)} • ${mvN(d.sp,d.mv)}`,lx,ly-1.5,5.6,'center',dual?c2:col,84,C.ink);T(desc,lx,ly+6,5,'center',C.white,84,C.ink);}
 function wRangeDraw(w,t){if(w.rangeT==null)w.rangeT=320;if(w.rangeT>0&&!w.cards)w.rangeT--;if(!(w.rangeT>0))return;const fa=Math.min(1,w.rangeT/40);
   for(const d of w.defs){const R2=wRng(w,d),col=spCol(d.sp)||'#ffffff';b.save();b.beginPath();b.arc(d.x,d.y-12,R2,Math.PI*1.08,Math.PI*1.92);b.globalAlpha=.7*fa;if(spCol2(d.sp)!==col){b.lineWidth=4.2;b.strokeStyle='rgba(40,25,5,.35)';b.globalAlpha=.9*fa;b.stroke();b.lineWidth=3.2;b.strokeStyle=spCol2(d.sp);b.globalAlpha=fa;b.stroke();b.setLineDash([7,7]);b.lineWidth=2.6;b.strokeStyle=col;b.stroke();}else{b.setLineDash([4,4]);b.lineWidth=1.1;b.strokeStyle=col;b.stroke();}b.setLineDash([]);b.restore();
-    const ty=Math.max(40-(w.ext||0),d.y-12-R2);T('alcance',d.x,ty-6,5,'center',spCol2(d.sp),40,C.ink);}}
+    const ty=Math.max(40-(w.ext||0),d.y-12-R2);/* ALCANCEFAIXA14NOV: a palavra não fica em cima da faixa NOVO INIMIGO */if(!(w.banner&&ty-6>100&&ty-6<146))T('alcance',d.x,ty-6,5,'center',spCol2(d.sp),40,C.ink);}}
 /* ALERTA DE CHEFE: escudo com caveira, espadas cruzadas e faixa vermelha (desenho próprio) */
 function bossEmblem(k,a,e){const BS=asImg('bs_strip');if(BS){if(a<=0)return;const fw=BS.naturalWidth/11,fh=BS.naturalHeight,f=k<66?Math.floor(k/6):8+Math.floor(k/5)%3,wd=150,sc=wd/fw,cy0=H*.42-WOY;b.save();b.globalAlpha=Math.min(1,a*1.4);b.imageSmoothingEnabled=true;b.drawImage(BS,f*fw,0,fw,fh,W/2-wd/2,cy0-fh*sc*.6,wd,fh*sc);b.restore();const ty=cy0+fh*sc*.42;T('CHEFE CHEGANDO!',W/2,ty,13,'center','#ffe9b0',W-14,'#3a0a0a');if(e)T((SP[e.sp.replace('*','')]||{}).name||'',W/2,ty+16,8,'center','#ff8a6e',W-30,'#1a0a0a');return;}const cx=W/2,cy=H*.42-WOY*0+0,ease=k<14?(1-Math.pow(1-k/14,3))*(1+.25*Math.sin(k/14*Math.PI)):1,s=ease;if(a<=0)return;
   b.save();b.globalAlpha=Math.min(1,a*1.4);b.translate(cx,cy-WOY);b.scale(s,s);
@@ -17730,7 +17730,7 @@ const CM2IC={rng:'ic_luneta',crit:'ic_critico',hp:'ic_muralha',coin:'ic_moedas',
     if(q===0){let n2=0;try{const fi=flags.wFichas||0;for(const c of L){const lv=wcuLv(c.id);if(lv<wcuMax(c)&&fi>=WCU_COST[c.r][lv])n2++;}}catch(e){}if(n2&&!on){b.save();b.translate(X(xx+460),S(385));b.scale(S(30)/6,S(30)/6);redDot(0,0,n2,.9);b.restore();}}
     if(q===1){let n2=0;try{const hn=flags.honra||0;for(const c of L)if(!wcsLv(c.id)&&hn>=WCS_COST[c.r])n2++;}catch(e){}if(n2&&!on){b.save();b.translate(X(xx+460),S(385));b.scale(S(30)/6,S(30)/6);redDot(0,0,n2,.9);b.restore();}}});
   /* painel de baixo */
-  {const py0=H-PH-S(8);di('painel',X(20),py0,S(1040),PH);const c=L[st.sel];if(c){const lv=wcuLv(c.id),mx=wcuMax(c),has=wcsLv(c.id)>0,lx=X(100),lw=S(880);
+  {const py0=H-PH-S(8);di('painel',X(20),py0,S(1040),PH);const c=L[st.sel];if(c){const lv=wcuLv(c.id),mx=wcuMax(c),has=wcsLv(c.id)>0,lx=X(124)/* LETRAMOLDURA14NOV: nome não encosta na moldura */,lw=S(856);
       T(c.n+' · '+RARN[c.r],lx,py0+S(52),S(46),'left','#3a2410',S(560));
       const done=st.tab===0?lv>=mx:has;
       if(done){const sw=S(270),sx=X(1060-100-sw);if(!di('status_max',sx,py0+S(40),sw,sw*120/300))rrect(sx,py0+S(40),sw,S(100),S(20),'#2f9f4c');T(window.CVLANG==='en'?(st.tab===0?'MAX ★'+lv:'CHOSEN ✓'):(st.tab===0?'MÁXIMO ★'+lv:'ESCOLHIDA ✓'),sx+sw/2,py0+S(66),S(36),'center','#ffffff',sw*.85,'#0e4a10');}

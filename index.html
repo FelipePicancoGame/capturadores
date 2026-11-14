@@ -9975,7 +9975,7 @@ let MGLAST=null;
 function mgTrainPts(){const lv=Math.max(1,...party.map(m=>m.lv));return Math.max(1,Math.ceil(((lv+1)**3-lv**3)/5));}
 /* ESTATÍSTICA DA PARTIDA (todas as fases da Muralha, Torres e Horda): quem bateu mais, quanto e a % do dano */
 let DUOSTATS=null;/* DUOSTATS07NOV: na Muralha em dupla, embaixo da estatística vem o total de cada um */
-async function mgStatsShow(){if(DUOSTATS&&DUOSTATS.meL){const D0=DUOSTATS;DUOSTATS=null;const en=window.CVLANG==='en';await duoCompare({n:en?'You':'Você',t:D0.me,L:D0.meL},{n:D0.pn||(en?'Partner':'Parceiro'),t:D0.pa,L:D0.paL});return;}if(!MGLAST||!MGLAST.out.length){DUOSTATS=null;return;}const st={t:0,L:MGLAST.out.slice().sort((a,c)=>c.d-a.d),pts:MGLAST.pts};if(DUOSTATS){const en=window.CVLANG==='en',f=n=>Math.round(n||0).toLocaleString(en?'en-US':'pt-BR');st.foot=`${en?'You':'Você'} ${f(DUOSTATS.me)}  ·  ${String(DUOSTATS.pn||(en?'Partner':'Parceiro')).slice(0,12)} ${f(DUOSTATS.pa)}`;DUOSTATS=null;}await choose(['x'],{mgstats:st});}
+async function mgStatsShow(){if(DUOSTATS&&DUOSTATS.meL){const D0=DUOSTATS;DUOSTATS=null;const en=window.CVLANG==='en';await duoCompare({n:en?'You':'Você',t:D0.me,L:D0.meL},{n:D0.pn||(en?'Partner':'Parceiro'),t:D0.pa,L:D0.paL},{jogo:'muralha',host:!!D0.host});return;}if(!MGLAST||!MGLAST.out.length){DUOSTATS=null;return;}const st={t:0,L:MGLAST.out.slice().sort((a,c)=>c.d-a.d),pts:MGLAST.pts};if(DUOSTATS){const en=window.CVLANG==='en',f=n=>Math.round(n||0).toLocaleString(en?'en-US':'pt-BR');st.foot=`${en?'You':'Você'} ${f(DUOSTATS.me)}  ·  ${String(DUOSTATS.pn||(en?'Partner':'Parceiro')).slice(0,12)} ${f(DUOSTATS.pa)}`;DUOSTATS=null;}await choose(['x'],{mgstats:st});}
 function drawMgStats(u){const st=u.cfg.mgstats;st.t++;const t=st.t,L=st.L,ap=Math.min(1,t/10),tot=L.reduce((a,o)=>a+o.d,0)||1;u.rects=[];u.boxR=null;
   b.fillStyle=`rgba(8,6,24,${.88*ap})`;b.fillRect(0,0,W,H);if(ap<1)return;
   const rh=34,cw=Math.min(W-12,176),ch=58+L.length*rh+40,cx=(W-cw)/2,cy=Math.max(8,(H-ch)/2);
@@ -12317,7 +12317,7 @@ var AR_CUR=null;
 {const _h=arHit;arHit=function(e,dmg,ty,col){try{const A=AR;if(A&&AR_CUR&&e&&e.hp>0&&dmg>0){const by=A.dmgBy||(A.dmgBy={});by[AR_CUR]=(by[AR_CUR]||0)+Math.min(dmg,e.hp);}}catch(_){}return _h.apply(this,arguments);};}
 async function arStatsShow(A){try{const by=A.dmgBy||{},L=Object.entries(by).filter(([sp,d])=>SP[sp]&&d>0).sort((a,c)=>c[1]-a[1]).slice(0,6);if(!L.length)return;
   const out=L.map(([sp,d])=>({m:mk(sp,1),d:Math.round(d),g:null,cl:null}));let foot=null;
-  if(A.mp){const P=A.mp.peer||{},en=window.CVLANG==='en';await duoCompare({n:en?'You':'Você',t:A.dmgT||0,L:Object.entries(by).filter(([sp,d])=>SP[sp]&&d>0)},{n:P.n||(en?'Partner':'Parceiro'),t:P.dm||0,L:Array.isArray(P.by)?P.by:[]});return;}
+  if(A.mp){const P=A.mp.peer||{},en=window.CVLANG==='en';await duoCompare({n:en?'You':'Você',t:A.dmgT||0,L:Object.entries(by).filter(([sp,d])=>SP[sp]&&d>0)},{n:P.n||(en?'Partner':'Parceiro'),t:P.dm||0,L:Array.isArray(P.by)?P.by:[]},{jogo:'arena-'+A.mp.mode,host:A.mp.role==='host'});return;}
   if(A.mp){const P=A.mp.peer||{},eu=Math.round(A.dmgT||0),ou=Math.round(P.dm||0),en=window.CVLANG==='en';foot=`${en?'You':'Você'} ${eu.toLocaleString(en?'en-US':'pt-BR')}  ·  ${(P.n||(en?'Partner':'Parceiro'))} ${ou.toLocaleString(en?'en-US':'pt-BR')}`;}
   await choose(['x'],{mgstats:{t:0,L:out,pts:null,foot}});}catch(e){console.warn('arStats',e);}}
 function arStatsHook(A){if(!A||A._stH)return;A._stH=1;const d=A.done;if(!d)return;A.done=async function(){if(A._stD)return;A._stD=1;if(AR===A){try{await arStatsShow(A);}catch(e){}}d.apply(this,arguments);};}
@@ -15869,7 +15869,7 @@ function amgPainel(){if(!duoNoApp())return;const ini=document.getElementById('du
     amgAdd(v,'');amgPainel();duoMsg('Amigo adicionado! Vendo se ele está com o jogo aberto…');const r=await amgFala(v,{k:'ping'},5000);if(r&&r.k==='pong'){amgAdd(v,r.nome);amgPainel();duoMsg((r.nome||'Seu amigo')+' está com o jogo aberto agora.');}else duoMsg('Amigo adicionado. Ele aparece "online" quando estiver com o App aberto no mapa.');};
   pn.querySelectorAll('[data-conv]').forEach(b=>b.onclick=()=>amgConvidar(parseInt(b.dataset.conv,10)));
   L.forEach(a=>amgFala(a.tid,{k:'ping'},5000).then(r=>{const d=pn.querySelector(`[data-dot="${a.tid}"]`);if(d)d.classList.toggle('on',!!(r&&r.k==='pong'));if(r&&r.nome&&r.nome!==a.nome){a.nome=r.nome;const row=d&&d.parentNode,bb=row&&row.querySelector('.nm b');if(bb)bb.textContent=r.nome;}}));}
-async function amgConvidar(tid){const a=amgLista().find(x=>x.tid===tid),nm=(a&&a.nome)||('Nº '+tid);
+async function amgConvidar(tid){grpUlt(tid);const a=amgLista().find(x=>x.tid===tid),nm=(a&&a.nome)||('Nº '+tid);
   duoMsg('Chamando '+nm+'…');const r0=await amgFala(tid,{k:'ping'},5000);if(!r0||r0.k!=='pong'){duoMsg(nm+' não está com o App aberto no mapa agora. Peça pra ele abrir o jogo e tente de novo.',1);return;}
   /* CONVITEOCUPADO12NOV: amigo ocupado (Arena, Muralha, menu…) recebe o convite mesmo assim — o balão aparece em qualquer tela */
   document.getElementById('duoCriar').click();let cod='';for(let i=0;i<60&&!cod;i++){await new Promise(r=>setTimeout(r,250));const t=(document.getElementById('duoCodTxt')||{}).textContent||'';if(/^[A-Z]{4}$/.test(t))cod=t;}
@@ -15903,7 +15903,7 @@ function arAmgPainel(mode){if(!duoNoApp())return;const ini=document.getElementBy
   pn.querySelectorAll('.am button').forEach(bt=>bt.onclick=()=>arAmgConvidar(mode,parseInt(bt.dataset.t,10)));
   pn.querySelector('#arAmgAdd').onclick=()=>{const v=parseInt((pn.querySelector('#arAmgN').value||'').replace(/\D/g,''),10);if(!v){arAv('Digite o Nº do amigo.',1);return;}if(v===amgNo()){arAv('Esse é o seu Nº 😄',1);return;}amgAdd(v,'');arAv('Amigo adicionado!');arAmgPainel(mode);};
   pn.querySelector('#arAmgLink').onclick=()=>{try{amgShare();}catch(e){}};{const q=pn.querySelector('#arAmgQR');if(q)q.onclick=()=>{try{amgQR(amgLinkUrl(),amgLinkTxt());}catch(e){}};}/* AMGQRBOTAO13NOV (Felipe: 'coloque QR code pra adicionar amigos') */}
-async function arAmgConvidar(mode,tid){const a=amgLista().find(x=>x.tid===tid),nm=(a&&a.nome)||('Nº '+tid);
+async function arAmgConvidar(mode,tid){grpUlt(tid);const a=amgLista().find(x=>x.tid===tid),nm=(a&&a.nome)||('Nº '+tid);
   arAv('Chamando '+nm+'…');const r0=await amgFala(tid,{k:'ping'},5000);if(!r0||r0.k!=='pong'){arAv(nm+' não está com o App aberto no mapa agora. Peça pra ele abrir o jogo e tente de novo.',1);return;}
   /* CONVITEOCUPADO12NOV: amigo ocupado (Arena, Muralha, menu…) recebe o convite mesmo assim — o balão aparece em qualquer tela */
   document.getElementById('arCriar').click();let cod='';for(let i=0;i<60&&!cod;i++){await new Promise(r=>setTimeout(r,250));const t=(document.getElementById('arCodTxt')||{}).textContent||'';if(/^[A-Z]{4}$/.test(t))cod=t;}
@@ -16145,7 +16145,7 @@ function duoHostAct(H0,a){const w=WL;if(a.k==='hb'){H0.gAuto=!!a.auto;H0.ack=1;r
   if(a.k==='swap'){const i=a.i|0,d=w.defs[i],m=duoDes(a.m);if(!d||d._ow!==1||!m)return;const ok=(H0.gres||[]).find(q=>q.sp===m.sp&&q.lv===m.lv)&&!w.defs.some(q=>q._ow===1&&q!==d&&q.sp===m.sp&&q.m.lv===m.lv);if(!ok)return;duoSwapDo(w,i,m);return;}
   if(a.k==='ult'){const i=a.i|0;if(i>=H0.hm.length&&i<w.defs.length){wSpecial(i);try{const s=duoSnap(w);if(s)duoEmit(H0.S,'mds',s);}catch(e){}}}
   else if(a.k==='tap'){const x=+a.x,y=+a.y;if(!isFinite(x)||!isFinite(y)||x<-20||x>200||y<-400||y>400)return;duoAs(1,()=>{if(wThiefTap(x,y))return;if(wBarrelTap(x,y))return;wCatTap(x,y);});}}
-function duoHostEnd(res){const H0=DUOH,w=WL;if(!H0||!w)return;H0.ended=true;H0.res=res;const d={res,wave:w.wave,kills:w.kills};/* DUOSTATS07NOV (R159/R173): manda o dano de cada um pro parceiro */try{const D=(w.ctx&&w.ctx.dmg)||new Map();let me=0,pa=0;const gl=[];for(const [k,v] of D){if(!k||!k.sp||!(v>0))continue;if(party.includes(k))me+=v;else{pa+=v;gl.push([k.sp,k.lv|0,Math.round(v)]);}}d.dm=[Math.round(me),Math.round(pa)];d.gl=gl.slice(0,6);const hl=[];for(const [k,v] of D){if(k&&k.sp&&v>0&&party.includes(k))hl.push([k.sp,k.lv|0,Math.round(v)]);}hl.sort((a,c)=>c[2]-a[2]);gl.sort((a,c)=>c[2]-a[2]);d.hl=hl.slice(0,6);d.hn=String(flags.nome||'').slice(0,12);DUOSTATS={me,pa,pn:H0.gnome||'',meL:hl.map(x=>[x[0],x[2]]),paL:gl.map(x=>[x[0],x[2]])};}catch(e){}[0,400,900].forEach(ms=>setTimeout(()=>duoEmit(H0.S,'mdr',d),ms));}
+function duoHostEnd(res){const H0=DUOH,w=WL;if(!H0||!w)return;H0.ended=true;H0.res=res;const d={res,wave:w.wave,kills:w.kills};/* DUOSTATS07NOV (R159/R173): manda o dano de cada um pro parceiro */try{const D=(w.ctx&&w.ctx.dmg)||new Map();let me=0,pa=0;const gl=[];for(const [k,v] of D){if(!k||!k.sp||!(v>0))continue;if(party.includes(k))me+=v;else{pa+=v;gl.push([k.sp,k.lv|0,Math.round(v)]);}}d.dm=[Math.round(me),Math.round(pa)];d.gl=gl.slice(0,6);const hl=[];for(const [k,v] of D){if(k&&k.sp&&v>0&&party.includes(k))hl.push([k.sp,k.lv|0,Math.round(v)]);}hl.sort((a,c)=>c[2]-a[2]);gl.sort((a,c)=>c[2]-a[2]);d.hl=hl.slice(0,6);d.hn=String(flags.nome||'').slice(0,12);DUOSTATS={me,pa,pn:H0.gnome||'',meL:hl.map(x=>[x[0],x[2]]),paL:gl.map(x=>[x[0],x[2]]),host:1};}catch(e){}[0,400,900].forEach(ms=>setTimeout(()=>duoEmit(H0.S,'mdr',d),ms));}
 /* toque no especial: na dupla o dono só solta os dele (0-1); os do parceiro (2-3) só o parceiro solta */
 function wTapSp(i){const w=WL;if(w&&w.duo&&i>=w.duo.hm.length){const d=w.defs[i];if(d)wPop(d.x,d.y-30,'É DO PARCEIRO','#9fd0ff',7);return;}wSpecial(i);}
 /* foto da partida (≤4KB): cabeçalho, defensores, inimigos (com id fixo), e enfeites pequenos; se passar do limite, corta efeitos e depois inimigos de trás */
@@ -16262,7 +16262,7 @@ async function duoGuestRun(r){const wel=r.wel,mons=wel.mons.map(duoDes).filter(B
   WL.cards=null;WL.duoCardsOn=false;WL.duoOff=false;WL.duoPaused=false;G0.lag=false;
   const res=R.res,wv=R.wave|0;
   if(R.me)await say('Você saiu da partida em dupla.');else if(res==='win'){WL.flash=1;await say('VITÓRIA EM DUPLA! A muralha resistiu às 10 ondas!');if(wel.fase)await duoFaseGanhou((wel.fase|0)-1);}else if(res==='lose')await say(`A muralha caiu na onda ${wv}... Boa defesa em dupla! (${R.kills|0} inimigos derrotados)`);else await say('O dono da sala encerrou a partida.');
-  try{if(!R.me&&Array.isArray(R.gl)&&R.gl.length){const out=R.gl.map(([sp,lv,d])=>({m:party.find(p=>p.sp===sp)||mk(sp,lv|0||1),sh:0,g:null,d:d|0,cl:null}));MGLAST={out,pts:null};const dm=R.dm||[0,0];DUOSTATS={me:dm[1],pa:dm[0],pn:R.hn||(r.wel&&r.wel.nome)||'',meL:R.gl.map(x=>[x[0],x[2]]),paL:Array.isArray(R.hl)?R.hl.map(x=>[x[0],x[2]]):[]};await mgStatsShow();}}catch(e){console.warn(e);}
+  try{if(!R.me&&Array.isArray(R.gl)&&R.gl.length){const out=R.gl.map(([sp,lv,d])=>({m:party.find(p=>p.sp===sp)||mk(sp,lv|0||1),sh:0,g:null,d:d|0,cl:null}));MGLAST={out,pts:null};const dm=R.dm||[0,0];DUOSTATS={me:dm[1],pa:dm[0],pn:R.hn||(r.wel&&r.wel.nome)||'',meL:R.gl.map(x=>[x[0],x[2]]),paL:Array.isArray(R.hl)?R.hl.map(x=>[x[0],x[2]]):[],host:0};await mgStatsShow();}}catch(e){console.warn(e);}
   try{r.S.leave();}catch(e){}DUOG=null;await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';WL=null;await fadeTo(0);}
 /* ---------- ETAPA 2: lugares, status e cartas de cada jogador ---------- */
 /* lugares: dono na metade esquerda, parceiro na direita, sempre do meio pra ponta (1º do dono no 1, 2º no 0; 1º do parceiro no 2, 2º no 3).
@@ -18708,7 +18708,25 @@ function duoCompare(A,B){return new Promise(res=>{try{const en=window.CVLANG==='
     <div style="font-size:20px;color:#7ad0ff;margin-top:10px">${en?'Monsters of':'Monstrinhos de'} ${String(A.n).slice(0,12)}</div>${lista(A,'#3a8ae0')}
     <div style="font-size:20px;color:#ff9a7a;margin-top:10px">${en?'Monsters of':'Monstrinhos de'} ${String(B.n).slice(0,12)}</div>${lista(B,'#e0603a')}
     <div style="text-align:center;margin-top:12px"><button style="font:inherit;font-size:24px;color:#fff;background:#1f9a4a;border:0;border-radius:18px;padding:12px 44px;box-shadow:0 6px 0 #0f5a28">OK</button></div></div>`;
-  const fim=()=>{b.remove();res();};b.querySelector('button').onclick=fim;document.body.appendChild(b);}catch(e){console.warn('duoCompare',e);res();}});}
+  const fim=()=>{b.remove();res();};b.querySelector('button').onclick=fim;
+  /* GRUPO14NOV (Felipe: 'convite pra pessoas ficarem em grupo e não precisar ficar convidando ao final de cada partida') */
+  try{const O=arguments[2]||{},g=grpUlt();if(g&&O.jogo){grpSet(g.tid,g.nome||B.n);const ex=document.createElement('div');ex.style.cssText='text-align:center;margin-top:10px';
+    if(O.host){ex.innerHTML=`<button id="grpAgain" style="font:inherit;font-size:22px;color:#fff;background:#3a6ae0;border:0;border-radius:18px;padding:12px 22px;box-shadow:0 6px 0 #1a3a8a">🔁 ${en?'PLAY AGAIN WITH':'JOGAR DE NOVO COM'} ${String(B.n).slice(0,12).toUpperCase()}</button>`;}
+    else ex.innerHTML=`<div style="font-size:18px;color:#bfe0ff">👥 ${en?'You are in a group with':'Você está em grupo com'} ${String(B.n).slice(0,12)}. ${en?'When they play again, you join by yourself.':'Quando ele jogar de novo, você entra sozinho.'}</div>`;
+    ex.innerHTML+=`<div style="margin-top:8px"><button id="grpSair" style="font:inherit;font-size:16px;color:#ffd0c0;background:transparent;border:2px solid #ffd0c0;border-radius:14px;padding:6px 14px">${en?'Leave group':'Sair do grupo'}</button></div>`;
+    b.firstElementChild.appendChild(ex);
+    const ag=ex.querySelector('#grpAgain');if(ag)ag.onclick=()=>{fim();grpDeNovo(O.jogo,g.tid);};
+    ex.querySelector('#grpSair').onclick=()=>{grpSair();ex.innerHTML=`<div style="font-size:18px;color:#ffd0c0">${en?'You left the group.':'Você saiu do grupo.'}</div>`;};}}catch(e){console.warn('grupo',e);}
+  document.body.appendChild(b);}catch(e){console.warn('duoCompare',e);res();}});}
+function grpUlt(tid,nome){try{if(tid){flags.grpUlt={tid:String(tid),nome:nome||((amgLista().find(x=>String(x.tid)===String(tid))||{}).nome)||''};}return flags.grpUlt||null;}catch(e){return null;}}
+function grpSet(tid,nome){try{flags.grupo={tid:String(tid),nome:nome||'',t:Date.now()};saveGame();}catch(e){}}
+function grpSair(){try{delete flags.grupo;delete flags.grpUlt;saveGame();}catch(e){}}
+function grpAtivo(tid){try{const g=flags.grupo;return !!(g&&String(g.tid)===String(tid)&&Date.now()-g.t<3*3600e3);}catch(e){return false;}}
+/* depois da partida, quem criou a sala volta pro mapa e chama o mesmo amigo de novo; o amigo do grupo entra sozinho */
+function grpDeNovo(jogo,tid){let n=0;const iv=setInterval(async()=>{n++;if(n>60){clearInterval(iv);return;}try{if(G.mode!=='world'||(typeof ui!=='undefined'&&ui.length)||DUOH||DUOG)return;clearInterval(iv);
+  if(jogo==='muralha'){duoLobby();setTimeout(()=>{try{amgConvidar(tid);}catch(e){}},900);}
+  else{const m=/arena-(coop|pvp)/.exec(jogo);if(!m)return;arMpLobby(m[1]);setTimeout(()=>{try{arAmgConvidar(m[1],tid);}catch(e){}},1500);}}catch(e){}},700);}
+{const _c=amgConvite;amgConvite=function(quem,cod,jogo){_c.apply(this,arguments);try{grpUlt(quem.tid,quem.nome);if(grpAtivo(quem.tid)){grpSet(quem.tid,quem.nome);const el=document.getElementById('amgInv');const sim=el&&el.querySelector('#amgSim');if(sim)setTimeout(()=>{try{sim.click();rwToast((window.CVLANG==='en'?'👥 Your group called you: joining…':'👥 Seu grupo te chamou: entrando…'));}catch(e){}},400);}}catch(e){}};}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

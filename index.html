@@ -18354,6 +18354,17 @@ try{(function(){const GS={"fagulho":{"u":"blobs/8b78fa3668930ce909ad3625623cdb7c
       b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.translate(cx,cy);b.rotate(ang-H);b.drawImage(I,f*256,0,256,256,-(bb[0]+bb[2]/2)*s2,-(bb[1]+bb[3]/2)*s2,256*s2,256*s2);b.restore();return true;}catch(e){return false;}};
 })();}catch(e){}
 /* SPEN11NOV (tradução): a lista de monstrinhos (SP) fica aqui dentro; o bloco de nomes em inglês de fora não alcançava. */window.__spEN=function(N){try{for(const k in SP){const n=SP[k]&&SP[k].name;if(n&&N[n])SP[k].name=N[n];}}catch(e){}};
+/* MURALHADUOFX13NOV (reports: 'Especial do brotin não aparece animação na dupla' / 'não aparece a cerca do poder do meu parceiro'):
+   a nuvem do especial do Brotim (e outros especiais) é feita de partículas, que não iam na foto da partida; e a Barricada/Espinhos do campo também não.
+   Agora quem roda a partida manda as partículas grandes (com número, pra não repetir) e o estado da cerca/espinhos; o parceiro desenha igual. */
+{const _p=part;part=function(x,y,col,n,o){const r=_p.apply(this,arguments);try{const w=WL;if(w&&w.duo&&!w.duoG&&G.mode==='wall'&&((n|0)>=10||(o&&o.kind==='smoke'))){w._pq=w._pq||[];w._pqn=(w._pqn||0)+1;let oj='';try{oj=o?JSON.stringify(o):'';}catch(e){}if(oj.length<200){w._pq.push([w._pqn,Math.round(x),Math.round(y),String(col).slice(0,40),Math.min(60,n|0),oj,w.t|0]);if(w._pq.length>30)w._pq.shift();}}}catch(e){}return r;};}
+{const _s=duoSnap;duoSnap=function(w){const s=_s.apply(this,arguments);if(!s)return s;try{
+  if(w.nBarr||w.nSpike)s.nf=[w.nBarr|0,w.barHP|0,w.barCap|0,w.barHit|0,w.nSpike|0,(w.spkT||[]).map(v=>v|0)];
+  if(w._pq&&w._pq.length){const pq=w._pq.filter(q=>(w.t|0)-q[6]<45).slice(-12);if(pq.length){const t=JSON.stringify(s).length,pl=JSON.stringify(pq).length;if(t+pl<9000)s.pq=pq;}}}catch(e){}return s;};}
+{const _a=duoApply;duoApply=function(s){_a.apply(this,arguments);try{const w=WL,G0=DUOG;if(!G0||!w||!w.duoG||!s)return;const M=G0.map||(v=>v);
+  if(Array.isArray(s.nf)){w.nBarr=s.nf[0];w.barHP=s.nf[1];w.barCap=s.nf[2];w.barHit=s.nf[3];w.nSpike=s.nf[4];w.spkT=s.nf[5]||[];}else if(w.nBarr||w.nSpike){w.nBarr=0;w.nSpike=0;}
+  if(Array.isArray(s.pq))for(const q of s.pq){if(q[0]<=(w._pqg|0))continue;w._pqg=q[0];let o={};try{o=q[5]?JSON.parse(q[5]):{};}catch(e){}_partG(q[1],M(q[2]),q[3],q[4],o);}}catch(e){}};}
+function _partG(x,y,c,n,o){try{part(x,y,c,n,o);}catch(e){}}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

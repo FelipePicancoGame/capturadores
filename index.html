@@ -9975,7 +9975,7 @@ let MGLAST=null;
 function mgTrainPts(){const lv=Math.max(1,...party.map(m=>m.lv));return Math.max(1,Math.ceil(((lv+1)**3-lv**3)/5));}
 /* ESTATÍSTICA DA PARTIDA (todas as fases da Muralha, Torres e Horda): quem bateu mais, quanto e a % do dano */
 let DUOSTATS=null;/* DUOSTATS07NOV: na Muralha em dupla, embaixo da estatística vem o total de cada um */
-async function mgStatsShow(){if(!MGLAST||!MGLAST.out.length){DUOSTATS=null;return;}const st={t:0,L:MGLAST.out.slice().sort((a,c)=>c.d-a.d),pts:MGLAST.pts};if(DUOSTATS){const en=window.CVLANG==='en',f=n=>Math.round(n||0).toLocaleString(en?'en-US':'pt-BR');st.foot=`${en?'You':'Você'} ${f(DUOSTATS.me)}  ·  ${String(DUOSTATS.pn||(en?'Partner':'Parceiro')).slice(0,12)} ${f(DUOSTATS.pa)}`;DUOSTATS=null;}await choose(['x'],{mgstats:st});}
+async function mgStatsShow(){if(DUOSTATS&&DUOSTATS.meL){const D0=DUOSTATS;DUOSTATS=null;const en=window.CVLANG==='en';await duoCompare({n:en?'You':'Você',t:D0.me,L:D0.meL},{n:D0.pn||(en?'Partner':'Parceiro'),t:D0.pa,L:D0.paL});return;}if(!MGLAST||!MGLAST.out.length){DUOSTATS=null;return;}const st={t:0,L:MGLAST.out.slice().sort((a,c)=>c.d-a.d),pts:MGLAST.pts};if(DUOSTATS){const en=window.CVLANG==='en',f=n=>Math.round(n||0).toLocaleString(en?'en-US':'pt-BR');st.foot=`${en?'You':'Você'} ${f(DUOSTATS.me)}  ·  ${String(DUOSTATS.pn||(en?'Partner':'Parceiro')).slice(0,12)} ${f(DUOSTATS.pa)}`;DUOSTATS=null;}await choose(['x'],{mgstats:st});}
 function drawMgStats(u){const st=u.cfg.mgstats;st.t++;const t=st.t,L=st.L,ap=Math.min(1,t/10),tot=L.reduce((a,o)=>a+o.d,0)||1;u.rects=[];u.boxR=null;
   b.fillStyle=`rgba(8,6,24,${.88*ap})`;b.fillRect(0,0,W,H);if(ap<1)return;
   const rh=34,cw=Math.min(W-12,176),ch=58+L.length*rh+40,cx=(W-cw)/2,cy=Math.max(8,(H-ch)/2);
@@ -12317,6 +12317,7 @@ var AR_CUR=null;
 {const _h=arHit;arHit=function(e,dmg,ty,col){try{const A=AR;if(A&&AR_CUR&&e&&e.hp>0&&dmg>0){const by=A.dmgBy||(A.dmgBy={});by[AR_CUR]=(by[AR_CUR]||0)+Math.min(dmg,e.hp);}}catch(_){}return _h.apply(this,arguments);};}
 async function arStatsShow(A){try{const by=A.dmgBy||{},L=Object.entries(by).filter(([sp,d])=>SP[sp]&&d>0).sort((a,c)=>c[1]-a[1]).slice(0,6);if(!L.length)return;
   const out=L.map(([sp,d])=>({m:mk(sp,1),d:Math.round(d),g:null,cl:null}));let foot=null;
+  if(A.mp){const P=A.mp.peer||{},en=window.CVLANG==='en';await duoCompare({n:en?'You':'Você',t:A.dmgT||0,L:Object.entries(by).filter(([sp,d])=>SP[sp]&&d>0)},{n:P.n||(en?'Partner':'Parceiro'),t:P.dm||0,L:Array.isArray(P.by)?P.by:[]});return;}
   if(A.mp){const P=A.mp.peer||{},eu=Math.round(A.dmgT||0),ou=Math.round(P.dm||0),en=window.CVLANG==='en';foot=`${en?'You':'Você'} ${eu.toLocaleString(en?'en-US':'pt-BR')}  ·  ${(P.n||(en?'Partner':'Parceiro'))} ${ou.toLocaleString(en?'en-US':'pt-BR')}`;}
   await choose(['x'],{mgstats:{t:0,L:out,pts:null,foot}});}catch(e){console.warn('arStats',e);}}
 function arStatsHook(A){if(!A||A._stH)return;A._stH=1;const d=A.done;if(!d)return;A.done=async function(){if(A._stD)return;A._stD=1;if(AR===A){try{await arStatsShow(A);}catch(e){}}d.apply(this,arguments);};}
@@ -16002,7 +16003,7 @@ function duoResDrop(w,dr){const i=duoResTarget(w,dr.x,dr.y);if(i<0)return;if(w.d
   st.addEventListener('pointermove',e=>{try{const w=WL,dr=w&&w.resDrag;if(!dr||e.pointerId!==dr.id)return;const [x,y]=xy(e);dr.x=x;dr.y=y;if(Math.hypot(x-dr.x0,y-dr.y0)>4)dr.on=true;e.stopPropagation();e.preventDefault();}catch(_){}},true);
   const fim=e=>{try{const w=WL,dr=w&&w.resDrag;if(!dr||e.pointerId!==dr.id)return;w.resDrag=null;e.stopPropagation();e.preventDefault();if(dr.on&&e.type==='pointerup')duoResDrop(w,dr);else if(!dr.on){const R=duoResRect(w);if(R)wPop(R.x+R.w/2,R.y-4,'Arraste até um lugar seu','#ffe27a',6);}}catch(_){}};
   st.addEventListener('pointerup',fim,true);st.addEventListener('pointercancel',fim,true);}}
-function duoEmit(S,t,d){try{const p=S&&S.emit(t,d);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
+function duoEmit(S,t,d){try{if(t==='as'&&d&&typeof AR!=='undefined'&&AR&&AR.dmgBy)d.by=Object.entries(AR.dmgBy).filter(x=>x[1]>0).sort((a,c)=>c[1]-a[1]).slice(0,6).map(x=>[x[0],Math.round(x[1])]);}catch(_){}try{const p=S&&S.emit(t,d);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
 function duoPres(S,p){try{const q=S.presence(p);if(q&&q.catch)q.catch(()=>{});}catch(e){}}
 /* ---------- tela de entrada (sala) ---------- */
 function duoUI(){let el=document.getElementById('duoBox');if(el)return el;el=document.createElement('div');el.id='duoBox';el.hidden=true;
@@ -16144,7 +16145,7 @@ function duoHostAct(H0,a){const w=WL;if(a.k==='hb'){H0.gAuto=!!a.auto;H0.ack=1;r
   if(a.k==='swap'){const i=a.i|0,d=w.defs[i],m=duoDes(a.m);if(!d||d._ow!==1||!m)return;const ok=(H0.gres||[]).find(q=>q.sp===m.sp&&q.lv===m.lv)&&!w.defs.some(q=>q._ow===1&&q!==d&&q.sp===m.sp&&q.m.lv===m.lv);if(!ok)return;duoSwapDo(w,i,m);return;}
   if(a.k==='ult'){const i=a.i|0;if(i>=H0.hm.length&&i<w.defs.length){wSpecial(i);try{const s=duoSnap(w);if(s)duoEmit(H0.S,'mds',s);}catch(e){}}}
   else if(a.k==='tap'){const x=+a.x,y=+a.y;if(!isFinite(x)||!isFinite(y)||x<-20||x>200||y<-400||y>400)return;duoAs(1,()=>{if(wThiefTap(x,y))return;if(wBarrelTap(x,y))return;wCatTap(x,y);});}}
-function duoHostEnd(res){const H0=DUOH,w=WL;if(!H0||!w)return;H0.ended=true;H0.res=res;const d={res,wave:w.wave,kills:w.kills};/* DUOSTATS07NOV (R159/R173): manda o dano de cada um pro parceiro */try{const D=(w.ctx&&w.ctx.dmg)||new Map();let me=0,pa=0;const gl=[];for(const [k,v] of D){if(!k||!k.sp||!(v>0))continue;if(party.includes(k))me+=v;else{pa+=v;gl.push([k.sp,k.lv|0,Math.round(v)]);}}d.dm=[Math.round(me),Math.round(pa)];d.gl=gl.slice(0,6);DUOSTATS={me,pa,pn:H0.gnome||''};}catch(e){}[0,400,900].forEach(ms=>setTimeout(()=>duoEmit(H0.S,'mdr',d),ms));}
+function duoHostEnd(res){const H0=DUOH,w=WL;if(!H0||!w)return;H0.ended=true;H0.res=res;const d={res,wave:w.wave,kills:w.kills};/* DUOSTATS07NOV (R159/R173): manda o dano de cada um pro parceiro */try{const D=(w.ctx&&w.ctx.dmg)||new Map();let me=0,pa=0;const gl=[];for(const [k,v] of D){if(!k||!k.sp||!(v>0))continue;if(party.includes(k))me+=v;else{pa+=v;gl.push([k.sp,k.lv|0,Math.round(v)]);}}d.dm=[Math.round(me),Math.round(pa)];d.gl=gl.slice(0,6);const hl=[];for(const [k,v] of D){if(k&&k.sp&&v>0&&party.includes(k))hl.push([k.sp,k.lv|0,Math.round(v)]);}hl.sort((a,c)=>c[2]-a[2]);gl.sort((a,c)=>c[2]-a[2]);d.hl=hl.slice(0,6);d.hn=String(flags.nome||'').slice(0,12);DUOSTATS={me,pa,pn:H0.gnome||'',meL:hl.map(x=>[x[0],x[2]]),paL:gl.map(x=>[x[0],x[2]])};}catch(e){}[0,400,900].forEach(ms=>setTimeout(()=>duoEmit(H0.S,'mdr',d),ms));}
 /* toque no especial: na dupla o dono só solta os dele (0-1); os do parceiro (2-3) só o parceiro solta */
 function wTapSp(i){const w=WL;if(w&&w.duo&&i>=w.duo.hm.length){const d=w.defs[i];if(d)wPop(d.x,d.y-30,'É DO PARCEIRO','#9fd0ff',7);return;}wSpecial(i);}
 /* foto da partida (≤4KB): cabeçalho, defensores, inimigos (com id fixo), e enfeites pequenos; se passar do limite, corta efeitos e depois inimigos de trás */
@@ -16261,7 +16262,7 @@ async function duoGuestRun(r){const wel=r.wel,mons=wel.mons.map(duoDes).filter(B
   WL.cards=null;WL.duoCardsOn=false;WL.duoOff=false;WL.duoPaused=false;G0.lag=false;
   const res=R.res,wv=R.wave|0;
   if(R.me)await say('Você saiu da partida em dupla.');else if(res==='win'){WL.flash=1;await say('VITÓRIA EM DUPLA! A muralha resistiu às 10 ondas!');if(wel.fase)await duoFaseGanhou((wel.fase|0)-1);}else if(res==='lose')await say(`A muralha caiu na onda ${wv}... Boa defesa em dupla! (${R.kills|0} inimigos derrotados)`);else await say('O dono da sala encerrou a partida.');
-  try{if(!R.me&&Array.isArray(R.gl)&&R.gl.length){const out=R.gl.map(([sp,lv,d])=>({m:party.find(p=>p.sp===sp)||mk(sp,lv|0||1),sh:0,g:null,d:d|0,cl:null}));MGLAST={out,pts:null};const dm=R.dm||[0,0];DUOSTATS={me:dm[1],pa:dm[0],pn:(r.wel&&r.wel.nome)||''};await mgStatsShow();}}catch(e){console.warn(e);}
+  try{if(!R.me&&Array.isArray(R.gl)&&R.gl.length){const out=R.gl.map(([sp,lv,d])=>({m:party.find(p=>p.sp===sp)||mk(sp,lv|0||1),sh:0,g:null,d:d|0,cl:null}));MGLAST={out,pts:null};const dm=R.dm||[0,0];DUOSTATS={me:dm[1],pa:dm[0],pn:R.hn||(r.wel&&r.wel.nome)||'',meL:R.gl.map(x=>[x[0],x[2]]),paL:Array.isArray(R.hl)?R.hl.map(x=>[x[0],x[2]]):[]};await mgStatsShow();}}catch(e){console.warn(e);}
   try{r.S.leave();}catch(e){}DUOG=null;await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';WL=null;await fadeTo(0);}
 /* ---------- ETAPA 2: lugares, status e cartas de cada jogador ---------- */
 /* lugares: dono na metade esquerda, parceiro na direita, sempre do meio pra ponta (1º do dono no 1, 2º no 0; 1º do parceiro no 2, 2º no 3).
@@ -18691,6 +18692,23 @@ function ftDraw(w,t){const cs=w.cards,G=ftGeo(),k=G.k,X=v=>G.ox+v*k,Y=v=>G.oy+v*
       return;}
     return P.apply(this,arguments);};}
 /* /FORTALEZA13NOV */
+/* DUOCOMPARA14NOV (Felipe: 'nos jogos em dupla mostre a quantidade de dano de cada jogador como comparação e quais monstrinhos bateram mais em número e percentual') */
+function duoCompare(A,B){return new Promise(res=>{try{const en=window.CVLANG==='en',f=n=>Math.round(n||0).toLocaleString(en?'en-US':'pt-BR'),tot=Math.max(1,(A.t||0)+(B.t||0)),pa=Math.round((A.t||0)/tot*100),pb=100-pa;
+  const nmS=sp=>{try{return (window.tr?tr(SP[sp].name):SP[sp].name)||sp;}catch(e){return sp;}},im=sp=>{try{return MONIMGSRC[sp]||'';}catch(e){return '';}};
+  const all=[...(A.L||[]).map(x=>[x[0],x[1],A.n]),...(B.L||[]).map(x=>[x[0],x[1],B.n])].sort((a,c)=>c[1]-a[1]),mvp=all[0];
+  const lista=(P,cor)=>{const L=(P.L||[]).slice().sort((a,c)=>c[1]-a[1]).slice(0,5),T0=Math.max(1,P.t||L.reduce((s,x)=>s+x[1],0));if(!L.length)return `<div style="opacity:.7;font-size:17px;padding:6px">${en?'No damage data':'Sem dados de dano'}</div>`;
+    return L.map(([sp,d])=>{const pc=Math.round(d/T0*100);return `<div style="display:flex;align-items:center;gap:10px;margin:6px 0"><img src="${im(sp)}" style="width:46px;height:46px;object-fit:contain;flex:none" alt=""><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;font-size:19px"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nmS(sp)}</span><span>${pc}%</span></div><div style="height:12px;background:rgba(255,255,255,.15);border-radius:6px;overflow:hidden;margin:3px 0"><div style="width:${pc}%;height:100%;background:${cor}"></div></div><div style="font-size:15px;opacity:.85">${f(d)} ${en?'damage':'de dano'}</div></div></div>`;}).join('');};
+  const b=document.createElement('div');b.id='dcBox';b.style.cssText='position:fixed;inset:0;z-index:9995;background:rgba(6,12,30,.78);display:flex;align-items:center;justify-content:center;font-family:CadBaloo,Fredoka,Arial,sans-serif;font-weight:800;color:#fff;padding:10px';
+  b.innerHTML=`<div style="background:linear-gradient(#2a2f6a,#1a1d44);border:5px solid #ffd23f;border-radius:24px;padding:16px 16px 14px;width:min(94vw,440px);max-height:94vh;overflow:auto;box-shadow:0 8px 0 #0a0c24">
+    <div style="text-align:center;font-size:26px;color:#ffe27a;margin-bottom:8px">${en?'DAMAGE COMPARISON':'COMPARAÇÃO DE DANO'}</div>
+    <div style="display:flex;justify-content:space-between;font-size:21px"><span style="color:#7ad0ff">${String(A.n).slice(0,12)}</span><span style="color:#ff9a7a">${String(B.n).slice(0,12)}</span></div>
+    <div style="display:flex;height:26px;border-radius:13px;overflow:hidden;margin:6px 0;border:2px solid rgba(255,255,255,.3)"><div style="width:${pa}%;background:#3a8ae0"></div><div style="width:${pb}%;background:#e0603a"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:20px"><span>${f(A.t)} · ${pa}%</span><span>${pb}% · ${f(B.t)}</span></div>
+    ${mvp?`<div style="text-align:center;font-size:18px;color:#ffe27a;margin:10px 0 4px">★ ${en?'Top hitter':'Quem mais bateu'}: ${nmS(mvp[0])} (${String(mvp[2]).slice(0,12)}) · ${f(mvp[1])}</div>`:''}
+    <div style="font-size:20px;color:#7ad0ff;margin-top:10px">${en?'Monsters of':'Monstrinhos de'} ${String(A.n).slice(0,12)}</div>${lista(A,'#3a8ae0')}
+    <div style="font-size:20px;color:#ff9a7a;margin-top:10px">${en?'Monsters of':'Monstrinhos de'} ${String(B.n).slice(0,12)}</div>${lista(B,'#e0603a')}
+    <div style="text-align:center;margin-top:12px"><button style="font:inherit;font-size:24px;color:#fff;background:#1f9a4a;border:0;border-radius:18px;padding:12px 44px;box-shadow:0 6px 0 #0f5a28">OK</button></div></div>`;
+  const fim=()=>{b.remove();res();};b.querySelector('button').onclick=fim;document.body.appendChild(b);}catch(e){console.warn('duoCompare',e);res();}});}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

@@ -18553,7 +18553,7 @@ const FTK=['cenario','cabecalho_muralha_limpo','painel_proxima_onda_limpo','cate
 function ftReady(){return FTK.every(k=>ftImg(k));}
 setTimeout(()=>{try{FTK.forEach(ftImg);}catch(e){}},6000);
 /* 13/nov (Felipe: 'volta a antiga'): desligada; liga só com #fortnovo pra testar quando o Buchecha mandar as cores novas */
-const FT_ON=(()=>{try{if(/[?#&]fortnovo/.test(location.href))localStorage.setItem('cv.fort','1');if(/[?#&]fortold/.test(location.href))localStorage.removeItem('cv.fort');return localStorage.getItem('cv.fort')==='1';}catch(e){return false;}})();
+const FT_ON=(()=>{try{if(/[?#&]fortnovo/.test(location.href))localStorage.setItem('cv.fort','1');if(/[?#&]fortold/.test(location.href))return false;return true;/* 14/nov (Felipe: 'gostei dos outros botões mas prefiro as cartas antigas'): tela Fortaleza ligada pra todos, com as cartas antigas; #fortold desliga */}catch(e){return true;}})();
 function ftOn(w){return FT_ON&&w&&w.cards&&!w.duo&&!w.duoG&&!w.fpad&&ftReady();}
 /* moldura por raridade: 0 pedra, 1 roxa puxada pro azul, 2 roxa, 3 dourada. janela = onde entra a figura (px da moldura) */
 const FTMOL=[{k:'carta_pedrisco_moldura_vazia',w:337,h:662,j:[43,104,300,255],bd:[65,86,27]},{k:'carta_avalanche_moldura_vazia',w:323,h:652,j:[50,93,275,236],bd:[58,64,27],f:'hue-rotate(180deg) saturate(.9)',pr:[24,297,275,321]},

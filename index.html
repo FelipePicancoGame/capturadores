@@ -18390,6 +18390,106 @@ function _partG(x,y,c,n,o){try{part(x,y,c,n,o);}catch(e){}}
     b.save();for(let j=1;j<=4;j++){const k2=Math.max(0,k-j*.04),x2=L.x0+(q.x-L.x0)*k2,y2=L.y0+(q.y-L.y0)*k2-Math.sin(k2*Math.PI)*40;E(x2,y2,4-j*.6,4-j*.6,'rgba(255,'+(120-j*20)+',30,'+(.5-j*.1)+')',0,false);}
     const g=b.createRadialGradient(x-1,y-1,0,x,y,6);g.addColorStop(0,'#fff2a0');g.addColorStop(.5,'#ff8a20');g.addColorStop(1,'#c02a10');b.fillStyle=g;b.beginPath();b.arc(x,y,5,0,7);b.fill();
     E(q.x,q.y+8,10*k,3.5*k,'rgba(255,60,20,.35)',0,false);b.restore();}}catch(e){}};}
+/* CONVITE13NOV (Buchecha, TELAS_CONVIDAR_AMIGOS_13nov, aprovadas pelo Felipe): tela nova de JOGAR COM AMIGO da Arena (JUNTOS verde, CONTRA vermelha),
+   faixa de 3 botões grandes na Muralha em Dupla, tela do QR code e os 3 avisos (convite enviado / amigo sem o jogo aberto / amigo adicionado).
+   A arte vem sem letras; o jogo escreve os textos. Os botões chamam as mesmas funções de antes. ?cvold desliga. */
+const CV13A='assets/convite/';
+/* até o Felipe aprovar as fotos: só liga com #cvnovo no link (fica lembrado no aparelho) */
+(function(){try{if(/[?#&]cvnovo/.test(location.href))localStorage.setItem('cv.cv13','1');if(/[?#&]cvold/.test(location.href))localStorage.removeItem('cv.cv13');}catch(e){}})();
+const CV13PADRAO=false;
+function cv13On(){if(/[?#&]cvold/.test(location.href))return false;if(CV13PADRAO)return true;try{return localStorage.getItem('cv.cv13')==='1';}catch(e){return false;}}
+function cv13Css(){if(document.getElementById('cv13css'))return;const st=document.createElement('style');st.id='cv13css';st.textContent=`
+#cv13L{position:fixed;inset:0;z-index:9100;background:rgba(14,10,4,.82);display:flex;align-items:center;justify-content:center;font-family:Arial,Helvetica,Liberation Sans,sans-serif}
+#cv13L .pn{position:relative;background:url(${CV13A}painel_2340.webp) center/100% 100% no-repeat}
+#cv13L .a{position:absolute;box-sizing:border-box}
+#cv13L .bt{position:absolute;font-weight:700;display:flex;align-items:center;justify-content:center;background-size:100% 100%;background-repeat:no-repeat;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent;text-shadow:0 .15em 0 rgba(0,0,0,.35),0 0 .2em rgba(0,0,0,.35);user-select:none}
+#cv13L .bt:active{transform:scale(.96)}
+#cv13L .tx{position:absolute;text-align:center;font-weight:700;color:#2a4a14;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cv13L .ls{position:absolute;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#cv13L .rw{position:relative;background:url(${CV13A}linha_amigo.webp) center/100% 100% no-repeat}
+#cv13L .av{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+#cv13L input{position:absolute;border:0;background:url(${CV13A}campo_numero.webp) center/100% 100% no-repeat;text-align:center;color:#3d2a1c;font-family:inherit;outline:none;box-sizing:border-box}
+#cv13L input::placeholder{color:#a08a6a}
+#cv13L .x{position:absolute;border-radius:50%;background:#d83a2a;border:.12em solid #fff3df;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 .1em 0 #6a1a10;cursor:pointer}
+#cv13T{font-family:Arial,Helvetica,Liberation Sans,sans-serif!important;position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 14px);transform:translateX(-50%);z-index:100000;width:min(94vw,440px);aspect-ratio:1080/260;background:url(${CV13A}aviso_moldura.webp) center/93.5% 77.7% no-repeat;pointer-events:none;animation:cv13in .25s ease-out}
+#cv13T .bd{position:absolute;left:8.1%;top:22.7%;width:12%;height:50%;background-size:100% 100%}
+#cv13T .ic{position:absolute;left:10%;top:30.4%;width:8.3%;height:34.6%;background-size:100% 100%}
+#cv13T .t{position:absolute;left:23%;right:5%;top:12%;bottom:14%;display:flex;align-items:center;justify-content:center;text-align:center;color:#1f3a14;font-weight:700;line-height:1.1}
+@keyframes cv13in{from{transform:translate(-50%,-30px);opacity:0}}
+#amgQRc canvas{width:92%!important;height:92%!important;image-rendering:pixelated}
+#amgLk.cv13{display:block!important;position:relative;width:100%;aspect-ratio:1080/300;margin:0 0 10px;background:none}
+#amgLk.cv13 button{font-family:Arial,Helvetica,Liberation Sans,sans-serif!important;font-weight:700!important;position:absolute;border:0;padding:0;background-color:transparent!important;background-size:100% 100%!important;background-repeat:no-repeat;box-shadow:none!important;color:#fff!important;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:5%!important;text-shadow:0 2px 0 rgba(0,0,0,.4);line-height:1.05;border-radius:0!important}
+`;document.head.appendChild(st);}
+function cv13Toast(kind,txt){try{cv13Css();let el=document.getElementById('cv13T');if(el)el.remove();el=document.createElement('div');el.id='cv13T';
+  const ic={enviado:'icone_relogio',offline:'icone_offline',adicionado:'icone_ok'}[kind];
+  el.innerHTML=`<div class="bd" style="background-image:url(${CV13A}aviso_badge_${kind}.webp)"></div><div class="ic" style="background-image:url(${CV13A}${ic}.webp)"></div><div class="t"></div>`;
+  el.querySelector('.t').textContent=txt;document.body.appendChild(el);const w=el.getBoundingClientRect().width||380;el.querySelector('.t').style.fontSize=Math.round(w*(txt.length>40?.045:.055))+'px';
+  clearTimeout(cv13Toast.t);cv13Toast.t=setTimeout(()=>{try{el.remove();}catch(e){}},kind==='enviado'?4200:3400);}catch(e){}}
+function cv13Kind(t){t=String(t||'');if(/Convite enviado|Invite sent/i.test(t))return 'enviado';if(/não está com o App aberto|não está com o jogo aberto|isn't in the app|not .*open/i.test(t))return 'offline';if(/^Amigo adicionado|Friend added/i.test(t))return 'adicionado';return null;}
+function cv13Txt(k){const EN=window.CVLANG==='en';return {enviado:EN?'Invite sent! Waiting to accept…':'Convite enviado! Esperando aceitar…',offline:EN?'Your friend doesn\'t have the game open':'Seu amigo não está com o jogo aberto',adicionado:EN?'Friend added!':'Amigo adicionado!'}[k];}
+{const _a=arAv;arAv=function(t,r){_a.apply(this,arguments);if(!cv13On())return;const k=cv13Kind(t);if(k)cv13Toast(k,cv13Txt(k));};}
+{const _d=duoMsg;duoMsg=function(t,r){const x=_d.apply(this,arguments);try{if(cv13On()){const k=cv13Kind(t);if(k)cv13Toast(k,cv13Txt(k));}}catch(e){}return x;};}
+function cv13Close(){const el=document.getElementById('cv13L');if(el){clearInterval(el._iv);el.remove();}}
+function cv13Lobby(mode){if(!cv13On())return;const $=id=>document.getElementById(id);if(!$('arBox')||$('arBox').hidden||!$('arIni')||$('arIni').hidden)return;if(($('arCod').value||'').trim())return;
+  cv13Css();cv13Close();const EN=window.CVLANG==='en',co=mode==='coop',cor=co?'verde':'vermelho',el=document.createElement('div');el.id='cv13L';
+  const pn=document.createElement('div');pn.className='pn';el.appendChild(pn);document.body.appendChild(el);
+  const fit=()=>{const vw=innerWidth,vh=innerHeight,w=Math.min(vw,vh*1080/2340,520),h=w*2340/1080;pn.style.width=w+'px';pn.style.height=h+'px';pn.style.setProperty('--u',(w/1080)+'px');};fit();addEventListener('resize',fit);
+  const U=v=>`calc(var(--u) * ${v})`,R=(x,y,w,h)=>`left:${U(x)};top:${U(y)};width:${U(w)};height:${U(h)}`;
+  const add=(html)=>{const d=document.createElement('div');d.innerHTML=html;const n=d.firstElementChild;pn.appendChild(n);return n;};
+  const btn=(r,img,txt,fs,ic,fn)=>{const b=add(`<div class="bt" style="${R(...r)};background-image:url(${CV13A}${img}.webp);font-size:${U(fs)}"></div>`);if(ic){const i=document.createElement('div');i.className='a';i.style.cssText=`left:${U(40)};top:${U((r[3]-74)/2)};width:${U(74)};height:${U(74)};background:url(${CV13A}${ic}.webp) center/100% 100% no-repeat`;b.appendChild(i);}
+    const s=document.createElement('span');s.textContent=txt;s.style.paddingLeft=ic?U(60):0;b.appendChild(s);b.onclick=e=>{e.stopPropagation();try{tone([660,880],.04);}catch(_){ }fn();};return b;};
+  const tx=(r,t,fs,col)=>{const n=add(`<div class="tx" style="${R(...r)};font-size:${U(fs)};line-height:${U(r[3])}${col?';color:'+col:''}"></div>`);n.textContent=t;return n;};
+  tx([200,108,680,130],'ARENA',96,'#1f4a26');
+  tx([90,320,900,90],EN?'PLAY WITH A FRIEND':'JOGAR COM AMIGO',58,'#1f4a26');
+  btn([270,435,540,105],'botao_'+cor+'_540x105',co?(EN?'TOGETHER':'JUNTOS'):(EN?'VERSUS':'CONTRA'),54,co?'icone_parceria':'icone_contra',()=>{});
+  tx([90,570,900,70],(EN?'Your friend Nº: ':'Seu Nº de amigo: ')+amgNo(),46,'#3d2a1c');
+  tx([90,645,900,60],EN?'YOUR FRIENDS':'SEUS AMIGOS',40,'#3d2a1c');
+  const ls=add(`<div class="ls" style="${R(60,710,960,594)}"></div>`),L=amgLista();
+  if(!L.length){const v=document.createElement('div');v.style.cssText=`padding:${U(120)} ${U(60)};text-align:center;color:#5a3a1a;font-size:${U(44)};line-height:1.25;white-space:normal`;v.textContent=EN?'No friends in the game yet. Send the link or add your friend by number.':'Você ainda não tem amigos no jogo. Mande o link ou adicione pelo Nº do amigo.';ls.appendChild(v);}
+  const cols=co?['#1f7ab0','#2a8ac8','#1a6aa0']:['#c0302a','#d0403a','#a82a24'];
+  L.forEach((a,i)=>{const r=document.createElement('div');r.className='rw';r.style.cssText=`width:${U(960)};height:${U(192)};margin-bottom:${U(6)}`;
+    const nm=String(a.nome||(EN?'Friend':'Amigo')),ini=(nm.trim()[0]||'?').toUpperCase();
+    r.innerHTML=`<div class="av" style="left:${U(55)};top:${U(42)};width:${U(108)};height:${U(108)};background:${cols[i%3]};font-size:${U(62)}"></div>
+<div class="tx" style="left:${U(210)};top:${U(28)};width:${U(420)};height:${U(70)};line-height:${U(70)};font-size:${U(50)};text-align:left;color:#2a1a08"></div>
+<div class="tx" style="left:${U(210)};top:${U(98)};width:${U(250)};height:${U(56)};line-height:${U(56)};font-size:${U(36)};text-align:left;color:#3d2a1c">Nº ${a.tid}</div>
+<div class="a dot" style="left:${U(470)};top:${U(112)};width:${U(28)};height:${U(28)};background:url(${CV13A}online_1.webp) center/100% 100%"></div>
+<div class="tx st" style="left:${U(506)};top:${U(98)};width:${U(140)};height:${U(56)};line-height:${U(56)};font-size:${U(30)};text-align:left;color:#3d2a1c">…</div>`;
+    r.querySelector('.av').textContent=ini;r.children[1].textContent=nm;
+    const b=document.createElement('div');b.className='bt';b.style.cssText=`left:${U(640)};top:${U(31)};width:${U(275)};height:${U(130)};background-image:url(${CV13A}botao_${cor}_275x130.webp);font-size:${U(38)}`;b.textContent=EN?'INVITE':'CONVIDAR';
+    b.onclick=e=>{e.stopPropagation();try{tone([660,880],.04);}catch(_){ }arAmgConvidar(mode,a.tid);};r.appendChild(b);ls.appendChild(r);
+    amgFala(a.tid,{k:'ping'},5000).then(q=>{if(!document.body.contains(r))return;const on=!!(q&&q.k==='pong');r.querySelector('.dot').style.backgroundImage=`url(${CV13A}online_${on?0:1}.webp)`;r.querySelector('.st').textContent=on?'online':'offline';}).catch(()=>{});});
+  const inp=add(`<input inputmode="numeric" maxlength="6" placeholder="${EN?'Friend Nº':'Nº do amigo'}" style="${R(75,1330,600,130)};font-size:${U(50)}">`);
+  ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click','keydown','keyup'].forEach(ev=>el.addEventListener(ev,e=>e.stopPropagation()));
+  btn([695,1330,310,130],'botao_azul_310x130',EN?'ADD':'ADICIONAR',40,null,()=>{const n=$('arAmgN'),b=$('arAmgAdd');if(!n||!b)return;n.value=inp.value;b.click();setTimeout(()=>{if($('cv13L'))cv13Lobby(mode);},300);});
+  btn([90,1520,900,160],'botao_'+(co?'azul':'vermelho')+'_900x160',EN?'INVITE A FRIEND':'CONVIDAR AMIGO',62,'icone_link',()=>{try{amgShare();}catch(e){}});
+  btn([90,1700,900,160],'botao_verde_900x160','WHATSAPP',62,'icone_whatsapp',()=>{try{amgZap();}catch(e){}});
+  btn([90,1880,900,160],'botao_azul_900x160','QR CODE',62,'icone_qr',()=>{try{amgQR(amgLinkUrl(),amgLinkTxt());}catch(e){}});
+  const cod=add(`<input maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="${EN?'ROOM CODE':'CÓDIGO DA SALA'}" style="${R(120,2052,500,96)};font-size:${U(42)};letter-spacing:${U(6)}">`);
+  btn([640,2047,320,106],'botao_azul_310x130',EN?'JOIN':'ENTRAR',40,null,()=>{const v=(cod.value||'').toUpperCase().replace(/[^A-Z]/g,'');if(v.length!==4){cv13Toast('offline',EN?'The code has 4 letters':'O código tem 4 letras');return;}$('arCod').value=v;cv13Close();$('arEntrar').click();});
+  btn([190,2160,700,130],'botao_'+cor+'_700x130',EN?'CREATE ROOM':'CRIAR SALA',54,'icone_sala',()=>{cv13Close();$('arCriar').click();});
+  const x=add(`<div class="x" style="${R(940,60,110,110)};font-size:${U(60)}">✕</div>`);x.onclick=e=>{e.stopPropagation();cv13Close();$('arVoltar').click();};
+  el._iv=setInterval(()=>{const B=$('arBox');if(!B||B.hidden||!$('arIni')||$('arIni').hidden||(G&&G.mode==='arena'&&AR&&AR.mp))cv13Close();},300);}
+{const _p=arAmgPainel;arAmgPainel=function(mode){_p.apply(this,arguments);if(!cv13On())return;setTimeout(()=>{try{if(!document.getElementById('cv13L'))cv13Lobby(mode);}catch(e){console.error(e);}},0);};}
+/* faixa da Muralha em Dupla */
+{const _p=amgPainel;amgPainel=function(){_p.apply(this,arguments);try{if(!cv13On())return;const d=document.getElementById('amgLk');if(!d||d.classList.contains('cv13'))return;cv13Css();d.classList.add('cv13');const EN=window.CVLANG==='en';
+  const B=[['.s','botao_azul_345x270','icone_link',10,EN?'INVITE<br>FRIEND':'CONVIDAR<br>AMIGO'],['.z','botao_verde_345x270','icone_whatsapp',365,'WHATSAPP'],['.q','botao_vermelho_345x270','icone_qr',720,'QR CODE']];
+  const fs=()=>{const w=d.getBoundingClientRect().width||330;d.querySelectorAll('button').forEach(b=>b.style.fontSize=Math.round(w*.042)+'px');};
+  for(const [sel,img,ic,x,t] of B){const b=d.querySelector(sel);if(!b)continue;b.style.cssText=`left:${x/10.8}%;top:5%;width:${345/10.8}%;height:90%;background-image:url(${CV13A}${img}.webp)`;b.innerHTML=`<i style="position:absolute;left:39%;top:12%;width:22%;aspect-ratio:1;background:url(${CV13A}${ic}.webp) center/100% 100% no-repeat"></i><span>${t}</span>`;}
+  setTimeout(fs,0);setTimeout(fs,300);}catch(e){}};}
+/* tela do QR code */
+{const _q=amgQR;amgQR=function(url,text){const p=_q.apply(this,arguments);try{if(!cv13On())return p;const el=document.getElementById('amgQR');const c=el&&el.querySelector('#amgQRc');if(!el||!c)return p;cv13Css();const EN=window.CVLANG==='en';
+  const box=el.firstElementChild;const w=Math.min(innerWidth*.94,innerHeight*.94*1080/1920,460);box.style.cssText=`position:relative;width:${w}px;height:${w*1920/1080}px;background:url(${CV13A}painel_1920.webp) center/100% 100% no-repeat;border:0;padding:0;--u:${w/1080}px;max-width:none;border-radius:0`;
+  const kids=[...box.children];kids.forEach(k=>{if(k!==c&&!k.contains(c))k.style.display='none';});let host=c;while(host.parentNode!==box)host=host.parentNode;host.style.display='';
+  host.style.cssText=`position:absolute;left:calc(var(--u)*130);top:calc(var(--u)*430);width:calc(var(--u)*820);height:calc(var(--u)*820);background:#fff;display:flex;align-items:center;justify-content:center;padding:0`;
+  const cv=c.querySelector('canvas,img,svg');if(cv){cv.style.width='92%';cv.style.height='92%';}
+  const T=(css,t)=>{const d=document.createElement('div');d.style.cssText='position:absolute;text-align:center;color:#1f4a26;font-weight:700;font-family:Arial,Helvetica,Liberation Sans,sans-serif;'+css;d.textContent=t;box.appendChild(d);return d;};
+  T('left:calc(var(--u)*220);top:calc(var(--u)*122);width:calc(var(--u)*640);font-size:calc(var(--u)*52);line-height:1.05;font-family:Arial,Helvetica,Liberation Sans,sans-serif',EN?'Scan with your friend\'s phone':'Leia com o celular do amigo');
+  T('left:calc(var(--u)*90);top:calc(var(--u)*1310);width:calc(var(--u)*900);font-size:calc(var(--u)*44);color:#3d2a1c',EN?'INVITE LINK':'LINK DO CONVITE');
+  const lk=T(`left:calc(var(--u)*90);top:calc(var(--u)*1400);width:calc(var(--u)*900);height:calc(var(--u)*140);line-height:calc(var(--u)*140);font-size:calc(var(--u)*30);color:#3d2a1c;background:url(${CV13A}campo_link.webp) center/100% 100% no-repeat;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 calc(var(--u)*40);box-sizing:border-box;font-weight:400`,url);
+  lk.style.pointerEvents='auto';lk.onclick=e=>{e.stopPropagation();try{navigator.clipboard.writeText(url);cv13Toast('adicionado',EN?'Link copied!':'Link copiado!');}catch(_){}};
+  const f=document.createElement('div');f.style.cssText=`position:absolute;left:calc(var(--u)*235);top:calc(var(--u)*1690);width:calc(var(--u)*610);height:calc(var(--u)*150);background:url(${CV13A}botao_vermelho_610x150.webp) center/100% 100% no-repeat;display:flex;align-items:center;justify-content:center;color:#fff;font-size:calc(var(--u)*66);font-weight:700;font-family:Arial,Helvetica,Liberation Sans,sans-serif;cursor:pointer;text-shadow:0 .calc(var(--u)*1) 0 rgba(0,0,0,.35)`;f.textContent=EN?'CLOSE':'FECHAR';box.appendChild(f);
+  f.onclick=e=>{e.stopPropagation();const old=[...el.querySelectorAll('button')].find(b=>b!==f);if(old)old.click();else el.remove();};}catch(e){console.error(e);}return p;};}
+/* /CONVITE13NOV */
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

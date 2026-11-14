@@ -5439,7 +5439,7 @@ function wSpawn(){const w=WL,n=w.wave,boss=(n===5||n===10)&&w.spawned>=Math.floo
   if(!boss&&n>=2&&Math.random()<.08+n*.006){const e=w.foes[w.foes.length-1];e.elite=true;e.max=e.hp=Math.round(e.hp*2.2);if(!w.eliteSeen){w.eliteSeen=1;w.banner={t:90,text:'ELITE DOURADO!',sub:'Mais forte, mas solta muitas moedas'};}}
   {const e=w.foes[w.foes.length-1];const RT=['fogo','eletrico','agua','gelo','fantasma'];if(!boss&&e.kind!=='tank'&&!e.archer&&RT.includes(SP[sp].type)&&Math.random()<.4&&w.foes.filter(f=>!f.dead&&f.archer).length<4){e.archer=1;e.ranged=1;e.aStop=172+Math.random()*28;e.acd=70+Math.floor(Math.random()*60);}
     if(!boss&&ARQ&&!e.elite&&!e.archer&&n>=3&&Math.random()<.12&&w.foes.filter(f=>!f.dead&&f.archer).length<4){e.archer=1;e.aStop=172+Math.random()*28;e.acd=80+Math.floor(Math.random()*40);if(!w.archSeen){w.archSeen=1;w.banner={t:130,text:'LANÇADORES!',sub:'Param no meio do campo e jogam pedras na muralha. Derrube primeiro!'};}}}
-  if(!w.seen)w.seen=new Set();if(!boss&&!w.seen.has(sp)){w.seen.add(sp);if(w.seen.size>1)w.banner={t:90,text:'NOVO INIMIGO: '+SP[sp].name,sub:FTR[sp]?FTR[sp].n:''};}
+  if(!w.seen)w.seen=new Set();if(!boss&&!w.seen.has(sp)){w.seen.add(sp);if(w.seen.size>1)w.banner={t:90,text:(window.CVLANG==='en'?'NEW ENEMY: ':'NOVO INIMIGO: ')+SP[sp].name,sub:FTR[sp]?FTR[sp].n:''};}
   w.spawned++;if(!boss&&w.bossW===w.wave){const B=w.foes.find(f=>f.boss&&!f.dead),ef=w.foes[w.foes.length-1];if(B&&ef&&ef!==B&&ef.y<B.y+22)ef.y=B.y+22+Math.random()*40;}if(boss){w.bossW=n;const eb=w.foes[w.foes.length-1];eb.slowIn=1;w.banner={t:110,text:'CHEFE: '+((SP[sp]&&SP[sp].name)||'Rochedo').toUpperCase()+' GIGANTE'};w.shake=14;w.bossIntro={t:0};tone([220,0,220,0,220],.12,'square',.035);}}
 
 function wArcherFire(w,e){if(--e.acd>0)return;e.acd=150+Math.floor(Math.random()*30);w.lobs=w.lobs||[];const x1=Math.max(18,Math.min(162,e.x+(Math.random()-.5)*36));
@@ -7461,7 +7461,7 @@ function tdSpawn(){const T=TD,n=T.wave,boss=n%5===0&&T.spawned===T.toSpawn-1;
   {const e=T.foes[T.foes.length-1];if(!boss&&!e.bub&&n>=6&&Math.random()<.14){e.camo=1;if(!T.camoSeen){T.camoSeen=1;T.banner={t:130,text:'MONSTRINHO CAMUFLADO!',sub:'Coberto de folhas: as torres só o veem de perto. Ao levar um golpe ele aparece!'};}}}
   {const e=T.foes[T.foes.length-1];if(!boss&&!e.bub&&!e.camo&&n>=5&&Math.random()<.12){e.heal=1;e.hcd=90;e.hpulse=0;if(!T.healSeen){T.healSeen=1;T.banner={t:130,text:'MONSTRINHO CURANDEIRO!',sub:'Cura os inimigos em volta. Derrube ele primeiro!'};}}}
   {const e=T.foes[T.foes.length-1];if(!boss&&!e.bub&&!e.camo&&!e.heal&&n>=3&&!T.goldW&&Math.random()<.08){T.goldW=n;e.gold=1;e.spd*=1.6;e.max=e.hp=Math.round(e.hp*.8);T.banner={t:90,text:'MONSTRINHO DOURADO!',sub:'Derrube antes de fugir: +40⚡ e cristais!'};}}
-  if(!T.seen)T.seen=new Set();if(!boss&&!T.seen.has(sp)){T.seen.add(sp);if(T.seen.size>1)T.banner={t:90,text:'NOVO INIMIGO: '+SP[sp].name,sub:FTR[sp]?FTR[sp].n:''};}
+  if(!T.seen)T.seen=new Set();if(!boss&&!T.seen.has(sp)){T.seen.add(sp);if(T.seen.size>1)T.banner={t:90,text:(window.CVLANG==='en'?'NEW ENEMY: ':'NOVO INIMIGO: ')+SP[sp].name,sub:FTR[sp]?FTR[sp].n:''};}
   T.spawned++;if(boss){T.banner={t:90,text:`CHEFE: ${nm(m)}`};T.shake=12;}}
 /* MONSTRINHO CURANDEIRO nas Torres (inspirado nos xamãs que curam os aliados nos tower defense de fantasia): cura quem está em volta, derrube ele primeiro! */
 function tdHealStep(T,e){if(!e.heal)return;if(e.hpulse>0)e.hpulse--;if(--e.hcd>0)return;let n=0;
@@ -9881,7 +9881,7 @@ function drawChapters(u){const key=u.cfg.chap,CH=CHAPTERS[key],{out}=chapInfo(ke
     b.restore();if(ap<.6){u.rects.push({x:x0,y,w:rw2,h,i:k});return;}
     const rA=claim?50:34,tx=mx+mr+4,tW=rw2-(tx-x0)-rA-4,dark=o.locked?'#6a5a48':'#3a2a1a';
     const two=h>=13||CC>1;
-    if(two){T(o.c.t,tx,cy-fs-.3,fs,'left',dark,tW);T(curr?`${o.c.g} · ${fm(o.c,Math.min(o.v,o.c.goal[1]))}/${fm(o.c,o.c.goal[1])}`:o.c.g,tx,cy+.6,gs,'left',o.locked?'#8a7a68':curr?CH.col:'#7a6a58',tW);}
+    if(two){T(o.c.t,tx,cy-fs-.3,fs,'left',dark,tW);T(curr?`${tr(o.c.g)} · ${fm(o.c,Math.min(o.v,o.c.goal[1]))}/${fm(o.c,o.c.goal[1])}`:o.c.g,tx,cy+.6,gs,'left',o.locked?'#8a7a68':curr?CH.col:'#7a6a58',tW);}
     else{T(o.c.t,tx,cy-fs*.6,fs,'left',dark,tW*.55);const t1=Math.min(tW*.55,tw(o.c.t,fs));T(o.c.g,tx+t1+4,cy-gs*.6,gs,'left',o.locked?'#a89880':'#7a6a58',tW-t1-4);}
     if(curr&&two){const f=Math.min(1,o.v/o.c.goal[1]),bw=Math.min(40,tW*.35),bx2=x0+rw2-rA-bw-4;rrect(bx2,cy-1.5,bw,3,1.5,'#e0d4c0',false);rrect(bx2,cy-1.5,bw*f,3,1.5,CH.col,false);}
     const rx=x0+rw2-rA/2-3,rw=o.c.rw;

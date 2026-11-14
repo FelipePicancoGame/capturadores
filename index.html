@@ -12223,7 +12223,7 @@ const PV6E={};function pv6Smooth(P){const now=performance.now(),seen={};const ou
     if(!s||Math.abs(s.f-tf)>.06)s=PV6E[id]={f:tf,v,tq:P.q};else if(s.tq!==P.q){s.f+=(tf-s.f)*.35;s.v=v;s.tq=P.q;}s.e=e;s.seen=now;out.push(s);}
   for(const k in PV6E)if(!seen[k]||now-PV6E[k].seen>1500)delete PV6E[k];return out;}
 function pv6Step(){for(const k in PV6E){const s=PV6E[k];s.f=Math.min(1,s.f+(s.v||0));}}
-function pv6Foe(sp,x,y,boss,dir,seed,hp){E(x,y+2,boss?10:5,boss?3:2,'rgba(0,0,0,.3)',0,false);arDrawMon(sp,x,y-arEY(sp,boss),arES(sp,boss?.5:.28,boss),'walk',dir,seed);if(hp!=null)arHpBar(x,y-arEB(sp,boss),hp/100,!!boss);}
+function pv6Foe(sp,x,y,boss,dir,seed,hp){if(boss){if(x<W*.22)x-=5;else if(x>W*.78)x+=5;}E(x,y+2,boss?10:5,boss?3:2,'rgba(0,0,0,.3)',0,false);arDrawMon(sp,x,y-arEY(sp,boss),arES(sp,boss?.5:.28,boss),'walk',dir,seed);if(hp!=null)arHpBar(x,y-arEB(sp,boss),hp/100,!!boss);}
 {const _u=arPvpUnder;arPvpUnder=function(A,G2,t){if(!pvp6())return _u(A,G2,t);const P=A.mp.peer||{},V=m6s().pvp,pts=V.rpath.map(q=>m7P(q[0],q[1])),foes=[];
   if(A.t!==A._pv6t){A._pv6t=A.t;pv6Step();}for(const s of pv6Smooth(P)){const e=s.e,q=pv6At(pts,s.f);foes.push(q);pv6Foe(e[1],q.x,q.y,e[2],q.dir,e[3]!=null?e[3]*7:e[0],e[4]);}pv6Partner(A,t,foes);};}
 {const _c=arCoopUnder;arCoopUnder=function(A,G2,t){if(!pvp6())return _c(A,G2,t);const V=m6s().pvp,pts=V.rpath.map(q=>m7P(q[0],q[1])),PL=arPathLen(arGeo()),foes=[];

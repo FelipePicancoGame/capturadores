@@ -10667,7 +10667,10 @@ const QCAP={};window.__QCAP=QCAP;if(!/semnitido/.test(location.hash)){const _bsQ
         const base=Math.min(4,Math.max(3,_bsQ(W,H,GFXCAP)));if(low>=2&&S>base){QCAP[W+'x'+H+G.mode]=S-1;low=0;kt=t;try{window.__EV&&__EV('nitidez '+S+'→'+(S-1)+' ('+Math.round(fps)+' fps)');}catch(_){}const w=W,h=H;W=0;setScreen(w,h,GFXCAP);}}}catch(_){}return r;};}
 }
 /* LEVE14NOV: no modo leve (aparelho fraco) a tela desenha no máximo 3 pontos por unidade (antes podia chegar a 8 = 7x mais memória) */
-{const _bsL=bestS;bestS=function(w,h,cap){const r=_bsL(w,h,cap);return window.__LEVE?Math.min(r,3):r;};}
+/* LEVENITIDO14NOV (Felipe: 'faz não perder muita nitidez o modo leve, da última vez deu dor no olho de tão borrado'): antes o LEVE caía pra 2-3 pontos por unidade (~1/3 da tela).
+   Agora o leve (automático ou AJUSTES › GRÁFICO) desenha com 80% dos pontos reais da tela e o MÉDIO com 90%: quase igual ao ALTO na vista, e ainda gasta ~40% menos memória. */
+{const _bsL=bestS;bestS=function(w,h,cap){const r=_bsL(w,h,cap),g=window.__GFX|0;if(!window.__LEVE&&g<1)return r;try{const d=window.devicePixelRatio||1,rot=document.body&&(document.body.classList.contains('rot')||document.body.classList.contains('rotp'));
+  const k=(rot?Math.min(innerHeight/w,innerWidth/h):Math.min(innerWidth/w,innerHeight/h))*d,f=(window.__LEVE||g>=2)?.8:.9;return Math.max(3,Math.min(8,Math.round(k*f)));}catch(_){return Math.max(3,r);}};}
 const MGMODES={wall:1,td:1,surv:1,match:1,exp:1,math:1};
 /* ARENA04NOV (04/nov, Felipe: "vamos fazer esse jogo" — modo no estilo Rush Royale dentro do Capturadores).
    Etapa 1: SOZINHO contra ondas. Tabuleiro 5x3, inimigos andam pelo caminho em volta.

@@ -750,7 +750,7 @@ function present(){
 }
 
 /* ---------- monsters ---------- */
-window.ESTRELAS=(()=>{try{if(/[?#&]estrelas/.test(location.href))localStorage.setItem('cv.estrelas','1');if(/[?#&]semestrelas/.test(location.href))localStorage.removeItem('cv.estrelas');return localStorage.getItem('cv.estrelas')==='1';}catch(e){return false;}})();/* ESTRELAS14NOV: linha Estrelim→Estrelux→Estelarion (tipo LUZ, só na loja); por enquanto só com #estrelas até o Felipe aprovar */
+window.ESTRELAS=(()=>{try{if(/[?#&]estrelas/.test(location.href))localStorage.setItem('cv.estrelas','1');if(/[?#&]semestrelas/.test(location.href))localStorage.setItem('cv.semestrelas','1');if(/[?#&]estrelas/.test(location.href))localStorage.removeItem('cv.semestrelas');return localStorage.getItem('cv.semestrelas')!=='1';}catch(e){return true;}})();/* 14/nov: Felipe aprovou — liberado pra todos *//* ESTRELAS14NOV: linha Estrelim→Estrelux→Estelarion (tipo LUZ, só na loja); por enquanto só com #estrelas até o Felipe aprovar */
 const TYPES={gelo:'Gelo',normal:'Normal',fogo:'Fogo',agua:'Água',planta:'Planta',inseto:'Inseto',rocha:'Rocha',eletrico:'Elétrico',fantasma:'Fantasma'};if(window.ESTRELAS)TYPES.luz='Luz';
 const DMGCOL={fogo:'#ff4a3a',eletrico:'#ffe23a',agua:'#4aa8ff',planta:'#5ee04f',gelo:'#a8f4ff',rocha:'#e0b070',inseto:'#cde030',fantasma:'#b582ff',normal:'#ffffff'};function dmgCol(t,eff){return eff>1?(DMGCOL[t]||'#ffffff'):eff<1?'#8c8c98':'#ffffff';}
 const TYPECOL={luz:'#f0c030',gelo:'#7fd8f0',normal:'#a8a58f',fogo:'#f0803a',agua:'#4f8fe8',planta:'#5cbf4f',inseto:'#a8b820',rocha:'#b49a5a',eletrico:'#e8b820',fantasma:'#7a5ab8'};
@@ -18745,6 +18745,61 @@ function grpDeNovo(jogo,tid){const g=flags.grupo||{};salaPainel({cod:'',eu:'PRON
   if(jogo==='muralha'){duoLobby();setTimeout(()=>{try{amgConvidar(tid);}catch(e){}},900);}
   else{const m=/arena-(coop|pvp)/.exec(jogo);if(!m)return;arMpLobby(m[1]);setTimeout(()=>{try{arAmgConvidar(m[1],tid);}catch(e){}},1500);}}catch(e){}},700);}
 {const _c=amgConvite;amgConvite=function(quem,cod,jogo){_c.apply(this,arguments);try{grpUlt(quem.tid,quem.nome);if(grpAtivo(quem.tid)){grpSet(quem.tid,quem.nome);const el=document.getElementById('amgInv');const sim=el&&el.querySelector('#amgSim');if(sim)setTimeout(()=>{try{sim.click();rwToast((window.CVLANG==='en'?'👥 Your group called you: joining…':'👥 Seu grupo te chamou: entrando…'));}catch(e){}},400);}}catch(e){}};}
+/* DUPLAARTE14NOV (Felipe aprovou a arte do Buchecha: TELAS_DUPLA_14nov) — Comparação, Sala e 3-2-1 com as peças (base 1080x1920) */
+const DPA=n=>'assets/dupla/'+n+'.webp';
+function dpTela(id,z){let b=document.getElementById(id);if(b)b.remove();b=document.createElement('div');b.id=id;b.style.cssText=`position:fixed;inset:0;z-index:${z};background:rgba(6,12,30,.72);overflow:hidden;font-family:CadBaloo,Fredoka,Arial,sans-serif;font-weight:800`;
+  ['pointerdown','pointerup','touchstart','touchend','click'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation()));
+  const c=document.createElement('div');c.style.cssText='position:absolute;left:50%;top:50%;width:1080px;height:1920px;transform-origin:0 0';b.appendChild(c);
+  const fit=()=>{const k=Math.min(innerWidth/1080,innerHeight/1920);c.style.transform=`scale(${k}) translate(-540px,-960px)`;c.style.left=(innerWidth/2)+'px';c.style.top=(innerHeight/2)+'px';c.style.transform=`translate(${-540*k}px,${-960*k}px) scale(${k})`;};fit();b._fit=fit;addEventListener('resize',fit);
+  document.body.appendChild(b);return {b,c};}
+function dpImg(c,n,r){const i=document.createElement('img');i.src=DPA(n);i.alt='';i.draggable=false;i.style.cssText=`position:absolute;left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px;pointer-events:none`;c.appendChild(i);return i;}
+function dpTxt(c,t,r,fs,cor,al,ex){const d=document.createElement('div');d.textContent=t;d.style.cssText=`position:absolute;left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px;display:flex;align-items:center;justify-content:${al==='l'?'flex-start':al==='r'?'flex-end':'center'};font-size:${fs}px;color:${cor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1;${ex||''}`;c.appendChild(d);return d;}
+function dpBtn(c,n,r,tr2,t,fs,cor,fn){dpImg(c,n,r);const d=dpTxt(c,t,tr2,fs,cor,'c','text-shadow:0 3px 0 rgba(0,0,0,.35)');const h=document.createElement('button');h.setAttribute('aria-label',t);h.style.cssText=`position:absolute;left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px;background:transparent;border:0;cursor:pointer`;h.onclick=fn;c.appendChild(h);return h;}
+duoCompare=function(A,B,O){O=O||{};return new Promise(res=>{try{const en=window.CVLANG==='en',f=n=>Math.round(n||0).toLocaleString(en?'en-US':'pt-BR'),tot=Math.max(1,(A.t||0)+(B.t||0)),pa=Math.round((A.t||0)/tot*100),pb=100-pa;
+  const nmS=sp=>{try{return (window.tr?tr(SP[sp].name):SP[sp].name)||sp;}catch(e){return sp;}};
+  const {b,c}=dpTela('dcBox',9995),fim=()=>{b.remove();res();};
+  dpImg(c,'comparacao_painel',[40,350,1000,1530]);dpImg(c,'comparacao_topo_titulo',[40,40,1000,310]);
+  dpTxt(c,en?'DAMAGE COMPARISON':'COMPARAÇÃO DE DANO',[220,150,640,125],56,'#5a2a0a','c','white-space:normal;text-align:center;line-height:1.05');
+  dpTxt(c,String(A.n).slice(0,12),[110,355,410,55],44,'#1f5fb8','l');dpTxt(c,String(B.n).slice(0,12),[560,355,410,55],44,'#c0501a','r');
+  dpImg(c,'barra_comparacao_vazia',[100,410,880,100]);
+  const az=dpImg(c,'barra_comparacao_azul',[120,430,840,60]);az.style.clipPath=`inset(0 ${100-pa}% 0 0)`;const la=dpImg(c,'barra_comparacao_laranja',[120,430,840,60]);la.style.clipPath=`inset(0 0 0 ${pa}%)`;
+  dpTxt(c,`${f(A.t)} · ${pa}%`,[110,515,410,50],40,'#1f5fb8','l');dpTxt(c,`${pb}% · ${f(B.t)}`,[560,515,410,50],40,'#c0501a','r');
+  const all=[...(A.L||[]).map(x=>[x[0],x[1],A.n]),...(B.L||[]).map(x=>[x[0],x[1],B.n])].sort((p,q)=>q[1]-p[1]),mvp=all[0];
+  if(mvp){dpImg(c,'selo_mais_dano',[110,545,140,130]);dpTxt(c,`${en?'TOP HITTER':'QUEM MAIS BATEU'}: ${nmS(mvp[0])} (${String(mvp[2]).slice(0,10)}) · ${f(mvp[1])}`,[270,565,650,85],36,'#5a2a0a','l','white-space:normal;line-height:1.1');}
+  const vp=document.createElement('div');vp.style.cssText='position:absolute;left:100px;top:660px;width:880px;height:750px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch';c.appendChild(vp);
+  const sec=(P,cor,fill,tit)=>{const h=document.createElement('div');h.style.cssText=`position:relative;height:50px;margin-top:6px;display:flex;align-items:center;justify-content:center;font-size:38px;color:${cor}`;h.textContent=tit;vp.appendChild(h);
+    const L=(P.L||[]).slice().sort((p,q)=>q[1]-p[1]).slice(0,5),T0=Math.max(1,P.t||L.reduce((s2,x)=>s2+x[1],0));
+    if(!L.length){const e=document.createElement('div');e.style.cssText='height:70px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#7a5a3a';e.textContent=en?'No damage data':'Sem dados de dano';vp.appendChild(e);return;}
+    for(const [sp,d] of L){const pc=Math.round(d/T0*100),row=document.createElement('div');row.style.cssText='position:relative;width:880px;height:150px;margin-bottom:10px';vp.appendChild(row);
+      dpImg(row,'linha_monstro',[0,0,880,150]);let src='';try{src=MONIMGSRC[sp]||'';}catch(e){}if(src){const i=document.createElement('img');i.src=src;i.alt='';i.style.cssText='position:absolute;left:26px;top:20px;width:125px;height:110px;object-fit:contain;pointer-events:none';row.appendChild(i);}
+      dpTxt(row,nmS(sp),[185,13,490,45],38,'#4a2a10','l');dpTxt(row,pc+'%',[700,13,135,45],38,cor,'r');
+      dpImg(row,'barra_monstro_vazia',[185,63,590,30]);const fl=dpImg(row,fill,[199,70,562,16]);fl.style.clipPath=`inset(0 ${100-pc}% 0 0)`;
+      dpTxt(row,`${f(d)} ${en?'damage':'de dano'}`,[185,103,630,35],30,'#6a4a2a','l');}};
+  sec(A,'#1f5fb8','barra_monstro_azul',(en?'MONSTERS OF ':'MONSTRINHOS DE ')+String(A.n).slice(0,12).toUpperCase());
+  sec(B,'#c0501a','barra_monstro_laranja',(en?'MONSTERS OF ':'MONSTRINHOS DE ')+String(B.n).slice(0,12).toUpperCase());
+  dpBtn(c,'botao_ok',[100,1420,880,124],[160,1438,760,88],'OK',52,'#fff',fim);
+  let g=null;try{g=O.jogo?grpUlt():null;}catch(e){}
+  if(g){grpSet(g.tid,g.nome||B.n);
+    if(O.host)dpBtn(c,'botao_jogar_novamente',[100,1550,880,124],[160,1568,760,88],(en?'🔁 PLAY AGAIN WITH ':'🔁 JOGAR DE NOVO COM ')+String(B.n).slice(0,10).toUpperCase(),42,'#fff',()=>{fim();grpDeNovo(O.jogo,g.tid);});
+    else dpTxt(c,(en?'👥 In a group with ':'👥 Em grupo com ')+String(B.n).slice(0,10)+(en?': you join by yourself':': você entra sozinho'),[110,1560,860,100],34,'#fff','c','white-space:normal;text-align:center;line-height:1.15;text-shadow:0 2px 0 #000');
+    const sg=dpBtn(c,'botao_sair_grupo',[240,1680,600,80],[300,1698,480,44],en?'Leave group':'Sair do grupo',34,'#5a2a0a',()=>{grpSair();sg.remove();});}
+}catch(e){console.warn('duoCompare',e);res();}});};
+salaPainel=function(o){try{const en=window.CVLANG==='en';let {b,c}=dpTela('salaBox',9993);
+  dpImg(c,'sala_painel',[40,710,1000,700]);dpImg(c,'sala_topo_titulo',[40,400,1000,310]);
+  dpTxt(c,(o.tit||(en?'ROOM':'SALA'))+(o.cod?' '+o.cod:''),[220,510,640,115],58,'#5a2a0a','c');
+  dpImg(c,'linha_jogador',[100,730,880,190]);dpImg(c,'linha_jogador',[100,945,880,190]);
+  try{const m=party&&party[0];const src=m&&MONIMGSRC[m.sp];if(src){const i=dpImg(c,'linha_jogador',[115,748,155,155]);i.src=src;i.style.objectFit='contain';i.style.padding='14px';i.style.boxSizing='border-box';}}catch(e){}
+  dpTxt(c,en?'You':'Você',[300,755,330,75],48,'#4a2a10','l');dpTxt(c,String(o.par||(en?'Partner':'Parceiro')).slice(0,12),[300,970,330,75],48,'#4a2a10','l');
+  dpImg(c,'estado_pronto',[640,768,310,110]);dpTxt(c,en?'READY':'PRONTO',[740,773,180,55],36,'#fff','c','text-shadow:0 2px 0 rgba(0,0,0,.35)');
+  dpImg(c,'estado_pendente',[640,983,310,95]);const st=dpTxt(c,o.parSt||(en?'PENDING':'PENDENTE'),[650,993,290,55],(String(o.parSt||'').length>12?26:34),'#5a3a0a','c');
+  let k=0;st._iv=setInterval(()=>{if(!document.body.contains(st))return clearInterval(st._iv);k=(k+1)%4;st.textContent=(o.parSt||(en?'PENDING':'PENDENTE')).replace(/\.+$/,'')+'.'.repeat(k);},400);
+  dpTxt(c,en?'Starts when both are ready.':'Começa quando os dois estiverem prontos.',[180,1140,720,100],38,'#5a2a0a','c','white-space:normal;text-align:center;line-height:1.15');
+  dpBtn(c,'botao_sair_sala',[200,1250,680,130],[300,1285,480,65],en?'LEAVE ROOM':'SAIR DA SALA',40,'#5a2a0a',()=>{salaFecha();try{o.sair&&o.sair();}catch(e){}});}catch(e){console.warn('sala',e);}};
+salaContagem=function(){if(salaContagem.on)return salaContagem.on;salaFecha();salaContagem.on=new Promise(res=>{const en=window.CVLANG==='en';const {b,c}=dpTela('salaGo',9996);b.style.background='rgba(6,12,30,.55)';b.style.pointerEvents='none';
+  dpTxt(c,en?'STARTING…':'COMEÇANDO…',[180,465,720,80],52,'#ffe27a','c','text-shadow:0 4px 0 #3a1a00');const dk=dpImg(c,'contagem_disco',[170,575,740,769]);
+  const n=dpTxt(c,'3',[280,805,520,350],260,'#fff2c0','c','text-shadow:0 8px 0 #2a1a5a;transition:transform .25s');const seq=[3,2,1,en?'GO!':'JÁ!'];let i=0;
+  const show=()=>{n.textContent=seq[i];n.style.fontSize=(i<3?260:170)+'px';n.style.transform='scale(1.25)';requestAnimationFrame(()=>requestAnimationFrame(()=>{n.style.transform='scale(1)';}));dk.style.filter=i===3?'brightness(1.35) drop-shadow(0 0 30px #ffd23f)':'';try{tone(i<3?[523]:[784,1047],.08);}catch(e){}};
+  show();const iv=setInterval(()=>{i++;if(i>=seq.length){clearInterval(iv);b.remove();salaContagem.on=null;res();return;}show();},800);});return salaContagem.on;};
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

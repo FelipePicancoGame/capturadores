@@ -18492,8 +18492,13 @@ function cv13Lobby(mode){if(!cv13On())return;const $=id=>document.getElementById
 /* /CONVITE13NOV */
 /* CHEFEESTRADA13NOV (reports 'Boss fora da estrada'): a estrada da Arena tem ~16 de largura e o chefe era desenhado com 0,5 (bem mais largo),
    então invadia o tabuleiro nas curvas. Agora o chefe fica no máximo 0,38 e levemente puxado pra fora do tabuleiro. */
-function arBossOff(G2,p){try{if(p.y<=G2.ty+.5)return [0,-5];if(p.x<=G2.lx+.5)return [-5,0];if(p.x>=G2.rx-.5)return [5,0];}catch(e){}return [0,0];}
-{const _s=arES;arES=function(sp,sc,bo){const v=_s(sp,sc,bo);return bo?Math.min(v,.38):v;};}
+/* MONTACHEFE13NOV (Felipe: 'o que importa é o pé dele' / 'cria um montador pra eu fazer'): posição do PÉ do chefe em cada lado da estrada e o tamanho
+   vêm de CHEFEPOS (padrão abaixo; o Montador do Chefe — App com #montachefe, depois ARENA › SEM FIM — muda e manda pro Felipe pelo Report). */
+const CHEFEPOS0={sc:.38,L:[-5,0],T:[0,-5],R:[5,0]};
+let CHEFEPOS=(()=>{try{const o=JSON.parse(localStorage.getItem('cv.chefePos')||'null');if(o&&o.sc)return Object.assign({},CHEFEPOS0,o);}catch(e){}return Object.assign({},CHEFEPOS0);})();
+function arBossLeg(G2,p){if(p.y<=G2.ty+.5)return 'T';if(p.x<=G2.lx+.5)return 'L';if(p.x>=G2.rx-.5)return 'R';return null;}
+function arBossOff(G2,p){try{const k=arBossLeg(G2,p);if(k&&CHEFEPOS[k])return CHEFEPOS[k];}catch(e){}return [0,0];}
+{const _s=arES;arES=function(sp,sc,bo){const v=_s(sp,sc,bo);return bo?(ARV.has(sp)?Math.min(v,CHEFEPOS.sc*1.1):CHEFEPOS.sc):v;};}
 {const _y=arEY;arEY=function(sp,bo){const v=_y(sp,bo);return bo&&!ARV.has(sp)?12:v;};}
 {const _b=arEB;arEB=function(sp,bo){const v=_b(sp,bo);return bo&&!ARV.has(sp)?Math.min(v,34):v;};}
 /* TESLALEVE13NOV (reports do Tesla: Horda travando): o computador do carro (Linux com tela de toque) é fraco. Na primeira vez, o jogo
@@ -18501,6 +18506,37 @@ function arBossOff(G2,p){try{if(p.y<=G2.ty+.5)return [0,-5];if(p.x<=G2.lx+.5)ret
 setTimeout(function cvTesla(){try{if(typeof flags==='undefined'||!flags||!party||!party.length){setTimeout(cvTesla,3000);return;}
   const car=/Tesla/i.test(navigator.userAgent)||(/X11; Linux x86_64/.test(navigator.userAgent)&&navigator.maxTouchPoints>0&&!/Android|CrOS/.test(navigator.userAgent));
   if(car&&!flags.gfxCar&&flags.gfx06){flags.gfxCar=1;if(!flags.gfx)flags.gfx=1;try{saveGame();}catch(e){}try{gfxApply();}catch(e){}}else if(car&&!flags.gfx06)setTimeout(cvTesla,3000);}catch(e){}},4000);
+/* MONTADOR DO CHEFE (MONTACHEFE13NOV) */
+const MCH_ON=/[?#&]montachefe/.test(location.href);
+function mchStart(){const A=AR;if(!A||A.mch)return;A.mch=1;A.over=false;A.wave=14;try{arStartWave();}catch(e){}A.spawnLeft=0;A.en.length=0;A.wt=1e9;
+  const G2=arGeo(),L=arPathLen(G2),leg1=G2.by-G2.ty,top=G2.rx-G2.lx;const SPS=['caranguejo','pedregao','florina','zumbel','cogumelim','brasalor','tubarete','assombro'];A.mchI=A.mchI||0;
+  const put=()=>{A.en.length=0;const sp=SPS[A.mchI%SPS.length];[leg1*.45,leg1+top*.08,leg1+top*.5,leg1+top+leg1*.45].forEach((d,i)=>{const I=A.wi||arWaveInfo(15);A.en.push({sp,d,hp:I.hp*20,max:I.hp*20,spd:0,slow:0,slowT:0,poison:0,poisonT:0,boss:true,id:i+1,sc:.5,hit:0,mchT:1});});};put();A.mchPut=put;A.mchSps=SPS;
+  let el=document.getElementById('mchUI');if(el)el.remove();el=document.createElement('div');el.id='mchUI';
+  el.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:9700;background:rgba(30,18,6,.92);color:#fff;font:700 15px Arial,sans-serif;padding:10px 10px calc(10px + env(safe-area-inset-bottom));text-align:center";
+  const bt=(t,c)=>`<button data-k="${c}" style="margin:3px;padding:10px 14px;font:700 16px Arial;border:0;border-radius:12px;color:#fff;background:${c==='salvar'?'#2f9f4c':c==='sair'?'#8a3a2a':'#3f6ae0'}">${t}</button>`;
+  el.innerHTML=`<div id="mchTx" style="margin-bottom:6px">Arraste cada chefe até o PÉ ficar no meio da estrada</div>${bt('TAMANHO −','menos')}${bt('TAMANHO +','mais')}${bt('OUTRO CHEFE','troca')}<br>${bt('ZERAR','zera')}${bt('SALVAR E MANDAR','salvar')}${bt('SAIR','sair')}`;
+  document.body.appendChild(el);const tx=el.querySelector('#mchTx');
+  const info=()=>{tx.textContent=`Tamanho ${CHEFEPOS.sc.toFixed(2)} · esquerda ${CHEFEPOS.L.map(v=>v.toFixed(1))} · cima ${CHEFEPOS.T.map(v=>v.toFixed(1))} · direita ${CHEFEPOS.R.map(v=>v.toFixed(1))}`;};
+  ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click'].forEach(ev=>el.addEventListener(ev,e=>e.stopPropagation()));
+  el.onclick=async e=>{const k=e.target&&e.target.dataset&&e.target.dataset.k;if(!k)return;
+    if(k==='menos')CHEFEPOS.sc=Math.max(.2,CHEFEPOS.sc-.02);if(k==='mais')CHEFEPOS.sc=Math.min(.7,CHEFEPOS.sc+.02);if(k==='troca'){A.mchI++;put();}
+    if(k==='zera')CHEFEPOS=Object.assign({},CHEFEPOS0,{L:[0,0],T:[0,0],R:[0,0]});
+    if(k==='salvar'){try{localStorage.setItem('cv.chefePos',JSON.stringify(CHEFEPOS));}catch(_){}tx.textContent='Mandando…';
+      const r=Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:new Date().toISOString(),texto:'MONTADOR CHEFE: '+JSON.stringify(CHEFEPOS),tela_jogo:'',print:''},rpCtx());
+      let ok=false;try{ok=await rpSend(r);}catch(_){}tx.textContent=ok?'Pronto! Mandei pro Claude ✅':'Não deu pra mandar agora; ficou salvo neste aparelho.';return;}
+    if(k==='sair'){el.remove();A.mch=0;A.en.length=0;try{A.done&&A.done();}catch(_){}return;}info();};info();A.mchInfo=info;}
+if(MCH_ON){
+  {const _u=arUpdate;arUpdate=function(){const A=AR;if(A&&A.mch){A.t++;return;}return _u.apply(this,arguments);};}
+  setInterval(()=>{try{if(G.mode==='arena'&&AR&&!AR.lobby&&!AR.mp&&!AR.mch&&AR.grid)mchStart();}catch(e){}},700);
+  let D=null;const pos=e=>{const [x,y]=toCanvas(e);return [x,y];};
+  stage.addEventListener('pointerdown',e=>{const A=AR;if(!A||!A.mch)return;const [x,y]=pos(e),G2=arGeo();let best=null,bd=1e9;
+    for(const en of A.en){const p=arPos(G2,en.d),o=arBossOff(G2,p),qx=p.x+o[0],qy=p.y+o[1]-14,dd=Math.hypot(qx-x,qy-y);if(dd<bd){bd=dd;best={en,leg:arBossLeg(G2,p)};}}
+    if(best&&best.leg&&bd<40){D={x,y,leg:best.leg,o0:CHEFEPOS[best.leg].slice()};e.stopPropagation();e.preventDefault();}},true);
+  stage.addEventListener('pointermove',e=>{if(!D||!AR||!AR.mch)return;const [x,y]=pos(e);CHEFEPOS[D.leg]=[Math.round((D.o0[0]+x-D.x)*2)/2,Math.round((D.o0[1]+y-D.y)*2)/2];try{AR.mchInfo&&AR.mchInfo();}catch(_){}e.stopPropagation();},true);
+  const up=e=>{if(D){D=null;e.stopPropagation();}};stage.addEventListener('pointerup',up,true);stage.addEventListener('pointercancel',up,true);
+  /* linha do meio da estrada pra ajudar */
+  {const _ra=renderArena;renderArena=function(){_ra.apply(this,arguments);try{const A=AR;if(!A||!A.mch)return;const G2=arGeo();b.save();b.strokeStyle='rgba(255,40,40,.9)';b.lineWidth=1.2;b.setLineDash([3,2]);b.beginPath();G2.pts.forEach((q,i)=>i?b.lineTo(q[0],q[1]):b.moveTo(q[0],q[1]));b.stroke();b.restore();}catch(e){}};}
+}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

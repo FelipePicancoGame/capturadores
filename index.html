@@ -17518,6 +17518,14 @@ tioShow=function(lines){return new Promise(res=>{try{if(!lines||!lines.length)re
   w.defs.forEach((d,i)=>{const g=!!(d.m&&d.m.guarda),col=g?'#3f6ae0':'#2fb855';b.save();b.beginPath();b.ellipse(d.x,d.y+OY+10,15,4.6,0,0,Math.PI*2);b.lineWidth=1.4;b.strokeStyle=col;b.globalAlpha=.75+.25*Math.sin(t/8+i);b.stroke();b.restore();
     let y=d.y+OY-48;try{if(murUI()){const r=murLU('c'+(d._mk!=null?d._mk:i));if(r)y=r.y+OY-10;const v=murLU('vida');if(v)y=Math.min(y,v.y+OY-8);}}catch(e){}duoPill(d.x,y,g?'GUARDA BENTO':'VOCÊ',col);});}catch(e){}};}
 /* /GUARDADUPLA08NOV */
+/* MOLDURATOPO14NOV (Felipe recortou no Recortador de Molduras): a moldura da carta da Muralha (balão do número e borda de cima) fica sempre POR CIMA do desenho do monstrinho.
+   Redesenha a moldura com o miolo recortado pelo Felipe, só na parte de cima da carta (as faixas do nome e da barra continuam como estão). #semtopo desliga. */
+{const TOPK={c_fogo:'fogo',c_agua:'agua',c_planta:'planta',c_azul:'azul'},TOPI={},TOPC=new Map();
+ const topImg=f=>{let i=TOPI[f];if(!i){i=new Image();i.decoding='async';i.src='assets/murtopo/'+f+'.webp';TOPI[f]=i;}return i.complete&&i.naturalWidth?i:null;};
+ const _mcT=murCard;murCard=function(w,d,i,x,y,cw,ch,t){const r=_mcT.apply(this,arguments);try{if(/semtopo/.test(location.hash))return r;
+   const ty=(SP[d.sp.replace('*','')]||{}).type,fam=MURCK[ty]&&TOPK[MURCK[ty]]?TOPK[MURCK[ty]]:'azul',I=ty==='normal'?(murTint('normal')||murCardNormal()):(MURCK[ty]?(murImg(MURCK[ty])||murImg('c_azul')):(murTint(ty)||murImg('c_azul'))),M=topImg(fam);
+   if(!I||!M)return r;let c=TOPC.get(I);if(!c){const W=I.naturalWidth||I.width,H=I.naturalHeight||I.height;if(!W)return r;c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(I,0,0);g.globalCompositeOperation='destination-in';g.drawImage(M,0,0,W,H);TOPC.set(I,c);}
+   b.save();b.beginPath();b.rect(x-2,y-2,cw+4,ch*.585+2);b.clip();b.drawImage(c,x,y,cw,ch);b.restore();}catch(e){}return r;};}
 
 /* CARTAILU08NOV (Felipe: "em todas"): ilustrações novas das cartas (Buchecha, 72 artes 512x640 com fundo) em todas as cartas de monstrinho:
    Muralha (cartas de baixo e reserva), Coleção, Arena, Torres e cartão do treinador. Quem não tem ilustração continua com a arte de antes. */

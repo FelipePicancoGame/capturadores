@@ -10893,7 +10893,7 @@ async function arMpLobby(mode,autoCod){if(!duoNoApp()){await say('Jogar a Arena 
     $('arVoltar').onclick=()=>{try{cancel&&cancel();}catch(e){}fin(null);};
     try{arAmgPainel(mode);}catch(e){console.error(e);}
     if(autoCod){$('arCod').value=autoCod;setTimeout(ent,50);}});
-  box.hidden=true;try{const pn=document.getElementById('arAmg');if(pn)pn.remove();}catch(e){}if(!r)return;await arMpRun(mode,r);}
+  box.hidden=true;try{const pn=document.getElementById('arAmg');if(pn)pn.remove();}catch(e){}if(!r)return;salaFecha();await salaContagem();await arMpRun(mode,r);}
 async function arMpRun(mode,r){const S=r.S;
   await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();const M=AR.mp={mode,role:r.role,S,peer:{n:r.peerN||''},peerClr:0,waitT:0,sentClr:-1,off:0,last:performance.now()};
   if(r.role==='guest')AR.between=1e9;G.mode='arena';await fadeTo(0);
@@ -16003,7 +16003,7 @@ function duoResDrop(w,dr){const i=duoResTarget(w,dr.x,dr.y);if(i<0)return;if(w.d
   st.addEventListener('pointermove',e=>{try{const w=WL,dr=w&&w.resDrag;if(!dr||e.pointerId!==dr.id)return;const [x,y]=xy(e);dr.x=x;dr.y=y;if(Math.hypot(x-dr.x0,y-dr.y0)>4)dr.on=true;e.stopPropagation();e.preventDefault();}catch(_){}},true);
   const fim=e=>{try{const w=WL,dr=w&&w.resDrag;if(!dr||e.pointerId!==dr.id)return;w.resDrag=null;e.stopPropagation();e.preventDefault();if(dr.on&&e.type==='pointerup')duoResDrop(w,dr);else if(!dr.on){const R=duoResRect(w);if(R)wPop(R.x+R.w/2,R.y-4,'Arraste até um lugar seu','#ffe27a',6);}}catch(_){}};
   st.addEventListener('pointerup',fim,true);st.addEventListener('pointercancel',fim,true);}}
-function duoEmit(S,t,d){try{if(t==='as'&&d&&typeof AR!=='undefined'&&AR&&AR.dmgBy)d.by=Object.entries(AR.dmgBy).filter(x=>x[1]>0).sort((a,c)=>c[1]-a[1]).slice(0,6).map(x=>[x[0],Math.round(x[1])]);}catch(_){}try{const p=S&&S.emit(t,d);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
+function duoEmit(S,t,d){try{if(t==='mdp'&&d&&!d.n)d.n=String(flags.nome||'').slice(0,12);}catch(_){}try{if(t==='as'&&d&&typeof AR!=='undefined'&&AR&&AR.dmgBy)d.by=Object.entries(AR.dmgBy).filter(x=>x[1]>0).sort((a,c)=>c[1]-a[1]).slice(0,6).map(x=>[x[0],Math.round(x[1])]);}catch(_){}try{const p=S&&S.emit(t,d);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
 function duoPres(S,p){try{const q=S.presence(p);if(q&&q.catch)q.catch(()=>{});}catch(e){}}
 /* ---------- tela de entrada (sala) ---------- */
 function duoUI(){let el=document.getElementById('duoBox');if(el)return el;el=document.createElement('div');el.id='duoBox';el.hidden=true;
@@ -16051,8 +16051,9 @@ async function duoEntrar(cod,fin){cod=(cod||'').toUpperCase().replace(/[^A-Z]/g,
   duoPres(S,{r:'guest'});const mons=duoGuestPick();
   const pay={df:flags.duoFase|0,mons:mons.map(duoSer),res:duoElig(party).slice(0,6).map(duoSer),auto:flags.wallAuto?1:0,nome:String(flags.nome||'').slice(0,12),fl:{up:flags.up||{},wcs:flags.wcs||{},wcu:flags.wcu||{},pw:flags.pw||{}}};
   let ok=false;const iv=setInterval(()=>{if(!ok)duoEmit(S,'mdj',pay);},1500);duoEmit(S,'mdj',pay);
-  let achou=false;S.on('mdr',m=>{if(m.isMe||m.sameTab||ok||!achou)return;ok=true;clearInterval(iv);duoMsg('O parceiro saiu da sala.',1);try{S.leave();}catch(e){}});S.on('mdp',m=>{if(m.isMe||m.sameTab||ok)return;if(!achou){achou=true;duoMsg('Sala encontrada! O parceiro está escolhendo a fase…');}});
-  S.on('mdw',m=>{if(m.isMe||m.sameTab||ok)return;const d=m.data||{};if(!Array.isArray(d.mons)||d.mons.length<2)return;ok=true;clearInterval(iv);fin({role:'guest',S,cod,wel:d});});
+  let achou=false;S.on('mdr',m=>{if(m.isMe||m.sameTab||ok||!achou)return;ok=true;clearInterval(iv);duoMsg('O parceiro saiu da sala.',1);try{S.leave();}catch(e){}});S.on('mdp',m=>{if(m.isMe||m.sameTab||ok)return;if(!achou){achou=true;duoMsg('Sala encontrada! O parceiro está escolhendo a fase…');}const dn=(m.data&&m.data.n)||'';salaPainel({cod,eu:'PRONTO',par:dn,parSt:'ESCOLHENDO A FASE',sair:()=>{try{DUO_CUR&&DUO_CUR.cancel();}catch(e){}}});});
+  S.on('mdk',m=>{if(m.isMe||m.sameTab||ok)return;if(!salaContagem.on)salaContagem();});
+  S.on('mdw',m=>{if(m.isMe||m.sameTab||ok)return;const d=m.data||{};if(!Array.isArray(d.mons)||d.mons.length<2)return;ok=true;clearInterval(iv);salaFecha();fin({role:'guest',S,cod,wel:d});});
   DUO_CUR={cancel:()=>{clearInterval(iv);ok=true;try{S.leave();}catch(e){}}};
   await new Promise(r=>setTimeout(r,12000));while(!ok&&achou&&DUO_CUR)await new Promise(r=>setTimeout(r,1000));if(!ok){clearInterval(iv);ok=true;duoMsg('Sala '+cod+' não encontrada. Confira o código e se os dois abriram o jogo pelo '+(duoNoApp()?'App':'Claude')+'.',1);try{S.leave();}catch(e){}}}
 /* ---------- DONO DA SALA ---------- */
@@ -16135,6 +16136,7 @@ async function duoHostRun(r){const hm=duoElig(party).slice(0,2);
      o prêmio quando vencerem juntos'): cada um tem o próprio progresso da dupla (flags.duoFase = fases vencidas). O dono escolhe a fase até a menor das duas. */
   let gdf=Math.max(0,Math.min(DUOFMAX-1,(r.gj&&r.gj.df)|0)),hdf=Math.max(0,Math.min(DUOFMAX-1,flags.duoFase|0));H0.picking=1;duoEmit(r.S,'mdp',{});if(r.bot)gdf=hdf;
   const _pk=await duoFasePick(hdf,gdf,H0.gnome);H0.picking=0;if(_pk==null){duoEmit(r.S,'mdr',{res:'quit'});setTimeout(()=>{try{r.S.leave();}catch(e){}},1200);DUOH=null;return;}
+  if(!r.bot){duoEmit(r.S,'mdk',{fase:_pk+1});setTimeout(()=>duoEmit(r.S,'mdk',{fase:_pk+1}),500);await salaContagem();}/* SALA14NOV: 3, 2, 1 nos dois antes de começar */
   const wel={mons:[...hm,...r.gm].map(duoSer),n:hm.length,nome:String(flags.nome||'').slice(0,12),fase:_pk+1};
   const iv=setInterval(()=>{try{if(DUOH!==H0)return;H0.k++;if(H0.wNow||(!H0.ack&&H0.k%16===1)){H0.wNow=0;duoEmit(H0.S,'mdw',wel);}
       if(WL&&WL.duo===H0&&!H0.ended){const s=duoSnap(WL);if(s)duoEmit(H0.S,'mds',s);const cp=H0.cp;if(cp&&cp.gc&&!cp.done[1]&&!H0.off&&cp.ack!==cp.gc.q&&H0.k-cp.sentK>=16)duoSendCards(H0,WL);}}catch(e){console.error(e);}},125);
@@ -18718,12 +18720,28 @@ function duoCompare(A,B){return new Promise(res=>{try{const en=window.CVLANG==='
     const ag=ex.querySelector('#grpAgain');if(ag)ag.onclick=()=>{fim();grpDeNovo(O.jogo,g.tid);};
     ex.querySelector('#grpSair').onclick=()=>{grpSair();ex.innerHTML=`<div style="font-size:18px;color:#ffd0c0">${en?'You left the group.':'Você saiu do grupo.'}</div>`;};}}catch(e){console.warn('grupo',e);}
   document.body.appendChild(b);}catch(e){console.warn('duoCompare',e);res();}});}
+/* SALA14NOV (Felipe: 'coloca avisos na tela de quem está esperando… um lobby dentro da sala, pendente ou pronto… e um temporizador 3, 2, 1') */
+function salaPainel(o){try{const en=window.CVLANG==='en';let b=document.getElementById('salaBox');if(!b){b=document.createElement('div');b.id='salaBox';document.body.appendChild(b);['pointerdown','pointerup','touchstart','touchend','click'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation()));}
+  b.style.cssText='position:fixed;inset:0;z-index:9993;background:rgba(6,12,30,.72);display:flex;align-items:center;justify-content:center;font-family:CadBaloo,Fredoka,Arial,sans-serif;font-weight:800;color:#fff';
+  const row=(n,st,ok)=>`<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.08);border-radius:14px;padding:10px 12px;margin:8px 0"><span style="font-size:21px">${n}</span><span style="font-size:17px;padding:6px 12px;border-radius:12px;background:${ok?'#1f9a4a':'#c08a1a'}">${ok?'✓ ':''}${st}${ok?'':'<span class=sdots></span>'}</span></div>`;
+  b.innerHTML=`<style>@keyframes sd{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}.sdots::after{content:'';animation:sd 1.2s steps(4) infinite}</style><div style="background:linear-gradient(#2a2f6a,#1a1d44);border:5px solid #ffd23f;border-radius:24px;padding:18px;width:min(92vw,400px);box-shadow:0 8px 0 #0a0c24;text-align:center">
+    <div style="font-size:25px;color:#ffe27a">${o.tit||(en?'ROOM':'SALA')}${o.cod?' '+o.cod:''}</div>
+    ${row((en?'You':'Você'),o.eu==='PRONTO'?(en?'READY':'PRONTO'):(en?'PENDING':'PENDENTE'),o.eu==='PRONTO')}
+    ${row(String(o.par||(en?'Partner':'Parceiro')).slice(0,12),o.parSt||(en?'PENDING':'PENDENTE'),false)}
+    <div style="font-size:17px;color:#bfe0ff;margin-top:8px">${en?'The game starts by itself when both are ready.':'O jogo começa sozinho quando os dois estiverem prontos.'}</div>
+    <button id="salaSair" style="margin-top:14px;font:inherit;font-size:18px;color:#ffd0c0;background:transparent;border:2px solid #ffd0c0;border-radius:14px;padding:8px 18px">${en?'Leave room':'Sair da sala'}</button></div>`;
+  b.querySelector('#salaSair').onclick=()=>{salaFecha();try{o.sair&&o.sair();}catch(e){}};}catch(e){console.warn('sala',e);}}
+function salaFecha(){try{const b=document.getElementById('salaBox');if(b)b.remove();}catch(e){}}
+function salaContagem(){if(salaContagem.on)return salaContagem.on;salaFecha();salaContagem.on=new Promise(res=>{const en=window.CVLANG==='en';const b=document.createElement('div');b.id='salaGo';
+  b.style.cssText='position:fixed;inset:0;z-index:9996;background:rgba(6,12,30,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:CadBaloo,Fredoka,Arial,sans-serif;font-weight:800;color:#fff;pointer-events:none';
+  const st=[3,2,1,en?'GO!':'JÁ!'];let i=0;const show=()=>{b.innerHTML=`<div style="font-size:22px;color:#bfe0ff;margin-bottom:6px">${en?'Starting…':'Começando…'}</div><div style="font-size:120px;color:#ffe27a;text-shadow:0 6px 0 #6a3a0a;transform:scale(1.15);transition:transform .25s">${st[i]}</div>`;try{tone(i<3?[523]:[784,1047],.08);}catch(e){}requestAnimationFrame(()=>{const d=b.lastChild;if(d)d.style.transform='scale(1)';});};
+  document.body.appendChild(b);show();const iv=setInterval(()=>{i++;if(i>=st.length){clearInterval(iv);b.remove();salaContagem.on=null;res();return;}show();},800);});return salaContagem.on;}
 function grpUlt(tid,nome){try{if(tid){flags.grpUlt={tid:String(tid),nome:nome||((amgLista().find(x=>String(x.tid)===String(tid))||{}).nome)||''};}return flags.grpUlt||null;}catch(e){return null;}}
 function grpSet(tid,nome){try{flags.grupo={tid:String(tid),nome:nome||'',t:Date.now()};saveGame();}catch(e){}}
 function grpSair(){try{delete flags.grupo;delete flags.grpUlt;saveGame();}catch(e){}}
 function grpAtivo(tid){try{const g=flags.grupo;return !!(g&&String(g.tid)===String(tid)&&Date.now()-g.t<3*3600e3);}catch(e){return false;}}
 /* depois da partida, quem criou a sala volta pro mapa e chama o mesmo amigo de novo; o amigo do grupo entra sozinho */
-function grpDeNovo(jogo,tid){let n=0;const iv=setInterval(async()=>{n++;if(n>60){clearInterval(iv);return;}try{if(G.mode!=='world'||(typeof ui!=='undefined'&&ui.length)||DUOH||DUOG)return;clearInterval(iv);
+function grpDeNovo(jogo,tid){const g=flags.grupo||{};salaPainel({cod:'',eu:'PRONTO',par:g.nome||'',parSt:'CHAMANDO…',tit:window.CVLANG==='en'?'BACK TO THE ROOM':'VOLTANDO PRA SALA',sair:()=>{}});setTimeout(salaFecha,25000);let n=0;const iv=setInterval(async()=>{n++;if(n>60){clearInterval(iv);return;}try{if(G.mode!=='world'||(typeof ui!=='undefined'&&ui.length)||DUOH||DUOG)return;clearInterval(iv);
   if(jogo==='muralha'){duoLobby();setTimeout(()=>{try{amgConvidar(tid);}catch(e){}},900);}
   else{const m=/arena-(coop|pvp)/.exec(jogo);if(!m)return;arMpLobby(m[1]);setTimeout(()=>{try{arAmgConvidar(m[1],tid);}catch(e){}},1500);}}catch(e){}},700);}
 {const _c=amgConvite;amgConvite=function(quem,cod,jogo){_c.apply(this,arguments);try{grpUlt(quem.tid,quem.nome);if(grpAtivo(quem.tid)){grpSet(quem.tid,quem.nome);const el=document.getElementById('amgInv');const sim=el&&el.querySelector('#amgSim');if(sim)setTimeout(()=>{try{sim.click();rwToast((window.CVLANG==='en'?'👥 Your group called you: joining…':'👥 Seu grupo te chamou: entrando…'));}catch(e){}},400);}}catch(e){}};}

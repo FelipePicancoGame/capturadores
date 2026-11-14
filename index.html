@@ -1860,7 +1860,7 @@ let party=[],storage=[],bag={ball:5,potion:2},flags={},B=null,ui=[],busy=false;
 const SAVE='capturadores-vale-v1';
 /* SALVOVAZIO (02/nov, Felipe e Gabi: Continuar dizia 'salvo sem nenhum monstrinho'): algo gravou o salvo com a equipe vazia por cima do jogo bom.
    Agora: sem monstrinho não grava (e anota no 🐞 quem tentou), e todo salvo bom fica com uma reserva (-reserva) pro Continuar recuperar. */
-function saveGame(){if(!Array.isArray(party)||!party.length){try{window.__EV&&__EV('salvar bloqueado: equipe vazia ('+G.mode+') '+String(new Error().stack||'').split('\n').slice(2,4).join(' ').replace(/https?:[^ )]*\//g,'').slice(0,120));}catch(e){}return;}flags.lastSeen=Date.now();flags.pm10=1;flags.lunaV5=1;if(!flags.gid)flags.gid=Date.now().toString(36)+Math.random().toString(36).slice(2,7);let js='';try{js=JSON.stringify({map:G.map,x:P.x,y:P.y,dir:P.dir,party:party.map(({sp,lv,xp,hp,moves,sh,af,bon,buf})=>({sp,lv,xp,hp,moves,sh,af,bon,buf})),storage:storage.map(({sp,lv,xp,hp,moves,sh,af,bon,buf})=>({sp,lv,xp,hp,moves,sh,af,bon,buf})),bag,flags});localStorage.setItem(SAVE,js);try{localStorage.setItem(SAVE+'-reserva',js);}catch(e){}}catch(e){}try{if(js)cloudSave(js);}catch(e){}}
+function saveGame(){if(!Array.isArray(party)||!party.length){try{window.__EV&&__EV('salvar bloqueado: equipe vazia ('+G.mode+') '+String(new Error().stack||'').split('\n').slice(2,4).join(' ').replace(/https?:[^ )]*\//g,'').slice(0,120));}catch(e){}return;}flags.lastSeen=Date.now();flags.pm10=1;flags.lunaV5=1;if(!flags.gid)flags.gid=Date.now().toString(36)+Math.random().toString(36).slice(2,7);let js='';try{js=JSON.stringify({map:G.map,x:P.x,y:P.y,dir:P.dir,party:party.map(({sp,lv,xp,hp,moves,sh,af,bon,buf})=>({sp,lv,xp,hp,moves,sh,af,bon,buf})),storage:storage.map(({sp,lv,xp,hp,moves,sh,af,bon,buf})=>({sp,lv,xp,hp,moves,sh,af,bon,buf})),bag,flags});window.__saveOK=false;localStorage.setItem(SAVE,js);window.__saveOK=true;try{localStorage.setItem(SAVE+'-reserva',js);}catch(e){}}catch(e){window.__saveOK=false;}try{if(js)cloudSave(js);}catch(e){}}
 /* SALVO NA NUVEM: guarda uma cópia do salvo na conta do Claude (privado por pessoa) e recupera se o aparelho perdeu */
 let CLOUD=null,_cTimer=null,_cLast='';
 const CLOUDP=(async()=>{try{const [db,us]=await Promise.all([__CLUSE('db'),__CLUSE('user')]);if(!db||!us){try{__EV('nuvem sem acesso')}catch(e){}return;}const uid=await us.id();if(!uid)return;const ref=db.doc('data/users/'+uid+'/save');CLOUD={ref,db,uid};
@@ -1942,7 +1942,7 @@ async function cfgMenu(){while(true){const sOn=!flags.sfxOff,fOn=!flags.fxOff;
   if(j===1){flags.sfxOff=!flags.sfxOff;saveGame();if(!flags.sfxOff)try{tone([660,880],.06);}catch(e){}continue;}
   if(j===2){flags.fxOff=!flags.fxOff;saveGame();continue;}
   if(j===3){flags.hero=flags.hero==='menina'?'menino':'menina';saveGame();try{tone([660,880],.06);}catch(e){}continue;}
-  if(j===4){saveGame();try{cloudFlush();}catch(e){}await say('Jogo salvo!');continue;}
+  if(j===4){saveGame();try{cloudFlush();}catch(e){}await say(window.__saveOK===false?'Não consegui salvar neste aparelho (memória cheia?). Tente de novo.':'Jogo salvo!');continue;}/* AUDIT14NOV F03 */
   if(j===5){const ok=await loadMenu();if(ok){try{_cPend=null;}catch(e){}party=[];G.mode='title';location.reload();return;}continue;}
   if(j===6){await hqPlay(hqAll());continue;}
   if(j===9){flags.narraOff=!flags.narraOff;saveGame();if(flags.narraOff)narPara();else narFala('Narração ligada. Eu vou ler as histórias pra você.','');continue;}
@@ -10136,7 +10136,7 @@ async function openMenu(){if(flags.migMsg){const t=flags.migMsg;delete flags.mig
       if(key==='candy'){await useCandy(m,1);saveGame();continue BAGL;}
       const h=await useHeal(m,HEALAMT[key]||20,key,lab);if(h!==false){m.dhp=m.hp;saveGame();tone([659,880],.06);bagMsg(`✓ ${lab} em ${nm(m)}: +${h} de HP`);}continue BAGL;}continue;}
     else if(i===-6){await shopMenu();continue;}
-    else if(i===2){saveGame();await say(`Jogo salvo! Medalhas: ${flags.badge?1:0}. Monstrinhos: ${party.length+storage.length}. Moedas: ${flags.coins||0}.`);}
+    else if(i===2){saveGame();if(window.__saveOK===false){await say('Não consegui salvar neste aparelho (memória cheia?). Tente de novo.');}else await say(`Jogo salvo! Medalhas: ${flags.badge?1:0}. Monstrinhos: ${party.length+storage.length}. Moedas: ${flags.coins||0}.`);}
     else break;}}
 
 function heldDir(){return held[held.length-1];}
@@ -12589,15 +12589,16 @@ function offList(){if(OFFL.list)return OFFL.list;const tx=document.documentEleme
   const re=/(?:\.\/)?((?:assets|blobs)\/[A-Za-z0-9_\/.%-]+\.(?:webp|png|jpg|jpeg|mp3|ogg|m4a|wav|json|gif|woff2?|ttf|otf))/g;const S=new Set();let m;while((m=re.exec(tx)))S.add(m[1]);
   const ORD=['assets/mapas','assets/monstros','assets/anim','assets/personagens','assets/ui','assets/fontes','assets/musica','assets/cenarios','assets/fx','assets/outros','blobs'];
   const rk=p=>{const i=ORD.findIndex(o=>p.startsWith(o));return i<0?ORD.length:i;};
+  /* AUDIT14NOV F01 (auditoria do Codex): arquivos que não existem no site não travam o download offline */for(const x of ['blobs/cadb68f0a7d0dc5bd77c9f37dc98fb6d.mp3','blobs/ar2_fundo_templo.webp','assets/fpad/logo.png'])S.delete(x);
   OFFL.list=[...S].sort((a,b)=>rk(a)-rk(b));OFFL.tot=OFFL.list.length;return OFFL.list;}
 async function offScan(){const c=await caches.open('cv-arte-1');const ks=await c.keys();const have=new Set(ks.map(r=>new URL(r.url).pathname));
-  const L=offList(),need=L.filter(p=>!have.has(new URL(p,location.href).pathname));OFFL.ok=L.length-need.length;OFFL.done=need.length===0;return need;}
+  const MS=OFFL.miss||(OFFL.miss=new Set()),L=offList(),need=L.filter(p=>!MS.has(p)&&!have.has(new URL(p,location.href).pathname));OFFL.ok=L.length-need.length;OFFL.done=need.length===0;return need;}
 async function offRun(){if(OFFL.run||!offApp()||!navigator.serviceWorker.controller)return;OFFL.run=1;OFFL.fail=0;
   try{try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});}catch(e){}
     const need=await offScan();let i=0;const nap=ms=>new Promise(r=>setTimeout(r,ms));
     const busy=()=>document.hidden||!navigator.onLine||!offOk()||(MGMODES[G.mode]&&!mgPausedNow())||!!(window.__artBusy&&__artBusy());
     const worker=async()=>{while(i<need.length&&OFFL.on&&OFFL.fail<30){if(busy()){await nap(2000);continue;}
-      const p=need[i++];try{const r=await fetch(p);if(r.ok){await r.arrayBuffer();OFFL.ok++;}else OFFL.fail++;}catch(e){if(navigator.onLine)OFFL.fail++;}
+      const p=need[i++];try{const r=await fetch(p);if(r.ok){await r.arrayBuffer();OFFL.ok++;}else if(r.status===404){(OFFL.miss||(OFFL.miss=new Set())).add(p);OFFL.ok++;}else OFFL.fail++;}catch(e){if(navigator.onLine)OFFL.fail++;}
       await nap(80);}};
     await Promise.all([worker(),worker()]);await offScan();if(OFFL.done)OFFL.fin=1;
   }catch(e){}finally{OFFL.run=0;}}
@@ -15733,7 +15734,7 @@ function levOpen(){const el=levUI(),$=id=>el.querySelector('#'+id),av=(t,r)=>{$(
       if(cur){const c=document.createElement('div');c.style.cssText='margin-top:6px;font-size:13px;color:#ffd23f';c.textContent=`O jogo de agora deste aparelho (${cur.nome}, ${cur.n} monstrinhos) fica guardado como cópia de segurança.`;$('levRes').append(c);}
       $('levOk').hidden=false;av('Confira e toque em Usar este jogo.');};
     $('levArea').oninput=ler;$('levArea').onpaste=()=>setTimeout(ler,30);$('levAcao').onclick=ler;
-    $('levOk').onclick=()=>{if(!lido)return;/* o jogo de agora salva sozinho ao sair da página: desliga antes, senão ele escreveria por cima do jogo colado */try{saveGame=function(){};}catch(e){}try{const old=localStorage.getItem(SAVE);if(old)localStorage.setItem(SAVE+'-antes-de-colar',old);localStorage.setItem(SAVE,lido.js);}catch(e){av('Não deu pra guardar neste aparelho (memória cheia?).',1);return;}
+    $('levOk').onclick=()=>{if(!lido)return;/* o jogo de agora salva sozinho ao sair da página: desliga antes, senão ele escreveria por cima do jogo colado */const _sg0=saveGame;try{saveGame=function(){};}catch(e){}try{const old=localStorage.getItem(SAVE);if(old)localStorage.setItem(SAVE+'-antes-de-colar',old);localStorage.setItem(SAVE,lido.js);}catch(e){try{saveGame=_sg0;}catch(_){}/* AUDIT14NOV F04: se falhar, o jogo volta a salvar */av('Não deu pra guardar neste aparelho (memória cheia?).',1);return;}
       av('Pronto! Abrindo o seu jogo…');try{window.__LEVOK=1;}catch(e){}setTimeout(()=>{try{location.hash='';}catch(e){}location.reload();},700);};}}
 setInterval(()=>{try{if(/levar/.test(location.hash||'')&&!window.__LEVH){window.__LEVH=1;levOpen();}}catch(e){}},700);
 

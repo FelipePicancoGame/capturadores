@@ -1,10 +1,11 @@
 /* Capturadores do Vale — guarda os arquivos do jogo no aparelho pra abrir rápido e funcionar sem internet */
-const CACHE='cv-v569';
+const CACHE='cv-v570';
 /* 03/nov: artes e sons ficam numa caixa separada que NÃO é apagada quando sai versão nova (senão o jogo baixado pra jogar offline sumia a cada versão).
    blobs/ têm nome único por conteúdo: nunca mudam. assets/ podem mudar: na versão nova o jogo pergunta ao servidor se mudou (resposta curta 304 se não mudou). */
 const ART='cv-arte-1';
-self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest'])).catch(()=>{}));});
-self.addEventListener('activate',e=>{MUD=null;MUDP=null;e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&k!==ART).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+/* AUDIT14NOV F07: se a cópia nova não baixar inteira, a instalação falha e a versão anterior continua valendo */
+self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest'])));});
+self.addEventListener('activate',e=>{MUD=null;MUDP=null;e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>/^cv-v\d+$/.test(k)&&k!==CACHE&&k!==ART)/* AUDIT14NOV F05: só apaga caches do próprio jogo */.map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 async function artFresh(r,c,m){const h={};const et=m.headers.get('etag'),lm=m.headers.get('last-modified');if(et)h['If-None-Match']=et;if(lm)h['If-Modified-Since']=lm;
   const res=await fetch(r.url,{headers:h,cache:'no-store'});if(res.status===304){await c.put(r.url,await artTag(m,0,r.url));return;}if(res.ok)await c.put(r.url,await artTag(res,0,r.url));}
 /* ARTENOVA14NOV (auditoria: 'o jogo pode mostrar a arte antiga depois de atualizar'): mudou.json lista as artes que foram TROCADAS mantendo o mesmo nome
@@ -26,12 +27,12 @@ async function artGet(r,isA,ev){const c=await caches.open(ART);let m=await c.mat
     return m||res;}catch(e){if(m)return m;throw e;}}
 async function swRange(r){try{let m=null;for(const k of [ART,CACHE]){const c=await caches.open(k);m=await c.match(r.url,{ignoreVary:true});if(m)break;}
   if(!m){return fetch(r);}const buf=await m.arrayBuffer(),n=buf.byteLength,mm=/bytes=(\d*)-(\d*)/.exec(r.headers.get('range')||'');if(!mm)return fetch(r);
-  let s0=mm[1]===''?Math.max(0,n-(+mm[2]||0)):+mm[1],e0=(mm[1]!==''&&mm[2]!=='')?Math.min(+mm[2],n-1):n-1;if(s0>=n)return new Response(null,{status:416,headers:{'Content-Range':'bytes */'+n}});
+  let s0=mm[1]===''?Math.max(0,n-(+mm[2]||0)):+mm[1],e0=(mm[1]!==''&&mm[2]!=='')?Math.min(+mm[2],n-1):n-1;if(s0>=n||e0<s0)return new Response(null,{status:416,headers:{'Content-Range':'bytes */'+n}});/* AUDIT14NOV F08 */
   return new Response(buf.slice(s0,e0+1),{status:206,statusText:'Partial Content',headers:{'Content-Type':m.headers.get('content-type')||'audio/mpeg','Content-Range':'bytes '+s0+'-'+e0+'/'+n,'Content-Length':String(e0-s0+1),'Accept-Ranges':'bytes'}});}
   catch(e){return fetch(r);}}
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return;const pn=new URL(r.url).pathname;if(pn.endsWith('/version.json'))return;
   const isPage=r.mode==='navigate'||r.url.endsWith('/index.html');
-  if(isPage){/* 29/out: busca a página sempre no servidor (sem cópia guardada do navegador), pra versão nova chegar na hora */e.respondWith(fetch(r,{cache:'no-cache'}).then(res=>{const cp=res.clone();caches.open(CACHE).then(c=>c.put(r,cp));return res;}).catch(()=>caches.match(r).then(m=>m||caches.match('./index.html'))));return;}
+  if(isPage){/* 29/out: busca a página sempre no servidor (sem cópia guardada do navegador), pra versão nova chegar na hora */e.respondWith(fetch(r,{cache:'no-cache'}).then(res=>{if(res.ok){const cp=res.clone();caches.open(CACHE).then(c=>c.put(r,cp));}/* AUDIT14NOV F06: página com erro não substitui a boa guardada (e mostra a guardada) */if(res.ok||res.status===304)return res;return caches.match(r).then(m=>m||caches.match('./index.html')).then(m=>m||res);}).catch(()=>caches.match(r).then(m=>m||caches.match('./index.html'))));return;}
   if(!r.headers.has('range')&&(pn.includes('/blobs/')||pn.includes('/assets/'))){e.respondWith(artGet(r,pn.includes('/assets/'),e));return;}
   /* SOMIOS13NOV (Felipe: 'no celular os áudios não entram, no Tesla entram na hora'): o iPhone toca som pedindo PEDAÇOS do arquivo (Range) e só aceita resposta 206;
      a cópia guardada voltava o arquivo inteiro (200) e o Safari travava/cancelava a voz. O Chrome do Tesla aceita os dois. Agora devolve o pedaço certo (206). */

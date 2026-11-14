@@ -3472,7 +3472,7 @@ function drawShop(u){if(drawPowersArt(u)||drawHonraArt(u)||drawPedArt(u))return;
 
 /* preços: suplementos e café ficam mais caros a cada compra */
 function shopPrice(it){const n=(flags.shopBuy||{})[it.k]||0;return SUPL[it.k]?Math.round(it.c*Math.pow(1.15,n)/10)*10:it.c+(it.k==='cafe'?50*n:0);}
-function storeRows(tab){if(tab===0)return SHOPITEMS.map(it=>({n:it.n,d:it.d,ic:it.k,c:shopPrice(it),dis:(flags.coins||0)<shopPrice(it),tag:`tem ${bag[it.k]||0}`}));
+function storeRows(tab){if(tab===0)return SHOPITEMS.map(it=>({n:it.n,d:it.d,ic:it.k,c:shopPrice(it),dis:(flags.coins||0)<shopPrice(it),tag:`tem ${bag[it.k]||0}`})).concat(window.ESTRELAS?[{n:'Estrelim',d:'Monstrinho de LUZ · só aqui',ic:'ball',c:LUZGEM,gem:1,mon:'estrelim',dis:gems()<LUZGEM,tag:''}]:[]);
   return upsList().map(u=>{const mx=UP(u.k)>=u.max;const lv0=UP(u.k);return{n:u.n,tot:lv0?'Total: '+u.d.replace(/\+(\d+)/g,(m0,n0)=>'+'+(+n0*lv0)):null,d:u.d.charAt(0).toUpperCase()+u.d.slice(1)+'.',ic:UPICON[u.k],bg:'#efe4ff',c:upGem(u),gem:1,max:mx,dis:mx||gems()<upGem(u),lv:UP(u.k),lvMax:u.max};});}
 /* PRECO09NOV (Felipe 09/nov: "5 vezes": força só jogando; pra acelerar gasta cristais/moedas) */const UPCOST={wallHp:[250,400,600,900,1250],ultStart:[250,400,600,900],wallRegen:[300,500,750,1100],tdEnergy:[250,400,600,900,1250],tdLives:[250,400,600,900],tdRange:[250,400,600,900],tdCheap:[250,400,600,900],gemVal:[200,300,450,650],expHp:[250,400,600,900,1250],expArmor:[300,500,750,1100],expLuck:[300,500,750,1100],coinMul:[400,600,900,1300,1800],expCoins:[400,600,900,1300,1800]};const SVMC=[200,325,500,725,1000];
 function upGem(u){const L=UPCOST[u.k],l=UP(u.k);return L?L[Math.min(l,L.length-1)]:(Math.max(4,Math.round(u.c/12))+l*4)*5;}
@@ -3481,6 +3481,8 @@ function upsList(){const L=UPS.filter(u=>!UPOFF.has(u.k));return UPF?L.filter(u=
 async function shopMenu(UF){UPF=UF||null;flags.up=flags.up||{};const S={tab:UF?1:0,t:0,shown:flags.coins||0,toast:null,bump:null,coins:[]};
   while(true){const rows=storeRows(S.tab);const j=await choose([...rows.map(r=>r.n),'ITENS','MELHORIAS','SAIR','HONRA','PRESENTES'],{store:S,rows});const n=rows.length;
     if(j<0||j===n+2){UPF=null;return;}if(j===n+3){await honraMenu();S.shown=flags.coins||0;continue;}if(j===n+4){await giftMenu();S.shown=flags.coins||0;continue;}if(j===n+5){await roupasMenu();continue;}if(j===n){if(UPF){await powersMenu();if(SHOPJMP){const q=SHOPJMP;SHOPJMP=null;if(q==='SAIR'){UPF=null;return;}if(q==='HONRA'){await honraMenu();}else if(q==='PRESENTES'){await giftMenu();}else if(q==='ITENS')S.tab=0;else if(q==='MELHORIAS')S.tab=1;S.tt=0;}continue;}S.tab=0;S.tt=0;continue;}if(j===n+1){if(!UPF){await powersMenu();if(SHOPJMP){const q=SHOPJMP;SHOPJMP=null;if(q==='SAIR'){UPF=null;return;}if(q==='HONRA'){await honraMenu();}else if(q==='PRESENTES'){await giftMenu();}else if(q==='ITENS')S.tab=0;else if(q==='MELHORIAS')S.tab=1;S.tt=0;}continue;}S.tab=1;S.tt=0;continue;}
+    if(S.tab===0&&rows[j]&&rows[j].mon){const r0=rows[j];if(gems()<r0.c){S.toast={t:0,txt:`Faltam ${r0.c-gems()} 💎`,bad:1};try{await lojaReal(1);}catch(e){}continue;}
+      const ok=await choose(['Comprar','Cancelar'],{box:{x:W/2-60,y:H/2-20,w:120,h:44},prompt:`Comprar ${r0.n} por ${r0.c} 💎?`});if(ok!==0)continue;addGems(-r0.c);const where=grantMon(r0.mon,teamAvg());saveGame();await revealMon(r0.mon,where);S.shown=flags.coins||0;continue;}
     if(S.tab===0){const it=SHOPITEMS[j],pc=shopPrice(it);if((flags.coins||0)<pc){S.toast={t:0,txt:`Faltam ${pc-(flags.coins||0)} moedas`,bad:1};/* FALTALOJA09NOV (Felipe: 'quando clicar pra comprar e não tiver, já direciona pra compra') */try{await lojaReal(1);}catch(e){}continue;}
       flags.coins-=pc;flags.shopBuy=flags.shopBuy||{};flags.shopBuy[it.k]=(flags.shopBuy[it.k]||0)+1;bag[it.k]=(bag[it.k]||0)+1;S.toast={t:0,txt:`+1 ${it.n}! Agora tem ${bag[it.k]}`,ic:it.k};S.bump={k:j,t:0};S.coins.push({k:j,t:0});saveGame();}
     else{const u=upsList()[j];if(UP(u.k)>=u.max){S.toast={t:0,txt:`${u.n} já está no máximo`,bad:1};continue;}const c2=upGem(u);
@@ -10062,7 +10064,7 @@ const LUZGEM=500;
 function honraPrice(sp){const st=EVOSTG[sp]||1;return st>=3?10:st===2?7:4;}
 function honraAdd(n,why){flags.honra=(flags.honra||0)+n;MGHONRA=(MGHONRA||0)+n;return n;}
 let MGHONRA=0;
-async function honraMenu(){const TY=[...new Set(DEXLIST.map(sp=>SP[sp]&&SP[sp].type).filter(Boolean))];
+async function honraMenu(){const TY=[...new Set(DEXLIST.map(sp=>SP[sp]&&SP[sp].type).filter(Boolean))].filter(t=>t!=='luz');
   while(true){const h=flags.honra||0,D=flags.dex||{};
     const rowsT=TY.map(t=>{const L=DEXLIST.filter(sp=>SP[sp]&&SP[sp].type===t&&!TRV(sp)),own=L.filter(sp=>D[sp]).length,mn=Math.min(...L.map(honraPrice));if(t==='luz')return{t,mn:LUZGEM,n:TYPES[t],d:`Estrelim · só com cristais · você tem ${own}`,ic:PWIC[t],bg:TYPECOL[t]+'33',badge:`${LUZGEM} 💎`,bcol:gems()>=LUZGEM?'#2f8f4c':'#8a4ad8'};return{t,mn,n:TYPES[t],d:`${L.length} monstrinhos · você tem ${own}`,ic:PWIC[t],bg:TYPECOL[t]+'33',badge:`${mn}+ 🏅`,bcol:h>=mn?'#2f8f4c':'#8a4ad8'};});
     const k=await (UIK.honra&&rowsT.length<=9?choose([...rowsT.map(i=>i.n),'Voltar'],{shop:rowsT,honraArt:1}):shopPick(rowsT,`LOJA DE HONRA · ${h} 🏅`,'Escolha o tipo · compre QUALQUER monstrinho'));if(k==null||k<0||k>=TY.length)return;
@@ -13504,8 +13506,8 @@ function drawStoreArt2(u){const S=u.cfg.store,L=u.cfg.rows,n=L.length;if(UPF)ret
   L.slice(pg*per,pg*per+per).forEach((it,j)=>{const kk=pg*per+j,col=j>>3,jj=j&7,r=jj>>1,c=jj&1,nx=cols[col]+LJ2.ni[c][0]+142.5-170*sc,ny=T+315+r*LJ2.sh+2,ap=Math.min(1,Math.max(0,(S.tt-j*1.5)/8));if(ap<=0)return;
     const bump=S.bump&&S.bump.k===kk&&S.bump.t<14?Math.sin(S.bump.t/14*Math.PI):0;
     b.save();b.globalAlpha=ap;b.translate(nx,ny);b.scale(sc,sc);const s2=(.92+.08*ap)*(1+bump*.06);b.translate(170,137);b.scale(s2,s2);b.translate(-170,-137);
-    const sk=SHOPITEMS[kk];ukD('loja','pedestal',32,132,276,50);if(!(sk&&ukD('loja','it_'+sk.k,95,2,150,150))){b.save();b.translate(170,82);b.scale(4.6,4.6);drawItemIcon(it.ic,0,0,1.25);b.restore();}
-    ukD('loja','placa',0,164,340,110);ukT(it.n,170,187,30,'#2a1a10','center',300);ukT(ukShort(it.d,30),170,210,19,'#6a4a2a','center',300);ukT(it.tag||'',75,249,23,'#5a4030','center',110);lojPrice(0,0,'moeda',it.c,false,!it.dis);
+    const sk=SHOPITEMS[kk];ukD('loja','pedestal',32,132,276,50);if(it.mon){/* ESTRELIMLOJA14NOV: o Estrelim fica na prateleira da Loja do Vale, pago com cristais */drawMon(it.mon,170,150,3.2);}else if(!(sk&&ukD('loja','it_'+sk.k,95,2,150,150))){b.save();b.translate(170,82);b.scale(4.6,4.6);drawItemIcon(it.ic,0,0,1.25);b.restore();}
+    ukD('loja','placa',0,164,340,110);ukT(it.n,170,187,30,'#2a1a10','center',300);ukT(ukShort(it.d,30),170,210,19,'#6a4a2a','center',300);ukT(it.tag||'',75,249,23,'#5a4030','center',110);lojPrice(0,0,it.gem?'gema':'moeda',it.c,false,!it.dis);
     b.restore();u.rects.push(V.R(nx,ny,340*sc,274*sc,kk));});
   if(S.bump)S.bump.t++;
   /* rodapé: SAIR no meio, setas das páginas nas pontas (só se faltar lugar) */

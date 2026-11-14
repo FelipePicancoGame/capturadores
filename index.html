@@ -424,10 +424,18 @@ window.CVNovasHistoriasDados={"versao": 1, "status": "PROPOSTAS_NOVAS_EM_COPIA_D
    2) Em qualquer modo: imagem grande sem aparecer há 25 s sai da memória.
    3) Voltou pro mapa: as imagens do mapa voltam em segundo plano, 2 por vez.
    Imagem solta que o jogo pedir de novo volta a carregar sozinha (o jogo vê 'carregando', igual ao começo do jogo). */
+/* LEVE14NOV (Dinha: o jogo fecha sozinho no Android fraco): se o jogo roda abaixo de 12 quadros por segundo por 30 s seguidos, o aparelho passa a usar o modo leve
+   (tela um pouco menos nítida, menos cópias de imagens na memória, imagens paradas saem mais cedo). Vale a partir da próxima abertura. #semleve desliga. */
+(function(){try{if(/semleve/.test(location.hash))return;let n=0,t0=performance.now(),ruim=0;function f(){n++;const t=performance.now();if(t-t0>=10000){const fps=n*1000/(t-t0);n=0;t0=t;
+  const md=(typeof G!=='undefined'&&G&&G.mode)||'';if(!document.hidden&&md&&!['boot','title','intro'].includes(md)){ruim=fps<12?ruim+1:0;if(ruim>=3){try{if(localStorage.getItem('cv.leve')!=='1'){localStorage.setItem('cv.leve','1');}}catch(_){}return;}}}
+  requestAnimationFrame(f);}requestAnimationFrame(f);}catch(_){}})();
 (function(){try{if(/nounload/.test(location.hash))return;
   const BL='data:image/gif;base64,R0lGODlhAQABAAAAACw=',MINPX=1000000/* SEMCODIGO2 (08/nov): antes 60000; imagens até 1 milhão de pixels (botões, ícones, painéis, cenário) ficam sempre */,P=HTMLImageElement.prototype;
   const dS=Object.getOwnPropertyDescriptor(P,'src'),dW=Object.getOwnPropertyDescriptor(P,'naturalWidth'),dH=Object.getOwnPropertyDescriptor(P,'naturalHeight'),dC=Object.getOwnPropertyDescriptor(P,'complete');
   const ALL=new Set();let SOLTAS=0,VOLTAS=0;
+  /* MEMTIER14NOV (pendências 'imagens demoram no celular' e 'Dinha: o jogo fecha sozinho'): celular forte (iPhone de tela 3x, ou 6 GB+) guarda as imagens por 3 min e não solta tudo ao trocar de jogo — a mesma imagem não precisa carregar de novo;
+     celular fraco (2 GB ou menos) solta mais cedo pra não faltar memória e o navegador não fechar o jogo */
+  const DM=navigator.deviceMemory||0,IOS=/iPhone|iPad|Macintosh/.test(navigator.userAgent)&&'ontouchend' in document,MEMFORTE=DM>=6||(IOS&&(devicePixelRatio||1)>=3&&!(DM&&DM<6)),MEMFRACO=(DM>0&&DM<=2)||(()=>{try{return localStorage.getItem('cv.leve')==='1'&&!/semleve/.test(location.hash);}catch(_){return false;}})();try{window.__LEVE=MEMFRACO;window.__MEMTIER=MEMFRACO?'fraco':MEMFORTE?'forte':'normal';}catch(_){}
   const now=()=>performance.now();
   Object.defineProperty(P,'src',{configurable:true,enumerable:true,get(){return this.__rel?this.__rel.src:dS.get.call(this);},
     set(v){if(this.__rel&&!this.__inner){this.__rel=null;this.__back=0;}dS.set.call(this,v);if(!this.__inner&&!this.__reg){this.__reg=1;ALL.add(new WeakRef(this));}}});
@@ -458,10 +466,10 @@ window.CVNovasHistoriasDados={"versao": 1, "status": "PROPOSTAS_NOVAS_EM_COPIA_D
   setInterval(()=>{try{const m=(window.__GM&&__GM())||'';
       if(m!==MODE){MODE=m;mStart=now();swept=false;
         if(m==='world'){back=[];for(const w of ALL){const im=w.deref();if(im&&im.__rel&&im.__md&&im.__md.world)back.push(im);}}else back=[];}
-      if(!swept&&now()-mStart>4000&&!['','boot','title','intro','starter'].includes(m)){swept=true;sweep(0,true);}
+      if(!swept&&now()-mStart>4000&&!['','boot','title','intro','starter'].includes(m)){swept=true;if(!MEMFORTE||MEMFRACO)sweep(0,true);}
       if(back.length&&now()-mStart>1500){for(let k=0;k<2&&back.length;k++){const im=back.shift();if(im.__rel)bringBack(im);}}
     }catch(_){}},250);
-  setInterval(()=>{try{if(!['','boot','title'].includes(MODE))sweep(25000,false);}catch(_){}},5000);
+  setInterval(()=>{try{if(!['','boot','title'].includes(MODE))sweep(MEMFRACO?12000:MEMFORTE?180000:25000,false);}catch(_){}},5000);
 }catch(e){}})();
 
 /* LAZYIMG05NOV (05/nov, Felipe: "executa essas otimizações"): o jogo abria ~2000 imagens (≈1,6 GB na memória) já na tela de título.
@@ -511,7 +519,7 @@ window.CVNovasHistoriasDados={"versao": 1, "status": "PROPOSTAS_NOVAS_EM_COPIA_D
    Brilhos redondos usam tamanhos arredondados (3%). Cópias sem uso por 20 s saem da memória. #noprescale desliga. */
 (function(){try{if(/noprescale/.test(location.hash))return;
   const P=CanvasRenderingContext2D.prototype,di=P.drawImage,fd=Object.getOwnPropertyDescriptor(P,'filter');
-  const CAP=28e6,MAXPX=2.8e6,PER=32;let USED=0,NB=0,HIT=0;const ALL=new Set(),MAP=new WeakMap();const now=()=>performance.now();
+  const CAP=window.__LEVE?10e6:28e6,MAXPX=2.8e6,PER=32;let USED=0,NB=0,HIT=0;const ALL=new Set(),MAP=new WeakMap();const now=()=>performance.now();
   window.__prescaleInfo=()=>({copias:ALL.size,mb:Math.round(USED/1048576),criadas:NB,usos:HIT});
   function drop(e){if(e.c){USED-=e.c.width*e.c.height*4;try{e.c.width=e.c.height=0;}catch(_){}e.c=null;}ALL.delete(e);}
   function trim(target){const L=[...ALL].sort((a,b)=>a.lu-b.lu);for(const e of L){if(USED<=target)break;drop(e);}}
@@ -4920,7 +4928,7 @@ function wFrostDraw(w,t){if(!w.traps)return;const I=asImg('fx2_gelo');for(const 
   if(tr.pulse>0){const k=1-pl;b.beginPath();b.ellipse(x,y+3,8+k*22,(8+k*22)*.42,0,0,Math.PI*2);b.lineWidth=2*(1-k)+.4;b.strokeStyle=`rgba(230,250,255,${1-k})`;b.stroke();}}}
 function wFrostFoe(e,sc){if(!(e.frostT>0))return;e.frostT--;b.save();b.globalCompositeOperation='lighter';glowAt(e.x,e.y,14*(sc/.5),'150,220,255',.35);b.restore();}
 const WSL=[30,70,110,150],WY=274;function wSX(i,n){n=n||4;const P={1:[90],2:[70,110],3:[90,50,130],4:[30,70,110,150]}[Math.max(1,Math.min(4,n))];return P[i]??WSL[i];}const _WYdummy=0,STOP=234;let WOY=0;
-function bestS(w,h,cap){const d=window.devicePixelRatio||1,k=Math.min(innerWidth/w,innerHeight/h)*d;return Math.max(3,Math.min(cap||4,Math.ceil(k-.2)));}
+function bestS(w,h,cap){if(window.__LEVE)cap=Math.min(cap||4,3);const d=window.devicePixelRatio||1,k=Math.min(innerWidth/w,innerHeight/h)*d;return Math.max(3,Math.min(cap||4,Math.ceil(k-.2)));}
 function setScreen(w,h,cap){const nS=bestS(w,h,cap);if(W!==w||H!==h||S!==nS||buf.width!==w*nS){S=nS;W=w;H=h;buf.width=w*S;buf.height=h*S;b=buf.getContext('2d');b.setTransform(S,0,0,S,0,0);b.imageSmoothingEnabled=false;cv.width=w*S;cv.height=h*S;c.imageSmoothingEnabled=false;}fit();}
 function portraitScreen(){const land=innerWidth>innerHeight;document.body.classList.toggle('rotp',land);const ar=land?innerWidth/innerHeight:innerHeight/innerWidth;setScreen(180,Math.max(320,Math.min(400,Math.round(180*ar))),3);}
 function PYO(){if(G.mode==='battle'&&H<=216&&W>=260)return -20+(window.__WPY!=null?__WPY:12);return G.mode==='battle'?(H>216?-Math.round(18+(H-216)*.1+(H>300?30:0))+BMO().p[1]:-20):0;}function EYO(){/* BATLARGA09NOV: tela larga — monstrinhos em cima das terras do fundo */if(G.mode==='battle'&&H<=216&&W>=260)return -(window.__WEY!=null?__WEY:12);return G.mode==='battle'&&H>216?-Math.round((H-216)*.3+(H>300?22:0))+BMO().e[1]:0;}function BZ(){return G.mode==='battle'&&H>300?1.3:1;}
@@ -6100,7 +6108,7 @@ function MSTOP2(e){try{if(murUI()&&MURNEW()){murSync();const a=MUR_LAY&&MUR_LAY.
 try{window.__MSTOP=()=>MSTOP();window.__MSTOP2=e=>MSTOP2(e);}catch(e){}
 function MSPDK(){const m=MSTOP();return m>=STOP?1:Math.max(.6,(m+20)/(STOP+20));}
 /* arte nova do Buchecha (8 direções): costas na muralha, frente na carta */
-function murMonDraw(d,i,oy,sx,sy){const I=murImg('n_'+String(d.sp).replace('*',''));if(!I)return false;const r=murLW('m'+(d._mk!=null?d._mk:Math.min(3,i)));if(!r)return false;
+function murMonDraw(d,i,oy,sx,sy){const _k='n_'+String(d.sp).replace('*',''),I=murImg(_k);if(!I){const im0=MURI[_k];return !!(im0&&!im0.complete&&murLW('m'+(d._mk!=null?d._mk:Math.min(3,i))));}/* TROVIMLUGAR14NOV (pendência 'trovim2 aparece num lugar e depois muda'): enquanto a arte de costas da Muralha ainda está chegando, não desenha o desenho de frente noutro lugar — espera a arte certa */const r=murLW('m'+(d._mk!=null?d._mk:Math.min(3,i)));if(!r)return false;
   const k=Math.min(r.w/I.naturalWidth,r.h/I.naturalHeight),dw=I.naturalWidth*k*sx,dh=I.naturalHeight*k*sy;b.save();b.imageSmoothingEnabled=true;b.drawImage(I,d.x-dw/2,d.y-1+oy-dh+(typeof WDY==='number'?WDY:0),dw,dh);b.restore();return true;}
 /* ATKANIM (02/nov, Felipe: "adiciona postura de ataque e ataques nos jogos"): na Muralha os monstrinhos de costas usam as animações do Buchecha —
    parados ficam na postura de ataque (pronto) e, quando atiram, fazem o golpe inteiro. Quem não tem animação continua com a arte parada. */
@@ -10658,6 +10666,8 @@ const QCAP={};window.__QCAP=QCAP;if(!/semnitido/.test(location.hash)){const _bsQ
       if(t-t0>=2000){const fps=n*1000/(t-t0);n=0;t0=t;if(fps<45&&!(window.__SEM60)){low++;}else low=0;
         const base=Math.min(4,Math.max(3,_bsQ(W,H,GFXCAP)));if(low>=2&&S>base){QCAP[W+'x'+H+G.mode]=S-1;low=0;kt=t;try{window.__EV&&__EV('nitidez '+S+'→'+(S-1)+' ('+Math.round(fps)+' fps)');}catch(_){}const w=W,h=H;W=0;setScreen(w,h,GFXCAP);}}}catch(_){}return r;};}
 }
+/* LEVE14NOV: no modo leve (aparelho fraco) a tela desenha no máximo 3 pontos por unidade (antes podia chegar a 8 = 7x mais memória) */
+{const _bsL=bestS;bestS=function(w,h,cap){const r=_bsL(w,h,cap);return window.__LEVE?Math.min(r,3):r;};}
 const MGMODES={wall:1,td:1,surv:1,match:1,exp:1,math:1};
 /* ARENA04NOV (04/nov, Felipe: "vamos fazer esse jogo" — modo no estilo Rush Royale dentro do Capturadores).
    Etapa 1: SOZINHO contra ondas. Tabuleiro 5x3, inimigos andam pelo caminho em volta.
@@ -10710,6 +10720,8 @@ function arUpdate(){const A=AR;if(!A||A.over)return;const G2=arGeo(),PL=arPathLe
   if(A.spawnLeft>0){A.spawnT--;if(A.spawnT<=0){const boss=A.wi.boss&&A.spawnLeft===A.wi.n;arSpawn(boss);A.spawnLeft--;A.spawnT=boss?60:Math.max(16,40-A.wave);}}
   for(const e of A.en){if(e.hp<=0)continue;if(e.slowT>0)e.slowT--;else e.slow=0;if(e.poisonT>0){e.poisonT--;e.hp-=e.poison;if(e.hp<=0){arKill(e,arPos(G2,e.d));continue;}}
     e.d+=e.spd*(1-e.slow);if(e.hit>0)e.hit--;if(e.d>=PL){e.hp=0;A.lives-=e.boss?3:1;arMpLeak(e.boss?3:1);tone([200,140],.15,'square',.07);arPop(G2.rx-8,G2.by-10,e.boss?'-3 ❤':'-1 ❤','#ff8080');A.shake=10;if(e.boss)A.bossDone=true;}}
+  /* CHEFEMORTE14NOV (Felipe: 'o chefe às vezes parece morrer com vida'): um golpe grande matava o chefe e ele sumia com a barra ainda cheia. Agora ele fica 0,6 s piscando com a barra descendo até zero e um estouro. */
+  for(const e of A.en)if(e.boss&&e.hp<=0&&!e._gh){e._gh=1;(A.bdie=A.bdie||[]).push({sp:e.sp,d:Math.min(e.d,PL-1),sc:e.sc,id:e.id,f:Math.max(0,Math.min(1,e._pf==null?1:e._pf)),t:0});try{const p=arPos(G2,e.d);arBurst(p.x,p.y-10,'#ffd040',14);}catch(_){}}
   A.en=A.en.filter(e=>e.hp>0);
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u)continue;if(u.stone>0){u.stone--;continue;}if(u.atk>0)u.atk--;if(u.cd>0){u.cd--;continue;}const tg=arTarget();if(!tg)continue;const S=arStats(u.sp,u.star),p=arCellXY(i);if(u.fi)S.dmg*=1+.2*u.fi;u.cd=S.cd;arAura(A,u,i,S);u.atk=12;if(!(window.arGestStart&&arGestStart(A,u,i,S,p,tg)))arFire(A,u,i,S,p,tg);}
   for(const s of A.shots){AR_CUR=s.src||null;const tp=s.tg.hp>0?arPos(G2,s.tg.d):null;if(!tp){s.life=0;continue;}const dx=tp.x-s.x,dy=tp.y-6-s.y,L=Math.hypot(dx,dy),v=5;if(L<v+2){s.life=0;let dmg=s.dmg;
@@ -10986,7 +10998,7 @@ function arRushDraw(A,G2){const t=A.t;
   if(!arHeroFace(hx,hy,r)){try{b.save();b.beginPath();b.arc(hx,hy,r-.6,0,Math.PI*2);b.clip();b.translate(hx,hy);b.scale(r/8,r/8);b.translate(-8,5);drawPerson(0,0,'down',0,LOOKS.player);b.restore();}catch(e){b.restore();}}
   b.save();b.lineCap='round';b.strokeStyle='rgba(255,255,255,.18)';b.lineWidth=2.2;b.beginPath();b.arc(hx,hy,r+1.2,0,Math.PI*2);b.stroke();b.strokeStyle=full?'#ffe040':'#7ad0ff';b.beginPath();b.arc(hx,hy,r+1.2,-Math.PI/2,-Math.PI/2+Math.PI*2*f);b.stroke();b.restore();
   if(full)T('PODER!',hx,hy+r-6,4.8,'center','#fff3a0',30,C.ink);}
-function arMpSnap(A){const M=A.mp;if(!M)return;const PL=arPathLen(arGeo());duoEmit(M.S,'as',{g:A.grid.map(u=>u?[u.form||u.sp,u.star]:0),l:A.lives,w:A.wave,k:A.kills,e:A.en.length,n:String(flags.nome||'').slice(0,12),dm:Math.round(A.dmgT||0),q:A.en.filter(e=>e.hp>0).slice(0,24).map(e=>[Math.round(e.d/PL*1000),e.sp,e.boss?1:0])});}
+function arMpSnap(A){const M=A.mp;if(!M)return;const PL=arPathLen(arGeo());duoEmit(M.S,'as',{g:A.grid.map(u=>u?[u.form||u.sp,u.star]:0),l:A.lives,w:A.wave,k:A.kills,e:A.en.length,n:String(flags.nome||'').slice(0,12),dm:Math.round(A.dmgT||0),q:A.en.filter(e=>e.hp>0).sort((x,y)=>(y.boss?1:0)-(x.boss?1:0)||y.d-x.d).slice(0,48).map(e=>[Math.round(e.d/PL*1000),e.sp,e.boss?1:0])});}
 function arMpDraw(A){if(arCoop(A))return arCoopDraw(A);if(A.mp.mode==='pvp')return arPvpDraw(A);const M=A.mp,P=M.peer||{},G2=arGeo(),top=24,bot=G2.ty-37,avail=Math.max(20,bot-top),fullH=(G2.by-G2.ty)+16,k=Math.min(.6,avail/fullH),PL=arPathLen(G2),t=A.t;
   const _T=T;T=function(){};try{b.save();b.translate(W/2,top+5*k);b.scale(k,k);b.translate(-W/2,-(G2.ty-8));
     rrect(G2.lx-8,G2.ty-12,G2.rx-G2.lx+16,fullH+4,10,M.mode==='pvp'?'rgba(90,20,40,.55)':'rgba(20,40,90,.55)',false);
@@ -11043,7 +11055,9 @@ function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);
   arAuraDraw(A,G2,t);if(A.drag&&A.grid[A.drag.i])arSPiece(A.grid[A.drag.i],A.drag.x,A.drag.y,1.12*G2.cs/30,t,{sel:1});
   const EN=[...A.en].sort((a,b2)=>arPos(G2,a.d).y-arPos(G2,b2.d).y);
   for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';{const o=e.boss?arBossOff(G2,p):[0,0];arDrawMon(e.sp,p.x+o[0],p.y+o[1]-arEY(e.sp,e.boss),arES(e.sp,e.sc,e.boss),'walk',p.dir,e.id*10);}b.restore();
-    const _o=e.boss?arBossOff(G2,p):[0,0],by=p.y+_o[1]-arEB(e.sp,e.boss);arHpBar(p.x+_o[0],by,e.hp/e.max,e.boss,e.poison>0&&e.poisonT>0?'#7ae04a':e.burnT>0?'#ff9a30':null);if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
+    const _o=e.boss?arBossOff(G2,p):[0,0],by=p.y+_o[1]-arEB(e.sp,e.boss);if(e.boss)e._pf=e.hp/e.max;arHpBar(p.x+_o[0],by,e.hp/e.max,e.boss,e.poison>0&&e.poisonT>0?'#7ae04a':e.burnT>0?'#ff9a30':null);if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
+  if(A.bdie&&A.bdie.length){A.bdie=A.bdie.filter(g=>g.t<36);for(const g of A.bdie){g.t++;const p=arPos(G2,g.d),o=arBossOff(G2,p),k=Math.min(1,g.t/22),fr=g.f*(1-k);b.save();b.globalAlpha=Math.max(0,1-g.t/36);b.filter='brightness('+(g.t%6<3?2.2:1.2)+')';
+    arDrawMon(g.sp,p.x+o[0],p.y+o[1]-arEY(g.sp,true),arES(g.sp,g.sc,true)*(1+g.t*.006),'walk',p.dir,g.id*10);b.restore();const by=p.y+o[1]-arEB(g.sp,true);arHpBar(p.x+o[0],by,fr,true,null);T(window.CVLANG==='en'?'DEFEATED!':'DERROTADO!',p.x,by-7,5.5,'center','#ffffff',0,C.ink);}}
   for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
   if(A.zaps)for(const z of A.zaps){b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);b.lineTo((z.x1+z.x2)/2+(Math.random()-.5)*6,(z.y1+z.y2)/2+(Math.random()-.5)*6);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}
   for(const p of A.parts){b.globalAlpha=Math.max(0,p.life/22);px(p.x,p.y,1.6,1.6,p.col);}b.globalAlpha=1;b.restore();
@@ -11099,7 +11113,7 @@ function arGhosts(A){if(!arCoop(A))return;const P=A.mp.peer||{},G2=arGeo(),PL=ar
   A.gh=out;}
 {const _u=arRushTick;arRushTick=function(A){_u(A);if(arCoop(A)&&A.gh){for(const g of A.gh){g.d+=g.spd;if(g.hit>0)g.hit--;}A.gh=A.gh.filter(g=>g.hp>0&&g.d<arPathLen(arGeo()));}};}
 function arMpSnap(A){const M=A.mp;if(!M)return;const PL=arPathLen(arGeo());duoEmit(M.S,'as',{g:A.grid.map(u=>u?[u.form||u.sp,u.star]:0),l:A.lives,w:A.wave,k:A.kills,e:A.en.length,n:String(flags.nome||'').slice(0,12),dm:Math.round(A.dmgT||0),
-  q:A.en.filter(e=>e.hp>0).slice(0,24).map(e=>{if(!e.nid)e.nid=(A.nidc=(A.nidc||0)+1);return [Math.round(e.d/PL*1000),e.sp,e.boss?1:0,e.nid,Math.max(1,Math.round(e.hp/e.max*100)),Math.round(e.spd*(1-(e.slow||0))*(e.frz>0?0:1)*1000)];})});}
+  q:A.en.filter(e=>e.hp>0).sort((x,y)=>(y.boss?1:0)-(x.boss?1:0)||y.d-x.d).slice(0,48).map(e=>{if(!e.nid)e.nid=(A.nidc=(A.nidc||0)+1);return [Math.round(e.d/PL*1000),e.sp,e.boss?1:0,e.nid,Math.max(1,Math.round(e.hp/e.max*100)),Math.round(e.spd*(1-(e.slow||0))*(e.frz>0?0:1)*1000)];})});}
 /* desenho do JUNTOS: tabuleiro do parceiro em cima, a estrada dele desce pela esquerda até a estrada do meio */
 function arCoopDraw(A){const M=A.mp,P=M.peer||{},G2=arGeo(),t=A.t,top=25,L=arLeg(G2),bot=G2.ty-34,avail=Math.max(20,bot-top),k=Math.min(.6,avail/(G2.bh+12)),lx=G2.lx,ky=(G2.ty-top-4)/L;
   /* estrada do parceiro */
@@ -12255,12 +12269,14 @@ function pv6Partner(A,t,foes){const P=A.mp.peer||{},V=m6s().pvp,k=m7T().k,R=V.rt
 const PV6E={};function pv6Smooth(P){const now=performance.now(),seen={};const out=[];const PL=Math.max(1,arPathLen(arGeo()));
   for(const e of P.q||[]){const id=e[3];if(id==null){out.push({f:e[0]/1000,e});continue;}seen[id]=1;const tf=e[0]/1000,v=(e[5]||0)/1000/PL;let s=PV6E[id];
     if(!s||Math.abs(s.f-tf)>.06)s=PV6E[id]={f:tf,v,tq:P.q};else if(s.tq!==P.q){s.f+=(tf-s.f)*.35;s.v=v;s.tq=P.q;}s.e=e;s.seen=now;out.push(s);}
-  for(const k in PV6E)if(!seen[k]||now-PV6E[k].seen>1500)delete PV6E[k];return out;}
+  for(const k in PV6E){const s=PV6E[k];if(!seen[k]&&s.e&&s.e[2]&&!s._gh){s._gh=1;PV6D.push({sp:s.e[1],f:s.f,hp:s.e[4]||100,id:s.e[3],t:0});}if(!seen[k]||now-s.seen>1500)delete PV6E[k];}return out;}
+/* CHEFEMORTE14NOV: chefe do parceiro que some entre uma foto e outra fica 0,6 s com a barra descendo até zero */
+let PV6D=[];function pv6Ghosts(pts,foes){PV6D=PV6D.filter(g=>g.t<36);for(const g of PV6D){g.t++;const q=pv6At(pts,Math.min(.999,g.f)),k=Math.min(1,g.t/22);b.save();b.globalAlpha=Math.max(0,1-g.t/36);b.filter='brightness('+(g.t%6<3?2.2:1.2)+')';pv6Foe(g.sp,q.x,q.y,true,q.dir,g.id*7,g.hp*(1-k));b.restore();}}
 function pv6Step(){for(const k in PV6E){const s=PV6E[k];s.f=Math.min(1,s.f+(s.v||0));}}
 function pv6Foe(sp,x,y,boss,dir,seed,hp){let _mf=null;if(boss){if(x<W*.22)x-=5;else if(x>W*.78)x+=5;/* MCHINIMIGO14NOV: chefe no tabuleiro do inimigo (CONTRA) com posição própria */try{const IK=(AR&&AR.mp&&AR.mp.mode==='coop')?'junI':'conI';if(typeof CHEFEPOSM!=='undefined'&&CHEFEPOSM[IK]){const lg=x<W*.22?'L':x>W*.78?'R':'T',o=CHEFEPOSM[IK][lg]||[0,0];x+=o[0];y+=o[1];_mf=MCHFORCE;MCHFORCE=IK;}}catch(e){}}try{E(x,y+2,boss?10:5,boss?3:2,'rgba(0,0,0,.3)',0,false);arDrawMon(sp,x,y-arEY(sp,boss),arES(sp,boss?.5:.28,boss),'walk',dir,seed);if(hp!=null)arHpBar(x,y-arEB(sp,boss),hp/100,!!boss);}finally{if(boss)MCHFORCE=_mf;}}
 {const _u=arPvpUnder;arPvpUnder=function(A,G2,t){if(!pvp6())return _u(A,G2,t);const P=A.mp.peer||{},V=m6s().pvp,pts=V.rpath.map(q=>m7P(q[0],q[1])),foes=[];
   if(A.mch&&A.gh&&A.gh.length){const PL=arPathLen(arGeo());for(const g of A.gh){const q=pv6At(pts,g.d/PL);foes.push(q);pv6Foe(g.sp,q.x,q.y,true,q.dir,g.id*10,100);}pv6Partner(A,t,foes);return;}/* MCHINIMIGO14NOV: montador mostra os chefes do inimigo */
-  if(A.t!==A._pv6t){A._pv6t=A.t;pv6Step();}for(const s of pv6Smooth(P)){const e=s.e,q=pv6At(pts,s.f);foes.push(q);pv6Foe(e[1],q.x,q.y,e[2],q.dir,e[3]!=null?e[3]*7:e[0],e[4]);}pv6Partner(A,t,foes);};}
+  if(A.t!==A._pv6t){A._pv6t=A.t;pv6Step();}for(const s of pv6Smooth(P)){const e=s.e,q=pv6At(pts,s.f);foes.push(q);pv6Foe(e[1],q.x,q.y,e[2],q.dir,e[3]!=null?e[3]*7:e[0],e[4]);}pv6Ghosts(pts,foes);pv6Partner(A,t,foes);};}
 {const _c=arCoopUnder;arCoopUnder=function(A,G2,t){if(!pvp6())return _c(A,G2,t);const V=m6s().pvp,pts=V.rpath.map(q=>m7P(q[0],q[1])),PL=arPathLen(arGeo()),foes=[];
   for(const g of A.gh||[]){const q=pv6At(pts,g.d/PL);foes.push(q);b.save();if(g.hit>0)b.filter='brightness(1.8)';pv6Foe(g.sp,q.x,q.y,g.boss,q.dir,g.id*10,g.hp/g.max*100);b.restore();}pv6Partner(A,t,foes);};}
 {const _d=arCoopDraw;arCoopDraw=function(A){if(!pvp6())return _d(A);const M=A.mp,P=M.peer||{},V=m6s().pvp,rn=V.rnome,vn=V.vnome;

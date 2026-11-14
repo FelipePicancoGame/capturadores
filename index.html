@@ -18508,8 +18508,8 @@ let CHEFEPOS=(()=>{try{const o=JSON.parse(localStorage.getItem('cv.chefePos')||'
 const MCHNM={sem:'SEM FIM',mas:'MASMORRA',jun:'JUNTOS',con:'CONTRA',conI:'CONTRA (inimigo)',junI:'JUNTOS (parceiro)'};
 let MCHFORCE=null;function mchKey(){if(MCHFORCE)return MCHFORCE;try{if(AR&&AR.mp)return AR.mp.mode==='pvp'?'con':'jun';if(AR&&AR.goal>0)return 'mas';}catch(e){}return 'sem';}
 const CHEFEPOSM=(()=>{let m=null;try{m=JSON.parse(localStorage.getItem('cv.chefePosM')||'null');}catch(e){}m=m||{};/* CHEFEPOSFELIPE14NOV: posições que o Felipe montou e mandou (JUNTOS e CONTRA); SEM FIM e MASMORRA usam as do JUNTOS até ele mandar */
-const J={sc:.3,L:[-1,-10.5],T:[2,-11],R:[-.5,-9.5],hb:19},C2={sc:.3,L:[-1,-10.5],T:[3,-13.5],R:[-.5,-9.5],hb:19},D={sem:J,mas:J,jun:J,con:C2,conI:{sc:.3,L:[4,-8],T:[-3.5,-10.5],R:[-5.5,-.5],hb:19},junI:{sc:.3,L:[4,-8],T:[-3.5,-10.5],R:[-5.5,-.5],hb:19}};
-for(const k of ['sem','mas','jun','con','conI','junI'])if(!m[k]||!m[k].sc||!m._v15)m[k]=JSON.parse(JSON.stringify(D[k]));m._v15=1;return m;})();
+const J={sc:.3,L:[-1,-10.5],T:[3,-12],R:[-.5,-9.5],hb:19},C2={sc:.3,L:[-1,-10.5],T:[3,-13.5],R:[-.5,-9.5],hb:19},D={sem:J,mas:J,jun:J,con:C2,conI:{sc:.3,L:[4,-8],T:[-3.5,-10.5],R:[-5.5,-.5],hb:19},junI:{sc:.3,L:[4,-8],T:[-12.5,-14],R:[-5.5,-.5],hb:19}};
+for(const k of ['sem','mas','jun','con','conI','junI'])if(!m[k]||!m[k].sc||!m._v16)m[k]=JSON.parse(JSON.stringify(D[k]));m._v16=1;return m;})();
 function cpSel(){const k=mchKey();if(CHEFEPOSM[k]!==CHEFEPOS)CHEFEPOS=CHEFEPOSM[k];return CHEFEPOS;}
 function arBossLeg(G2,p){if(p.y<=G2.ty+.5)return 'T';if(p.x<=G2.lx+.5)return 'L';if(p.x>=G2.rx-.5)return 'R';return null;}
 function arBossOff(G2,p){try{cpSel();const k=arBossLeg(G2,p);if(k&&CHEFEPOS[k])return CHEFEPOS[k];}catch(e){}return [0,0];}

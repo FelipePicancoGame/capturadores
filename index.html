@@ -15593,10 +15593,12 @@ function duoPeer(){return {local:false,peer:true,async join(nome){
   const cfg=window.__DUOPEERCFG||{},hubId='cvduo-'+nome.replace(/[^a-z0-9]/g,''),ouv={},pf=[],conns=new Map();let pres={},peers={},vivo=true,me='',pk=null,ligado=false;
   const lista=()=>Object.values(peers);
   const avisar=(j,l)=>{const ps=[{peer:me,isMe:true,sameTab:true,presence:pres},...lista()];pf.forEach(f=>{try{f({peers:ps,joined:j,left:l,updated:[]});}catch(e){console.error(e);}});};
-  const send=(c,o)=>{try{if(c&&c.open)c.send(o);}catch(e){}};
+  /* PEDACOS13NOV: mensagem grande (o jogo inteiro na correção da Arena/Muralha em dupla) vai em pedaços — inteira ela não chegava e os dois desgrudavam de vez */
+  const KB=12000,kbuf={};
+  const send=(c,o)=>{try{if(!c||!c.open)return;let js=null;try{js=JSON.stringify(o);}catch(e){}if(js&&js.length>KB){const id=Math.random().toString(36).slice(2,10),n=Math.ceil(js.length/KB);for(let i=0;i<n;i++)c.send({t:'__k',id,i,n,s:js.slice(i*KB,(i+1)*KB),from:o.from});return;}c.send(o);}catch(e){}};
   const bcast=(o,exc)=>{for(const c of conns.values())if(c!==exc)send(c,o);};
   const tira=id=>{const p=peers[id];delete peers[id];conns.delete(id);if(p)avisar([],[p]);};
-  const recebe=(c,m)=>{if(!m||typeof m!=='object')return;
+  const recebe=(c,m)=>{if(!m||typeof m!=='object')return;if(m.t==='__k'){const k=kbuf[m.id]||(kbuf[m.id]={p:[],g:0,T:Date.now()});if(k.p[m.i]==null){k.p[m.i]=m.s;k.g++;}for(const id in kbuf)if(Date.now()-kbuf[id].T>20000)delete kbuf[id];if(k.g<m.n)return;delete kbuf[m.id];try{m=JSON.parse(k.p.join(''));}catch(e){return;}if(!m||typeof m!=='object')return;}
     if(m.t==='__p'){const novo=!peers[m.from];peers[m.from]={peer:m.from,isMe:false,sameTab:false,presence:m.d||{},visto:Date.now()};if(novo){avisar([peers[m.from]],[]);send(c,{t:'__p',d:pres,from:me});}else avisar([],[]);if(eHub)bcast(m,c);return;}
     if(m.t==='__x'){tira(m.from);if(eHub)bcast(m,c);return;}
     if(eHub)bcast(m,c);(ouv[m.t]||[]).forEach(f=>{try{f({topic:m.t,data:m.d,peer:m.from,isMe:false,sameTab:false});}catch(e){console.error(e);}});};
@@ -16675,7 +16677,7 @@ function lsGot0(x,d){if(x.mode==='legacy'){try{x.S.emit('lx',{});}catch(e){}retu
 function lsTryStart(x){if(x.mode!=='pend'||!x.st||!x.p0)return;const hd=x.role==='host'?{seed:x.seed,sk:x.sk}:{seed:x.p0.seed,sk:x.p0.sk};if(hd.seed==null){lsLegacy(x);return;}
   lsApply(x.my,lsDeser(x.st));x.my.mp=x.M;const fakeP={emit:(t,d)=>{if(x.inTick&&x.cur===x.pr)x.q[x.mi].push([t,lsFix(t,d,x.pn)]);},on(){},leave(){},presence(){}};
   const P=lsDeser(x.p0.st);P.mp={mode:x.mode0,role:x.role==='host'?'guest':'host',S:fakeP,peer:{n:x.me},peerClr:0,waitT:0,sentClr:-1,off:0,last:performance.now()};P.done=null;P.sel=-1;P.drag=null;lsInit(P);
-  x.pr=P;if(x.p0.n)x.pn=String(x.p0.n).slice(0,12);x.sims=x.mi===0?[x.my,x.pr]:[x.pr,x.my];x.sims[0]._rs=(hd.seed|0)||1;x.sims[1]._rs=((hd.seed^0x5bd1e995)|0)||7;x.rf=[rngOf(x.sims[0]),rngOf(x.sims[1])];
+  x.pr=P;if(x.p0.n)x.pn=String(x.p0.n).slice(0,12);x.sims=x.mi===0?[x.my,x.pr]:[x.pr,x.my];x.sims[0]._rs=(hd.seed|0)||1;x.sims[1]._rs=((hd.seed^0x5bd1e995)|0)||7;x.rf=[rngOf(x.sims[0]),rngOf(x.sims[1])];/*CHEFEIGUAL13NOV: o chefe de cada tabuleiro sai da semente da sala (antes era sorteado na hora de desenhar, diferente em cada celular)*/for(let i=0;i<2;i++){const A=x.sims[i],pl=x.sims[0].pool&&x.sims[0].pool.length?x.sims[0].pool:(A.pool||[]);if(pl.length){let h=((hd.seed|0)^0x165667b1)>>>0;h=Math.imul(h^(h>>>15),0x2c1b3c6d)>>>0;A.bossSp=pl[h%pl.length];}}
   x.skin=hd.sk;x.q=[[],[]];x.fro=new Proxy(flags,{set(){return true;},deleteProperty(){return true;},defineProperty(){return true;}});x.buf=[];x.obuf=[];x.lf=performance.now();x.acc=0;x.mode='ls';
   try{portraitScreen();}catch(e){}lsSend(x,true);}
 function lsEmitMine(x,t,d){if(x.mode==='legacy')return x.S.emit(t,d);if(x.mode==='ls'){if(x.inTick&&x.cur===x.my)x.q[x.pi].push([t,lsFix(t,d,x.me)]);return;}if(x.mode==='pend')x.obuf.push([t,d]);}

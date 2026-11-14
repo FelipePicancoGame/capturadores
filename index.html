@@ -10729,7 +10729,7 @@ function renderArena(){const A=AR;if(!A)return;if(window.ARSTY!==0){arRender2();
   /* inimigos */
   const EN=[...A.en].sort((a,b2)=>arPos(G2,a.d).y-arPos(G2,b2.d).y);
   for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';{const o=e.boss?arBossOff(G2,p):[0,0];arDrawMon(e.sp,p.x+o[0],p.y+o[1]-arEY(e.sp,e.boss),arES(e.sp,e.sc,e.boss),'walk',p.dir,e.id*10);}b.restore();
-    const bw=e.boss?24:12,bx=p.x-bw/2,by=p.y-arEB(e.sp,e.boss);px(bx,by,bw,2,'#2a0a0a');px(bx,by,bw*Math.max(0,e.hp/e.max),2,e.boss?'#ff4040':e.poison>0&&e.poisonT>0?'#7ae04a':'#ff7070');if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
+    const _o=e.boss?arBossOff(G2,p):[0,0],bw=e.boss?24:12,bx=p.x+_o[0]-bw/2,by=p.y+_o[1]-arEB(e.sp,e.boss);px(bx,by,bw,2,'#2a0a0a');px(bx,by,bw*Math.max(0,e.hp/e.max),2,e.boss?'#ff4040':e.poison>0&&e.poisonT>0?'#7ae04a':'#ff7070');if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
   /* tiros */
   for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
   if(A.zaps)for(const z of A.zaps){b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);const mx=(z.x1+z.x2)/2+(Math.random()-.5)*6,my=(z.y1+z.y2)/2+(Math.random()-.5)*6;b.lineTo(mx,my);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}
@@ -11009,7 +11009,7 @@ function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);
   arAuraDraw(A,G2,t);if(A.drag&&A.grid[A.drag.i])arSPiece(A.grid[A.drag.i],A.drag.x,A.drag.y,1.12*G2.cs/30,t,{sel:1});
   const EN=[...A.en].sort((a,b2)=>arPos(G2,a.d).y-arPos(G2,b2.d).y);
   for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';{const o=e.boss?arBossOff(G2,p):[0,0];arDrawMon(e.sp,p.x+o[0],p.y+o[1]-arEY(e.sp,e.boss),arES(e.sp,e.sc,e.boss),'walk',p.dir,e.id*10);}b.restore();
-    const by=p.y-arEB(e.sp,e.boss);arHpBar(p.x,by,e.hp/e.max,e.boss,e.poison>0&&e.poisonT>0?'#7ae04a':e.burnT>0?'#ff9a30':null);if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
+    const _o=e.boss?arBossOff(G2,p):[0,0],by=p.y+_o[1]-arEB(e.sp,e.boss);arHpBar(p.x+_o[0],by,e.hp/e.max,e.boss,e.poison>0&&e.poisonT>0?'#7ae04a':e.burnT>0?'#ff9a30':null);if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
   for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
   if(A.zaps)for(const z of A.zaps){b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);b.lineTo((z.x1+z.x2)/2+(Math.random()-.5)*6,(z.y1+z.y2)/2+(Math.random()-.5)*6);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}
   for(const p of A.parts){b.globalAlpha=Math.max(0,p.life/22);px(p.x,p.y,1.6,1.6,p.col);}b.globalAlpha=1;b.restore();
@@ -18500,7 +18500,7 @@ function arBossLeg(G2,p){if(p.y<=G2.ty+.5)return 'T';if(p.x<=G2.lx+.5)return 'L'
 function arBossOff(G2,p){try{const k=arBossLeg(G2,p);if(k&&CHEFEPOS[k])return CHEFEPOS[k];}catch(e){}return [0,0];}
 {const _s=arES;arES=function(sp,sc,bo){const v=_s(sp,sc,bo);return bo?(ARV.has(sp)?Math.min(v,CHEFEPOS.sc*1.1):CHEFEPOS.sc):v;};}
 {const _y=arEY;arEY=function(sp,bo){const v=_y(sp,bo);return bo&&!ARV.has(sp)?12:v;};}
-{const _b=arEB;arEB=function(sp,bo){const v=_b(sp,bo);return bo&&!ARV.has(sp)?Math.min(v,34):v;};}
+{const _b=arEB;arEB=function(sp,bo){const v=_b(sp,bo);if(bo&&typeof CHEFEPOS!=='undefined'&&CHEFEPOS.hb!=null)return CHEFEPOS.hb;return bo&&!ARV.has(sp)?Math.min(v,34):v;};}
 /* TESLALEVE13NOV (reports do Tesla: Horda travando): o computador do carro (Linux com tela de toque) é fraco. Na primeira vez, o jogo
    já começa com GRÁFICOS: MÉDIO lá (dá pra trocar em AJUSTES). Muda só uma vez por aparelho. */
 setTimeout(function cvTesla(){try{if(typeof flags==='undefined'||!flags||!party||!party.length){setTimeout(cvTesla,3000);return;}
@@ -18515,12 +18515,12 @@ function mchStart(){const A=AR;if(!A||A.mch)return;A.mch=1;A.over=false;A.wave=1
   let el=document.getElementById('mchUI');if(el)el.remove();el=document.createElement('div');el.id='mchUI';
   el.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:9700;background:rgba(30,18,6,.92);color:#fff;font:700 15px Arial,sans-serif;padding:10px 10px calc(10px + env(safe-area-inset-bottom));text-align:center";
   const bt=(t,c)=>`<button data-k="${c}" style="margin:3px;padding:10px 14px;font:700 16px Arial;border:0;border-radius:12px;color:#fff;background:${c==='salvar'?'#2f9f4c':c==='sair'?'#8a3a2a':'#3f6ae0'}">${t}</button>`;
-  el.innerHTML=`<div id="mchTx" style="margin-bottom:6px">Arraste cada chefe até o PÉ ficar no meio da estrada</div>${bt('TAMANHO −','menos')}${bt('TAMANHO +','mais')}${bt('OUTRO CHEFE','troca')}<br>${bt('ZERAR','zera')}${bt('SALVAR E MANDAR','salvar')}${bt('SAIR','sair')}`;
+  el.innerHTML=`<div id="mchTx" style="margin-bottom:6px">Arraste cada chefe até o PÉ ficar no meio da estrada</div>${bt('TAMANHO −','menos')}${bt('TAMANHO +','mais')}${bt('OUTRO CHEFE','troca')}<br>${bt('VIDA ↑','vcima')}${bt('VIDA ↓','vbaixo')}<br>${bt('ZERAR','zera')}${bt('SALVAR E MANDAR','salvar')}${bt('SAIR','sair')}`;
   document.body.appendChild(el);const tx=el.querySelector('#mchTx');
-  const info=()=>{tx.textContent=`Tamanho ${CHEFEPOS.sc.toFixed(2)} · esquerda ${CHEFEPOS.L.map(v=>v.toFixed(1))} · cima ${CHEFEPOS.T.map(v=>v.toFixed(1))} · direita ${CHEFEPOS.R.map(v=>v.toFixed(1))}`;};
+  const info=()=>{tx.textContent=`Tamanho ${CHEFEPOS.sc.toFixed(2)} · vida ${CHEFEPOS.hb!=null?CHEFEPOS.hb:'auto'} · esquerda ${CHEFEPOS.L.map(v=>v.toFixed(1))} · cima ${CHEFEPOS.T.map(v=>v.toFixed(1))} · direita ${CHEFEPOS.R.map(v=>v.toFixed(1))}`;};
   ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click'].forEach(ev=>el.addEventListener(ev,e=>e.stopPropagation()));
   el.onclick=async e=>{const k=e.target&&e.target.dataset&&e.target.dataset.k;if(!k)return;
-    if(k==='menos')CHEFEPOS.sc=Math.max(.2,CHEFEPOS.sc-.02);if(k==='mais')CHEFEPOS.sc=Math.min(.7,CHEFEPOS.sc+.02);if(k==='troca'){A.mchI++;put();}
+    if(k==='menos')CHEFEPOS.sc=Math.max(.2,CHEFEPOS.sc-.02);if(k==='mais')CHEFEPOS.sc=Math.min(.7,CHEFEPOS.sc+.02);if(k==='troca'){A.mchI++;put();}if(k==='vcima'||k==='vbaixo'){const G2=arGeo();const cur=CHEFEPOS.hb!=null?CHEFEPOS.hb:arEB(A.en[0].sp,true);CHEFEPOS.hb=Math.max(0,Math.min(70,cur+(k==='vcima'?2:-2)));}
     if(k==='zera')CHEFEPOS=Object.assign({},CHEFEPOS0,{L:[0,0],T:[0,0],R:[0,0]});
     if(k==='salvar'){try{localStorage.setItem('cv.chefePos',JSON.stringify(CHEFEPOS));}catch(_){}tx.textContent='Mandando…';
       const r=Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:new Date().toISOString(),texto:'MONTADOR CHEFE: '+JSON.stringify(CHEFEPOS),tela_jogo:'',print:''},rpCtx());

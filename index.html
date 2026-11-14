@@ -15091,6 +15091,7 @@ async function rpOpen(){if(document.getElementById('rpBox'))return;const shot=aw
 window.rpOpen=rpOpen;
 /* RPANEXO: o jogo recarregou com uma janela de aviso aberta (galeria do iPhone) → abre de novo com o texto */
 try{const d=JSON.parse(localStorage.getItem('cv_rp_draft')||'null');if(d&&Date.now()-d.at<15*60e3)setTimeout(()=>{try{rpOpen();}catch(e){}},4000);}catch(e){}
+try{window.rpCtx=rpCtx;window.rpShot=rpShot;window.rpShrink=rpShrink;window.rpSend=rpSend;window.rpPend=rpPend;window.rpSavePend=rpSavePend;}catch(e){}/* MCHTEMPO14NOV: o Montador do Chefe usava estas funções de fora e dava erro (nunca terminava de mandar) */
 })();
 
 /* entrega o prêmio no mapa, com a mensagem do Felipe */
@@ -18502,11 +18503,16 @@ function cv13Lobby(mode){if(!cv13On())return;const $=id=>document.getElementById
    vêm de CHEFEPOS (padrão abaixo; o Montador do Chefe — App com #montachefe, depois ARENA › SEM FIM — muda e manda pro Felipe pelo Report). */
 const CHEFEPOS0={sc:.38,L:[-5,0],T:[0,-5],R:[5,0]};
 let CHEFEPOS=(()=>{try{const o=JSON.parse(localStorage.getItem('cv.chefePos')||'null');if(o&&o.sc)return Object.assign({},CHEFEPOS0,o);}catch(e){}return Object.assign({},CHEFEPOS0);})();
+/* MCHMODOS14NOV (Felipe: 'coloca pra eu poder montar da arena masmorra, juntos e contra tbm'): uma posição de chefe por modo (sem fim, masmorra, juntos, contra) */
+const MCHNM={sem:'SEM FIM',mas:'MASMORRA',jun:'JUNTOS',con:'CONTRA'};
+function mchKey(){try{if(AR&&AR.mp)return AR.mp.mode==='pvp'?'con':'jun';if(AR&&AR.goal>0)return 'mas';}catch(e){}return 'sem';}
+const CHEFEPOSM=(()=>{let m=null;try{m=JSON.parse(localStorage.getItem('cv.chefePosM')||'null');}catch(e){}m=m||{};for(const k of ['sem','mas','jun','con'])if(!m[k]||!m[k].sc)m[k]=JSON.parse(JSON.stringify(CHEFEPOS));return m;})();
+function cpSel(){const k=mchKey();if(CHEFEPOSM[k]!==CHEFEPOS)CHEFEPOS=CHEFEPOSM[k];return CHEFEPOS;}
 function arBossLeg(G2,p){if(p.y<=G2.ty+.5)return 'T';if(p.x<=G2.lx+.5)return 'L';if(p.x>=G2.rx-.5)return 'R';return null;}
-function arBossOff(G2,p){try{const k=arBossLeg(G2,p);if(k&&CHEFEPOS[k])return CHEFEPOS[k];}catch(e){}return [0,0];}
-{const _s=arES;arES=function(sp,sc,bo){const v=_s(sp,sc,bo);return bo?(ARV.has(sp)?Math.min(v,CHEFEPOS.sc*1.1):CHEFEPOS.sc):v;};}
+function arBossOff(G2,p){try{cpSel();const k=arBossLeg(G2,p);if(k&&CHEFEPOS[k])return CHEFEPOS[k];}catch(e){}return [0,0];}
+{const _s=arES;arES=function(sp,sc,bo){const v=_s(sp,sc,bo);if(bo)cpSel();return bo?(ARV.has(sp)?Math.min(v,CHEFEPOS.sc*1.1):CHEFEPOS.sc):v;};}
 {const _y=arEY;arEY=function(sp,bo){const v=_y(sp,bo);return bo&&!ARV.has(sp)?12:v;};}
-{const _b=arEB;arEB=function(sp,bo){const v=_b(sp,bo);if(bo&&typeof CHEFEPOS!=='undefined'&&CHEFEPOS.hb!=null)return CHEFEPOS.hb;return bo&&!ARV.has(sp)?Math.min(v,34):v;};}
+{const _b=arEB;arEB=function(sp,bo){const v=_b(sp,bo);if(bo&&typeof CHEFEPOS!=='undefined'&&cpSel()&&CHEFEPOS.hb!=null)return CHEFEPOS.hb;return bo&&!ARV.has(sp)?Math.min(v,34):v;};}
 /* TESLALEVE13NOV (reports do Tesla: Horda travando): o computador do carro (Linux com tela de toque) é fraco. Na primeira vez, o jogo
    já começa com GRÁFICOS: MÉDIO lá (dá pra trocar em AJUSTES). Muda só uma vez por aparelho. */
 setTimeout(function cvTesla(){try{if(typeof flags==='undefined'||!flags||!party||!party.length){setTimeout(cvTesla,3000);return;}
@@ -18514,7 +18520,7 @@ setTimeout(function cvTesla(){try{if(typeof flags==='undefined'||!flags||!party|
   if(car&&!flags.gfxCar&&flags.gfx06){flags.gfxCar=1;if(!flags.gfx)flags.gfx=1;try{saveGame();}catch(e){}try{gfxApply();}catch(e){}}else if(car&&!flags.gfx06)setTimeout(cvTesla,3000);}catch(e){}},4000);
 /* MONTADOR DO CHEFE (MONTACHEFE13NOV) */
 const MCH_ON=(()=>{try{if(/[?#&]montachefe/.test(location.href))localStorage.setItem('cv.mch','1');if(/[?#&]semmontachefe/.test(location.href))localStorage.removeItem('cv.mch');return localStorage.getItem('cv.mch')==='1';}catch(e){return /[?#&]montachefe/.test(location.href);}})();
-if(MCH_ON)setTimeout(function mchAviso(){try{if(!document.body){setTimeout(mchAviso,500);return;}const d=document.createElement('div');d.id='mchAv';d.style.cssText='position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 8px);transform:translateX(-50%);z-index:99999;background:#2f9f4c;color:#fff;font:700 15px Arial,sans-serif;padding:8px 14px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.4);pointer-events:none;text-align:center';d.textContent='MONTADOR DO CHEFE LIGADO — entre em ARENA › SEM FIM';document.body.appendChild(d);setInterval(()=>{try{d.style.display=(typeof G!=='undefined'&&G.mode==='arena')?'none':'block';}catch(e){}},800);}catch(e){}},1500);
+if(MCH_ON)setTimeout(function mchAviso(){try{if(!document.body){setTimeout(mchAviso,500);return;}const d=document.createElement('div');d.id='mchAv';d.style.cssText='position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 8px);transform:translateX(-50%);z-index:99999;background:#2f9f4c;color:#fff;font:700 15px Arial,sans-serif;padding:8px 14px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.4);pointer-events:none;text-align:center';d.textContent='MONTADOR DO CHEFE LIGADO — entre na ARENA: SEM FIM, MASMORRA, JUNTOS ou CONTRA';document.body.appendChild(d);setInterval(()=>{try{d.style.display=(typeof G!=='undefined'&&G.mode==='arena')?'none':'block';}catch(e){}},800);}catch(e){}},1500);
 function mchStart(){const A=AR;if(!A||A.mch)return;A.mch=1;A.over=false;A.wave=14;try{arStartWave();}catch(e){}A.spawnLeft=0;A.en.length=0;A.wt=1e9;
   const G2=arGeo(),L=arPathLen(G2),leg1=G2.by-G2.ty,top=G2.rx-G2.lx;const SPS=['caranguejo','pedregao','florina','zumbel','cogumelim','brasalor','tubarete','assombro'];A.mchI=A.mchI||0;
   const put=()=>{A.en.length=0;const sp=SPS[A.mchI%SPS.length];[leg1*.45,leg1+top*.08,leg1+top*.5,leg1+top+leg1*.45].forEach((d,i)=>{const I=A.wi||arWaveInfo(15);A.en.push({sp,d,hp:I.hp*20,max:I.hp*20,spd:0,slow:0,slowT:0,poison:0,poisonT:0,boss:true,id:i+1,sc:.5,hit:0,mchT:1});});};put();A.mchPut=put;A.mchSps=SPS;
@@ -18523,13 +18529,13 @@ function mchStart(){const A=AR;if(!A||A.mch)return;A.mch=1;A.over=false;A.wave=1
   const bt=(t,c)=>`<button data-k="${c}" style="margin:3px;padding:10px 14px;font:700 16px Arial;border:0;border-radius:12px;color:#fff;background:${c==='salvar'?'#2f9f4c':c==='sair'?'#8a3a2a':'#3f6ae0'}">${t}</button>`;
   el.innerHTML=`<div id="mchTx" style="margin-bottom:6px">Arraste cada chefe até o PÉ ficar no meio da estrada</div>${bt('TAMANHO −','menos')}${bt('TAMANHO +','mais')}${bt('OUTRO CHEFE','troca')}<br>${bt('VIDA ↑','vcima')}${bt('VIDA ↓','vbaixo')}<br>${bt('ZERAR','zera')}${bt('SALVAR E MANDAR','salvar')}${bt('SAIR','sair')}`;
   document.body.appendChild(el);const tx=el.querySelector('#mchTx');
-  const info=()=>{tx.textContent=`Tamanho ${CHEFEPOS.sc.toFixed(2)} · vida ${CHEFEPOS.hb!=null?CHEFEPOS.hb:'auto'} · esquerda ${CHEFEPOS.L.map(v=>v.toFixed(1))} · cima ${CHEFEPOS.T.map(v=>v.toFixed(1))} · direita ${CHEFEPOS.R.map(v=>v.toFixed(1))}`;};
+  const info=()=>{cpSel();tx.textContent=`${MCHNM[mchKey()]} · Tamanho ${CHEFEPOS.sc.toFixed(2)} · vida ${CHEFEPOS.hb!=null?CHEFEPOS.hb:'auto'} · esquerda ${CHEFEPOS.L.map(v=>v.toFixed(1))} · cima ${CHEFEPOS.T.map(v=>v.toFixed(1))} · direita ${CHEFEPOS.R.map(v=>v.toFixed(1))}`;};
   ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click'].forEach(ev=>el.addEventListener(ev,e=>e.stopPropagation()));
   el.onclick=async e=>{const k=e.target&&e.target.dataset&&e.target.dataset.k;if(!k)return;
     if(k==='menos')CHEFEPOS.sc=Math.max(.2,CHEFEPOS.sc-.02);if(k==='mais')CHEFEPOS.sc=Math.min(.7,CHEFEPOS.sc+.02);if(k==='troca'){A.mchI++;put();}if(k==='vcima'||k==='vbaixo'){const G2=arGeo();const cur=CHEFEPOS.hb!=null?CHEFEPOS.hb:arEB(A.en[0].sp,true);CHEFEPOS.hb=Math.max(0,Math.min(70,cur+(k==='vcima'?2:-2)));}
-    if(k==='zera')CHEFEPOS=Object.assign({},CHEFEPOS0,{L:[0,0],T:[0,0],R:[0,0]});
-    if(k==='salvar'){try{localStorage.setItem('cv.chefePos',JSON.stringify(CHEFEPOS));}catch(_){}/* MCHTEMPO14NOV (Felipe: 'ele nunca termina de mandar'): foto e envio com tempo máximo; os números ficam na tela pra tirar print se não der */
-      const NUM=JSON.stringify(CHEFEPOS),TO=(pr,ms)=>Promise.race([Promise.resolve().then(()=>pr),new Promise(r=>setTimeout(()=>r(null),ms))]);tx.innerHTML='Mandando…<br><b style="font-size:15px;user-select:all">'+NUM+'</b>';
+    if(k==='zera'){CHEFEPOS=Object.assign({},CHEFEPOS0,{L:[0,0],T:[0,0],R:[0,0]});CHEFEPOSM[mchKey()]=CHEFEPOS;}
+    if(k==='salvar'){try{localStorage.setItem('cv.chefePosM',JSON.stringify(CHEFEPOSM));if(mchKey()==='sem')localStorage.setItem('cv.chefePos',JSON.stringify(CHEFEPOS));}catch(_){}/* MCHTEMPO14NOV (Felipe: 'ele nunca termina de mandar'): foto e envio com tempo máximo; os números ficam na tela pra tirar print se não der */
+      const NUM=MCHNM[mchKey()]+' '+JSON.stringify(CHEFEPOS),TO=(pr,ms)=>Promise.race([Promise.resolve().then(()=>pr),new Promise(r=>setTimeout(()=>r(null),ms))]);tx.innerHTML='Mandando…<br><b style="font-size:15px;user-select:all">'+NUM+'</b>';
       const r=Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:new Date().toISOString(),texto:'MONTADOR CHEFE: '+NUM,tela_jogo:'',print:''},rpCtx());try{const ft=await TO((async()=>rpShrink(rpShot(),360,.66))(),5000);if(ft)r.tela_jogo=ft;}catch(_){}
       if(!r.tela_jogo){try{const c=document.createElement('canvas');c.width=8;c.height=8;r.tela_jogo=c.toDataURL('image/jpeg',.5);}catch(_){}}
       let ok=false;try{ok=!!(await TO(rpSend(r),20000));}catch(_){}
@@ -18538,7 +18544,7 @@ function mchStart(){const A=AR;if(!A||A.mch)return;A.mch=1;A.over=false;A.wave=1
     if(k==='sair'){try{localStorage.removeItem('cv.mch');const av=document.getElementById('mchAv');if(av)av.remove();}catch(_){}el.remove();A.mch=0;A.en.length=0;try{A.done&&A.done();}catch(_){}return;}info();};info();A.mchInfo=info;}
 if(MCH_ON){
   {const _u=arUpdate;arUpdate=function(){const A=AR;if(A&&A.mch){A.t++;return;}return _u.apply(this,arguments);};}
-  setInterval(()=>{try{if(G.mode==='arena'&&AR&&!AR.lobby&&!AR.mp&&!AR.mch&&!AR.result&&Array.isArray(AR.grid)&&!(AR.goal>0))mchStart();}catch(e){}},700);
+  setInterval(()=>{try{if(G.mode==='arena'&&AR&&!AR.lobby&&!AR.mch&&!AR.result&&Array.isArray(AR.grid))mchStart();}catch(e){}},700);
   let D=null;const pos=e=>{const [x,y]=toCanvas(e);return [x,y];};
   stage.addEventListener('pointerdown',e=>{const A=AR;if(!A||!A.mch)return;const [x,y]=pos(e),G2=arGeo();let best=null,bd=1e9;
     for(const en of A.en){const p=arPos(G2,en.d),o=arBossOff(G2,p),qx=p.x+o[0],qy=p.y+o[1]-14,dd=Math.hypot(qx-x,qy-y);if(dd<bd){bd=dd;best={en,leg:arBossLeg(G2,p)};}}

@@ -18496,6 +18496,11 @@ function arBossOff(G2,p){try{if(p.y<=G2.ty+.5)return [0,-5];if(p.x<=G2.lx+.5)ret
 {const _s=arES;arES=function(sp,sc,bo){const v=_s(sp,sc,bo);return bo?Math.min(v,.38):v;};}
 {const _y=arEY;arEY=function(sp,bo){const v=_y(sp,bo);return bo&&!ARV.has(sp)?12:v;};}
 {const _b=arEB;arEB=function(sp,bo){const v=_b(sp,bo);return bo&&!ARV.has(sp)?Math.min(v,34):v;};}
+/* TESLALEVE13NOV (reports do Tesla: Horda travando): o computador do carro (Linux com tela de toque) é fraco. Na primeira vez, o jogo
+   já começa com GRÁFICOS: MÉDIO lá (dá pra trocar em AJUSTES). Muda só uma vez por aparelho. */
+setTimeout(function cvTesla(){try{if(typeof flags==='undefined'||!flags||!party||!party.length){setTimeout(cvTesla,3000);return;}
+  const car=/Tesla/i.test(navigator.userAgent)||(/X11; Linux x86_64/.test(navigator.userAgent)&&navigator.maxTouchPoints>0&&!/Android|CrOS/.test(navigator.userAgent));
+  if(car&&!flags.gfxCar&&flags.gfx06){flags.gfxCar=1;if(!flags.gfx)flags.gfx=1;try{saveGame();}catch(e){}try{gfxApply();}catch(e){}}else if(car&&!flags.gfx06)setTimeout(cvTesla,3000);}catch(e){}},4000);
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

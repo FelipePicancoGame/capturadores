@@ -18548,7 +18548,9 @@ function ftImg(k){let i=FTI[k];if(!i){i=new Image();i.decoding='async';i.src=FTA
 const FTK=['cenario','cabecalho_muralha_limpo','painel_proxima_onda_limpo','categoria_pedra','categoria_pedra_selecionada','categoria_ataque','realce_selecao','carta_pedrisco_moldura_vazia','carta_avalanche_moldura_vazia','carta_olho_certeiro_moldura_vazia','selo_nova_1','icone_recomendado','botao_escolher_limpo','botao_trocar_limpo','botao_mais_carta_limpo','botao_levar2_limpo','botao_todas_cristais_limpo','botao_todas_anuncio_limpo','icone_cristal','icone_anuncio','painel_niveis_limpo','barra_progresso_preenchimento'];
 function ftReady(){return FTK.every(k=>ftImg(k));}
 setTimeout(()=>{try{FTK.forEach(ftImg);}catch(e){}},6000);
-function ftOn(w){return w&&w.cards&&!w.duo&&!w.duoG&&!w.fpad&&!/[?#&]fortold/.test(location.href)&&ftReady();}
+/* 13/nov (Felipe: 'volta a antiga'): desligada; liga só com #fortnovo pra testar quando o Buchecha mandar as cores novas */
+const FT_ON=(()=>{try{if(/[?#&]fortnovo/.test(location.href))localStorage.setItem('cv.fort','1');if(/[?#&]fortold/.test(location.href))localStorage.removeItem('cv.fort');return localStorage.getItem('cv.fort')==='1';}catch(e){return false;}})();
+function ftOn(w){return FT_ON&&w&&w.cards&&!w.duo&&!w.duoG&&!w.fpad&&ftReady();}
 /* moldura por raridade: 0 pedra, 1 roxa puxada pro azul, 2 roxa, 3 dourada. janela = onde entra a figura (px da moldura) */
 const FTMOL=[{k:'carta_pedrisco_moldura_vazia',w:337,h:662,j:[43,104,300,255],bd:[65,86,27]},{k:'carta_avalanche_moldura_vazia',w:323,h:652,j:[50,93,275,236],bd:[58,64,27],f:'hue-rotate(180deg) saturate(.9)',pr:[24,297,275,321]},
   {k:'carta_avalanche_moldura_vazia',w:323,h:652,j:[50,93,275,236],bd:[58,64,27]},{k:'carta_olho_certeiro_moldura_vazia',w:331,h:652,j:[55,99,289,241],bd:[47,86,27]}];

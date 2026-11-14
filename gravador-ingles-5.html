@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gravador em Inglês — parte 5</title>
+<script src="jszip.min.js"></script>
+<style>
+:root{--bg:#f6f1e6;--card:#fff;--ink:#2b2418;--mut:#6d6250;--ac:#2f7a36;--bd:#ddd2bd;--err:#b3261e}
+@media (prefers-color-scheme:dark){:root{--bg:#1c1a16;--card:#27241f;--ink:#f1eadb;--mut:#b3a88f;--ac:#6cc070;--bd:#3d382f;--err:#ff8a80}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 2px}p.s{margin:0 0 14px;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin:0 0 14px}
+.card h2{font-size:16px;margin:0 0 10px}
+input,select,button{font:inherit}input[type=password],input[type=text]{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--ink)}
+button{padding:10px 14px;border:0;border-radius:10px;background:var(--ac);color:#fff;font-weight:600;cursor:pointer}
+button.sec{background:transparent;color:var(--ink);border:1px solid var(--bd)}button:disabled{opacity:.45}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.role{display:grid;grid-template-columns:90px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--bd)}
+.role:first-of-type{border-top:0}.role b{font-size:14px}.role select{width:100%;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--ink);min-width:0}
+.mini{padding:6px 10px;font-size:14px}
+#st{white-space:pre-wrap;color:var(--mut);font-size:14px}.err{color:var(--err)}
+.ln{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:start;padding:7px 0;border-top:1px solid var(--bd);font-size:14px}
+.ln small{color:var(--mut);display:block}.ok{color:var(--ac)}
+progress{width:100%;height:14px}
+</style></head><body><main>
+<h1>Gravador em Inglês</h1>
+<p class="s">Capturadores do Vale · parte 5 (14/nov) · 6 falas · ~414 letras (créditos)</p>
+
+<div class="card"><h2>1. Sua chave da ElevenLabs</h2>
+<input id="key" type="password" placeholder="Cole aqui a API key (sk_...)" autocomplete="off">
+<div class="row"><label><input id="lembrar" type="checkbox" checked> lembrar neste aparelho</label><button id="bLoad">Entrar</button></div>
+<div id="cred" class="s"></div>
+<p class="s" style="font-size:13px">A chave fica só neste navegador. Ela não é enviada para ninguém além da ElevenLabs.</p></div>
+
+<div class="card"><h2>2. Vozes de cada personagem</h2><div id="cast"><p class="s">Entre primeiro com a chave.</p></div></div>
+
+<div class="card"><h2>3. Gravar</h2>
+<div class="row"><button id="bRec" disabled>Gravar tudo</button><button id="bZip" class="sec" disabled>Baixar ZIP</button><button id="bStop" class="sec" disabled>Parar</button></div>
+<progress id="pg" value="0" max="1"></progress><div id="st"></div>
+<div id="lines"></div></div>
+</main>
+<script>
+const LINES=[{"id": "p5_01_enf", "role": "enf", "text": "All done! Everyone is healed.", "tts": "All done! Everyone is healed.", "key": "alldoneeveryoneishealed", "g": ""}, {"id": "p5_02_lu", "role": "lu", "text": "No rush! The little house stays reserved for you.", "tts": "No rush! The little house stays reserved for you.", "key": "norushthelittlehousestaysreservedforyou", "g": ""}, {"id": "p5_03_narr", "role": "narr", "text": "The letter can be picked up without going into the water and without catching Marolo.", "tts": "The letter can be picked up without going into the water and without catching Marolo.", "key": "thelettercanbepickedupwithoutgoingintothewaterandwithoutcatchingmarolo", "g": ""}, {"id": "p5_04_narr", "role": "narr", "text": "The maintenance guide says: check the support, fix the plank and test one step at a time.", "tts": "The maintenance guide says: check the support, fix the plank and test one step at a time.", "key": "themaintenanceguidesayscheckthesupportfixtheplankandtestonestepatatime", "g": ""}, {"id": "p5_05_narr", "role": "narr", "text": "With the trash out of the channel, the water flows again. A wild Marolo watches from the bank.", "tts": "With the trash out of the channel, the water flows again. A wild Marolo watches from the bank.", "key": "withthetrashoutofthechannelthewaterflowsagainawildmarolowatchesfromthebank", "g": ""}, {"id": "p5_06_narr", "role": "narr", "text": "Marolo waves from the water and swims off freely through the harbor.", "tts": "Marolo waves from the water and swims off freely through the harbor.", "key": "marolowavesfromthewaterandswimsofffreelythroughtheharbor", "g": ""}];
+const ROLES=[{"id": "narr", "nome": "Narrator", "q": {"gender": "male", "age": "middle_aged"}, "s": ["narrator", "storyteller", "warm"]}, {"id": "lu", "nome": "Dona Lu / Grandma Lina", "q": {"gender": "female", "age": "old"}, "s": ["grandma", "warm", "old"]}, {"id": "enf", "nome": "Nurse", "q": {"gender": "female", "age": "middle_aged"}, "s": ["caring", "warm"]}];
+const AVOID=/^$/;const AV=x=>AVOID.test(x.name||"");
+let TOCANDO=null;function toca(u){try{if(TOCANDO){TOCANDO.pause();TOCANDO.currentTime=0;}}catch(e){}TOCANDO=new Audio(u);TOCANDO.play().catch(()=>{});}
+const API='https://api.elevenlabs.io';
+let KEY='',MINE=[],CAND={},CAST={},AUD={},stop=false,added={};
+const $=id=>document.getElementById(id);
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const st=(t,err)=>{$('st').innerHTML=err?'<span class="err">'+t+'</span>':t;};
+async function api(path,opt={}){const r=await fetch(API+path,{...opt,headers:{'xi-api-key':KEY,...(opt.body?{'Content-Type':'application/json'}:{}),...(opt.headers||{})}});
+  if(!r.ok){let t='';try{t=await r.text()}catch(e){}throw new Error(r.status+' '+t.slice(0,240));}return r;}
+async function credits(){try{const s=await (await api('/v1/user/subscription')).json();$('cred').textContent='Créditos: '+(s.character_limit-s.character_count).toLocaleString('pt-BR')+' sobrando de '+s.character_limit.toLocaleString('pt-BR')+' (plano '+s.tier+')';}catch(e){$('cred').textContent='';}}
+$('key').value=ls.get('cv_el_key')||'';
+$('bLoad').onclick=async()=>{KEY=$('key').value.trim();if(!KEY){st('Cole a chave primeiro.',1);return;}
+  if($('lembrar').checked)ls.set('cv_el_key',KEY);else ls.del('cv_el_key');
+  st('Carregando vozes...');try{
+    MINE=(await (await api('/v1/voices')).json()).voices||[];
+    for(const r of ROLES){CAND[r.id]=[];
+      if(r.mine){const nn=x=>x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');const v=MINE.find(v=>nn(v.name).startsWith(nn(r.mine)));if(v)CAND[r.id].push({id:v.voice_id,name:v.name,prev:v.preview_url,mine:1});}
+      if(r.q){const tries=[...(r.s||[]).map(w=>({language:'en',gender:r.q.gender,age:r.q.age,search:w})),...(r.s||[]).map(w=>({language:'en',gender:r.q.gender,search:w})),{language:'en',...r.q},{language:'en',gender:r.q.gender}];const seen=new Set();
+        for(const t of tries){if(CAND[r.id].filter(c=>!c.mine).length>=8)break;const q=new URLSearchParams({page_size:'20',sort:'usage_character_count_1y',...t});
+          try{let vs=(await (await api('/v1/shared-voices?'+q)).json()).voices||[];
+            vs=vs.filter(v=>(!v.language||/^en/i.test(v.language))&&/american|british|standard|us|uk|en-/i.test((v.accent||'')+' '+(v.locale||''))&&!/indian|hindi|african|nigeria|arab/i.test((v.accent||'')+' '+(v.description||'')));
+            
+            for(const v of vs){if(seen.has(v.voice_id))continue;seen.add(v.voice_id);CAND[r.id].push({id:v.voice_id,owner:v.public_owner_id,name:v.name.split(' - ')[0]+' · '+(v.accent||v.locale||'pt')+(v.description?' — '+v.description.slice(0,40):''),prev:v.preview_url});}}catch(e){console.warn(e);}}}
+      {const ex=MINE.filter(v=>!CAND[r.id].some(c=>c.id===v.voice_id)&&!/premade/i.test(v.category||'')).map(v=>({id:v.voice_id,name:'(minha) '+v.name,prev:v.preview_url,mine:1,extra:1}));const k=CAND[r.id].findIndex(c=>!c.mine);CAND[r.id].splice(k<0?CAND[r.id].length:k,0,...ex);}
+    }
+    for(const k in CAND){if((ROLES.find(r=>r.id===k)||{}).mine)continue;const ok=CAND[k].filter(x=>!AV(x));if(ok.length)CAND[k]=ok;}drawCast();drawLines();credits();$('bRec').disabled=false;st('Pronto. Escute as vozes (▶), troque se quiser e toque em Gravar tudo.');
+  }catch(e){st('Não consegui entrar: '+e.message,1);}};
+function drawCast(){const saved=JSON.parse(ls.get('cv_el_cast_en')||'{}');const used=new Set();const box=$('cast');box.innerHTML='';
+  const HID=JSON.parse(ls.get('cv_el_hide')||'[]');for(const r of ROLES){const c=(CAND[r.id]||[]).filter(x=>!HID.includes(x.id));let pick=(r.mine&&c.find(x=>x.mine&&x.name.replace(/^\(minha\) /,'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').startsWith(r.mine.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''))))||c.find(x=>x.id===saved[r.id])||c.find(x=>!x.extra&&!used.has(x.id)&&!AV(x))||c.find(x=>!x.extra&&!AV(x))||c.find(x=>!x.extra&&!used.has(x.id))||c[0];
+    if(pick)used.add(pick.id);CAST[r.id]=pick;
+    const d=document.createElement('div');d.className='role';d.innerHTML='<b>'+r.nome+'</b>';const s=document.createElement('select');
+    c.forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=x.name;if(x===pick)o.selected=true;s.append(o);});
+    s.onchange=()=>{CAST[r.id]=c[s.value];const sv=JSON.parse(ls.get('cv_el_cast_en')||'{}');sv[r.id]=CAST[r.id].id;ls.set('cv_el_cast_en',JSON.stringify(sv));};
+    const p=document.createElement('button');p.className='sec mini';p.textContent='▶';p.onclick=()=>{const x=CAST[r.id];if(x&&x.prev)toca(x.prev);};
+    const h=document.createElement('button');h.className='sec mini';h.textContent='🚫';h.title='Voz ruim: tirar da lista';h.onclick=()=>{const x=CAST[r.id];if(!x)return;const L=JSON.parse(ls.get('cv_el_hide')||'[]');L.push(x.id);ls.set('cv_el_hide',JSON.stringify(L));const sv=JSON.parse(ls.get('cv_el_cast_en')||'{}');delete sv[r.id];ls.set('cv_el_cast_en',JSON.stringify(sv));drawCast();};d.append(s,p,h);box.append(d);}}
+function drawLines(){const box=$('lines');box.innerHTML='';for(const l of LINES){const d=document.createElement('div');d.className='ln';d.id='l_'+l.id;
+  d.innerHTML='<span class="ic">'+(AUD[l.id]?'<span class="ok">✓</span>':'·')+'</span><div><small>'+(ROLES.find(r=>r.id===l.role)||{}).nome+'</small>'+l.text.replace(/</g,'&lt;')+'</div>';
+  const bt=document.createElement('div');bt.className='row';bt.style.margin='0';const p=document.createElement('button');p.className='sec mini';p.textContent='▶';p.onclick=()=>{if(AUD[l.id])toca(URL.createObjectURL(AUD[l.id]));};
+  const r=document.createElement('button');r.className='sec mini';r.textContent='↻';r.title='Gravar de novo';r.onclick=async()=>{r.disabled=true;try{await gen(l);credits();}catch(e){st(e.message,1);}r.disabled=false;};
+  bt.append(p,r);d.append(bt);box.append(d);}}
+async function ensure(v){if(!v||v.mine||!v.owner||added[v.id])return;try{await api('/v1/voices/add/'+v.owner+'/'+v.id,{method:'POST',body:JSON.stringify({new_name:v.name.split(' — ')[0]})});}catch(e){console.warn('add',e.message);}added[v.id]=1;}
+let MODEL='eleven_v3';
+async function gen(l){const v=CAST[l.role];if(!v)throw new Error('Sem voz para '+l.role);await ensure(v);
+  let text=l.tts;if(MODEL!=='eleven_v3')text=text.replace(/\[[^\]]*\]\s*/g,'');
+  let r;try{r=await api('/v1/text-to-speech/'+v.id+'?output_format=mp3_44100_64',{method:'POST',body:JSON.stringify({text,model_id:MODEL})});}
+  catch(e){if(MODEL==='eleven_v3'&&/model/i.test(e.message)){MODEL='eleven_multilingual_v2';return gen(l);}throw e;}
+  AUD[l.id]=await r.blob();const ic=document.querySelector('#l_'+l.id+' .ic');if(ic)ic.innerHTML='<span class="ok">✓</span>';$('bZip').disabled=false;}
+$('bRec').onclick=async()=>{stop=false;$('bRec').disabled=true;$('bStop').disabled=false;const todo=LINES.filter(l=>!AUD[l.id]);$('pg').max=LINES.length;
+  for(const l of todo){if(stop)break;st('Gravando '+(Object.keys(AUD).length+1)+' de '+LINES.length+'...');
+    let ok=0;for(let t=0;t<3&&!ok;t++){try{await gen(l);ok=1;}catch(e){if(t===2){st('Erro na fala "'+l.text.slice(0,40)+'": '+e.message,1);stop=true;}else await new Promise(r=>setTimeout(r,2000*(t+1)));}}
+    $('pg').value=Object.keys(AUD).length;}
+  $('bRec').disabled=false;$('bStop').disabled=true;credits();
+  if(Object.keys(AUD).length===LINES.length)st('Pronto! Toque em Baixar ZIP e mande o arquivo para o Claude.');};
+$('bStop').onclick=()=>{stop=true;};
+$('bZip').onclick=async()=>{const z=new JSZip();const man=[];for(const l of LINES){if(!AUD[l.id])continue;z.file(l.id+'.mp3',AUD[l.id]);man.push({...l,voz:(CAST[l.role]||{}).name,modelo:MODEL});}
+  z.file('manifest.json',JSON.stringify(man,null,1));const b=await z.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='vozes_ingles_parte5.zip';document.body.append(a);a.click();a.remove();};
+</script></body></html>

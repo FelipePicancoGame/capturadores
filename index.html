@@ -5430,7 +5430,7 @@ function trovJetDraw(f){const I=asImg(f.ball?'fx_trovbola':'fx_trovjato');if(!I)
 function bJet(C2,s,ang,o){C2.fx.push({k:'jet',zap:o.zap||0,ball:o.ball||0,x:s.x,y:s.y,ang,len:o.len||220,head:0,t:0,dur:30,w:o.w||7,hit:new Set(),s,on:o.on,dmg:o.dmg??s.dmg,type:s.type,maxHit:1+(s.pierce||0)+(s.big?1:0),tier:s.tier||1});}
 const WBAL=[1.5,1.75,.35,1.6,.07,1];/* ESTAT10NOV (Chefe da Estatística): sem +3% por fase — o nível do inimigo já sobe com a régua *//* DIFICULDADE 22/10: a cada 5 fases a Muralha fica 15% mais forte (pede subir nível/cartas) */function wGate(){return 1;}/* ESTAT10NOV-C (Felipe: 'com cartas melhoradas todos ganham sempre — tem que contar com a sorte das cartas e precisar do TODAS por cristais'): vida ×1 na fase 1 até ×2,1 da fase 10 em diante. Robôs (fases 10-40, time 4 níveis acima): com cartas melhoradas médio 66% / com TODAS 2x 80%; sem cartas 0% / com TODAS 58%; no nível da fase com cartas médio 11% → com TODAS 45%. Vencedores têm ~3 cartas raras, perdedores ~1. */ /* ESTAT10NOV-B (Felipe: 'tem que ter desafio, as pessoas têm que precisar das cartas'): vida dos inimigos da Muralha sobe de ×1 na fase 1 até ×1,5 na fase 10 em diante (no wSpawn); nos robôs, sem cartas melhoradas o fraco perde até com 8 níveis a mais, com cartas melhoradas médio/avançado vencem com 4 a mais */ /* ESTAT10NOV: o salto de +15% a cada 5 fases contava a dificuldade 2 vezes (a régua já sobe ~5 níveis a cada 5 fases); nos testes a Muralha virava muro a partir da fase 10 */
 /* 25/out: 1ª missão do jogo mais fácil (Felipe: 'não dá pra ganhar') */function WEASE(){return STG&&STG.mode==='wall'&&STG.first?.42:1;}
-function wSpawn(){const w=WL,n=w.wave,boss=(n===5||n===10)&&w.spawned>=Math.floor(w.toSpawn*.4)&&w.bossW!==n;/* BOSSCEDO13NOV (Felipe: 'boss está vindo muito atrasado'): o chefe entra no meio da onda, não depois de todos */
+function wSpawn(){const w=WL,n=w.wave,boss=(n===5||n===10)&&w.spawned>=w.toSpawn-1&&w.bossW!==n;/* CHEFEULTIMO14NOV (Felipe: 'está vindo mobs depois do boss'): o chefe volta a ser o último a nascer, mas a onda de chefe nasce mais rápido pra ele não demorar *//* BOSSCEDO13NOV (Felipe: 'boss está vindo muito atrasado'): o chefe entra no meio da onda, não depois de todos */
   const pool=n<3?['pipiu','ratonga','zumbel']:n<5?['pipiu','ratonga','zumbel','pedrisco','brotim']:n<7?['ratonga','zumbel','pedrisco','brotim','marolo','fagulho','choquinho']:['zumbel','pedrisco','marolo','fagulho','choquinho','assombro','lesmagma','corujito','florina'];
   const sp=boss?(STGB('wall')?RGN[STGB('wall').k].boss:'rochedo'):rgPick(STGB('wall'),pool);const SMW=STG&&STG.mode==='wall';const lv=SMW?Math.min(53,Math.max(2,Math.max(Math.round(stgRuler(STG.i)+n*WBAL[2]*Math.min(1,stgRuler(STG.i)/25)),Math.round((w.avg||0)-3))/* PISO11NOV: inimigo no máximo 3 níveis abaixo do time */+(boss?3:0))):Math.max(2,w.avg-2+Math.floor(n*.85)+(boss?4:0));
   const r0=Math.random(),TH0=w.theme,BIRD=['pipiu','ventania','corujito','corujao'].includes(sp),ARQ=SP[sp]&&SP[sp].type!=='normal'&&sp!=='cacauzinho',kind0=boss?'boss':TH0==='veloz'&&r0<.7?'fast':TH0==='blindado'&&r0<.55?'tank':n>=2&&r0<.22?'fast':n>=3&&r0<.4?'tank':n>=5&&r0<.52?'shield':'norm',kind=BIRD&&kind0==='fast'?'norm':kind0;
@@ -5577,7 +5577,7 @@ function wUpdate(){const w=WL;w.t++;wDanger(w);if((flags.wallAuto||(w.duo&&w.duo
   if(w.shieldT>0)w.shieldT--;wStormStep(w);
   if(w.regen&&w.t%60===0&&w.wall<w.wallMax){const w0=w.wall;w.wall=Math.min(w.wallMax,w.wall+w.regen);w.regAcc=(w.regAcc||0)+(w.wall-w0);if(w.t%180===0&&w.regAcc>=1){wPop(90,262,`+${Math.round(w.regAcc)} conserto`,'#7fe88a',7);w.regAcc=0;}}
   let _sOk=true;if((w.wave===5||w.wave===10)&&w.bossW!==w.wave&&w.spawned===w.toSpawn-1){if(w._bwW!==w.wave){w._bwW=w.wave;w._bw=0;}if(!w.bossHold){w.bossHold=1;w.spawnT=240;w.banner={t:170,text:'PREPARE-SE!',sub:'O CHEFE ESTÁ CHEGANDO...'};}}
-  if(_sOk&&!w.tutS&&w.spawned<w.toSpawn&&--w.spawnT<=0){wSpawn();w.spawnT=w.bossW===w.wave?(w.spawned%3===0?30:75):Math.max(12,40-w.wave*3);if(w.surge){const per=Math.ceil(w.toSpawn/w.surge),g=Math.floor(w.spawned/per);if(w.spawned%per===0&&w.spawned<w.toSpawn){w.spawnT=230;w.banner={t:80,text:'LÁ VEM MAIS!',sub:`Grupo ${g+1} de ${w.surge}`};}else w.spawnT=Math.max(8,Math.round(w.spawnT*.6));}}
+  if(_sOk&&!w.tutS&&w.spawned<w.toSpawn&&--w.spawnT<=0){wSpawn();w.spawnT=w.bossW===w.wave?(w.spawned%3===0?30:75):((w.wave===5||w.wave===10)?Math.max(8,Math.round((40-w.wave*3)*.55)):Math.max(12,40-w.wave*3));if(w.surge){const per=Math.ceil(w.toSpawn/w.surge),g=Math.floor(w.spawned/per);if(w.spawned%per===0&&w.spawned<w.toSpawn){w.spawnT=230;w.banner={t:80,text:'LÁ VEM MAIS!',sub:`Grupo ${g+1} de ${w.surge}`};}else w.spawnT=Math.max(8,Math.round(w.spawnT*.6));}}
   wBossStep(w);wThiefStep(w);wCatStep(w);wFrostStep(w);wLobStep(w);try{wNewStep(w);}catch(er){}
   for(const e of w.foes)if(e.boss&&!e.dead&&!e.sumd&&e.hp<e.max*.5&&(e.sumd=1)){for(let k=0;k<2;k++)wMinion(e.x+(k?14:-14),e.y+6);w.banner={t:60,text:'O CHEFE CHAMOU REFORÇOS!'};w.shake=10;}
   for(const z of w.zaps)z.life--;w.zaps=w.zaps.filter(z=>z.life>0);
@@ -18583,6 +18583,23 @@ function ftDraw(w,t){const cs=w.cards,G=ftGeo(),k=G.k,X=v=>G.ox+v*k,Y=v=>G.oy+v*
     if(sel){const g=1+.04*Math.sin(t/6);b.save();b.globalAlpha=.75+.25*Math.sin(t/5);b.drawImage(ftImg('realce_selecao'),X(x+cw/2-178*sc*g),Y(y-10*sc),S(356*sc*g),S(679*sc));b.restore();}
     /* CARTASANTIGAS13NOV (Felipe: 'usa as cartas antigas'): a carta é a mesma de antes (molduras cd2_ e figura), só a tela em volta é nova */
     const lv=w.lv[cd.key||cd.id]||0;
+    /* CORESV2_14NOV (Buchecha, CORES_CARTAS_FORTALEZA_13nov): molduras novas 512x1024 por raridade (cinza, azul, roxa, dourada), janela (70,115,372,249);
+       o jogo escreve nome, nível e efeito. Só na tela de teste (#fortnovo); se a moldura não carregou, usa a carta antiga. */
+    const MV=ftImg('moldura_v2_'+Math.min(3,cd.r|0));
+    if(MV){const cx0=X(x),cy0=Y(712+(sl.y-709)+lift+enter),fw=S(cw),f=fw/512,R=(a,b2,c,d)=>[cx0+a*f,cy0+b2*f,c*f,d*f];
+      if(cd.r===3){b.save();b.globalCompositeOperation='lighter';glowAt(cx0+fw/2,cy0+fw,fw*.75+Math.sin(t/6)*5,'255,170,60',.35);b.restore();}
+      const J=R(70,115,372,249);b.fillStyle='#24384a';b.fillRect(J[0],J[1],J[2],J[3]);
+      b.save();b.beginPath();b.rect(J[0],J[1],J[2],J[3]);b.clip();const pcx=J[0]+J[2]/2,pcy=J[1]+J[3]*.55;
+      if(cd.mon!=null&&w.defs[cd.mon]){const d=w.defs[cd.mon];b.save();b.globalCompositeOperation='lighter';glowAt(pcx,pcy,J[3]*.4,hex2rgb(spCol(d.sp)).join(','),.35);b.restore();
+        const CI2=(typeof cardIlu==='function')&&cardIlu(d.sp);if(CI2){const hh=J[3]*1.25,ww=hh/1.15;cardIluDraw(CI2,pcx-ww/2,J[1]+J[3]*1.08-hh,ww,hh,5);}else drawMon(d.sp,pcx,pcy+J[3]*.15,J[3]/62,false);}
+      else{b.save();b.globalCompositeOperation='lighter';glowAt(pcx,pcy,J[3]*.35,hex2rgb(RAR[cd.r]||'#888').join(','),.35);b.restore();drawIcon(cd.ic,pcx,pcy,J[3]/24);}
+      b.restore();
+      b.save();b.shadowColor='rgba(0,0,0,.45)';b.shadowBlur=5;b.shadowOffsetY=2.5;b.drawImage(MV,cx0,cy0,fw,fw*2);b.restore();
+      if(cd.mon!=null&&cd.ic){const r0=46*f;ell(J[0]+r0*1.1,J[1]+J[3]-r0*1.1,r0,r0,'rgba(10,20,30,.75)',false);drawIcon(cd.ic,J[0]+r0*1.1,J[1]+J[3]-r0*1.1,r0/14);}
+      {const r0=44*f,bx=J[0]+J[2]-r0*1.25,by=J[1]+r0*1.25;ell(bx,by,r0,r0,'rgba(10,20,30,.85)',false);T(cd.noLv?'!':String(lv+1),bx,by-r0*.62,r0*1.25,'center','#ffffff',r0*2);}
+      {const N=R(60,392,392,67);T(cd.n,N[0]+N[2]/2,N[1]+N[3]*.06,N[3]*.8,'center','#ffffff',N[2]-20*f,'#1a1a2a');}
+      {const E=R(73,510,366,420),fs=E[2]/8.2,ls=wrap(cd.d,E[2]-14*f,fs).slice(0,6),lh=fs*1.25,y1=E[1]+E[3]/2-ls.length*lh/2;ls.forEach((l,q)=>T(l,E[0]+E[2]/2,y1+q*lh,fs,'center','#3a2a1c',E[2]-12*f));}}
+    else
     {const C2I=asImg('cd2_'+Math.min(3,cd.r|0)),cwu=Math.min(S(cw*.98),S((1418-712)*sc)/2.58),xu=X(x+cw/2)-cwu/2,ch2=cwu*2.58,y2=Y(712+(sl.y-709)+lift+enter),ccx=xu+cwu/2,pcy=y2+ch2*.31,f=cwu/54;
       if(C2I){if(cd.r===3){b.save();b.globalCompositeOperation='lighter';glowAt(ccx,y2+ch2/2,58+Math.sin(t/6)*5,'255,170,60',.4);b.restore();}
         b.save();b.shadowColor='rgba(0,0,0,.45)';b.shadowBlur=5;b.shadowOffsetY=2.5;b.drawImage(C2I,xu,y2,cwu,ch2);b.restore();
@@ -18616,10 +18633,10 @@ function ftDraw(w,t){const cs=w.cards,G=ftGeo(),k=G.k,X=v=>G.ox+v*k,Y=v=>G.oy+v*
 /* desenho: por cima de tudo, depois da tela da Muralha */
 {const _r=renderWall;renderWall=function(){_r.apply(this,arguments);try{const w=WL;if(ftOn(w))ftDraw(w,w.cards.t|0);}catch(e){console.error(e);}};}
 /* toques */
-{const P=wTap;wTap=function(x,y){const w=WL;if(ftOn(w)){const cs=w.cards,G=ftGeo(),dx=(x-G.ox)/G.k,dy=(y-G.oy)/G.k,inR=r=>dx>=r[0]&&dx<=r[0]+r[2]&&dy>=r[1]&&dy<=r[1]+r[3];
+{const P=wTap;wTap=function(x,y){const w=WL;if(ftOn(w)){/* TOQUEFT14NOV (reports 'reroll fechou a tela' / 'o botão não vai'): o wTap recebe o y deslocado (H-320-wK); a tela Fortaleza é desenhada na tela inteira, então desfaz o deslocamento */const y0=y+Math.max(0,H-320)-wK(),cs=w.cards,G=ftGeo(),dx=(x-G.ox)/G.k,dy=(y0-G.oy)/G.k,inR=r=>dx>=r[0]&&dx<=r[0]+r[2]&&dy>=r[1]&&dy<=r[1]+r[3];
       const SL=ftCardSlots(cs.opts.length);for(let i=0;i<cs.opts.length;i++){const sl=SL[i],r=[sl.x,sl.y-20,337*sl.s,680*sl.s];if(inR(r)){if(cs.i===i&&cs.t>20)wPick(i);else{cs.i=i;try{tone([660,880],.04);}catch(e){}}return;}}
       if(inR([84,1430,913,160])){wPick(cs.i);return;}
-      if(inR([238,1593,605,101])){return P.call(this,152,224);}
+      if(inR([238,1593,605,101])){if((w.rr||0)>0){w.rr--;w.cards=null;wOffer();try{tone([523,784],.06);}catch(e){}}else mcBuy('troca');return;}
       for(const [ty,kk,r] of (w._ftHits||[]))if(inR(r)){if(ty==='b')mcBuy(kk);else if(fpadCan(w))fpadStart(w);return;}
       return;}
     return P.apply(this,arguments);};}

@@ -17698,11 +17698,12 @@ const CM2IC={rng:'ic_luneta',crit:'ic_critico',hp:'ic_muralha',coin:'ic_moedas',
   b.save();b.imageSmoothingEnabled=true;try{b.imageSmoothingQuality='high';}catch(e){}
   {const F=cm2('fundo'),fs=Math.max(W/720,H/1280);b.fillStyle='#141a4a';b.fillRect(0,0,W,H);b.drawImage(F,(W-720*fs)/2,0,720*fs,1280*fs);}
   /* área das cartas */
-  const PH=S(300),bot=H-PH-S(14),top=S(535),ncol=3,cw=S(300),gap=S(50),gx=X(40),ch2=cw*540/320,cellH=ch2+S(165),rows=Math.ceil(L.length/ncol),maxS=Math.max(0,rows*cellH+S(20)-(bot-top));
+  /* CARTAS5_14NOV (Felipe no Montador das Cartas: tela larga/Tesla com 5 cartas por fileira no tamanho original, no meio; as fileiras passam POR TRÁS do painel de baixo em vez de serem cortadas pela metade) */
+  const _larga=W-CW>S(700),PH=S(300),bot=H-PH-S(14),top=S(535),ncol=_larga?5:3,cw=S(300),gap=S(50),gx=_larga?(W-(5*cw+4*gap))/2:X(40),ch2=cw*540/320,cellH=ch2+S(165),rows=Math.ceil(L.length/ncol),maxS=Math.max(0,rows*cellH+S(20)-(bot-top));
   if(!st.drag){st.scroll+=st.vs||0;st.vs=(st.vs||0)*.88;if(Math.abs(st.vs)<.05)st.vs=0;}if(st.scroll>0){st.scroll*=.7;st.vs=0;}if(st.scroll<-maxS){st.scroll=-maxS+(st.scroll+maxS)*.7;st.vs=0;}
-  b.save();b.beginPath();b.rect(0,top,W,bot-top);b.clip();
-  const vis=yy=>yy>top+1&&yy<bot-6;
-  L.forEach((c,i)=>{const col=i%ncol,row=Math.floor(i/ncol),x=gx+col*(cw+gap),y=top+S(30)+row*cellH+st.scroll;if(y>bot+4||y+cellH<top-4)return;
+  b.save();b.beginPath();b.rect(0,top,W,H-top);b.clip();
+  const vis=yy=>yy>top+1&&yy<H-2,VIS0=vis,PYT=H-PH-S(8);
+  L.forEach((c,i)=>{const col=i%ncol,row=Math.floor(i/ncol),x=gx+col*(cw+gap),y=top+S(30)+row*cellH+st.scroll;if(y>H||y+cellH<top-4)return;const vis=yy=>VIS0(yy)&&!(yy>PYT-S(10)&&x+cw>X(20)&&x<X(1060));/* letra de carta que está por trás do painel não aparece por cima dele */
     const sel=i===st.sel,rc=RAR[c.r],lv=wcuLv(c.id),mx=wcuMax(c),has=wcsLv(c.id)>0,ccx=x+cw/2;
     if(sel){b.save();b.globalCompositeOperation='lighter';glowAt(ccx,y+ch2/2,cw*.9,'255,210,90',.45);b.restore();}
     di(sel?'carta_selecionada':'carta_normal',x,y,cw,ch2);

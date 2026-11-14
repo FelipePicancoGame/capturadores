@@ -17694,44 +17694,46 @@ const CM2IC={rng:'ic_luneta',crit:'ic_critico',hp:'ic_muralha',coin:'ic_moedas',
 {const _d=drawCardShop;drawCardShop=function(u){cm2Load();if(!cm2Ready())return _d(u);
   const st=u.cfg.cshop;st.t++;const t=st.t,L=wcuList().slice().sort((a,b2)=>a.r-b2.r);u.rects=[];u.boxR=null;
   const CW=Math.min(W,H*.62),k=CW/1080,x0=(W-CW)/2,X=v=>x0+v*k,S=v=>v*k;
+  /* MCLAY14NOV: arrumação salva pelo Felipe no Montador das Cartas (16:46, 14/nov) — celular e tela larga/Tesla separados */
+  const LY=MCLAY[W-CW>S(700)?'tesla':'cel'],O=n=>LY[n]||MCL0,IMg=(part,n,x,y,w,h)=>{const q=O(part),f=1+q.s/100,nw=(w+S(q.w))*f,nh=h*f,r={x:x+S(q.x)+(w-nw)/2,y:y+S(q.y)+(h-nh)/2,w:nw,h:nh};if(n)di(n,r.x,r.y,r.w,r.h);return r;};
   const di=(n,x,y,w,h)=>{const I=cm2(n);if(I)b.drawImage(I,x,y,w,h);return !!I;};
   b.save();b.imageSmoothingEnabled=true;try{b.imageSmoothingQuality='high';}catch(e){}
   {const F=cm2('fundo'),fs=Math.max(W/720,H/1280);b.fillStyle='#141a4a';b.fillRect(0,0,W,H);b.drawImage(F,(W-720*fs)/2,0,720*fs,1280*fs);}
   /* área das cartas */
   /* CARTAS5_14NOV (Felipe no Montador das Cartas: tela larga/Tesla com 5 cartas por fileira no tamanho original, no meio; as fileiras passam POR TRÁS do painel de baixo em vez de serem cortadas pela metade) */
-  const _larga=W-CW>S(700),PH=S(300),bot=H-PH-S(14),top=S(535),ncol=_larga?5:3,cw=S(300),gap=S(50),gx=_larga?(W-(5*cw+4*gap))/2:X(40),ch2=cw*540/320,cellH=ch2+S(165),rows=Math.ceil(L.length/ncol),maxS=Math.max(0,rows*cellH+S(20)-(bot-top));
+  const _larga=W-CW>S(700),PH=S(300),bot=H-PH-S(14),top=S(535),ncol=_larga?5:3,cw=S(300),gap=S(50),gx=(_larga?(W-(5*cw+4*gap))/2:X(40))+S(O('grade').x),ch2=cw*540/320,cellH=ch2+S(165),rows=Math.ceil(L.length/ncol),maxS=Math.max(0,rows*cellH+S(20)-(bot-top));
   if(!st.drag){st.scroll+=st.vs||0;st.vs=(st.vs||0)*.88;if(Math.abs(st.vs)<.05)st.vs=0;}if(st.scroll>0){st.scroll*=.7;st.vs=0;}if(st.scroll<-maxS){st.scroll=-maxS+(st.scroll+maxS)*.7;st.vs=0;}
   b.save();b.beginPath();b.rect(0,top,W,H-top);b.clip();
   const vis=yy=>yy>top+1&&yy<H-2,VIS0=vis,PYT=H-PH-S(8);
-  L.forEach((c,i)=>{const col=i%ncol,row=Math.floor(i/ncol),x=gx+col*(cw+gap),y=top+S(30)+row*cellH+st.scroll;if(y>H||y+cellH<top-4)return;const vis=yy=>VIS0(yy)&&!(yy>PYT-S(10)&&x+cw>X(20)&&x<X(1060));/* letra de carta que está por trás do painel não aparece por cima dele */
+  L.forEach((c,i)=>{const col=i%ncol,row=Math.floor(i/ncol),x=gx+col*(cw+gap),y=top+S(30+O('grade').y)+row*cellH+st.scroll;if(y>H||y+cellH<top-4)return;const vis=yy=>VIS0(yy)&&!(yy>PYT-S(10)&&x+cw>X(20)&&x<X(1060));/* letra de carta que está por trás do painel não aparece por cima dele */
     const sel=i===st.sel,rc=RAR[c.r],lv=wcuLv(c.id),mx=wcuMax(c),has=wcsLv(c.id)>0,ccx=x+cw/2;
     if(sel){b.save();b.globalCompositeOperation='lighter';glowAt(ccx,y+ch2/2,cw*.9,'255,210,90',.45);b.restore();}
-    di(sel?'carta_selecionada':'carta_normal',x,y,cw,ch2);
+    const RC=IMg('carta',sel?'carta_selecionada':'carta_normal',x,y,cw,ch2);
     /* raridade: faixa colorida em cima da pedra */
-    rrect(x+cw*.3,y+ch2*.035,cw*.4,S(12),S(6),rc,false);
-    const ik=CM2IC[c.id],icy=y+ch2*.25;if(ik&&cm2(ik)){const s2=cw*.62;di(ik,ccx-s2/2,icy-s2/2,s2,s2);}else{b.save();b.globalCompositeOperation='lighter';glowAt(ccx,icy,cw*.32,hex2rgb(rc).join(','),.35);b.restore();drawIcon(c.ic,ccx,icy,cw/40);}
-    {const P=MCC.nome;if(vis(y+ch2*.47+S(P.y)))T(c.n,ccx+S(P.x),y+ch2*.462+S(P.y),S(40+P.s),'center','#fff6e0',cw*.86+S(P.w),'#3a1e08');}
-    {const P=MCC.texto,fz=S(30+P.s);wrap(wcuTxt(c,st.tab===0?lv:0),cw*.78+S(P.w),fz).slice(0,5).forEach((l,q)=>{const yy=y+ch2*.585+S(P.y)+q*fz*1.18;if(vis(yy))T(l,ccx+S(P.x),yy,fz,'center','#4a3018',cw*.8+S(P.w));});}
+    rrect(RC.x+RC.w*.3,RC.y+RC.h*.035,RC.w*.4,S(12),S(6),rc,false);
+    const ik=CM2IC[c.id],icy=y+ch2*.25;if(ik&&cm2(ik)){const s2=cw*.62;IMg('icone',ik,ccx-s2/2,icy-s2/2,s2,s2);}else{b.save();b.globalCompositeOperation='lighter';glowAt(ccx,icy,cw*.32,hex2rgb(rc).join(','),.35);b.restore();drawIcon(c.ic,ccx,icy,cw/40);}
+    {const P=O('nome');if(vis(y+ch2*.47+S(P.y)))T(c.n,ccx+S(P.x),y+ch2*.462+S(P.y),S(40+P.s),'center','#fff6e0',cw*.86+S(P.w),'#3a1e08');}
+    {const P=O('texto'),fz=S(30+P.s);wrap(wcuTxt(c,st.tab===0?lv:0),cw*.78+S(P.w),fz).slice(0,5).forEach((l,q)=>{const yy=y+ch2*.585+S(P.y)+q*fz*1.18;if(vis(yy))T(l,ccx+S(P.x),yy,fz,'center','#4a3018',cw*.8+S(P.w));});}
     const badge=st.tab===0?(lv?'★'+lv:null):(has?'✔':null);if(badge){const bw=S(80),bx=x+cw-bw-S(4),by=y-S(4);if(!di('nivel',bx,by,bw,bw*100/150))rrect(bx,by,bw,S(52),S(10),'#e0a020',false);if(vis(by+S(8)))T(badge,bx+bw/2,by+S(9),S(32),'center','#ffffff',bw,'#5a3a08');}
     if(st.flash&&st.flash.i===i&&st.flash.t<30){st.flash.t++;const q=st.flash.t/30;b.save();b.globalAlpha=1-q;b.globalCompositeOperation='lighter';glowAt(ccx,y+ch2/2,cw*(.6+q),'255,230,120',.9);b.restore();}
     const mxd=st.tab===0?lv>=mx:has,can=st.tab===0?(!mxd&&(flags.wFichas||0)>=WCU_COST[c.r][lv]):(!has&&(flags.honra||0)>=WCS_COST[c.r]);
-    const pw=cw*.95,ph=pw*140/300,px=ccx-pw/2,py=y+ch2+S(22);
+    const RB=IMg('btpreco',null,ccx-cw*.95/2,y+ch2+S(22),cw*.95,cw*.95*140/300),pw=RB.w,ph=RB.h,px=RB.x,py=RB.y,bcx=px+pw/2,QP=O('preco');
     if(mxd)di('preco_max',px,py,pw,ph);else{if(!can)b.globalAlpha=.55;di('melhorar',px,py,pw,ph);b.globalAlpha=1;}
-    if(vis(py+ph*.3)){if(mxd)T(st.tab===0?'MÁX':'TEM',ccx,py+ph*.27,S(44),'center','#ffffff',pw*.8,'#1a2030');else{const n=String(st.tab===0?WCU_COST[c.r][lv]:WCS_COST[c.r]);T(n,ccx-S(30),py+ph*.25,S(46),'center','#ffffff',pw*.5,'#0e4a10');di(st.tab===0?'ic_ficha':'ic_medalha',ccx+S(30),py+ph*.14,S(70),S(70));}}
+    if(vis(py+ph*.3)){if(mxd)T(st.tab===0?'MÁX':'TEM',bcx,py+ph*.27,S(44),'center','#ffffff',pw*.8,'#1a2030');else{const n=String(st.tab===0?WCU_COST[c.r][lv]:WCS_COST[c.r]);T(n,bcx-S(30)+S(QP.x),py+ph*.25+S(QP.y),S(46+QP.s),'center','#ffffff',pw*.5+S(QP.w),'#0e4a10');IMg('icpreco',st.tab===0?'ic_ficha':'ic_medalha',bcx+S(30),py+ph*.14,S(70),S(70));}}
     if(py+ph>top&&py<bot)u.rects.push({x:px,y:Math.max(top,py),w:pw,h:Math.min(ph,bot-Math.max(top,py)),i:3000+i});
     u.rects.push({x,y:Math.max(top,y),w:cw,h:Math.min(ch2,bot-Math.max(top,y)),i:1000+i});});
   b.restore();
   if(maxS>0){const sh=(bot-top)*(bot-top)/(bot-top+maxS),sp=(-st.scroll/maxS)*(bot-top-sh);rrect(X(1066),top+sp,S(8),sh,S(4),'rgba(255,255,255,.35)',false);}
   /* topo */
-  di('voltar',X(18),S(50),S(118),S(118));u.rects.push({x:0,y:0,w:X(150),h:S(180),i:99});
-  if(!di('loja',X(944),S(50),S(118),S(118)))T('💎',X(1003),S(80),S(50),'center','#fff');u.rects.push({x:X(930),y:0,w:W-X(930),h:S(180),i:302});
-  di('titulo',X(175),S(25),S(730),S(182));T('CARTAS DA MURALHA',X(540),S(80),S(56),'center','#ffd36a',S(600),'#3a1e08');
-  [['ic_ficha',flags.wFichas||0,285],['ic_medalha',flags.honra||0,608]].forEach(([ic,n,xx])=>{di('contador',X(xx),S(215),S(255),S(100));di(ic,X(xx+10),S(205),S(110),S(110));T(String(n),X(xx+160),S(237),S(54),'center','#ffffff',S(120),'#0a1030');});
-  [['MELHORAR',0,35],['COMEÇAR COM',1,565]].forEach(([s,q,xx])=>{const on=st.tab===q;di(on?'aba_ativa':'aba_inativa',X(xx),S(370),S(480),S(154));T(s,X(xx+240),S(408),S(50),'center','#ffffff',S(400),on?'#6a3a00':'#0a2a6a');u.rects.push({x:X(xx),y:S(370),w:S(480),h:S(140),i:300+q});
+  IMg('voltar','voltar',X(18),S(50),S(118),S(118));u.rects.push({x:0,y:0,w:X(150),h:S(180),i:99});
+  if(!cm2('loja'))T('💎',X(1003),S(80),S(50),'center','#fff');else IMg('loja','loja',X(944),S(50),S(118),S(118));u.rects.push({x:X(930),y:0,w:W-X(930),h:S(180),i:302});
+  IMg('placa','titulo',X(175),S(25),S(730),S(182));{const q=O('topo');T('CARTAS DA MURALHA',X(540)+S(q.x),S(80+q.y),S(56+q.s),'center','#ffd36a',S(600+q.w),'#3a1e08');}
+  [['ic_ficha',flags.wFichas||0,285],['ic_medalha',flags.honra||0,608]].forEach(([ic,n,xx])=>{const R1=IMg('contador','contador',X(xx),S(215),S(255),S(100)),f=R1.w/S(255),q=O('conta');IMg('icontador',ic,R1.x+S(10)*f,R1.y-S(10)*f,S(110)*f,S(110)*f);T(String(n),R1.x+S(160)*f+S(q.x),R1.y+S(22)*f+S(q.y),S(54+q.s),'center','#ffffff',S(120+q.w),'#0a1030');});
+  [['MELHORAR',0,35],['COMEÇAR COM',1,565]].forEach(([s,q,xx])=>{const on=st.tab===q,RA=IMg('abasimg',on?'aba_ativa':'aba_inativa',X(xx),S(370),S(480),S(154)),qa=O('abas');T(s,RA.x+RA.w/2+S(qa.x),RA.y+S(38)*RA.h/S(154)+S(qa.y),S(50+qa.s),'center','#ffffff',S(400+qa.w),on?'#6a3a00':'#0a2a6a');u.rects.push({x:X(xx),y:S(370),w:S(480),h:S(140),i:300+q});
     if(q===0){let n2=0;try{const fi=flags.wFichas||0;for(const c of L){const lv=wcuLv(c.id);if(lv<wcuMax(c)&&fi>=WCU_COST[c.r][lv])n2++;}}catch(e){}if(n2&&!on){b.save();b.translate(X(xx+460),S(385));b.scale(S(30)/6,S(30)/6);redDot(0,0,n2,.9);b.restore();}}
     if(q===1){let n2=0;try{const hn=flags.honra||0;for(const c of L)if(!wcsLv(c.id)&&hn>=WCS_COST[c.r])n2++;}catch(e){}if(n2&&!on){b.save();b.translate(X(xx+460),S(385));b.scale(S(30)/6,S(30)/6);redDot(0,0,n2,.9);b.restore();}}});
   /* painel de baixo */
-  {const py0=H-PH-S(8);di('painel',X(20),py0,S(1040),PH);const c=L[st.sel];if(c){const lv=wcuLv(c.id),mx=wcuMax(c),has=wcsLv(c.id)>0,lx0=X(124)/* LETRAMOLDURA14NOV: nome não encosta na moldura */,_PT=MCC.titulo,_PB=MCC.baixo,_PK=MCC.botao,lx=lx0+S(_PB.x),lw=S(856+_PB.w);
+  {const py0=IMg('painel','painel',X(20),H-PH-S(8),S(1040),PH).y;const c=L[st.sel];if(c){const lv=wcuLv(c.id),mx=wcuMax(c),has=wcsLv(c.id)>0,lx0=X(124)/* LETRAMOLDURA14NOV: nome não encosta na moldura */,_PT=O('titulo'),_PB=O('baixo'),_PK=O('botao'),lx=lx0+S(_PB.x),lw=S(856+_PB.w);
       T(c.n+' · '+RARN[c.r],lx0+S(_PT.x),py0+S(52+_PT.y),S(46+_PT.s),'left','#3a2410',S(560+_PT.w));
       const done=st.tab===0?lv>=mx:has;
       if(done){const sw=S(270),sx=X(1060-100-sw);if(!di('status_max',sx,py0+S(40),sw,sw*120/300))rrect(sx,py0+S(40),sw,S(100),S(20),'#2f9f4c');T(window.CVLANG==='en'?(st.tab===0?'MAX ★'+lv:'CHOSEN ✓'):(st.tab===0?'MÁXIMO ★'+lv:'ESCOLHIDA ✓'),sx+sw/2,py0+S(66),S(36),'center','#ffffff',sw*.85,'#0e4a10');}
@@ -17739,7 +17741,7 @@ const CM2IC={rng:'ic_luneta',crit:'ic_critico',hp:'ic_muralha',coin:'ic_moedas',
       if(st.tab===0){if(done){wrap(wcuTxt(c,lv),lw,fz).slice(0,3).forEach((l,q)=>T(l,lx,ly+q*fz*1.15,fz,'left','#1f7a3a',lw));}else{const A2=wrap(`Agora: ${wcuTxt(c,lv)}`,tw,fz).slice(0,2),B2=wrap(`Melhorada ★${lv+1}: ${wcuTxt(c,lv+1)}`,tw,fz).slice(0,2);A2.forEach((l,q)=>T(l,lx,ly+q*fz*1.08,fz,'left','#6a4a2a',tw));B2.forEach((l,q)=>T(l,lx,ly+(A2.length+q)*fz*1.08+S(8),fz,'left','#1f7a3a',tw));}}
       else{const L2=has?['Toda Muralha já começa com esta carta ativa.']:[...wrap(wcuTxt(c,lv),tw,fz*.9).slice(0,2),'Toda Muralha já COMEÇA com ela ativa'];L2.forEach((l,q)=>T(l,lx,ly+q*fz*1.05,fz*.9,'left',has||q===L2.length-1?'#1f7a3a':'#3a2410',tw));}
       if(!done){const bw=S(300+_PK.s*4),bh=bw*140/300,bx=X(1040-60-300)+S(_PK.x),by=py0+PH-bh-S(36)+S(_PK.y),pr=st.prT&&t-st.prT<10,pl=1+Math.sin(t/7)*.03;b.save();b.translate(bx+bw/2,by+bh/2);b.scale(pl,pl);di(pr?'melhorar_apertado':'melhorar',-bw/2,-bh/2,bw,bh);b.restore();
-        const cost=st.tab===0?WCU_COST[c.r][lv]:WCS_COST[c.r];T((window.CVLANG==='en'?(st.tab===0?'UPGRADE ':'BUY '):(st.tab===0?'MELHORAR ':'COMPRAR '))+cost,bx+bw*.42,by+bh*.31,S(32),'center','#ffffff',bw*.66,'#0e4a10');di(st.tab===0?'ic_ficha':'ic_medalha',bx+bw-S(72),by+bh*.2,S(56),S(56));u.rects.push({x:bx,y:by,w:bw,h:bh,i:2000});}}}
+        const cost=st.tab===0?WCU_COST[c.r][lv]:WCS_COST[c.r];{const q=O('botaotx');T((window.CVLANG==='en'?(st.tab===0?'UPGRADE ':'BUY '):(st.tab===0?'MELHORAR ':'COMPRAR '))+cost,bx+bw*.42+S(q.x),by+bh*.31+S(q.y),S(32+q.s),'center','#ffffff',bw*.66+S(q.w),'#0e4a10');}IMg('icbotao',st.tab===0?'ic_ficha':'ic_medalha',bx+bw-S(72),by+bh*.2,S(56),S(56));u.rects.push({x:bx,y:by,w:bw,h:bh,i:2000});}}}
   b.restore();
   if(st.msg){st.msg.t++;const a=st.msg.t<90?1:Math.max(0,1-(st.msg.t-90)/20);if(a<=0)st.msg=null;else{b.globalAlpha=a;rrect(X(60),bot-S(110),S(960),S(90),S(30),st.msg.bad?'#c23b3b':'#2f9f4c',false);T(st.msg.s,W/2,bot-S(88),S(40),'center',C.white,S(920),C.ink);b.globalAlpha=1;}}};}
 try{Object.assign(window.CVEN,{"COMEÇAR COM":"START WITH","MELHORAR":"UPGRADE","TEM":"OWNED","Toda Muralha já começa com esta carta ativa.":"Every Wall already starts with this card active.","Toda Muralha já COMEÇA com ela ativa":"Every Wall STARTS with it active"});}catch(e){}
@@ -18574,6 +18576,7 @@ setTimeout(function cvTesla(){try{if(typeof flags==='undefined'||!flags||!party|
 /* MONTADOR DO CHEFE (MONTACHEFE13NOV) */
 /* MONTACARTAS14NOV (Felipe: 'está desalinhado, me dá o montador'): Montador das Cartas da Muralha. Abrir o App com #montacartas.
    Escolhe a parte (nome da carta, texto da carta, título de baixo, texto de baixo, botão de baixo), move com as setas, muda tamanho e largura, e SALVAR E MANDAR manda os números pelo Report. */
+const MCL0={x:0,y:0,s:0,w:0},MCLAY={"cel":{"abas":{"x":-4,"y":4,"s":0,"w":0},"botao":{"x":-50,"y":-44,"s":12,"w":0},"botaotx":{"x":0,"y":16,"s":0,"w":0},"btpreco":{"x":0,"y":-32,"s":0,"w":0},"carta":{"x":0,"y":-32,"s":0,"w":0},"conta":{"x":-2,"y":2,"s":0,"w":0},"icbotao":{"x":-14,"y":16,"s":0,"w":0},"icone":{"x":0,"y":-32,"s":0,"w":0},"icontador":{"x":16,"y":6,"s":-28,"w":0},"icpreco":{"x":-20,"y":10,"s":0,"w":0},"nome":{"x":0,"y":-32,"s":0,"w":0},"preco":{"x":4,"y":14,"s":0,"w":0},"texto":{"x":0,"y":-12,"s":0,"w":0}},"tesla":{"abas":{"x":-4,"y":4,"s":0,"w":0},"botao":{"x":-50,"y":-44,"s":12,"w":0},"botaotx":{"x":0,"y":16,"s":0,"w":0},"btpreco":{"x":0,"y":-46,"s":0,"w":0},"carta":{"x":0,"y":-46,"s":0,"w":0},"conta":{"x":-2,"y":2,"s":0,"w":0},"icbotao":{"x":-14,"y":16,"s":0,"w":0},"icone":{"x":0,"y":-46,"s":0,"w":0},"icontador":{"x":16,"y":6,"s":-28,"w":0},"icpreco":{"x":-24,"y":10,"s":0,"w":0},"nome":{"x":0,"y":-46,"s":0,"w":0},"preco":{"x":0,"y":14,"s":0,"w":0},"texto":{"x":0,"y":-26,"s":0,"w":0}}};
 var MCC=(()=>{const D={nome:{x:0,y:0,s:0,w:0},texto:{x:0,y:0,s:0,w:0},titulo:{x:0,y:0,s:0,w:0},baixo:{x:0,y:0,s:0,w:0},botao:{x:0,y:0,s:0,w:0}};try{const j=JSON.parse(localStorage.getItem('cv.mcc')||'null');if(j)for(const k in D)Object.assign(D[k],j[k]||{});}catch(_){}return D;})();
 (function(){/* 14/nov (Felipe: 'para de me mandar pra dentro do jogo pra mexer no montador' / 'no X ele não fecha'): montador dentro do jogo desligado — agora é a página Montador das Cartas */try{localStorage.removeItem('cv.mcm');}catch(_){}return;
   const NM={nome:'NOME DA CARTA',texto:'TEXTO DA CARTA',titulo:'TÍTULO DE BAIXO',baixo:'TEXTO DE BAIXO',botao:'BOTÃO DE BAIXO'};let sel='nome';

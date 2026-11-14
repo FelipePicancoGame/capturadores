@@ -18605,6 +18605,47 @@ function cv13Lobby(mode){if(!cv13On())return;const $=id=>document.getElementById
   const f=document.createElement('div');f.style.cssText=`position:absolute;left:calc(var(--u)*235);top:calc(var(--u)*1690);width:calc(var(--u)*610);height:calc(var(--u)*150);background:url(${CV13A}botao_vermelho_610x150.webp) center/100% 100% no-repeat;display:flex;align-items:center;justify-content:center;color:#fff;font-size:calc(var(--u)*66);font-weight:700;font-family:Arial,Helvetica,Liberation Sans,sans-serif;cursor:pointer;text-shadow:0 .calc(var(--u)*1) 0 rgba(0,0,0,.35)`;f.textContent=EN?'CLOSE':'FECHAR';box.appendChild(f);
   f.onclick=e=>{e.stopPropagation();const old=[...el.querySelectorAll('button')].find(b=>b!==f);if(old)old.click();else el.remove();};}catch(e){console.error(e);}return p;};}
 /* /CONVITE13NOV */
+/* CONVITE2_14NOV (Buchecha, CONVITE_AMIGOS_MODERNO_14nov, aprovado pelo Felipe): JOGAR COM AMIGOS no estilo azul novo. Teste com #convite2, volta com #convite1 */
+window.__CV2=()=>{try{if(/[?#&]convite1/.test(location.href)){localStorage.removeItem('cv.convite2');return false;}if(/[?#&]convite2/.test(location.href))localStorage.setItem('cv.convite2','1');return localStorage.getItem('cv.convite2')==='1';}catch(e){return /convite2/.test(location.href);}};
+{const _l=cv13Lobby;const C2='assets/convite2/';
+cv13Lobby=function(mode){if(!window.__CV2())return _l.apply(this,arguments);const $=id=>document.getElementById(id);if(!$('arBox')||$('arBox').hidden||!$('arIni')||$('arIni').hidden)return;if(($('arCod').value||'').trim())return;
+  cv13Css();cv13Close();const EN=window.CVLANG==='en',co=mode==='coop',BR='#eef6ff',el=document.createElement('div');el.id='cv13L';el.style.background=`#0b1a3a url(${C2}cenario.webp) center/cover no-repeat`;el.style.fontFamily='CadBaloo,Fredoka,Arial,sans-serif';
+  const pn=document.createElement('div');pn.className='pn';pn.style.background='none';el.appendChild(pn);document.body.appendChild(el);
+  const fit=()=>{const vw=innerWidth,vh=innerHeight,w=Math.min(vw,vh*1080/2340,560),h=w*2340/1080;pn.style.width=w+'px';pn.style.height=h+'px';pn.style.setProperty('--u',(w/1080)+'px');};fit();addEventListener('resize',fit);
+  const U=v=>`calc(var(--u) * ${v})`,R=(x,y,w,h)=>`left:${U(x)};top:${U(y)};width:${U(w)};height:${U(h)}`;
+  const add=(html,host)=>{const d=document.createElement('div');d.innerHTML=html;const n=d.firstElementChild;(host||pn).appendChild(n);return n;};
+  const img=(r,n,host)=>add(`<div class="a" style="${R(...r)};background:url(${C2}${n}.webp) center/100% 100% no-repeat;pointer-events:none"></div>`,host);
+  const tx=(r,t,fs,col,al,host)=>{const n=add(`<div class="tx" style="${R(...r)};font-size:${U(fs)};line-height:${U(r[3])};color:${col||BR};text-align:${al||'center'};text-shadow:0 ${U(3)} 0 rgba(0,0,0,.35)"></div>`,host);n.textContent=t;return n;};
+  const btn=(r,n,t,tr2,fs,col,fn,host)=>{const b=add(`<div class="bt" style="${R(...r)};background-image:url(${C2}${n}.webp)"></div>`,host);b.onclick=e=>{e.stopPropagation();try{tone([660,880],.04);}catch(_){ }fn();};if(t!=null){const s=tx([tr2[0]-r[0],tr2[1]-r[1],tr2[2],tr2[3]],t,fs,col,'center',b);s.style.pointerEvents='none';}return b;};
+  btn([46,122,118,119],'botao_voltar',null,null,0,0,()=>{cv13Close();$('arVoltar').click();});
+  tx([209,132,805,91],EN?'PLAY WITH FRIENDS':'JOGAR COM AMIGOS',62);
+  img([81,312,919,122],'placa_numero_jogador');tx([117,337,848,68],(EN?'Your friend Nº: ':'Seu Nº de amigo: ')+amgNo(),50);
+  tx([56,483,919,57],(EN?'YOUR FRIENDS':'SEUS AMIGOS')+' · '+(co?(EN?'ARENA TOGETHER':'ARENA JUNTOS'):(EN?'ARENA VERSUS':'ARENA CONTRA')),40,'#b9d4f5','left');
+  const ls=add(`<div class="ls" style="${R(35,573,1013,511)};scrollbar-width:none"></div>`),L=amgLista();
+  if(!L.length){const v=document.createElement('div');v.style.cssText=`padding:${U(110)} ${U(60)};text-align:center;color:${BR};font-size:${U(44)};line-height:1.25;white-space:normal`;v.textContent=EN?'No friends in the game yet. Send the link or add your friend by number.':'Você ainda não tem amigos no jogo. Mande o link ou adicione pelo Nº do amigo.';ls.appendChild(v);}
+  const S=1080/852,N=(a)=>a.map(v=>v*S);
+  L.forEach(a=>{const r=document.createElement('div');r.style.cssText=`position:relative;width:${U(1013)};height:${U(158)};margin-bottom:${U(18)}`;ls.appendChild(r);
+    img([0,0,1013,158],'linha_amigo',r);const av=img(N([35,22,74,74]),'avatar_offline',r);
+    const nm=String(a.nome||(EN?'Friend':'Amigo')),ini=(nm.trim()[0]||'?').toUpperCase();
+    tx(N([37,25,70,65]),ini,62,BR,'center',r);tx(N([147,14,350,45]),nm,48,BR,'left',r);tx(N([148,69,210,32]),'Nº '+a.tid,34,'#b9d4f5','left',r);
+    const dot=img(N([370,81,13,13]),'status_offline',r),st=tx(N([395,69,112,31]),'…',32,'#b9d4f5','left',r);
+    btn(N([525,19,255,87]),'botao_convidar',EN?'INVITE':'CONVIDAR',[N([525,19,255,87])[0]+N([21,17,213,49])[0],N([525,19,255,87])[1]+N([21,17,213,49])[1],N([213,49])[0],N([213,49])[1]],44,'#0b2a5a',()=>arAmgConvidar(mode,a.tid),r);
+    amgFala(a.tid,{k:'ping'},5000).then(q=>{if(!document.body.contains(r))return;const on=!!(q&&q.k==='pong');av.style.backgroundImage=`url(${C2}avatar_${on?'online':'offline'}.webp)`;dot.style.backgroundImage=`url(${C2}status_${on?'online':'offline'}.webp)`;st.textContent=on?'online':'offline';}).catch(()=>{});});
+  img([35,1113,1013,156],'faixa_adicionar');img([60,1137,641,106],'campo_numero_amigo');
+  const inp=add(`<input inputmode="numeric" maxlength="6" placeholder="${EN?'Friend Nº':'Nº do amigo'}" style="${R(80,1145,600,90)};font-size:${U(48)};background:none;color:${BR};text-align:left;padding-left:${U(20)}">`);
+  ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click','keydown','keyup'].forEach(ev=>el.addEventListener(ev,e=>e.stopPropagation()));
+  btn([719,1137,307,108],'botao_adicionar',EN?'ADD':'ADICIONAR',[743,1161,256,55],42,'#0b2a5a',()=>{const n=$('arAmgN'),b=$('arAmgAdd');if(!n||!b)return;n.value=inp.value;b.click();setTimeout(()=>{if($('cv13L'))cv13Lobby(mode);},300);});
+  btn([46,1309,318,262],'botao_compartilhar_link',EN?'INVITE':'CONVIDAR',[65,1462,279,56],44,'#0b2a5a',()=>{try{amgShare();}catch(e){}});tx([65,1508,279,35],EN?'BY LINK':'POR LINK',28,'#0b2a5a').style.textShadow='none';img([161,1349,86,86],'icone_link');
+  btn([383,1309,318,262],'botao_whatsapp','WHATSAPP',[402,1462,279,56],44,'#0b3a18',()=>{try{amgZap();}catch(e){}});img([498,1349,86,86],'icone_whatsapp');
+  btn([720,1309,318,262],'botao_qr_code','QR CODE',[739,1462,279,56],46,'#fff',()=>{try{amgQR(amgLinkUrl(),amgLinkTxt());}catch(e){}});img([835,1349,86,86],'icone_qr');
+  btn([37,1614,1009,161],'botao_criar_sala',EN?'CREATE ROOM':'CRIAR SALA',[101,1648,877,86],66,'#0b3a18',()=>{cv13Close();$('arCriar').click();});
+  tx([82,1789,915,46],EN?'OR JOIN WITH A CODE':'OU ENTRE COM UM CÓDIGO',38);
+  img([35,1843,1013,157],'faixa_entrar');img([60,1868,641,108],'campo_codigo_sala');
+  const cod=add(`<input maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="${EN?'ROOM CODE':'CÓDIGO'}" style="${R(110,1880,540,84)};font-size:${U(50)};letter-spacing:${U(8)};background:none;color:${BR}">`);
+  btn([719,1867,307,109],'botao_entrar',EN?'JOIN':'ENTRAR',[748,1890,250,58],44,'#4a1208',()=>{const v=(cod.value||'').toUpperCase().replace(/[^A-Z]/g,'');if(v.length!==4){cv13Toast('offline',EN?'The code has 4 letters':'O código tem 4 letras');return;}$('arCod').value=v;cv13Close();$('arEntrar').click();});
+  img([42,2043,999,114],'placa_rodape');const rd=tx([91,2061,900,79],EN?'Pick a friend or share an invite to play together.':'Escolha um amigo ou compartilhe um convite para jogar juntos.',32);rd.style.whiteSpace='normal';rd.style.lineHeight='1.2';rd.style.display='flex';rd.style.alignItems='center';rd.style.justifyContent='center';
+  el._iv=setInterval(()=>{const B=$('arBox');if(!B||B.hidden||!$('arIni')||$('arIni').hidden||(G&&G.mode==='arena'&&AR&&AR.mp))cv13Close();},300);};}
+
 /* CHEFEESTRADA13NOV (reports 'Boss fora da estrada'): a estrada da Arena tem ~16 de largura e o chefe era desenhado com 0,5 (bem mais largo),
    então invadia o tabuleiro nas curvas. Agora o chefe fica no máximo 0,38 e levemente puxado pra fora do tabuleiro. */
 /* MONTACHEFE13NOV (Felipe: 'o que importa é o pé dele' / 'cria um montador pra eu fazer'): posição do PÉ do chefe em cada lado da estrada e o tamanho

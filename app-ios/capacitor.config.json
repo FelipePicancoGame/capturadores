@@ -1,0 +1,11 @@
+{
+  "appId": "com.capturadoresdovale.app",
+  "appName": "Capturadores do Vale",
+  "webDir": "www",
+  "backgroundColor": "#10200f",
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#10200f",
+    "appendUserAgent": "CapturadoresApp"
+  }
+}

@@ -1912,10 +1912,24 @@ function drawCfgArt(u){const ks=['cfg_fundo','cartao_opcao','seletor_personagem'
   {const y=1322,w=245,h=62,xs=[100,348,596],T=['📖 História','🖐️ Tutoriais','📶 '+offShort()],C=['#7a4a1a','#6a3fa0','#1f6a7a'],I2=[6,7,10];for(let k=0;k<3;k++){const q=p(xs[k],y);txt(T[k],xs[k]+w/2,y+h/2,34,'center',C[k],w-8);u.rects.push({x:q[0],y:q[1],w:w*s,h:h*s,i:I2[k]});}}
   {const w=520,h=w*206/857,x=(941-w)/2,y=1415;card(I.botao_voltar,x,y,w,h,8);txt('VOLTAR',x+w*.58,y+h/2+4,52,'center',TC,260);}
   b.restore();return true;}
+/* PRIVACIDADE14NOV (revisão App Store): política de privacidade e APAGAR MEUS DADOS dentro do jogo */
+async function privMenu(){const en=window.CVLANG==='en';
+  const j=await choose([en?'See privacy policy':'Ver política de privacidade',en?'Delete my data':'Apagar meus dados',en?'Back':'Voltar'],{noCancel:true,cadAsk:{q:en?'PRIVACY':'PRIVACIDADE',nf:1,cols:['#2f5fa8','#8a2f2f','#6a4a2a']}});
+  if(j===0){try{window.open('https://felipepicancogame.github.io/capturadores/privacidade.html','_blank');}catch(e){}return;}
+  if(j!==1)return;
+  const k=await choose([en?'DELETE EVERYTHING':'APAGAR TUDO',en?'Cancel':'Cancelar'],{noCancel:true,cadAsk:{q:en?'This deletes your whole game on this phone and asks us to remove your name from the players list. It cannot be undone.':'Isso apaga TODO o seu jogo neste aparelho e pede pra tirar seu nome da lista de jogadores. Não dá pra desfazer.',nf:1,cols:['#8a2f2f','#1f7a3a']}});
+  if(k!==0)return;
+  try{const r=Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:new Date().toISOString(),texto:'APAGAR MEUS DADOS: '+(flags.nome||'')+' · cartão '+(flags.tid||''),tela_jogo:'',print:''},window.rpCtx?rpCtx():{});
+    try{const c=document.createElement('canvas');c.width=8;c.height=8;r.tela_jogo=c.toDataURL('image/jpeg',.5);}catch(_){}
+    await Promise.race([window.rpSend?rpSend(r):Promise.resolve(false),new Promise(z=>setTimeout(z,8000))]);}catch(e){}
+  try{if(CLOUD&&CLOUD.ref&&CLOUD.ref.delete)await CLOUD.ref.delete();}catch(e){}
+  try{party.length=0;}catch(e){}
+  try{const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(/^(capturadores|cv\.)/.test(kk))ks.push(kk);}ks.forEach(kk=>localStorage.removeItem(kk));}catch(e){}
+  try{window.__NOVOJOGO=1;}catch(e){}location.reload();}
 async function cfgMenu(){while(true){const sOn=!flags.sfxOff,fOn=!flags.fxOff;
-  const mOn=musOn(),L=[`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${fOn?'LIGADO':'DESLIGADO'}`,`PERSONAGEM: ${flags.hero==='menina'?'MENINA':'MENINO'}`,'SALVAR AGORA','CARREGAR JOGO','VER A HISTÓRIA','VER TUTORIAIS','VOLTAR',`NARRAÇÃO: ${!flags.narraOff?'LIGADA':'DESLIGADA'}`,offLabel(),window.CVLANG==='en'?'🌐 LANGUAGE: ENGLISH':'🌐 IDIOMA: PORTUGUÊS'];
+  const mOn=musOn(),L=[`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${fOn?'LIGADO':'DESLIGADO'}`,`PERSONAGEM: ${flags.hero==='menina'?'MENINA':'MENINO'}`,'SALVAR AGORA','CARREGAR JOGO','VER A HISTÓRIA','VER TUTORIAIS','VOLTAR',`NARRAÇÃO: ${!flags.narraOff?'LIGADA':'DESLIGADA'}`,offLabel(),window.CVLANG==='en'?'🌐 LANGUAGE: ENGLISH':'🌐 IDIOMA: PORTUGUÊS','PRIVACIDADE'];
   /* 27/out (Felipe): mesmo estilo do Caderno com adesivo (balão de destaque + tirinhas de papel com fita) */
-  const j=await choose(L,{cfgart:1,cadAsk:{q:'CONFIGURAÇÕES — toque pra ligar ou desligar',nf:cfgMenu.open?1:0,cols:[mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',fOn?'#1f7a3a':'#8a2f2f',flags.hero==='menina'?'#a8326e':'#2f5fa8','#154c5e','#154c5e','#154c5e','#7a4fb0','#6a4a2a',!flags.narraOff?'#1f7a3a':'#8a2f2f','#1f6a7a','#2f5fa8']}});cfgMenu.open=1;if(j===11){cvSetLang(window.CVLANG==='en'?'pt':'en');return;}
+  const j=await choose(L,{cfgart:1,cadAsk:{q:'CONFIGURAÇÕES — toque pra ligar ou desligar',nf:cfgMenu.open?1:0,cols:[mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',fOn?'#1f7a3a':'#8a2f2f',flags.hero==='menina'?'#a8326e':'#2f5fa8','#154c5e','#154c5e','#154c5e','#7a4fb0','#6a4a2a',!flags.narraOff?'#1f7a3a':'#8a2f2f','#1f6a7a','#2f5fa8']}});cfgMenu.open=1;if(j===12){await privMenu();continue;}if(j===11){cvSetLang(window.CVLANG==='en'?'pt':'en');return;}
   if(j===0){flags.music=!musOn();saveGame();try{tone([660,880],.06);}catch(e){}continue;}
   if(j===1){flags.sfxOff=!flags.sfxOff;saveGame();if(!flags.sfxOff)try{tone([660,880],.06);}catch(e){}continue;}
   if(j===2){flags.fxOff=!flags.fxOff;saveGame();continue;}
@@ -3280,7 +3294,7 @@ function drawTilesArt2(u){const cf=u.cfg,L=cf.tiles,n=L.length,SC=asImg('st_cart
     const ccx=cx-sz*.01,ccy=top+sz*.44,r=sz*.31;b.save();b.beginPath();b.arc(ccx,ccy,r,0,Math.PI*2);const gg=b.createRadialGradient(ccx,ccy-r*.3,1,ccx,ccy,r);gg.addColorStop(0,'#ffffff');gg.addColorStop(1,(it.col||'#4f8fe2')+'88');b.fillStyle=gg;b.fill();b.clip();
     const bob=sel?Math.sin(t/5)*1:0;mnIcon2(it,ccx,ccy+bob,r,t+k*7);b.restore();
     b.restore();
-    if(ap>.6){T(it.n,cx,top+sz*.765,Math.min(5.6,sz*.13),'center','#4a2a10',sz*.74);if(it.sub)T(it.sub,cx,top+sz+.5,4.6,'center','#fff6dc',cw-2,C.ink);}
+    if(ap>.6){T(it.n,cx,top+sz*.765,Math.min(5.6,sz*.13),'center','#4a2a10',sz*.74);if(it.sub)T(it.sub,cx,top+sz+.5,5.8,'center','#fff6dc',cw-2,C.ink);}
     if(it.badge&&ap>.6){E(cx+sz*.36,top+sz*.12,4.5,4.5,'#ff3a4a');ln([[cx+sz*.36,top+sz*.12-2.4],[cx+sz*.36,top+sz*.12+.6]],1.3,'#ffffff');E(cx+sz*.36,top+sz*.12+2,.7,.7,'#ffffff',0,false);}
     u.rects.push({x:cx-cw/2,y:top,w:cw,h:sz+6,i:k});});
   u.boxR={x:0,y:0,w:W,h:H};return true;}
@@ -3308,7 +3322,7 @@ function drawTilesArt(u){const cf=u.cfg,L=cf.tiles,n=L.length;if(!asImg('mn_0')|
     else{rpath(1,1,tw2-2,th*.9,8);b.fillStyle='#2a1c10';b.fill();const gg=b.createLinearGradient(0,0,0,th);gg.addColorStop(0,it.col||'#4f8fe2');gg.addColorStop(1,it.col2||'#2a2448');b.fillStyle=gg;rpath(2.2,2.2,tw2-4.4,th*.9-2.4,7);b.fill();rpath(4,3.5,tw2-8,th*.3,6);b.fillStyle='rgba(255,255,255,.18)';b.fill();
       menuIcon(it.ic,tw2/2,th*.36+(sel?Math.sin(t/5)*1.2:0),t+k*7);rpath(5,th*.7,tw2-10,th*.27,5);b.fillStyle='#f3e2bf';b.fill();b.lineWidth=.8;b.strokeStyle='#8a5a2a';b.stroke();}
     b.restore();if(!I&&ap>.6)T(it.n,cx+tw2/2,cy+th*.53,7.2,'center',C.white,tw2-8,C.ink);
-    if(ap>.6&&it.sub)T(it.sub,cx+tw2/2,I?cy+th-ih+ih*MNSY[MNORD.indexOf(it.n)]-2:cy+th*.76,5.2,'center','#4a3424',tw2*.66);
+    if(ap>.6&&it.sub)T(it.sub,cx+tw2/2,I?cy+th-ih+ih*MNSY[MNORD.indexOf(it.n)]-2.6:cy+th*.76,6.4,'center','#4a3424',tw2*.8);/* LETRAMENU14NOV: legenda maior (revisão iPhone) */
     if(it.badge&&ap>.6){E(cx+tw2-4,cy+5,5,5,'#ff3a4a');ln([[cx+tw2-4,cy+2.5],[cx+tw2-4,cy+5.5]],1.4,'#ffffff');E(cx+tw2-4,cy+7.2,.8,.8,'#ffffff',0,false);}
     u.rects.push({x:cx,y:cy,w:tw2,h:th,i:k});});
   if(fi>=0)u.rects.push({x:W-28,y:py0-10,w:26,h:26,i:fi});
@@ -10464,7 +10478,7 @@ function lojaReal(pg0){return new Promise(res=>{
 async function enPainel(){while(true){const e=enSt(),day=qDay(),usd=flags.enGem&&flags.enGem.d===day?flags.enGem.n:0,can=usd<EN.GEMDAY&&gems()>=EN.GEM;
   const cheia=e.v>=EN.MAX,falta=cheia?0:enNext()+(EN.MAX-e.v-1)*EN.REG,hh=Math.floor(falta/3600e3),mm=Math.ceil((falta%3600e3)/60e3);
   const q=`⚡ Energia ${e.v} de ${EN.MAX}. Cada minigame usa ${EN.COST}.`+(cheia?' Está cheia!':` Próxima em ${enFmt(enNext())}, cheia em ${hh?hh+'h':''}${mm}min.`);
-  const opts=[...(can?[`${EN.GEM} 💎 = +${EN.GEMQ} ⚡`]:[]),'LOJA','FECHAR'];
+  const opts=[...(can?[`${EN.GEM} 💎 = +${EN.GEMQ} ⚡`]:[]),...(window.CVNATIVO?[]:['LOJA']),'FECHAR'];
   const j=await choose(opts,{noCancel:true,cadAsk:{q,nf:1,cols:can?['#1f7a3a','#3a8ae0','#8a2f2f']:['#3a8ae0','#8a2f2f']}});
   if(can&&j===0){flags.gems=gems()-EN.GEM;flags.enGem={d:day,n:usd+1};e.v+=EN.GEMQ;try{saveGame();}catch(_){}try{rwToast(`⚡ +${EN.GEMQ} de energia · −${EN.GEM} 💎`);}catch(_){}continue;}
   if(opts[j]==='LOJA'){await lojaReal();continue;}return;}}
@@ -10600,7 +10614,7 @@ function unlNeed(k){if(unlOk(k)||(k==='auto'&&unlTut()))return false;if(!UNLASK)
 function unlGive(k){(flags.unl||(flags.unl={}))[k]=1;try{saveGame();}catch(_){}try{rwToast(`🔓 ${UNL[k].n} liberado pra sempre, em todos os modos!`);}catch(_){}try{tone([523,659,784],.06);}catch(_){}}
 async function unlAsk(k){const U=UNL[k],g=gems(),can=g>=U.gem;
   const q=`🔒 ${U.n} está bloqueado. Desbloqueie uma vez e ele fica liberado pra sempre, em todos os modos.`+(can?'':` Custa ${U.gem} 💎 e você tem ${g} 💎.`);
-  const opts=[...(can?[`${U.gem} 💎 DESBLOQUEAR`]:[]),'LOJA','AGORA NÃO'];
+  const opts=[...(can?[`${U.gem} 💎 DESBLOQUEAR`]:[]),...(window.CVNATIVO?[]:['LOJA']),'AGORA NÃO'];
   const j=await choose(opts,{noCancel:true,cadAsk:{q,nf:1,cols:can?['#1f7a3a','#3a8ae0','#8a2f2f']:['#3a8ae0','#8a2f2f']}});
   if(can&&j===0){flags.gems=gems()-U.gem;unlGive(k);return true;}
   if(opts[j]==='LOJA')await lojaReal();return false;}
@@ -14830,7 +14844,7 @@ function CADON(){return CAD.ready||CAD.wait;}
   const tx=()=>{const e=document.createElement('div');e.className='tx';el.appendChild(e);return e;};
   const act=(e,fn)=>{e.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();});e.addEventListener('pointerup',ev=>{ev.preventDefault();ev.stopPropagation();if(G.mode!=='world'||busy||ui.length)return;try{fn();}catch(x){console.error(x);}});};
   const E={};
-  E.fechar=mk('button','cb','fechar');E.fechar.setAttribute('aria-label','Fechar o jogo');act(E.fechar,()=>{const b2=document.getElementById('cvClose');if(b2)b2.dispatchEvent(new Event('pointerdown'));});
+  E.fechar=mk('button','cb','fechar');E.fechar.setAttribute('aria-label','Fechar o jogo');if(window.CVNATIVO)E.fechar.style.display='none';/* FECHARIOS14NOV: app de iPhone não tem botão de fechar o jogo (regra da Apple) */act(E.fechar,()=>{const b2=document.getElementById('cvClose');if(b2)b2.dispatchEvent(new Event('pointerdown'));});
   E.menu=mk('button','cb','menu');E.menu.setAttribute('aria-label','Abrir menu');act(E.menu,()=>{P.path=null;P.mark=null;run(openMenu);});E.cfg=mk('button','cb',null);{const im=document.createElement('img');im.src=window.CVLANG==='en'?'blobs/en_cad_config.webp':'blobs/407997afb0a9520d7de56d6d64a70236.webp';im.alt='';im.draggable=false;E.cfg.appendChild(im);}E.cfg.setAttribute('aria-label','Configurações');act(E.cfg,()=>{P.path=null;P.mark=null;run(cfgMenu);});
   E.saldo=[0,1,2].map(()=>img('saldo'));E.ico=['moeda','cristal','essencia'].map(img);E.val=[0,1,2].map(tx);
   E.mini=mk('button','cb','minijogos');E.mini.setAttribute('aria-label','Minijogos');act(E.mini,()=>{tone([660,880],.04);P.path=null;P.mark=null;run(RAIL[0].go);});
@@ -17271,13 +17285,9 @@ setInterval(()=>{try{if(typeof G!=='undefined'&&G.mode==='world')trovDedup();}ca
    Enquanto isso não está ligado, a LOJA de dinheiro vira um aviso. Compras com cristais/moedas do jogo continuam normais. ?ios=1 simula no navegador. */
 window.CVNATIVO=/CapturadoresApp/.test(navigator.userAgent)||/[?&]ios=1/.test(location.search)||!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
 if(window.CVNATIVO){try{document.documentElement.classList.add('cvnativo');}catch(e){}
-  lojaReal=function(){return new Promise(res=>{if(document.getElementById('ljBox')){res();return;}const en=(typeof LANG!=='undefined'&&LANG==='en')||((localStorage.getItem('cv.lang')||'')==='en');
-    const b=document.createElement('div');b.id='ljBox';b.style.cssText='position:fixed;inset:0;z-index:9990;background:rgba(6,12,30,.66);display:flex;align-items:center;justify-content:center;font-family:CadBaloo,Fredoka,Arial,sans-serif;font-weight:800';
-    b.innerHTML=`<div style="background:#fff6df;border:6px solid #b5741f;border-radius:26px;padding:26px 22px;max-width:330px;text-align:center;color:#4a2c0c;box-shadow:0 10px 0 #7a4a12">
-      <div style="font-size:30px;margin-bottom:8px">💎 ${en?'SHOP':'LOJA'}</div>
-      <div style="font-size:21px;line-height:1.25">${en?'The crystal shop is coming soon to the app.<br>Win crystals by playing stages, missions and the Arena!':'A loja de cristais chega em breve no app.<br>Ganhe cristais jogando as fases, missões e a Arena!'}</div>
-      <button style="margin-top:18px;font:inherit;font-size:24px;color:#fff;background:#1f9a4a;border:0;border-radius:18px;padding:12px 34px;box-shadow:0 6px 0 #0f5a28">OK</button></div>`;
-    const fim=()=>{b.remove();res();};b.querySelector('button').onclick=fim;b.addEventListener('click',e=>{if(e.target===b)fim();});document.body.appendChild(b);});};
+  try{const st=document.createElement('style');st.textContent='html.cvnativo #cvClose{display:none!important}';document.head.appendChild(st);}catch(e){}
+  /* LOJAIOS14NOV (revisão App Store: 'em breve' é recusado): no app do iPhone, sem a compra pela Apple ligada, não existe loja de dinheiro — só um aviso curto de onde ganhar cristais */
+  lojaReal=function(){return new Promise(res=>{const en=(window.CVLANG==='en');try{rwToast(en?'💎 Win crystals in stages, missions and the Arena!':'💎 Ganhe cristais nas fases, missões e na Arena!');}catch(e){}res();});};
 }
 /* /APPIOS13NOV */
 /* AMGNAVEG13NOV (Felipe: 'o convite do amigo não abre o jogo, ele cria um novo'): no iPhone o link abre no Safari, que tem um jogo separado do app.
@@ -17755,6 +17765,7 @@ function drawCfg13(u){for(const k of CFG13K)if(!cfg13(k))return false;const I={}
   btn(I.atalho,I.historia,'História',[105,1339,243,82],6,28);btn(I.atalho,I.tutoriais,'Tutoriais',[369,1339,243,82],7,28);btn(I.atalho,I.offline,(()=>{try{return offShort();}catch(e){return 'Offline';}})(),[633,1339,243,82],10,28);
   btn(I.back,null,'',[286,1467,407,107],8,40);txt('Voltar',286+407*.6,1467+107/2+2,44,'center',TC,240);
   {const r=[714,1488,150,64];img(I.atalho,r);txt(window.CVLANG==='en'?'🌐 PT':'🌐 EN',r[0]+r[2]/2,r[1]+r[3]/2+2,28,'center',TC,130);hit(r,11);}
+  {const r=[110,1488,170,64];img(I.atalho,r);txt(window.CVLANG==='en'?'🔒 Privacy':'🔒 Privacidade',r[0]+r[2]/2,r[1]+r[3]/2+2,26,'center',TC,156);hit(r,12);}/* PRIVACIDADE14NOV */
   b.restore();u.boxR={x:0,y:0,w:W,h:H};return true;}
 {const _d=drawCfgArt;drawCfgArt=function(u){if(drawCfg13(u))return true;CFG13.on=false;return _d(u);};}
 try{const st=document.createElement('style');st.textContent='body.cfg13 #volPanel{display:none!important}';document.head.appendChild(st);}catch(e){}

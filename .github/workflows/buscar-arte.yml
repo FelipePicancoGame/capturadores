@@ -1,0 +1,19 @@
+name: buscar-arte
+# Baixa uma arte de uma URL (Canva/Adobe) e salva no repositório, em artes_brutas/ (fora do jogo).
+on:
+  workflow_dispatch:
+    inputs:
+      url: {description: "URL da imagem", required: true}
+      nome: {description: "nome do arquivo (ex.: presente/cartao.png)", required: true}
+permissions: {contents: write}
+jobs:
+  baixar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p "artes_brutas/$(dirname "${{ inputs.nome }}")"
+          curl -fsSL "${{ inputs.url }}" -o "artes_brutas/${{ inputs.nome }}"
+          file "artes_brutas/${{ inputs.nome }}"
+          git config user.name "buscar-arte"; git config user.email "actions@github.com"
+          git add artes_brutas; git commit -m "arte bruta: ${{ inputs.nome }}"; git pull --rebase; git push

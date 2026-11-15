@@ -4,7 +4,7 @@
   "webDir": "www",
   "backgroundColor": "#10200f",
   "ios": {
-    "contentInset": "always",
+    "contentInset": "never",
     "backgroundColor": "#10200f",
     "appendUserAgent": "CapturadoresApp"
   }

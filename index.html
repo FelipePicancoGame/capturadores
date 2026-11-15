@@ -19003,7 +19003,7 @@ window.__DMOD=()=>{try{if(/[?#&]dupla1/.test(location.href)){localStorage.setIte
   try{const a=vozA();a.addEventListener('error',()=>{try{const p=decodeURIComponent(new URL(a.src,location.href).pathname).replace(/^.*?\/((?:blobs|assets)\/)/,'$1');if(!/\.(mp3|m4a|ogg|wav)$/i.test(p))return;vtira(p);VZ.pend=null;VZ.on=0;try{window.__EV&&__EV('voz faltando '+p.slice(-40));}catch(_){}
     if(VZ.lastT&&performance.now()-(VZ.lastAt||0)<4000&&typeof narFala==='function'){const mt=/^([^:]{1,20}):\s(.*)$/s.exec(String(VZ.lastT));narFala(mt?mt[2]:VZ.lastT,mt?mt[1]:'');}}catch(e){}});}catch(e){}}
 /* AJEQ14NOV (Felipe aprovou AJUSTES_E_EQUIPE_AZUL_14nov do Buchecha): AJUSTES maior com rolagem e EQUIPE nova (líder grande + grade 2 colunas). #ajeq1 volta ao antigo */
-window.__AJEQ=()=>{try{if(/[?#&]ajeq1/.test(location.href)){localStorage.setItem('cv.ajeq','0');return false;}if(/[?#&]ajeq2/.test(location.href))localStorage.setItem('cv.ajeq','1');return localStorage.getItem('cv.ajeq')==='1';}catch(e){return /ajeq2/.test(location.href);}};/* até o Felipe aprovar as fotos: só com #ajeq2 */
+window.__AJEQ=()=>{try{if(/[?#&]ajeq1/.test(location.href)){localStorage.setItem('cv.ajeq','0');return false;}if(/[?#&]ajeq2/.test(location.href))localStorage.setItem('cv.ajeq','1');return localStorage.getItem('cv.ajeq')!=='0';}catch(e){return !/ajeq1/.test(location.href);}};/* Felipe aprovou 14/nov 21:21 */
 {const AQ=n=>'assets/ajeq/'+n+'.webp',EN=()=>window.CVLANG==='en',BR='#eef6ff',FT='CadBaloo,Fredoka,Arial,sans-serif';
  const AQS={u:null,el:null,kind:null,scroll:0};
  const mk=(host,tag,css)=>{const d=document.createElement(tag||'div');d.style.cssText='position:absolute;'+(css||'');host.appendChild(d);return d;};

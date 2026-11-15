@@ -12,7 +12,7 @@ def req(m,u,body=None):
     print('ok',m,u.split('?')[0]);return r.json() if r.text else {}
 SITE='https://felipepicancogame.github.io/capturadores/'
 TXT={
- 'en-US':dict(name='Capturadores do Vale',subtitle='7 monster games in 1',
+ 'en-US':dict(name='Valekin: Tame Rush',subtitle='7 monster games in 1',
    promo='Catch monsters, defend the wall, survive the horde and battle friends — seven games in one adventure!',
    desc="Explore the Valley, catch and train cute monsters, and live an adventure with your partner.\n\nPlay 7 games in 1:\n• Story — an adventure RPG with your first monster\n• Wall — tower defense against monster waves\n• Horde — survive and beat the boss\n• Towers — build towers and hold the path\n• Expedition — send your team on idle adventures\n• Match — match-3 puzzle that powers up your monsters\n• Arena — play with friends\n\nYour monsters level up everywhere you play. Collect them all, evolve them and complete the Valley's story.\n\nFree to play, with optional purchases and optional ads.",
    kw='monsters,catch,tower defense,rpg,idle,match 3,survival,arena,adventure,pets,evolve,valley'),

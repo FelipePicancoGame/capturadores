@@ -96,5 +96,5 @@ $('bRec').onclick=async()=>{stop=false;$('bRec').disabled=true;$('bStop').disabl
   if(Object.keys(AUD).length===LINES.length)st('Pronto! Toque em Baixar ZIP e mande o arquivo para o Claude.');};
 $('bStop').onclick=()=>{stop=true;};
 $('bZip').onclick=async()=>{const z=new JSZip();const man=[];for(const l of LINES){if(!AUD[l.id])continue;z.file(l.id+'.mp3',AUD[l.id]);man.push({...l,voz:(CAST[l.role]||{}).name,modelo:MODEL});}
-  z.file('manifest.json',JSON.stringify(man,null,1));const b=await z.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='vozes_ingles_parte5.zip';document.body.append(a);a.click();a.remove();};
+  z.file('manifest.json',JSON.stringify(man,null,1));const b=await z.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='vozes_ingles_parte6.zip';document.body.append(a);a.click();a.remove();};
 </script></body></html>

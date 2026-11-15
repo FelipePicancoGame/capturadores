@@ -19203,6 +19203,65 @@ window.__TRCP=()=>{try{if(/[?#&]trcp1/.test(location.href)){localStorage.setItem
  function sync(){try{const u=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null,k=want(u);if(!k){if(S.el)close();return;}if(S.u===u&&S.kind===k&&S.el&&document.body.contains(S.el))return;close();S.u=u;S.kind=k;S.el=k==='cp'?cpBuild(u):trBuild(u);}catch(e){console.warn('trcp',e);}}
  {const _dm=drawMenu;drawMenu=function(u){if(want(u)){sync();return;}return _dm.apply(this,arguments);};}
  setInterval(sync,150);}
+/* CARTAO2_15NOV (Felipe aprovou CARTAO_TREINADOR_AZUL V2 do Buchecha: 'cartão do treinador aprovado'): CARTÃO DO TREINADOR novo, frente e verso, em peças (base 1080x1920). #cartao0 volta ao antigo */
+window.__CT2=()=>{try{if(/[?#&]cartao0/.test(location.href)){localStorage.setItem('cv.ct2','0');return false;}if(/[?#&]cartao2/.test(location.href))localStorage.setItem('cv.ct2','1');return localStorage.getItem('cv.ct2')!=='0';}catch(e){return !/cartao0/.test(location.href);}};
+{const CQ=n=>'assets/ct2/'+n+'.webp',EN=()=>window.CVLANG==='en',FT='CadBaloo,Fredoka,Arial,sans-serif',ESC='#122e43',CLR='#fff7dc';
+ const S={u:null,el:null,face:-1};
+ const mk=(host,tag,css)=>{const d=document.createElement(tag||'div');d.style.cssText='position:absolute;'+(css||'');host.appendChild(d);return d;};
+ const R=r=>`left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px;`;
+ const im=(host,n,r,ex)=>mk(host,'div',R(r)+`background:url(${CQ(n)}) center/100% 100% no-repeat;pointer-events:none;`+(ex||''));
+ const tx=(host,t,r,fs,cor,ex)=>{const d=mk(host,'div',R(r)+`display:flex;align-items:center;justify-content:center;text-align:center;font:800 ${fs}px ${FT};color:${cor};white-space:nowrap;overflow:hidden;line-height:1.05;pointer-events:none;`+(cor===CLR?'text-shadow:0 3px 0 rgba(0,0,0,.35);':'')+(ex||''));d.textContent=t;
+   requestAnimationFrame(()=>{try{let f=fs;while(d.scrollWidth>d.clientWidth+1&&f>12){f-=1;d.style.fontSize=f+'px';}}catch(e){}});return d;};
+ const btn=(host,n,r,lab,fn)=>{const i=im(host,n,r);const h=mk(host,'button',R(r)+'background:transparent;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;');h.setAttribute('aria-label',lab);
+  h.addEventListener('pointerdown',()=>{i.style.backgroundImage=`url(${CQ(n+'_apertado')})`;});h.addEventListener('pointerleave',()=>{i.style.backgroundImage=`url(${CQ(n)})`;});h.addEventListener('pointerup',()=>{i.style.backgroundImage=`url(${CQ(n)})`;});
+  h.onclick=e=>{e.stopPropagation();try{tone([660,880],.04);}catch(_){ }fn();};return h;};
+ const foto=(host,m,r)=>{const src=MONIMGSRC[m.sp]||'';if(!src)return null;const i=mk(host,'img',R(r)+'object-fit:contain;object-position:center bottom;pointer-events:none;'+(m.sh?`filter:hue-rotate(${(typeof SHINYHUE!=='undefined'&&SHINYHUE[m.sp])||160}deg) saturate(1.25) brightness(1.06);`:''));i.src=src;i.alt='';i.draggable=false;return i;};
+ function stage(){const b=document.createElement('div');b.id='ct2Box';b.style.cssText=`position:fixed;inset:0;z-index:9050;background:#0b2141 url(${CQ('cenario')}) center/cover no-repeat;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none`;
+  ['pointerdown','pointerup','pointermove','touchstart','touchend','touchmove','mousedown','mouseup','click','keydown','wheel','contextmenu'].forEach(ev=>b.addEventListener(ev,e=>{e.stopPropagation();if(ev==='contextmenu')e.preventDefault();}));
+  const c0=mk(b,'div','left:0;top:0;width:1080px;height:1920px;transform-origin:0 0;'),c=mk(c0,'div','left:0;top:0;width:1080px;height:1920px;');
+  const fit=()=>{const tall=innerHeight/innerWidth>1920/1080,k=tall?innerWidth/1080:innerHeight/1920,Hs=tall?innerHeight/k:1920;c0.style.height=Hs+'px';c0.style.transform=`translate(${(innerWidth-1080*k)/2}px,0px) scale(${k})`;c.style.top=((Hs-1920)/2)+'px';};
+  fit();addEventListener('resize',()=>{if(document.body.contains(b))fit();});document.body.appendChild(b);return {b,c};}
+ function close(){if(S.el){S.el.remove();S.el=null;}S.u=null;S.face=-1;}
+ function fin(u,i){if(ui[ui.length-1]!==u)return;ui.pop();close();u.res(i);}
+ const metal=n=>n>=5?'_lendario':n>=4?'':n>=2?'_prata':'_bronze';
+ function frente(u,c){const n=tcStars(),cn=TCCOL[n][2],M=metal(n),L2=(p,e)=>EN()?e:p;
+  im(c,'frente_cabecalho_ouro'+M,[34,2,1011,135]);tx(c,L2('CARTÃO DO TREINADOR','TRAINER CARD'),[63,53,953,67],49,CLR);
+  im(c,'frente_identidade_ouro'+M,[47,147,985,482]);
+  {const h=mk(c,'img',R([107,218,252,332])+'object-fit:contain;object-position:center bottom;pointer-events:none;');let hs='';try{const I=asImg('c_jogador');hs=I&&(I.src||(I.toDataURL&&I.toDataURL()))||'';}catch(e){}h.src=hs||(((flags.hero||'')==='menina')?'blobs/301179e072370ab5e2eaf099e20535ba.webp':'assets/personagens/c_jogador.webp');h.alt='';h.draggable=false;}
+  tx(c,flags.nome?String(flags.nome).toUpperCase():L2('TREINADOR','TRAINER'),[101,564,271,40],36,'#f6edcf');
+  tx(c,(EN()?'Color ':'Cor ')+(EN()?({AZUL:'BLUE',BRONZE:'BRONZE',VERDE:'GREEN',PRATA:'SILVER',OURO:'GOLD','LENDÁRIO':'LEGENDARY'}[cn]||cn):cn),[442,295,523,73],50,ESC);
+  tx(c,`${n}/5 ${L2('estrelas','stars')}`,[442,421,523,57],39,ESC);
+  [[471,521],[569,521],[668,521],[767,521],[865,521]].forEach(([x,y],k)=>im(c,k<n?'estrela_acesa':'estrela_apagada',[x,y,81,80]));
+  im(c,'estatisticas_moldura',[50,643,981,391]);
+  const pl=s2=>`${Math.floor(s2/3600)}h${String(Math.floor(s2%3600/60)).padStart(2,'0')}`,md=(()=>{try{return MISS.filter(m=>msSt(m.id)>=2).length;}catch(e){return 0;}})(),NF=v=>Number(v||0).toLocaleString(EN()?'en-US':'pt-BR');
+  const D=[['numero',[62,653,320,139],[83,664,99,88],'Nº','Nº',String(flags.tid||0),[188,664,182,37],[188,704,182,46]],['colecao',[383,653,314,139],[398,665,108,92],'Coleção','Collection',`${dexCount().c}/${DEXLIST.length}`,[510,664,177,37],[510,704,177,46]],['medalhas',[699,653,323,139],[722,656,88,88],'Medalhas','Medals',null,[825,661,185,46],null],
+   ['missoes',[62,793,320,114],[76,808,112,94],'Missões','Missions',`${md}/${MISS.length}`,[188,804,182,37],[188,844,182,46]],['trofeus',[383,793,314,114],[401,802,104,101],'Troféus','Trophies',`${medalSt().got.length}/${MEDALS.length}`,[510,804,177,37],[510,844,177,46]],['moedas',[699,793,323,114],[718,807,121,90],'Moedas','Coins',NF(flags.coins),[825,804,185,37],[825,844,185,46]],
+   ['essencia',[62,909,320,116],[76,913,116,107],'Essência','Essence',NF(flags.ess),[188,920,182,37],[188,960,182,46]],['cristais',[383,909,314,116],[396,912,114,108],'Cristais','Crystals',NF(gems()),[510,920,177,37],[510,960,177,46]],['tempo',[699,909,323,116],[721,918,90,98],'Tempo','Time',pl(flags.playT||0),[825,920,185,37],[825,960,185,46]]];
+  D.forEach(([k,f,ic,pt,en,v,rr,rv])=>{im(c,'dado_'+k+'_fundo',f);im(c,'icone_'+k,ic);tx(c,EN()?en:pt,rr,k==='medalhas'?30:29,ESC);if(v!=null)tx(c,v,rv,36,ESC);});
+  {const sg=selosGot();[[725,744],[771,744],[817,744],[863,744],[909,744],[955,744]].forEach(([x,y],q)=>im(c,sg[q]?'medalha_bolinha_acesa':'medalha_bolinha_apagada',[x,y,32,32]));}
+  im(c,'recordes_titulo',[49,1052,982,50]);tx(c,L2('RECORDES','RECORDS'),[75,1060,930,36],31,CLR);
+  const RC=[['muralha',[56,1113,233,181],[73,1218],'MURALHA','WALL',L2('Onda ','Wave ')+(flags.wallBest||0)],['torres',[305,1113,233,181],[323,1218],'TORRES','TOWERS',L2('Onda ','Wave ')+(flags.tdBest||0)],['horda',[551,1113,233,181],[568,1218],'HORDA','HORDE',`${Math.floor((flags.survBest||0)/60)} min`],['expedicao',[795,1113,234,181],[813,1218],'EXPEDIÇÃO','EXPEDITION',L2('Fase ','Stage ')+(flags.expMax||1)]];
+  RC.forEach(([k,r,[x,y],pt,en,v])=>{im(c,'recorde_'+k,r);tx(c,EN()?en:pt,[x,y,200,29],23,ESC);tx(c,v,[x,y+30,200,29],24,ESC);});
+  im(c,'equipe_titulo',[49,1304,982,50]);tx(c,L2('MINHA EQUIPE','MY TEAM'),[75,1313,930,34],31,CLR);
+  const P=party.slice(0,5);[45,250,456,661,867].forEach((x,k)=>{im(c,'cartao_monstro_mini',[x,1369,196,216]);const m=P[k];if(m){foto(c,m,[x+19,1392,158,139]);tx(c,(EN()?'Lv ':'Nv ')+m.lv,[x+27,1543,135,31],26,CLR);}else{im(c,'vaga_vazia_mais',[x+58,1420,80,80],'opacity:.8;');}});
+  im(c,'proxima_estrela_faixa',[49,1610,982,59]);
+  {let t2;if(n<5){const miss=[!flags.badge,dexCount().c<14,(flags.wallBest||0)<10,(flags.tdBest||0)<15,medalSt().got.length<6].findIndex(x=>x);const g=TCGOALS[miss]||'';t2=L2('Próxima estrela: ','Next star: ')+(EN()&&typeof tr==='function'?tr(g):g);}else t2=L2('Cartão LENDÁRIO! Você é uma lenda do Vale!','LEGENDARY card! You are a legend of the Valley!');tx(c,t2,[71,1619,934,36],30,ESC);}
+  btn(c,'frente_botao_virar',[39,1693,490,140],L2('Virar','Flip'),()=>vira(u));tx(c,L2('VIRAR','FLIP'),[177,1728,324,71],44,CLR);
+  btn(c,'frente_botao_voltar',[550,1693,492,140],L2('Voltar','Back'),()=>fin(u,99));tx(c,L2('VOLTAR','BACK'),[687,1728,324,71],44,CLR);}
+ function verso(u,c){const n=tcStars(),M=metal(n),L2=(p,e)=>EN()?e:p;
+  im(c,'verso_moldura_ouro'+M,[23,199,1036,1679]);im(c,'verso_cabecalho_ouro'+M,[36,5,1012,193]);tx(c,L2('MINHA EQUIPE','MY TEAM'),[200,94,687,75],50,CLR);
+  im(c,'verso_nome_faixa',[93,206,894,64]);tx(c,L2('Cartão do Treinador · ','Trainer Card · ')+(flags.nome?String(flags.nome).toUpperCase():''),[122,217,834,40],33,ESC);
+  const P=party.slice(0,6),V=[[85,295],[557,295],[85,750],[557,750],[85,1205],[557,1205]];
+  V.forEach(([x,y],k)=>{im(c,'cartao_monstro_grande',[x,y,437,445]);const m=P[k];if(m){foto(c,m,[x+42,y+44,352,278]);tx(c,typeof nm==='function'?nm(m):m.sp,[x+31,y+337,375,54],36,ESC);tx(c,(EN()?'Lv ':'Nv ')+m.lv,[x+149,y+395,141,34],25,CLR);}
+   else{im(c,'vaga_vazia_mais',[x+168,y+130,100,100],'opacity:.85;');tx(c,L2('Vaga vazia','Empty slot'),[x+31,y+337,375,54],36,ESC);tx(c,'—',[x+149,y+395,141,34],25,CLR);}});
+  btn(c,'verso_botao_virar',[52,1681,481,148],L2('Virar','Flip'),()=>vira(u));tx(c,L2('VIRAR','FLIP'),[189,1719,317,71],44,CLR);
+  btn(c,'verso_botao_voltar',[552,1681,482,148],L2('Voltar','Back'),()=>fin(u,99));tx(c,L2('VOLTAR','BACK'),[690,1719,317,71],44,CLR);}
+ function build(u){const {b,c}=stage();const st=u.cfg.tcard;S.face=st.flip?1:0;(st.flip?verso:frente)(u,c);return b;}
+ function vira(u){const st=u.cfg.tcard;st.flip=1-st.flip;st.fl=st.flip;try{tone(st.flip?[660,880]:[880,660],.04);}catch(e){}const old=S.el;S.el=build(u);if(old)old.remove();}
+ function want(u){return !!(u&&u.cfg&&u.cfg.tcard&&window.__CT2()&&!(typeof TUTON!=='undefined'&&TUTON));}
+ function sync(){try{const u=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null;if(!want(u)){if(S.el)close();return;}if(S.u===u&&S.el&&document.body.contains(S.el))return;close();S.u=u;S.el=build(u);}catch(e){console.warn('ct2',e);}}
+ {const _dt=drawTCard;drawTCard=function(u){if(want(u)){sync();return;}return _dt.apply(this,arguments);};}
+ setInterval(sync,150);}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

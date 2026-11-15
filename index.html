@@ -13984,6 +13984,7 @@ function mtTapArt(x,y){if(!MTV||!ukReady('matematica'))return false;const T2=MT,
   if(!T2.q)return true;MTANS.slice(0,T2.q.opts.length).forEach(([bx,by],i)=>{if(lx>=bx&&lx<=bx+415&&ly>=by&&ly<=by+170)mAnswer(i);});return true;}
 
 /* ---------- CARTÃO DO TREINADOR — passaporte (25/out). VIRAR mostra a equipe inteira ---------- */
+const TCAL=!/[?#&]cartao1/.test(location.href);
 function tcMonCard(K,m,x,y,w,h,t,k,big){ukD(K,'cartao_equipe',x,y,w,h);if(!m)return;const sp=monKey(m),sc=(big?1.9:1.45)*w/190,o=monCtrOff(sp,sc);b.save();b.beginPath();b.rect(x+w*.1,y+h*.06,w*.8,h*.7);b.clip();drawMon(sp,x+w/2+o[0],y+h*.42+o[1]+Math.sin(t/12+k)*2,sc);b.restore();
   ukArial2('Nv'+m.lv,x+w/2,y+h*.89,Math.round(h*.105),'#fff',w*.6);}
 function drawTCardArt(u){const st=u.cfg.tcard;if(!ukReady('cartao'))return false;st.t++;const t=st.t,K='cartao',Y0=100;st.fl+=((st.flip?1:0)-st.fl)*.16;u.rects=[];u.boxR=null;
@@ -14003,11 +14004,14 @@ function drawTCardArt(u){const st=u.cfg.tcard;if(!ukReady('cartao'))return false
         if(ic==='med'){const sg=selosGot();for(let q=0;q<6;q++)ukD(K,sg[q]?'medalha_ativa':'medalha_inativa',781+q*30,y-14,28,28);}else ukBrown(v,958,y+2,30,'#4a2a10','right',170);});}
     ukD(K,'placa_secao',70,1158,440,95);if(ok)ukArial2('RECORDES',290,1207,34,'#fff8e0',320);
     ukD(K,'placa_secao',570,1158,440,95);if(ok)ukArial2('MINHA EQUIPE',790,1207,34,'#fff8e0',320);
-    const RC=[['muralha','MURALHA',`onda ${flags.wallBest||0}`],['torres','TORRES',`onda ${flags.tdBest||0}`],['horda','HORDA',`${Math.floor((flags.survBest||0)/60)} min`],['expedicao','EXPEDIÇÃO',`fase ${flags.expMax||1}`]],RP=[[75,1260],[295,1260],[75,1520],[295,1520]];
-    RC.forEach(([k,a,v],q)=>{const [x,y]=RP[q];ukD(K,'selo_'+k,x,y,205,250);if(ok){ukBrown(a,x+102,y+188,24,'#3a2410','center',170);ukBrown(v,x+102,y+214,24,'#3a2410','center',170);}});
-    const P=party.slice(0,5);[[600,1260,190,240],[810,1260,190,240]].forEach(([x,y,w,h],k)=>{if(P[k])tcMonCard(K,P[k],x,y,w,h,t,k,1);else ukD(K,'cartao_vazio',x+18,y+18,w-36,h-36);});
+    const RC=[['muralha','MURALHA',`onda ${flags.wallBest||0}`],['torres','TORRES',`onda ${flags.tdBest||0}`],['horda','HORDA',`${Math.floor((flags.survBest||0)/60)} min`],['expedicao','EXPEDIÇÃO',`fase ${flags.expMax||1}`]],RP=TCAL?[[83,1262],[303,1262],[83,1500],[303,1500]]:[[75,1260],[295,1260],[75,1520],[295,1520]],SW=TCAL?189:205,SH=TCAL?230:250;
+    RC.forEach(([k,a,v],q)=>{const [x,y]=RP[q];ukD(K,'selo_'+k,x,y,SW,SH);if(ok){ukBrown(a,x+SW/2,y+SH*.752,24,'#3a2410','center',SW-35);ukBrown(v,x+SW/2,y+SH*.856,24,'#3a2410','center',SW-35);}});
+    const P=party.slice(0,5);if(TCAL){/* CARTAOALINHA15NOV (Felipe: 'só troca ou alinha o cartão do herói'): equipe em cartões do mesmo tamanho, alinhada com os recordes; estrelas no meio e sem cobrir os selos */
+    [[640,1275],[790,1275],[565,1515],[715,1515],[865,1515]].forEach(([x,y],k)=>{const w=145,h=200;if(P[k])tcMonCard(K,P[k],x,y,w,h,t,k,0);else ukD(K,'cartao_vazio',x,y,w,h);});
+    for(let k=0;k<5;k++)ukD(K,k<n?'estrela_ativa':'estrela_inativa',540+(k-2)*95-40,1792-40,80,80);}else{
+    [[600,1260,190,240],[810,1260,190,240]].forEach(([x,y,w,h],k)=>{if(P[k])tcMonCard(K,P[k],x,y,w,h,t,k,1);else ukD(K,'cartao_vazio',x+18,y+18,w-36,h-36);});
     [[565,1530,145,200],[715,1530,145,200],[865,1530,145,200]].forEach(([x,y,w,h],k)=>{const m=P[k+2];if(m)tcMonCard(K,m,x,y,w,h,t,k+2,0);else ukD(K,'cartao_vazio',x,y,w,h);});
-    for(let k=0;k<5;k++)ukD(K,k<n?'estrela_ativa':'estrela_inativa',315+k*95-40,1790-40,80,80);}
+    for(let k=0;k<5;k++)ukD(K,k<n?'estrela_ativa':'estrela_inativa',315+k*95-40,1790-40,80,80);}}
   else{ukD(K,'placa_secao',320,500,440,95);if(ok)ukArial2('MINHA EQUIPE',540,549,36,'#fff8e0',360);
     const P=party.slice(0,6);for(let k=0;k<6;k++){const x=[95,415,735][k%3]-10,y=640+Math.floor(k/3)*560;if(P[k]){tcMonCard(K,P[k],x,y,270,341,t,k,1);if(ok)ukBrown(nm(P[k]),x+135,y+372,30,'#4a2a10','center',260);}else ukD(K,'cartao_vazio',x+28,y+30,214,282);}}
   b.restore();u.rects.push(R2(40,450,1000,1440,1));

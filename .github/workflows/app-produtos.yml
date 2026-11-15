@@ -1,0 +1,14 @@
+name: app-produtos
+# Cria as 15 compras do jogo no App Store Connect (nome, descrição PT/EN e preço). Pode rodar de novo: o que já existe é pulado.
+on: workflow_dispatch
+jobs:
+  iap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pyjwt cryptography requests
+      - run: python app-ios/asc/produtos.py
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}

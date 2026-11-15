@@ -41,3 +41,8 @@ Regra de ouro: **antes de colocar qualquer monstrinho ou animação nova no jogo
 - 14/nov: Estrelim na Batalha virado pro lado errado (o jogo espelha o parado) → usar a versão virada.
 - 14/nov: ataque do Estrelim vindo da Arena (visto de cima) virava pro lado errado na Batalha → tirado e pedido novo ao Buchecha.
 - 11/nov: costas do Arvorito e outros eram de lado (diagonal) → na Muralha usam o 1º quadro do ataque (de costas reto).
+
+## Situação em 14/nov (cv-v584)
+- Avaliador rodou nos 71 monstrinhos. **26 estavam DE FRENTE na Muralha** e foram corrigidos (agora de costas): Infernalho, Tsunamor, Florestão, Cordilhão, Cascal, Choquinho, Trovoar, Corujito, Corujão, Aurorion, Peixonete, Tubarete, Caranguejo, Cogumelim, Cogumelão, Cabrito, Cabritão, Cacauzinho, Cascopedra, Trovim 2, Sombrin, Psiuto, Estrelim, Estrelux, Estelarion (+ Trovim 3).
+- **22 não têm NENHUMA arte de costas** (continuam de frente até o Buchecha fazer): Ventania, Furacão, Ratangão, Ratorrei, Zumbitron, Tempestor, Espectron, Magmorra, Floraia, Corujarca, Tubarrei, Caranguerra, Pinçador, Cogumestre, Carneirão, Glacimor, Pinguimperador, Dracobrasa, Sombrale, Noctavio, Mentora, Psiquara.
+- Olhando as fotos, conferir: Tubarete, Cordilhão, Cabritão, Cacauzinho e Estrelux estão de costas **na diagonal** (não reto); Corujito e Corujão de costas parecem uma nuvem.

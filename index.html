@@ -11560,7 +11560,7 @@ function arHeroFace(hx,hy,r){const I=arHeroImg();if(!I)return false;b.save();b.b
 
 /* ARTEMPLO (05/nov, Felipe: "mude o background" → "Masmorra/templo"): fundo do estilo AREIA vira um templo/masmorra: blocos grandes de pedra,
    colunas nas laterais, tochas com fogo piscando e luz quente, chão escurecendo nas bordas. Se o Buchecha mandar ar2_fundo_templo.webp, usa a arte. */
-const ARTPL=new Image();ARTPL.src='blobs/ar2_fundo_templo.webp';
+const ARTPL=new Image();/* AUDIT14NOV F01 (Buchecha): arte ausente, usa o templo desenhado */
 function arTorch(x,y,t){rrect(x-1.6,y,3.2,9,1,'#4a2a10',false);rrect(x-3,y-1.5,6,2.5,1,'#8a5a20',false);const f=Math.sin(t/4+x)*.8;
   b.save();b.globalCompositeOperation='lighter';glowAt(x,y-3,30,'255,150,50',.55+.1*Math.sin(t/5+x));b.restore();
   E(x,y-3.5+f*.3,3,4.6,'#ff7a1a',0,false);E(x,y-3+f*.3,1.9,3,'#ffd040',0,false);E(x,y-2.4,1,1.6,'#fff6c0',0,false);}
@@ -16517,7 +16517,7 @@ function fpadDraw(w,t){const A=w.fpad;if(!A)return;if(w.cards!==A.cs){w.fpad=nul
   const left=fpadLeft(w),done=left<=0,sec=Math.ceil(left),ex=fpadL(A.ex[0],A.ex[1]);texts=[];
   const rp=fpadRep(A);if(!done){if(performance.now()-A.t0>200)fpadVoz(A,'ab',FPAD_AB[A.exi]);if(rp>0)fpadVoz(A,'c'+rp,'fpad_'+rp);}else fpadVoz(A,'fim','fpad_fim');
   b.save();b.fillStyle='rgba(12,10,34,.96)';b.fillRect(-20,-80,220,480);b.restore();
-  const LG=fpadImg('assets/fpad/logo.png');
+  const LG=null;/* AUDIT14NOV F01: logo ainda não entregue */
   if(LG){const lw=110,lh=lw*LG.naturalHeight/LG.naturalWidth;b.save();b.imageSmoothingEnabled=true;b.drawImage(LG,90-lw/2,-30,lw,Math.min(46,lh));b.restore();T(fpadL('PAUSA DO EXERCÍCIO','EXERCISE BREAK'),90,20,7,'center','#ffd23f',170,C.ink);}
   else{const SB=fpadImg('assets/fpad/simbolo.png');/* símbolo FP da marca do Felipe (Drive: Marca Felipe Picanço-01.png) */
     if(SB){const sh=26,sw=sh*SB.naturalWidth/SB.naturalHeight;b.save();b.imageSmoothingEnabled=true;b.drawImage(SB,90-sw/2,-40,sw,sh);b.restore();T('FP IMPULSE',90,-11,12,'center','#3fe0a0',170,C.ink);T(fpadL('PAUSA DO EXERCÍCIO','EXERCISE BREAK'),90,6,7.5,'center','#ffd23f',170,C.ink);}
@@ -18996,6 +18996,11 @@ window.__DMOD=()=>{try{if(/[?#&]dupla1/.test(location.href)){localStorage.remove
     const show=()=>{n.textContent=seq[i];n.style.fontSize=(i<3?330:190)+'px';n.style.transform='scale(1.25)';requestAnimationFrame(()=>requestAnimationFrame(()=>{n.style.transform='scale(1)';}));dk.style.filter=i===3?'brightness(1.3) drop-shadow(0 0 30px #5fe0ff)':'';try{tone(i<3?[523]:[784,1047],.08);}catch(e){}};
     show();const iv=setInterval(()=>{i++;if(i>=seq.length){clearInterval(iv);b.remove();salaContagem.on=null;res();return;}show();},800);});return salaContagem.on;};
 }
+/* VOZFALHA14NOV (auditoria do Buchecha F01 + reforço): fala com áudio que não existe ou não carrega cai na voz do celular em vez de ficar muda */
+{const VBAD=new Set(['blobs/cadb68f0a7d0dc5bd77c9f37dc98fb6d.mp3']);const vtira=u=>{VBAD.add(u);try{for(const k in VOZ2){const v=VOZ2[k];if(v&&(v[0]===u||v[1]===u))VOZ2[k]=v.map(x=>x===u?'':x);}}catch(e){}};VBAD.forEach(vtira);
+  const _vt=vozToca;vozToca=function(t){VZ.lastT=t;VZ.lastAt=performance.now();return _vt.apply(this,arguments);};
+  try{const a=vozA();a.addEventListener('error',()=>{try{const p=decodeURIComponent(new URL(a.src,location.href).pathname).replace(/^.*?\/((?:blobs|assets)\/)/,'$1');if(!/\.(mp3|m4a|ogg|wav)$/i.test(p))return;vtira(p);VZ.pend=null;VZ.on=0;try{window.__EV&&__EV('voz faltando '+p.slice(-40));}catch(_){}
+    if(VZ.lastT&&performance.now()-(VZ.lastAt||0)<4000&&typeof narFala==='function'){const mt=/^([^:]{1,20}):\s(.*)$/s.exec(String(VZ.lastT));narFala(mt?mt[2]:VZ.lastT,mt?mt[1]:'');}}catch(e){}});}catch(e){}}
 window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

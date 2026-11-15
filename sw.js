@@ -1,5 +1,5 @@
 /* Capturadores do Vale — guarda os arquivos do jogo no aparelho pra abrir rápido e funcionar sem internet */
-const CACHE='cv-v574';
+const CACHE='cv-v575';
 /* 03/nov: artes e sons ficam numa caixa separada que NÃO é apagada quando sai versão nova (senão o jogo baixado pra jogar offline sumia a cada versão).
    blobs/ têm nome único por conteúdo: nunca mudam. assets/ podem mudar: na versão nova o jogo pergunta ao servidor se mudou (resposta curta 304 se não mudou). */
 const ART='cv-arte-1';
@@ -26,8 +26,8 @@ async function artGet(r,isA,ev){const c=await caches.open(ART);let m=await c.mat
     if(res.ok){const nr=await artTag(res,0,r.url);try{await c.put(r.url,nr.clone());}catch(e){}return nr;}
     return m||res;}catch(e){if(m)return m;throw e;}}
 async function swRange(r){try{let m=null;for(const k of [ART,CACHE]){const c=await caches.open(k);m=await c.match(r.url,{ignoreVary:true});if(m)break;}
-  if(!m){return fetch(r);}const buf=await m.arrayBuffer(),n=buf.byteLength,mm=/bytes=(\d*)-(\d*)/.exec(r.headers.get('range')||'');if(!mm)return fetch(r);
-  let s0=mm[1]===''?Math.max(0,n-(+mm[2]||0)):+mm[1],e0=(mm[1]!==''&&mm[2]!=='')?Math.min(+mm[2],n-1):n-1;if(s0>=n||e0<s0)return new Response(null,{status:416,headers:{'Content-Range':'bytes */'+n}});/* AUDIT14NOV F08 */
+  if(!m){return fetch(r);}const buf=await m.arrayBuffer(),n=buf.byteLength,mm=/^bytes=(\d*)-(\d*)$/.exec(r.headers.get('range')||'');if(!mm)return fetch(r);
+  let s0=mm[1]===''?Math.max(0,n-(+mm[2]||0)):+mm[1],e0=(mm[1]!==''&&mm[2]!=='')?Math.min(+mm[2],n-1):n-1;if(!Number.isSafeInteger(s0)||!Number.isSafeInteger(e0)||n===0||s0<0||s0>=n||e0<s0||(mm[1]===''&&(+mm[2]||0)<=0))return new Response(null,{status:416,headers:{'Content-Range':'bytes */'+n}});/* AUDIT14NOV F08 */
   return new Response(buf.slice(s0,e0+1),{status:206,statusText:'Partial Content',headers:{'Content-Type':m.headers.get('content-type')||'audio/mpeg','Content-Range':'bytes '+s0+'-'+e0+'/'+n,'Content-Length':String(e0-s0+1),'Accept-Ranges':'bytes'}});}
   catch(e){return fetch(r);}}
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return;const pn=new URL(r.url).pathname;if(pn.endsWith('/version.json'))return;

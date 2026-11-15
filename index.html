@@ -13440,7 +13440,7 @@ function escolher(){const p=P();
   for(let t=0;t<ord.length;t++){const f=ord[((p.k||0)+t)%ord.length];if(p.hoje[f])continue;if(!oferta(f))continue;p.k=((p.k||0)+t+1)%ord.length;return f;}
   return null;/* já comprou tudo hoje */}
 window.promoHud=function(){try{if(flags.bike&&typeof RAIL!=='undefined')RAIL[1].go();}catch(e){}const f=escolher()||(oferta('perm')?'perm':'fichas');return window.promoOpen(f);};
-window.__PROMO2=()=>{try{if(/[?#&]promo1/.test(location.href)){localStorage.removeItem('cv.promo2');return false;}if(/[?#&]promo2/.test(location.href))localStorage.setItem('cv.promo2','1');return localStorage.getItem('cv.promo2')==='1';}catch(e){return /promo2/.test(location.href);}};
+window.__PROMO2=()=>{try{if(/[?#&]promo1/.test(location.href)){localStorage.setItem('cv.promo2','0');return false;}if(/[?#&]promo2/.test(location.href))localStorage.setItem('cv.promo2','1');return localStorage.getItem('cv.promo2')!=='0';}catch(e){return !/promo1/.test(location.href);}};
 window.promoOpen=function(forma){return new Promise(res=>{if(document.getElementById('prBox')){res();return;}
   forma=forma||escolher();if(!forma){res();return;}const o=oferta(forma);if(!o){res();return;}ST(forma,'v');try{saveGame();}catch(e){}
   const comprado=forma==='inicio'?!!(flags.promoStats.inicio.b):!!P().hoje[forma];const off=o.full?Math.round((1-o.pr/o.full)*100):0;
@@ -18606,7 +18606,7 @@ function cv13Lobby(mode){if(!cv13On())return;const $=id=>document.getElementById
   f.onclick=e=>{e.stopPropagation();const old=[...el.querySelectorAll('button')].find(b=>b!==f);if(old)old.click();else el.remove();};}catch(e){console.error(e);}return p;};}
 /* /CONVITE13NOV */
 /* CONVITE2_14NOV (Buchecha, CONVITE_AMIGOS_MODERNO_14nov, aprovado pelo Felipe): JOGAR COM AMIGOS no estilo azul novo. Teste com #convite2, volta com #convite1 */
-window.__CV2=()=>{try{if(/[?#&]convite1/.test(location.href)){localStorage.removeItem('cv.convite2');return false;}if(/[?#&]convite2/.test(location.href))localStorage.setItem('cv.convite2','1');return localStorage.getItem('cv.convite2')==='1';}catch(e){return /convite2/.test(location.href);}};
+window.__CV2=()=>{try{if(/[?#&]convite1/.test(location.href)){localStorage.setItem('cv.convite2','0');return false;}if(/[?#&]convite2/.test(location.href))localStorage.setItem('cv.convite2','1');return localStorage.getItem('cv.convite2')!=='0';}catch(e){return !/convite1/.test(location.href);}};
 {const _l=cv13Lobby;const C2='assets/convite2/';
 cv13Lobby=function(mode){if(!window.__CV2())return _l.apply(this,arguments);const $=id=>document.getElementById(id);if(!$('arBox')||$('arBox').hidden||!$('arIni')||$('arIni').hidden)return;if(($('arCod').value||'').trim())return;
   cv13Css();cv13Close();const EN=window.CVLANG==='en',co=mode==='coop',BR='#eef6ff',el=document.createElement('div');el.id='cv13L';el.style.background=`#0b1a3a url(${C2}cenario.webp) center/cover no-repeat`;el.style.fontFamily='CadBaloo,Fredoka,Arial,sans-serif';
@@ -18941,7 +18941,7 @@ salaContagem=function(){if(salaContagem.on)return salaContagem.on;salaFecha();sa
   const show=()=>{n.textContent=seq[i];n.style.fontSize=(i<3?260:170)+'px';n.style.transform='scale(1.25)';requestAnimationFrame(()=>requestAnimationFrame(()=>{n.style.transform='scale(1)';}));dk.style.filter=i===3?'brightness(1.35) drop-shadow(0 0 30px #ffd23f)':'';try{tone(i<3?[523]:[784,1047],.08);}catch(e){}};
   show();const iv=setInterval(()=>{i++;if(i>=seq.length){clearInterval(iv);b.remove();salaContagem.on=null;res();return;}show();},800);});return salaContagem.on;};
 /* DUPLAMODERNA14NOV (Felipe aprovou TELAS_DUPLA_MODERNA_14nov do Buchecha) — Comparação, Sala e 3-2-1 novas; teste com #dupla2, volta com #dupla1 */
-window.__DMOD=()=>{try{if(/[?#&]dupla1/.test(location.href)){localStorage.removeItem('cv.dupla2');return false;}if(/[?#&]dupla2/.test(location.href))localStorage.setItem('cv.dupla2','1');return localStorage.getItem('cv.dupla2')==='1';}catch(e){return /dupla2/.test(location.href);}};
+window.__DMOD=()=>{try{if(/[?#&]dupla1/.test(location.href)){localStorage.setItem('cv.dupla2','0');return false;}if(/[?#&]dupla2/.test(location.href))localStorage.setItem('cv.dupla2','1');return localStorage.getItem('cv.dupla2')!=='0';}catch(e){return !/dupla1/.test(location.href);}};
 {const D2=n=>'assets/dupla2/'+n+'.webp',S2=(c,n,r)=>{const i=dpImg(c,n,r);i.src=D2(n);return i;},B2=(c,n,r,tr2,t,fs,cor,fn)=>{S2(c,n,r);dpTxt(c,t,tr2,fs,cor,'c','text-shadow:0 2px 0 rgba(0,0,0,.35)');const h=document.createElement('button');h.setAttribute('aria-label',t);h.style.cssText=`position:absolute;left:${r[0]}px;top:${r[1]}px;width:${r[2]}px;height:${r[3]}px;background:transparent;border:0;cursor:pointer`;h.onclick=fn;c.appendChild(h);return h;};
   const AZ='#7fd3ff',LA='#ffb070',BR='#eef6ff';
   const _dc=duoCompare,_sp=salaPainel,_sc=salaContagem;

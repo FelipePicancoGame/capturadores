@@ -9133,7 +9133,7 @@ function m3cObj(S,L){const R0=L.o,R=m3R(R0),hb=R0[3],box=!!L.oj;b.drawImage(m3cA
   if(box)m3T('OBJETIVO',R.x+R.w*.54,R.y+R.h*.27,Math.min(hb*.16,40),'#7a4a1a',R.w*.8);else m3T('OBJETIVO',R.x+R.w*.17,cy,Math.min(hb*.24,36),'#7a4a1a',R.w*.24);
   if(S.L.type==='collect'){const n=S.L.collect.length,cw=(ix1-ix0)/n;S.L.collect.forEach(([kk,need],i)=>{const x=ix0+cw*i+cw*.3,left=Math.max(0,need-(S.got[kk]||0)),I=m3Art('peca_'+M3SP[kk]),z=Math.min(cw*.5,R.h*(box?.42:.62));if(I)b.drawImage(I,x-z/2,cy-z/2,z,z);m3T(left?`×${left}`:'✔',x+z*.55+cw*.18,cy,Math.min(hb*(box?.2:.3),44),left?'#2a1a08':'#1f7a3a',cw*.5);});}
   else if(S.L.type==='ice'){const n=S.ice.reduce((a,row)=>a+row.filter(v=>v).length,0),I=m3Art('gelo_1'),z=Math.min(R.h*(box?.42:.6),(ix1-ix0)*.3),x=ix0+z*.7;if(I)b.drawImage(I,x-z/2,cy-z/2,z,z);m3T(n?`QUEBRE: ${n}`:'GELO ✔',x+z*.6+(ix1-x-z*.6)/2,cy,Math.min(hb*(box?.18:.26),40),n?'#1a4a7a':'#1f7a3a',(ix1-x-z*.6)*.95);}
-  else m3T(`META: ${S.goal}`,(ix0+ix1)/2,cy,Math.min(hb*(box?.2:.28),44),'#4a2a10',(ix1-ix0)*.95);}
+  else m3T(String(S.goal),(ix0+ix1)/2,cy,Math.min(hb*(box?.2:.28),44),'#4a2a10',(ix1-ix0)*.95);/* GOAL15NOV (foto da loja: 'GOAL  GOAL: 3024'): a placa já diz OBJETIVO; aqui vai só o número */}
 function m3cBarra(S,R0){const R=m3R(R0),LB=m3cL(),sx=R.w/(LB.bn||960),BP=m3cArt('barra_pontos'),BC=m3cArt('barra_cheia');b.drawImage(BP,R.x,R.y,R.w,R.h);
   const g=S.goal,sc=S.score,xs=LB.bx||[101,383,571,763,859],fs=m3Score()?[0,1,2,3,3.5]:[0,1,1.35,1.8,2.1];let px=xs[4];for(let i=0;i<4;i++){if(sc<fs[i+1]*g){px=xs[i]+(xs[i+1]-xs[i])*Math.max(0,(sc-fs[i]*g)/((fs[i+1]-fs[i])*g));break;}}
   if(px>xs[0]){b.save();b.beginPath();b.rect(R.x,R.y,px*sx,R.h);b.clip();b.drawImage(BC,R.x,R.y,R.w,R.h);b.restore();}

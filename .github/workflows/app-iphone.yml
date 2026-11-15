@@ -16,6 +16,12 @@ jobs:
       - run: npm install --legacy-peer-deps && npm run www
       - run: npx cap add ios || true
       - run: npx cap sync ios
+      - name: Ícone (Trovim evoluído, aprovado pelo Felipe 15/nov)
+        run: |
+          D=ios/App/App/Assets.xcassets/AppIcon.appiconset
+          ls $D
+          for f in $D/*.png; do w=$(sips -g pixelWidth "$f" | awk '/pixelWidth/{print $2}'); cp icone/AppIcon-1024.png "$f"; sips -z $w $w "$f" >/dev/null; done
+          sips -g pixelWidth -g pixelHeight $D/*.png
       - name: Chave da App Store Connect
         run: |
           mkdir -p ~/.appstoreconnect/private_keys

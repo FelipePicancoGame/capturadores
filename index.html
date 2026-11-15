@@ -4183,7 +4183,7 @@ function expUINew(t){const X=EXP,L=expLay();
       T(txt,cx+r+4,cy-3.6,6,'left','#fff3c8',w-2*r-8,C.ink);});
     if(P.length>maxR){const y=y0+(maxR-1)*rh;rrect(x0,y+1.5,64,2*r-3,(2*r-3)/2,'rgba(16,14,36,.7)',false);T(`+${P.length-maxR+1} mascotes`,x0+5,y+r-3.4,5.6,'left','#fff3c8',58,C.ink);}}}
   /* recado do jogo (aparece no lugar, sem abrir janela) */
-  {const msg=X.log[0]||'';if(msg!==X.lastLog){X.lastLog=msg;X.logT=0;}X.logT=(X.logT||0)+1;const a=Math.max(0,Math.min(1,(240-X.logT)/30,X.logT/6));if(msg&&a>0){b.save();b.globalAlpha=a*.85;const Rc=L.recado;rrect(Rc.x,Rc.y,Rc.w,Rc.h,Math.min(Rc.h/2,7),'rgba(16,12,40,.9)',false);b.restore();if(a>.3){const Ls=Rc.h>=17?wrap(msg,Rc.w-10,6).slice(0,2):[msg];if(Ls.length>1)Ls.forEach((l,j)=>T(l,Rc.x+Rc.w/2,Rc.y+Rc.h/2-7.6+j*7.6,6,'center','#fff3c8',Rc.w-8,C.ink));else T(msg,Rc.x+Rc.w/2,Rc.y+Rc.h/2-3.9,6,'center','#fff3c8',Rc.w-6,C.ink);}}}}
+  {const msg=X.log[0]||'';if(msg!==X.lastLog){X.lastLog=msg;X.logT=0;}X.logT=(X.logT||0)+1;const a=Math.max(0,Math.min(1,(240-X.logT)/30,X.logT/6));if(msg&&a>0){b.save();b.globalAlpha=a*.85;const Rc=(()=>{const r0=L.recado,il=(window.CVILHA&&CVILHA())||0;return il?Object.assign({},r0,{y:r0.y+il}):r0;})();/* TELACHEIA15NOV: aviso desce junto com o cabeçalho */rrect(Rc.x,Rc.y,Rc.w,Rc.h,Math.min(Rc.h/2,7),'rgba(16,12,40,.9)',false);b.restore();if(a>.3){const Ls=Rc.h>=17?wrap(msg,Rc.w-10,6).slice(0,2):[msg];if(Ls.length>1)Ls.forEach((l,j)=>T(l,Rc.x+Rc.w/2,Rc.y+Rc.h/2-7.6+j*7.6,6,'center','#fff3c8',Rc.w-8,C.ink));else T(msg,Rc.x+Rc.w/2,Rc.y+Rc.h/2-3.9,6,'center','#fff3c8',Rc.w-6,C.ink);}}}}
 function expTapNew(x,y){const X=EXP,L=expLay(),inR=(r)=>x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h;
   if(inR(L.back)){expInput('b');return true;}
   if(inR(L.fast)){flags.expFast=!flags.expFast&&!unlNeed('fast');expLog(flags.expFast?'VELOCIDADE 2x LIGADA!':'Velocidade normal');tone(flags.expFast?[660,990]:[660,440],.05);saveGame();return true;}
@@ -9897,7 +9897,7 @@ async function chapterMenu(key,launch){const CH=CHAPTERS[key];
   while(true){const j=await choose([...CH.list.map(c=>c.t),'JOGAR','VOLTAR'],{chap:key});const n=CH.list.length;
     if(j<0||j===n+1)return;const {out,cur}=chapInfo(key),C3=chapState(key);
     if(j===n){const ch=CH.list[cur];if(ch&&!C3.seen.includes(cur)){C3.seen.push(cur);for(const l of ch.story)await say(l);await say(`Objetivo: ${ch.g}.`);}
-      const before=out.filter(o=>o.done).length;await launch();const after=chapInfo(key).out.filter(o=>o.done).length;
+      const before=out.filter(o=>o.done).length;/* CAPFASE15NOV (report 428, Felipe: 'cliquei no play, ganhei a muralha e não completou'): capítulo de 'Vença N fases' jogava uma partida solta que não conta fase. Agora o JOGAR abre a próxima fase ainda não vencida. */{const g=(CH.list[cur]||{}).goal;if(g&&typeof g[0]==='string'&&g[0].startsWith('stg:')){const k=g[0].slice(4),A=stgArr(k);let ni=A.findIndex(x=>!(x>0));if(ni<0)ni=A.length;await stgLaunch(k,ni);}else await launch();}const after=chapInfo(key).out.filter(o=>o.done).length;
       if(after>before){tone&&tone([523,659,784,1047],.1);await say(`Capítulo concluído! Toque em PEGAR pra receber a recompensa.`);}saveGame();continue;}
     const o=out[j];if(o.locked){await say('Esse capítulo ainda está trancado. Complete o anterior primeiro!');continue;}
     if(o.done&&!o.got){C3.got.push(j);const rw=o.c.rw,parts=[];if(rw.coins){flags.coins=(flags.coins||0)+rw.coins;parts.push(`${rw.coins} moedas`);}
@@ -14834,7 +14834,7 @@ function drawMsList(u){const cf=u.cfg.mslist,rows=cf.rows;u.rects=[];const n=u.o
     const ibw=MA?ib*1.5:ib,tx=x+ibw+9,tw2=w-ibw-14;
     {const tag=lock?'🔒 AINDA NÃO':r.fr?r.I.tag:cur?'NO PAINEL':r.I.tag,tc=lock?'#6a6488':r.fr?'#c0407a':cur?'#c98a10':r.m.main?'#b07a10':'#3a6ad0',tgw=tw(tag,4.8)+7;rrect(x+w-tgw-14,y+4,tgw,8,3,tc,false);T(tag,x+w-14-tgw/2,y+5.3,4.8,'center','#ffffff',tgw);}
     T(r.I.title,tx,y+3.5,7,'left',lock?'#6a6488':'#154c5e',tw2-44);
-    T((lock?'':'👉 ')+tr(r.I.what||''),tx,y+14.5,5.8,'left',lock?'#7a7488':'#3a2a10',tw2);
+    T((()=>{/* MSLISTFIT15NOV: frase comprida termina em … em vez de passar da borda */let q=(lock?'':'👉 ')+tr(r.I.what||'');if(tw(q,5)>tw2){while(q.length>8&&tw(q+'…',5)>tw2)q=q.slice(0,-1);q=q.trimEnd()+'…';}return q;})(),tx,y+14.5,5.8,'left',lock?'#7a7488':'#3a2a10',tw2);
     T(lock?tr(r.why):(r.here?'📍 '+tr('Você já está aqui'):'📍 '+tr((r.I.where||'').replace('Vá até: ',''))),tx,y+24.5,5.4,'left',lock?'#8a4a4a':r.here?'#1f7a3a':'#5a5a7a',tw2);
     if(!lock&&!r.fr&&!cur)T('toque pra colocar no painel',tx,y+33,4.6,'left','#9a8a6a',tw2);
     if(cur)T('é a missão do painel · toque no painel pra ir',tx,y+33,4.6,'left','#c98a10',tw2);

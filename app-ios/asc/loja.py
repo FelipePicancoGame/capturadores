@@ -22,6 +22,8 @@ TXT={
    kw='monstrinhos,capturar,tower defense,rpg,idle,3 iguais,sobrevivência,arena,aventura,evoluir,vale'),
 }
 app=req('GET',f'/v1/apps?filter[bundleId]={APP_BUNDLE}')['data'][0];AID=app['id'];print('app',AID,'idioma principal',app['attributes'].get('primaryLocale'))
+# idioma principal = inglês (15/nov, Felipe: maior público é estrangeiro; quem usa português continua vendo o texto em português)
+if app['attributes'].get('primaryLocale')!='en-US':req('PATCH',f'/v1/apps/{AID}',{'data':{'type':'apps','id':AID,'attributes':{'primaryLocale':'en-US'}}})
 # --- appInfo (nome, subtítulo, privacidade, categoria, idade)
 infos=req('GET',f'/v1/apps/{AID}/appInfos')['data']
 info=[i for i in infos if i['attributes'].get('appStoreState') not in ('READY_FOR_SALE','REPLACED_WITH_NEW_INFO')] or infos

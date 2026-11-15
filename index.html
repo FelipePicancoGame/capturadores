@@ -14645,8 +14645,10 @@ function msTeam(L,base){let a=base;try{a=Math.max(base,teamAvg()-1);}catch(e){}r
 async function msGame(mode,i,bk0){const bk=bk0||MAPBIO[G.map],bio=(bk&&BIOMES.find(q=>q.k===bk))||BIOMES[Math.floor(i/3)%BIOMES.length],ii=(mode==='wall'&&i===0)?0:msAdaptI(i);
   try{await say(`Missão especial em ${bio.n}! A dificuldade se ajusta à sua equipe.`);}catch(e){}
   STG={mode,i:ii,bio,mult:ii===0?.72:.85+ii*.1,miss:true,first:mode==='wall'&&i===0&&!flags.mur1ok};STGRES=null;try{await ({wall:wallMode,td:towerMode,surv:survMode})[mode]();}finally{STG=null;}const R=STGRES;STGRES=null;return !!(R&&R.win);}
-async function msDone(m){return msArtWrap(m,()=>msDone0(m));}
-async function msDone0(m){msSet(m.id,2);for(const l of m.done||[])await say(l);const rw=m.rw||{},parts=[];if(m.main){flags.ess=(flags.ess||0)+1;parts.push('1 Essência de Poder');}if(rw.coins){flags.coins=(flags.coins||0)+rw.coins;parts.push(`${rw.coins} moedas`);}for(const [k,v] of Object.entries(rw.items||{})){bag[k]=(bag[k]||0)+v;parts.push(`${v} ${itemName(k)}`);}
+async function msDone(m){try{return await msArtWrap(m,()=>msDone0(m));}finally{window.MSDEP=null;}}
+/* MSDEPOIS15NOV: arte do FIM da missão (Buchecha, MISSOES_DEPOIS_15nov). Quando existir MSARTD[id], ela aparece no lugar da arte do começo depois que vence. #msdepois0 desliga. */
+const MSARTD={};
+async function msDone0(m){if(!/[?#&]msdepois0/.test(location.href))window.MSDEP=m.id;msSet(m.id,2);for(const l of m.done||[])await say(l);const rw=m.rw||{},parts=[];if(m.main){flags.ess=(flags.ess||0)+1;parts.push('1 Essência de Poder');}if(rw.coins){flags.coins=(flags.coins||0)+rw.coins;parts.push(`${rw.coins} moedas`);}for(const [k,v] of Object.entries(rw.items||{})){bag[k]=(bag[k]||0)+v;parts.push(`${v} ${itemName(k)}`);}
   tone([523,659,784,1047],.08);if(parts.length)await say(`MISSÃO CUMPRIDA: ${m.t}${/[!?]$/.test(m.t)?'':'!'} Recompensa: ${parts.join(', ')}.`);if(CHARS[m.npc]&&CHARS[m.npc].fr)await frAdd(m.npc,3,true);saveGame();if(m.after)await m.after();
   const nx=msNext();if(nx&&m.main)await say(`📜 Próxima missão: ${nx.t}${/[!?.]$/.test(nx.t)?'':'.'} ${nx.h}.`);}
 async function msRun(m){return msArtWrap(m,()=>msRun0(m));}
@@ -14656,7 +14658,7 @@ async function msArtWrap(m,f){const prev=MSART;MSART=(m&&MSARTU[m.id])?m.id:prev
 (function(){let el=null,cur=null,vis=false;const cv=()=>document.getElementById('screen')||document.querySelector('#stage canvas')||document.querySelector('canvas');
   function tick(){try{const top=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null,show=!!(MSART&&typeof G!=='undefined'&&G.mode==='world'&&top&&top.type==='dialog');
     if(show){if(!el){el=document.createElement('img');el.id='msArt';el.alt='';el.style.cssText='position:fixed;z-index:40;pointer-events:none;aspect-ratio:3/2;object-fit:cover;border-radius:14px;border:3px solid #f6d36a;box-shadow:0 8px 22px rgba(0,0,0,.45),0 0 0 2px #6a3a12 inset;background:#2a1a0a;opacity:0;transform:translateY(8px) scale(.97);transition:opacity .25s,transform .25s';document.body.appendChild(el);}
-      if(cur!==MSART){cur=MSART;el.src=MSARTU[MSART];}
+      {const src=(window.MSDEP===MSART&&MSARTD[MSART])?MSARTD[MSART]:MSARTU[MSART];if(cur!==src){cur=src;el.src=src;}}
       const c=cv(),R=c?c.getBoundingClientRect():{left:0,width:innerWidth,top:0,height:innerHeight,bottom:innerHeight};let w=Math.min(R.width*.92,560),h=w/1.5,bot=R.bottom-R.height*.2-6;try{const L=top.cadL;if(L&&H>0){const k=R.height/H,s9=L.s||1;bot=R.top+(L.y-(top.speaker?64*s9*.42:0))*k-8;}}catch(_){}if(bot-h<R.top+8){h=Math.max(60,bot-R.top-8);w=h*1.5;}
       el.style.width=w+'px';el.style.left=(R.left+(R.width-w)/2)+'px';el.style.top=Math.max(R.top+8,bot-h)+'px';
       if(!vis){vis=true;el.style.display='block';requestAnimationFrame(()=>{if(el){el.style.opacity='1';el.style.transform='none';}});}}

@@ -6,12 +6,12 @@
     "www": "rm -rf www && mkdir -p www && cp ../index.html ../manifest.webmanifest ../privacidade.html www/ && cp -R ../assets ../blobs ../icones www/"
   },
   "dependencies": {
-    "@capacitor/core": "^6.1.2",
-    "@capacitor/ios": "^6.1.2",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
     "cordova-plugin-purchase": "^13.10.0",
-    "@capacitor-community/admob": "^6.0.0"
+    "@capacitor-community/admob": "^7.0.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.1.2"
+    "@capacitor/cli": "^7.0.0"
   }
 }

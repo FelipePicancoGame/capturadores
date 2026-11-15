@@ -12,16 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: {node-version: 20}
-      - run: npm install && npm run www
+        with: {node-version: 22}
+      - run: npm install --legacy-peer-deps && npm run www
       - run: npx cap add ios || true
       - run: npx cap sync ios
-      - name: Fixar UMP 2.x (o plugin AdMob v6 não compila com UMP 3)
-        run: |
-          cd ios/App
-          perl -pi -e "s/^target 'App' do/target 'App' do\n  pod 'GoogleUserMessagingPlatform', '~> 2.7'/" Podfile
-          grep -n "GoogleUserMessagingPlatform" Podfile
-          pod install --repo-update
       - name: Chave da App Store Connect
         run: |
           mkdir -p ~/.appstoreconnect/private_keys

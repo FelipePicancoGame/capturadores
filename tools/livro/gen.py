@@ -44,7 +44,7 @@ usados = {m for v in SP.values() for _, m in v['learn']}
 sobra = [MV[m]['name'] for m in MV if m not in usados]
 if sobra: add('w', f'Golpes que ninguém aprende: {", ".join(sobra)}.')
 T = list(TN)
-sem_fraq = [TN[t] for t in T if not any(C.get(a, {}).get(t, 1) > 1 for a in T)]
+sem_fraq = [TN[t] for t in T if t != 'luz' and not any(C.get(a, {}).get(t, 1) > 1 for a in T)]  # Luz sem fraqueza: decisão do Felipe (15/11, 'não tem fraqueza ainda')
 if sem_fraq: add('w', f'Tipos sem nenhuma fraqueza: {", ".join(sem_fraq)}.')
 sem_en = sorted(n for n, e in EN.items() if e == n and any('a' <= ch <= 'z' for ch in n.lower()) and n not in ('Normal', 'Avalanche'))
 if sem_en: add('w', f'Sem tradução em inglês: {", ".join(sem_en[:12])}{" …" if len(sem_en) > 12 else ""}.')

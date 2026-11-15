@@ -359,5 +359,17 @@
   "de": "casco (plantas das costas)",
   "como": "Recolhe a cabeça; as plantinhas do casco soltam sementes e pedrinhas.",
   "ok": 1
+ },
+ "estrelim": {
+  "de": "estrela da cauda",
+  "como": "Balança a cauda; a estrela da ponta acende forte e solta uma estrelinha dourada que voa até o inimigo."
+ },
+ "estrelux": {
+  "de": "estrela da cauda",
+  "como": "Ergue a cauda; a estrela maior brilha e dispara uma estrela cadente com rastro dourado."
+ },
+ "estelarion": {
+  "de": "estrela da cauda",
+  "como": "Cruza as duas caudas; as estrelas brilham juntas e soltam estrelas cadentes. No especial, a coroa de luz pisca."
  }
 }

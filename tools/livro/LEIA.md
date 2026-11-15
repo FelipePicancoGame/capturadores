@@ -23,3 +23,4 @@ Saídas: `/tmp/livro/livro-monstrinhos.html` (o livro) e `/tmp/livro/problemas.j
 ## Decisões do Felipe (não tratar como erro)
 - Brasinha e Brasalor são vermelhos desde 09/11 (RECOR09NOV pinta o azul de vermelho ao carregar). Brasalor = forma 2; o com asas grandes é a forma 3 (Dracobrasa).
 - Ratonga esverdeado é o que ele quer.
+- Tipo Luz sem fraqueza por enquanto (15/11: 'não tem fraqueza ainda'); a conferência não marca mais. Linha Estrelim lança o poder pela estrela da cauda.

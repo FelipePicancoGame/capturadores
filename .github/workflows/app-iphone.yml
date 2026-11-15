@@ -19,7 +19,7 @@ jobs:
       - name: Fixar UMP 2.x (o plugin AdMob v6 não compila com UMP 3)
         run: |
           cd ios/App
-          sed -i '' "s/^target 'App' do/target 'App' do\n  pod 'GoogleUserMessagingPlatform', '~> 2.7'/" Podfile
+          perl -pi -e "s/^target 'App' do/target 'App' do\n  pod 'GoogleUserMessagingPlatform', '~> 2.7'/" Podfile
           grep -n "GoogleUserMessagingPlatform" Podfile
           pod install --repo-update
       - name: Chave da App Store Connect

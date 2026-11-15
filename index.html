@@ -5648,7 +5648,7 @@ function wUpdate(){const w=WL;w.t++;wDanger(w);if((flags.wallAuto||(w.duo&&w.duo
   if(w.ult){w.ult.t++;if(w.ult.t>=w.ult.dur){w.ult=null;while(w.ultQ.length){const q=w.ultQ.shift();if(w.defs[q]&&w.defs[q].charge>=100){wSpecial(q);break;}}}}
   w.foes=w.foes.filter(e=>!e.dead);
   /* SEMPERDER08NOV (Felipe: 'não pode perder nessa primeira muralha'): na 1ª Muralha o Guarda Bento conserta o muro antes de cair */if(STG&&STG.first&&w.wall<w.wallMax*.2){w.wall=Math.round(w.wallMax*.6);w.banner={t:100,text:'O GUARDA BENTO CONSERTOU O MURO!',sub:'Continue defendendo!'};try{tone([523,659,784],.07);}catch(e){}}
-  if(w.wall<=0){if(w.phoenix){w.phoenix=0;w.wall=Math.round(w.wallMax*.6);w.phx={t:0};w.banner={t:100,text:'A MURALHA RENASCEU!',sub:'Fênix da Muralha'};w.flash=.7;w.shake=20;tone([523,784,1047,1568],.1);for(let k=0;k<40;k++)part(Math.random()*180,250+Math.random()*16,Math.random()<.5?'#ff7a2a':'#ffd23f',1,{sp:2.5,up:2,life:40,grav:-.02});}else{w.running=false;w.done('lose');return;}}
+  if(w.wall<=0){if(w.phoenix){w.phoenix=0;w.wall=Math.round(w.wallMax*.6);w.phx={t:0};w.banner={t:100,text:'A MURALHA RENASCEU!',sub:'Fênix da Muralha'};w.flash=.7;w.shake=20;tone([523,784,1047,1568],.1);for(let k=0;k<40;k++)part(Math.random()*180,250+Math.random()*16,Math.random()<.5?'#ff7a2a':'#ffd23f',1,{sp:2.5,up:2,life:40,grav:-.02});}else if(window.CVREVIVE&&!w.revUsed&&!w.duo&&CVREVIVE.pode()){w.revUsed=1;w.wall=0;w.running=false;w.paused={i:0,rev:1};CVREVIVE.pede(()=>{w.wall=Math.round(w.wallMax*.5);w.paused=null;w.running=true;w.banner={t:90,text:'CONTINUOU!',sub:'Muralha com metade da vida'};},()=>{w.paused=null;w.running=false;w.done('lose');});return;}else{w.running=false;w.done('lose');return;}}
   if(!w.tutS&&w.spawned>=w.toSpawn&&!w.foes.length&&!w.meteors.length&&!w.fx.some(f=>f.k==='delay'||f.k==='lob')){w.running=false;if(w.wave>=10){w.done('win');return;}wOffer();}}
 function wMonTot(id,d){const P=v=>Math.round((v-1)*100);if(id==='mdmg')return ` · TOTAL: +${P(d.mDmg)}% → +${P(d.mDmg*1.2*1.05)}%`;if(id==='mspd')return ` · TOTAL: +${P(d.mSpd)}% → +${P(d.mSpd*1.2)}%`;if(id==='mcharge')return ` · TOTAL: +${P(d.cMul)}% → +${P(d.cMul*1.25)}%`;if(id==='mpierce')return ` · TOTAL: ${d.pierce} → ${d.pierce+1}`;if(id==='mmulti')return ` · TOTAL: ${1+d.multi} → ${2+d.multi} tiros`;if(id==='mrng')return ` · TOTAL: +${P(d.rngMul||1)}% → +${P((d.rngMul||1)*1.15)}%`;return '';}
 const MONCARDS=[
@@ -7570,7 +7570,7 @@ function tdStep(){const T=TD;T.t++;if(T.t%20===0)tdComboAll();
     if(d<=sp){s.done=true;if(!s.tg.dead){tdHit(s.tg,s.dmg,s.type,false);if(s.splash)for(const o of T.foes)if(o!==s.tg&&!o.dead&&Math.hypot(o.x-s.lx,o.y-s.ly)<20)tdHit(o,s.dmg,s.type,true);}}
     else{s.vx=dx/d*sp;s.vy=dy/d*sp;s.x+=s.vx;s.y+=s.vy;if(T.t%2===0)T.parts.push({x:s.x,y:s.y,vx:0,vy:0,life:8,max:8,col:TYPECOL[s.type],size:1.5,grav:0,kind:'spark'});}}
   T.shots=T.shots.filter(s=>!s.done);for(const e of [...T.foes])if(e.dead&&e.bub&&!e.escaped&&!e.popped){e.popped=1;tdBubPop(e);}T.foes=T.foes.filter(e=>!e.dead);
-  if(T.lives<=0){T.lives=0;T.phase='end';T.done('lose');return;}
+  if(T.lives<=0){if(window.CVREVIVE&&!T.revUsed&&CVREVIVE.pode()){T.revUsed=1;T.lives=0;T.paused=true;CVREVIVE.pede(()=>{T.lives=10;T.paused=false;},()=>{T.paused=false;T.phase='end';T.done('lose');});return;}T.lives=0;T.phase='end';T.done('lose');return;}
   if(T.spawned>=T.toSpawn&&!T.foes.length&&!T.fx.some(f=>f.k==='delay'||f.k==='lob')){const lost=(T.livesAtStart??T.lives)-T.lives;T.dda=1;/* TORRES11NOV: sem dificuldade que se adapta (Felipe: perder nunca facilita) */const bonus=Math.round((18+T.wave*1.5)*(T.gSave||1));T.energy+=bonus;if(T.gInt){T.energy+=Math.min(40,Math.round(T.energy*T.gInt));}if(T.gRegen){T.lives+=T.gRegen;}tdPop(90,150,`ONDA ${T.wave} VENCIDA! +${bonus}⚡`,C.yellow,9);
     if(T.wave>=15){T.phase='end';T.done('win');return;}T.wave++;T.phase='build';T.count=600;if(T.wave%2===1)tdOffer();T.toSpawn=Math.round(9+T.wave*2.2)+(T.wave%5===0?1:0);T.spawned=0;}}
 function tdStartWave(early){const T=TD;if(T.phase!=='build'||T.cards)return;if(early&&T.wave>1&&T.count>0){const bonus=Math.ceil(T.count/60)*2;T.energy+=bonus;tdPop(90,120,`Chamou cedo! +${bonus}⚡`,C.yellow,8);}
@@ -9507,9 +9507,11 @@ async function stgLaunch0(key,i){const bio=key!=='arena'?murBioI(i):BIOMES[Math.
   try{await ({wall:wallMode,td:towerMode,surv:survMode,arena:arenaStage})[key]();}finally{STG=null;}
   const R=STGRES;STGRES=null;if(!R)return;const A=stgArr(key),old=A[i]||0;
   if(R.win){const first=!old,ns=Math.max(old,R.stars||1);A[i]=ns;const g=(first?3+(typeof WD!=='undefined'?WD:0)+((key!=='arena'?i%5===4:i%3===2)?10:0):ecoRep())+(ns===3&&old<3?3:0);ecoWeek();const _g0=0,c=first?12+3*i:3+Math.floor(i/2);if(key==='arena'&&window.bauGuarda){bauGuarda(i,g,c,first&&i%5===4?1:0);saveGame();tone([523,659,784,1047],.08);await say(window.CVLANG==='en'?`${first?'FLOOR CLEARED!':'Floor repeated!'} Tap the chest next to the floor to open your prize.`:`${first?'ANDAR CONCLUÍDO!':'Andar repetido!'} Toque no baú do lado do andar para abrir o prêmio.`);}else{addGems(g);flags.coins=(flags.coins||0)+c;if(first&&i%5===4)essAdd(1,'chefe vencido');saveGame();
-    tone([523,659,784,1047],.08);await say(`${first?'FASE CONCLUÍDA!':'Fase repetida!'} ${g?`+${g} cristal 💎 e `:''}+${c} moedas.${first&&i<STGT-1?' A próxima fase foi liberada no mapa!':''}`);}}
+    tone([523,659,784,1047],.08);await say(`${first?'FASE CONCLUÍDA!':'Fase repetida!'} ${g?`+${g} cristal 💎 e `:''}+${c} moedas.${first&&i<STGT-1?' A próxima fase foi liberada no mapa!':''}`);
+    /* DOBRO15NOV: vídeo pra dobrar o prêmio da fase */
+    if(window.CVVIDEO&&CVVIDEO.pode()){const en3=window.CVLANG==='en';const k=await choose([en3?'📺 VIDEO: DOUBLE PRIZE':'📺 VÍDEO: DOBRAR PRÊMIO',en3?'NO, THANKS':'NÃO, OBRIGADO'],{noCancel:true,cadAsk:{q:(en3?'Double your prize: ':'Dobre o prêmio: ')+`${g?`+${g} 💎 · `:''}+${c} `+(en3?'coins':'moedas'),nf:1,cols:['#b0601a','#5a5470']}});if(k===0&&await CVVIDEO.ver()){addGems(g);flags.coins=(flags.coins||0)+c;saveGame();try{rwToast((en3?'Prize doubled! ':'Prêmio dobrado! ')+`${g?`+${g} 💎 · `:''}+${c}`);}catch(_){}}}}}
   else{await say('Não foi dessa vez! Dá pra tentar de novo quantas vezes quiser (e repetir fases já vencidas pra ganhar mais).');try{await tioDica(key,i);}catch(e){}}
-  if(R.win&&R.stars>=3&&Math.random()<.01)flags.pendCatch={sp:rgnSpecies(bio),lv:Math.max(5,teamAvg()-1)};await rareCatchPending();}
+  if(R.win&&R.stars>=3&&Math.random()<.01)flags.pendCatch={sp:rgnSpecies(bio),lv:Math.max(5,teamAvg()-1)};await rareCatchPending();try{if(window.CVINTER)await CVINTER.talvez();}catch(_){}}
 const SMAPTEX={};function smapTex(bio){if(SMAPTEX[bio.k])return SMAPTEX[bio.k];{const GI=chaoImg(bio.k);if(GI)return SMAPTEX[bio.k]=GI;}try{const c=bioRecolor(bakeSvGround(),bio);SMAPTEX[bio.k]=c;return c;}catch(e){return null;}}
 /* MAPA DE FASES COM ROLAGEM: trilha subindo pelas regiões, todas as fases numeradas */
 let SMSP=54;const SMWG=56;function smCY(g){return 46+g*SMSP+Math.floor(g/STGN)*SMWG;}function smX(g){return W/2+Math.sin(g*1.15+.4)*W*.27;}
@@ -17445,18 +17447,34 @@ if(window.CVNATIVO){try{document.documentElement.classList.add('cvnativo');}catc
    Sem anúncio forçado. ADSPUB15NOV (Felipe: 'não quero fazer pra criança'): anúncio personalizado só se o jogador aceitar o aviso de rastreamento da Apple (ATT) e o consentimento do Google (UMP); senão vai sem personalização (npa).
    Hoje usa os códigos de TESTE do Google; trocar ADSIDS pelos do Felipe quando ele criar a conta. #ads0 desliga. */
 (function(){if(!window.CVNATIVO||/[?#&]ads0/.test(location.href))return;
-  const ADSIDS={app:'ca-app-pub-3940256099942544~1458002511',premio:'ca-app-pub-3940256099942544/1712485313'};
-  const MAXDIA=5,Q=10,en=()=>window.CVLANG==='en';let A=null,pronto=false,init=false,npa=true;
+  const ADSIDS=/[?#&]adsteste/.test(location.href)?{app:'ca-app-pub-3940256099942544~1458002511',premio:'ca-app-pub-3940256099942544/1712485313',entre:'ca-app-pub-3940256099942544/4411468910'}:{app:'ca-app-pub-9482139825936910~5086255730',premio:'ca-app-pub-9482139825936910/7641421833',entre:'ca-app-pub-9482139825936910/2900231045'};
+  const MAXDIA=25,Q=10,en=()=>window.CVLANG==='en';let A=null,pronto=false,init=false,npa=true;
   const dia=()=>new Date().toDateString(),usados=()=>{const v=flags.vid;return v&&v.d===dia()?v.n:0;};
   async function start(){if(init)return;const P=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AdMob;if(!P)return;init=true;A=P;
     try{const t=await A.trackingAuthorizationStatus();if(t&&t.status==='notDetermined')await A.requestTrackingAuthorization();const t2=await A.trackingAuthorizationStatus();npa=!(t2&&t2.status==='authorized');}catch(_){npa=true;}
     try{const ci=await A.requestConsentInfo();if(ci&&ci.isConsentFormAvailable&&ci.status==='REQUIRED'){const r=await A.showConsentForm();if(r&&r.status==='OBTAINED'){}}}catch(_){}
     try{await A.initialize({tagForChildDirectedTreatment:false,tagForUnderAgeOfConsent:false,maxAdContentRating:'Teen'});}catch(_){}
-    carrega();}
+    carrega();carregaI();}
+  let ipronto=false,iult=0,ifases=0;const t0=Date.now();
+  async function carregaI(){if(!A)return;try{await A.prepareInterstitial({adId:ADSIDS.entre,npa});ipronto=true;}catch(_){ipronto=false;setTimeout(carregaI,90000);}}
   async function carrega(){if(!A)return;try{await A.prepareRewardVideoAd({adId:ADSIDS.premio,npa});pronto=true;}catch(_){pronto=false;setTimeout(carrega,60000);}}
   window.CVVIDEO={Q,pode:()=>!!(A&&pronto&&usados()<MAXDIA),
     rotulo:()=>(en()?'📺 WATCH VIDEO = +':'📺 VER VÍDEO = +')+Q+' ⚡ ('+(MAXDIA-usados())+')',
     ver:async()=>{if(!A||!pronto)return false;pronto=false;try{const r=await A.showRewardVideoAd();flags.vid={d:dia(),n:usados()+1};carrega();return !!r;}catch(_){carrega();try{rwToast(en()?'Video not available now.':'Vídeo indisponível agora.');}catch(__){}return false;}}};
+  /* ENTREFASES15NOV: anúncio entre fases — a cada 3 fases jogadas, no mínimo 4 min entre um e outro, nunca nos 10 primeiros minutos da sessão e nunca pra quem já comprou algo */
+  window.CVINTER={talvez:async()=>{try{ifases++;if(!A||!ipronto)return;if(flags.compras&&Object.keys(flags.compras).length)return;if(Date.now()-t0<10*60e3||Date.now()-iult<4*60e3||ifases%3)return;ipronto=false;iult=Date.now();await A.showInterstitial();}catch(_){}finally{if(A&&!ipronto)carregaI();}}};
+  /* REVIVER15NOV: quando perde a Muralha ou as Torres, 1 vez por fase: ver vídeo e continuar */
+  window.CVREVIVE={pode:()=>window.CVVIDEO.pode(),pede:(sim,nao)=>{const en2=en();const b=document.createElement('div');b.style.cssText='position:fixed;inset:0;z-index:9995;background:rgba(6,12,30,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font-family:CadBaloo,Fredoka,Arial,sans-serif;font-weight:800;color:#fff;text-align:center;padding:16px';
+    const h=document.createElement('div');h.style.cssText='font-size:30px;text-shadow:0 3px 0 #0a1a4a';h.textContent=en2?'Almost! Keep going?':'Quase! Quer continuar?';b.appendChild(h);
+    const mk=(t,c,f)=>{const x=document.createElement('button');x.textContent=t;x.style.cssText=`min-width:280px;padding:16px 22px;border-radius:40px;border:4px solid #f6d36a;background:${c};color:#fff;font:inherit;font-size:24px;cursor:pointer`;x.onclick=async()=>{b.remove();await f();};b.appendChild(x);};
+    mk(en2?'📺 WATCH VIDEO AND CONTINUE':'📺 VER VÍDEO E CONTINUAR','#b0601a',async()=>{const ok=await window.CVVIDEO.ver();ok?sim():nao();});mk(en2?'GIVE UP':'DESISTIR','#8a2f2f',async()=>nao());document.body.appendChild(b);}};
+  /* BAUVIDEO15NOV: baú grátis a cada 4 horas, abre com vídeo (botão 🎁 embaixo da LOJA no mapa) */
+  const BAUH=4*3600e3;let bt=null;
+  setInterval(()=>{try{const ok=typeof G!=='undefined'&&G.mode==='world'&&!(typeof ui!=='undefined'&&ui.length)&&!document.getElementById('ljBox')&&window.CVVIDEO.pode()&&Date.now()-(flags.bauVid||0)>=BAUH;const L=typeof CAD!=='undefined'&&CAD.E&&CAD.E.loja;
+    if(!ok||!L){if(bt)bt.style.display='none';return;}
+    if(!bt){bt=document.createElement('button');bt.id='bauVid';bt.style.cssText='position:fixed;z-index:60;border:3px solid #f6d36a;border-radius:16px;background:#b0601a;color:#fff;font-family:CadBaloo,Fredoka,Arial,sans-serif;font-weight:800;padding:4px 8px;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.4)';
+      bt.onclick=async()=>{bt.style.display='none';const okv=await window.CVVIDEO.ver();if(!okv)return;flags.bauVid=Date.now();const g=10+Math.floor(Math.random()*21),c=300+Math.floor(Math.random()*7)*100;addGems(g);flags.coins=(flags.coins||0)+c;saveGame();rwToast((en()?'Free chest: ':'Baú grátis: ')+`+${g} 💎 · +${c} `+(en()?'coins':'moedas'));};document.body.appendChild(bt);}
+    const LE=L instanceof Element?L:(L.el instanceof Element?L.el:(L.bt||null));const r=LE&&LE.getBoundingClientRect();if(!r||!r.height)return;bt.textContent=en()?'🎁 FREE':'🎁 GRÁTIS';bt.style.fontSize=Math.max(12,r.height*.32)+'px';bt.style.left=r.left+'px';bt.style.top=(r.bottom+6)+'px';bt.style.display='block';}catch(_){}},700);
   document.addEventListener('deviceready',start,false);let n=0;const t=setInterval(()=>{if(init||++n>40){clearInterval(t);return;}start();},500);
 })();
 /* /ADS15NOV */

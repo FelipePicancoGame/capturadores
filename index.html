@@ -17442,16 +17442,18 @@ if(window.CVNATIVO){try{document.documentElement.classList.add('cvnativo');}catc
 })();
 /* /COMPRAS15NOV */
 /* ADS15NOV (Felipe 15/nov: anúncios "já no lançamento"): vídeo com prêmio do AdMob, só no app do iPhone e só quando o jogador escolhe.
-   Sem anúncio forçado. Sempre anúncio NÃO personalizado (npa) — o público tem criança, então não rastreia e não precisa do aviso de rastreamento.
+   Sem anúncio forçado. ADSPUB15NOV (Felipe: 'não quero fazer pra criança'): anúncio personalizado só se o jogador aceitar o aviso de rastreamento da Apple (ATT) e o consentimento do Google (UMP); senão vai sem personalização (npa).
    Hoje usa os códigos de TESTE do Google; trocar ADSIDS pelos do Felipe quando ele criar a conta. #ads0 desliga. */
 (function(){if(!window.CVNATIVO||/[?#&]ads0/.test(location.href))return;
   const ADSIDS={app:'ca-app-pub-3940256099942544~1458002511',premio:'ca-app-pub-3940256099942544/1712485313'};
-  const MAXDIA=5,Q=10,en=()=>window.CVLANG==='en';let A=null,pronto=false,init=false;
+  const MAXDIA=5,Q=10,en=()=>window.CVLANG==='en';let A=null,pronto=false,init=false,npa=true;
   const dia=()=>new Date().toDateString(),usados=()=>{const v=flags.vid;return v&&v.d===dia()?v.n:0;};
   async function start(){if(init)return;const P=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AdMob;if(!P)return;init=true;A=P;
-    try{await A.initialize({tagForChildDirectedTreatment:true,tagForUnderAgeOfConsent:true,maxAdContentRating:'General'});}catch(_){}
+    try{const t=await A.trackingAuthorizationStatus();if(t&&t.status==='notDetermined')await A.requestTrackingAuthorization();const t2=await A.trackingAuthorizationStatus();npa=!(t2&&t2.status==='authorized');}catch(_){npa=true;}
+    try{const ci=await A.requestConsentInfo();if(ci&&ci.isConsentFormAvailable&&ci.status==='REQUIRED'){const r=await A.showConsentForm();if(r&&r.status==='OBTAINED'){}}}catch(_){}
+    try{await A.initialize({tagForChildDirectedTreatment:false,tagForUnderAgeOfConsent:false,maxAdContentRating:'Teen'});}catch(_){}
     carrega();}
-  async function carrega(){if(!A)return;try{await A.prepareRewardVideoAd({adId:ADSIDS.premio,npa:true});pronto=true;}catch(_){pronto=false;setTimeout(carrega,60000);}}
+  async function carrega(){if(!A)return;try{await A.prepareRewardVideoAd({adId:ADSIDS.premio,npa});pronto=true;}catch(_){pronto=false;setTimeout(carrega,60000);}}
   window.CVVIDEO={Q,pode:()=>!!(A&&pronto&&usados()<MAXDIA),
     rotulo:()=>(en()?'📺 WATCH VIDEO = +':'📺 VER VÍDEO = +')+Q+' ⚡ ('+(MAXDIA-usados())+')',
     ver:async()=>{if(!A||!pronto)return false;pronto=false;try{const r=await A.showRewardVideoAd();flags.vid={d:dia(),n:usados()+1};carrega();return !!r;}catch(_){carrega();try{rwToast(en()?'Video not available now.':'Vídeo indisponível agora.');}catch(__){}return false;}}};

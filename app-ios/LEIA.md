@@ -12,3 +12,7 @@
 - Loja mostra o preço da Apple e o botão RESTAURAR COMPRAS. #compras0 desliga.
 ## Montar o app
 - GitHub Actions > app-iphone > Run workflow (precisa dos segredos ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8, APPLE_TEAM_ID). Vai pro TestFlight.
+
+## Nome (15/nov)
+- O jogo passou a se chamar **Tame Rush** (igual em PT e EN). `appName` = "Tame Rush" (nome embaixo do ícone). Nome na loja (asc/loja.py) = "Tame Rush" nas duas línguas.
+- Bundle, IDs das compras, `CapturadoresApp` e o e-mail continuam os de antes — não mudar.

@@ -25,6 +25,7 @@ jobs:
           cd ios/App
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ inputs.build }}" App/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.0" App/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" App/Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :GADApplicationIdentifier string ca-app-pub-9482139825936910~5086255730" App/Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :NSUserTrackingUsageDescription string 'Usamos isso para mostrar anúncios mais do seu interesse nos vídeos com prêmio.'" App/Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems array" App/Info.plist || true

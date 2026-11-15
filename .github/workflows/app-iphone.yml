@@ -1,6 +1,6 @@
 name: app-iphone
 # Monta o app do iPhone (Capacitor) numa máquina Mac do GitHub e manda pro TestFlight.
-# Segredos (GitHub > Settings > Secrets > Actions): ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (conteúdo do .p8), APPLE_TEAM_ID.
+# Segredos (GitHub > Settings > Secrets > Actions): ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (conteúdo do .p8). Team ID NP5JBSPVUY já está no arquivo.
 on:
   workflow_dispatch:
     inputs:
@@ -39,9 +39,9 @@ jobs:
         run: |
           cd ios/App
           AUTH="-allowProvisioningUpdates -authenticationKeyPath $HOME/.appstoreconnect/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8 -authenticationKeyID ${{ secrets.ASC_KEY_ID }} -authenticationKeyIssuerID ${{ secrets.ASC_ISSUER_ID }}"
-          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -archivePath $RUNNER_TEMP/App.xcarchive -destination 'generic/platform=iOS' DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }} CODE_SIGN_STYLE=Automatic $AUTH archive
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -archivePath $RUNNER_TEMP/App.xcarchive -destination 'generic/platform=iOS' DEVELOPMENT_TEAM=NP5JBSPVUY CODE_SIGN_STYLE=Automatic $AUTH archive
           cat > $RUNNER_TEMP/export.plist <<PL
           <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0"><dict><key>method</key><string>app-store-connect</string><key>destination</key><string>upload</string><key>teamID</key><string>${{ secrets.APPLE_TEAM_ID }}</string><key>signingStyle</key><string>automatic</string></dict></plist>
+          <plist version="1.0"><dict><key>method</key><string>app-store-connect</string><key>destination</key><string>upload</string><key>teamID</key><string>NP5JBSPVUY</string><key>signingStyle</key><string>automatic</string></dict></plist>
           PL
           xcodebuild -exportArchive -archivePath $RUNNER_TEMP/App.xcarchive -exportOptionsPlist $RUNNER_TEMP/export.plist -exportPath $RUNNER_TEMP/out $AUTH

@@ -10432,7 +10432,7 @@ const LJP={painel:[20,170,1040,1705],titulo:[230,60,620,150],fechar:[920,110,120
   c:[[54,390],[390,390],[726,390],[54,856],[390,856],[726,856],[54,1322],[390,1322],[726,1322]]};
 const LJN=['PUNHADO DE<br>CRISTAIS','SACO DE<br>CRISTAIS','BAÚ DE<br>CRISTAIS','ENERGIA<br>CHEIA','PASSE<br>DO MÊS','MONSTRINHO<br>RARO','2x PRA<br>SEMPRE','AUTOMÁTICO<br>PRA SEMPRE'];
 function ljInfo(i){const o=LOJAREAL[i]||{},sub=String(o.sub||''),p=sub.lastIndexOf('·'),ben=(p>=0?sub.slice(0,p):sub).replace(/💎/g,'').replace('⚡ cheia','Cheia').trim(),pr=p>=0?sub.slice(p+1).trim():'';
-  const own=(i===6&&typeof unlOk==='function'&&unlOk('fast'))||(i===7&&typeof unlOk==='function'&&unlOk('auto'));let pr2=pr;try{if(window.CVPRECO){const q=CVPRECO(0,i);if(q)pr2=q;}}catch(_){}return {ben,pr:pr2,own,gem:/💎/.test(sub)};}
+  const own=(i===6&&typeof unlOk==='function'&&unlOk('fast'))||(i===7&&typeof unlOk==='function'&&unlOk('auto'))||(i===5&&typeof flags!=='undefined'&&['estrelim','trovim'].every(k=>(flags.dex||{})[k]));let pr2=pr;try{if(window.CVPRECO){const q=CVPRECO(0,i);if(q)pr2=q;}}catch(_){}return {ben,pr:pr2,own,gem:/💎/.test(sub)};}
 /* MOEDASREAL09NOV (Felipe 09/nov: 'coloca' pacotes de moedas): 2ª página da loja com 6 pacotes de moedas. Preços provisórios; pagamento ainda não ligado. */
 const LOJAMOEDAS=[{c:5000,pr:'US$ 0,99'},{c:12000,pr:'US$ 1,99'},{c:30000,pr:'US$ 4,99'},{c:70000,pr:'US$ 9,99'},{c:150000,pr:'US$ 19,99'},{c:400000,pr:'US$ 49,99'}];
 try{Object.assign(window.CVEN||{},{'MOEDAS':'COINS','PACOTE DE':'PACK OF','MAIS':'MORE','VOLTAR':'BACK'});}catch(e){}
@@ -10492,9 +10492,10 @@ function lojaReal(pg0){return new Promise(res=>{
 async function enPainel(){while(true){const e=enSt(),day=qDay(),usd=flags.enGem&&flags.enGem.d===day?flags.enGem.n:0,can=usd<EN.GEMDAY&&gems()>=EN.GEM;
   const cheia=e.v>=EN.MAX,falta=cheia?0:enNext()+(EN.MAX-e.v-1)*EN.REG,hh=Math.floor(falta/3600e3),mm=Math.ceil((falta%3600e3)/60e3);
   const q=`⚡ Energia ${e.v} de ${EN.MAX}. Cada minigame usa ${EN.COST}.`+(cheia?' Está cheia!':` Próxima em ${enFmt(enNext())}, cheia em ${hh?hh+'h':''}${mm}min.`);
-  const opts=[...(can?[`${EN.GEM} 💎 = +${EN.GEMQ} ⚡`]:[]),...(window.CVNATIVO?[]:['LOJA']),'FECHAR'];
-  const j=await choose(opts,{noCancel:true,cadAsk:{q,nf:1,cols:can?['#1f7a3a','#3a8ae0','#8a2f2f']:['#3a8ae0','#8a2f2f']}});
-  if(can&&j===0){flags.gems=gems()-EN.GEM;flags.enGem={d:day,n:usd+1};e.v+=EN.GEMQ;try{saveGame();}catch(_){}try{rwToast(`⚡ +${EN.GEMQ} de energia · −${EN.GEM} 💎`);}catch(_){}continue;}
+  const vid=!!(window.CVVIDEO&&CVVIDEO.pode()&&!cheia);const opts=[...(vid?[CVVIDEO.rotulo()]:[]),...(can?[`${EN.GEM} 💎 = +${EN.GEMQ} ⚡`]:[]),...((window.CVNATIVO&&!window.CVLOJAOK)?[]:['LOJA']),'FECHAR'];
+  const j=await choose(opts,{noCancel:true,cadAsk:{q,nf:1,cols:opts.map(o=>o==='FECHAR'?'#8a2f2f':o==='LOJA'?'#3a8ae0':/📺/.test(o)?'#b0601a':'#1f7a3a')}});
+  if(vid&&j===0){const ok=await CVVIDEO.ver();if(ok){enSt();flags.en.v+=CVVIDEO.Q;try{saveGame();}catch(_){}try{rwToast(`⚡ +${CVVIDEO.Q} de energia!`);}catch(_){}}continue;}
+  if(can&&opts[j]===`${EN.GEM} 💎 = +${EN.GEMQ} ⚡`){flags.gems=gems()-EN.GEM;flags.enGem={d:day,n:usd+1};e.v+=EN.GEMQ;try{saveGame();}catch(_){}try{rwToast(`⚡ +${EN.GEMQ} de energia · −${EN.GEM} 💎`);}catch(_){}continue;}
   if(opts[j]==='LOJA'){await lojaReal();continue;}return;}}
 /* SALDOTOQUE12NOV (Felipe: 'se eu clicar nas essências me leva pra onde eu posso gastar elas. Faz o mesmo nos outros'): no mapa, tocar no saldo abre onde se gasta:
    moedas → LOJA de itens, cristais → LOJA de cristais, essências → CARTAS DE PODER */
@@ -10628,7 +10629,7 @@ function unlNeed(k){if(unlOk(k)||(k==='auto'&&unlTut()))return false;if(!UNLASK)
 function unlGive(k){(flags.unl||(flags.unl={}))[k]=1;try{saveGame();}catch(_){}try{rwToast(`🔓 ${UNL[k].n} liberado pra sempre, em todos os modos!`);}catch(_){}try{tone([523,659,784],.06);}catch(_){}}
 async function unlAsk(k){const U=UNL[k],g=gems(),can=g>=U.gem;
   const q=`🔒 ${U.n} está bloqueado. Desbloqueie uma vez e ele fica liberado pra sempre, em todos os modos.`+(can?'':` Custa ${U.gem} 💎 e você tem ${g} 💎.`);
-  const opts=[...(can?[`${U.gem} 💎 DESBLOQUEAR`]:[]),...(window.CVNATIVO?[]:['LOJA']),'AGORA NÃO'];
+  const opts=[...(can?[`${U.gem} 💎 DESBLOQUEAR`]:[]),...((window.CVNATIVO&&!window.CVLOJAOK)?[]:['LOJA']),'AGORA NÃO'];
   const j=await choose(opts,{noCancel:true,cadAsk:{q,nf:1,cols:can?['#1f7a3a','#3a8ae0','#8a2f2f']:['#3a8ae0','#8a2f2f']}});
   if(can&&j===0){flags.gems=gems()-U.gem;unlGive(k);return true;}
   if(opts[j]==='LOJA')await lojaReal();return false;}
@@ -17399,7 +17400,7 @@ if(window.CVNATIVO){try{document.documentElement.classList.add('cvnativo');}catc
 (function(){if(!window.CVNATIVO||/[?#&]compras0/.test(location.href))return;
   const P='com.capturadoresdovale.app.',en=()=>window.CVLANG==='en';
   const gem=n=>{addGems(n);};
-  const giveMon=()=>{const fx=['estrelim','trovim'];let sp=fx.find(k=>SP[k]&&!(flags.dex||{})[k]);if(!sp){gem(600);return en()?'+600 💎':'+600 💎';}try{const w=grantMon(sp,typeof teamAvg==='function'?teamAvg():10);setTimeout(()=>{try{revealMon(sp,w);}catch(_){}},400);}catch(_){}return SP[sp].name;};
+  const giveMon=()=>{const fx=['estrelim','trovim'];let sp=fx.find(k=>SP[k]&&!(flags.dex||{})[k]);if(!sp){gem(500);return '+500 💎';}try{const w=grantMon(sp,typeof teamAvg==='function'?teamAvg():10);setTimeout(()=>{try{revealMon(sp,w);}catch(_){}},400);}catch(_){}return SP[sp].name;};
   const PASSEDIAS=30;
   /* página 0 = LOJAREAL (8), página 1 = LOJAMOEDAS (6) */
   const L0=[
@@ -17439,6 +17440,23 @@ if(window.CVNATIVO){try{document.documentElement.classList.add('cvnativo');}catc
     e.textContent=en()?'RESTORE PURCHASES':'RESTAURAR COMPRAS';e.addEventListener('pointerup',ev=>{ev.preventDefault();ev.stopPropagation();CVRESTAURAR();});st.appendChild(e);}catch(_){}} ,300);
 })();
 /* /COMPRAS15NOV */
+/* ADS15NOV (Felipe 15/nov: anúncios "já no lançamento"): vídeo com prêmio do AdMob, só no app do iPhone e só quando o jogador escolhe.
+   Sem anúncio forçado. Sempre anúncio NÃO personalizado (npa) — o público tem criança, então não rastreia e não precisa do aviso de rastreamento.
+   Hoje usa os códigos de TESTE do Google; trocar ADSIDS pelos do Felipe quando ele criar a conta. #ads0 desliga. */
+(function(){if(!window.CVNATIVO||/[?#&]ads0/.test(location.href))return;
+  const ADSIDS={app:'ca-app-pub-3940256099942544~1458002511',premio:'ca-app-pub-3940256099942544/1712485313'};
+  const MAXDIA=5,Q=10,en=()=>window.CVLANG==='en';let A=null,pronto=false,init=false;
+  const dia=()=>new Date().toDateString(),usados=()=>{const v=flags.vid;return v&&v.d===dia()?v.n:0;};
+  async function start(){if(init)return;const P=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.AdMob;if(!P)return;init=true;A=P;
+    try{await A.initialize({tagForChildDirectedTreatment:true,tagForUnderAgeOfConsent:true,maxAdContentRating:'General'});}catch(_){}
+    carrega();}
+  async function carrega(){if(!A)return;try{await A.prepareRewardVideoAd({adId:ADSIDS.premio,npa:true});pronto=true;}catch(_){pronto=false;setTimeout(carrega,60000);}}
+  window.CVVIDEO={Q,pode:()=>!!(A&&pronto&&usados()<MAXDIA),
+    rotulo:()=>(en()?'📺 WATCH VIDEO = +':'📺 VER VÍDEO = +')+Q+' ⚡ ('+(MAXDIA-usados())+')',
+    ver:async()=>{if(!A||!pronto)return false;pronto=false;try{const r=await A.showRewardVideoAd();flags.vid={d:dia(),n:usados()+1};carrega();return !!r;}catch(_){carrega();try{rwToast(en()?'Video not available now.':'Vídeo indisponível agora.');}catch(__){}return false;}}};
+  document.addEventListener('deviceready',start,false);let n=0;const t=setInterval(()=>{if(init||++n>40){clearInterval(t);return;}start();},500);
+})();
+/* /ADS15NOV */
 /* AMGNAVEG13NOV (Felipe: 'o convite do amigo não abre o jogo, ele cria um novo'): no iPhone o link abre no Safari, que tem um jogo separado do app.
    Se o link de amigo abrir fora do app e não houver jogo salvo neste navegador, pergunta antes se a pessoa já joga no app e ensina a adicionar pelo número. */
 (function(){try{const lk=JSON.parse(localStorage.getItem('cv.amglink')||'null');if(!lk||!lk.tid)return;

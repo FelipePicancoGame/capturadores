@@ -10431,7 +10431,7 @@ const LJP={painel:[20,170,1040,1705],titulo:[230,60,620,150],fechar:[920,110,120
   c:[[54,390],[390,390],[726,390],[54,856],[390,856],[726,856],[54,1322],[390,1322],[726,1322]]};
 const LJN=['PUNHADO DE<br>CRISTAIS','SACO DE<br>CRISTAIS','BAÚ DE<br>CRISTAIS','ENERGIA<br>CHEIA','PASSE<br>DO MÊS','MONSTRINHO<br>RARO','2x PRA<br>SEMPRE','AUTOMÁTICO<br>PRA SEMPRE'];
 function ljInfo(i){const o=LOJAREAL[i]||{},sub=String(o.sub||''),p=sub.lastIndexOf('·'),ben=(p>=0?sub.slice(0,p):sub).replace(/💎/g,'').replace('⚡ cheia','Cheia').trim(),pr=p>=0?sub.slice(p+1).trim():'';
-  const own=(i===6&&typeof unlOk==='function'&&unlOk('fast'))||(i===7&&typeof unlOk==='function'&&unlOk('auto'));return {ben,pr,own,gem:/💎/.test(sub)};}
+  const own=(i===6&&typeof unlOk==='function'&&unlOk('fast'))||(i===7&&typeof unlOk==='function'&&unlOk('auto'));let pr2=pr;try{if(window.CVPRECO){const q=CVPRECO(0,i);if(q)pr2=q;}}catch(_){}return {ben,pr:pr2,own,gem:/💎/.test(sub)};}
 /* MOEDASREAL09NOV (Felipe 09/nov: 'coloca' pacotes de moedas): 2ª página da loja com 6 pacotes de moedas. Preços provisórios; pagamento ainda não ligado. */
 const LOJAMOEDAS=[{c:5000,pr:'US$ 0,99'},{c:12000,pr:'US$ 1,99'},{c:30000,pr:'US$ 4,99'},{c:70000,pr:'US$ 9,99'},{c:150000,pr:'US$ 19,99'},{c:400000,pr:'US$ 49,99'}];
 try{Object.assign(window.CVEN||{},{'MOEDAS':'COINS','PACOTE DE':'PACK OF','MAIS':'MORE','VOLTAR':'BACK'});}catch(e){}
@@ -10464,7 +10464,7 @@ function lojaReal(pg0){return new Promise(res=>{
   const close=()=>{removeEventListener('resize',fit);clearInterval(tk);box.remove();res();};
   const CW=el('div',[0,0,1080,1920],'pointer-events:none');
   const render=(pg)=>{CW.innerHTML='';cards.length=0;sel=-1;
-  LJP.c.forEach((p,i)=>{if(pg===1&&(i===6||i===7))return;const x=p[0],y=p[1],fe=i===8,mo=pg===1&&!fe,M=mo?LOJAMOEDAS[i]:null,inf=fe?{ben:pg?'Cristais':'Moedas',pr:'',own:false}:mo?{ben:M.c.toLocaleString('pt-BR'),pr:M.pr,own:false,coin:1}:ljInfo(i);
+  LJP.c.forEach((p,i)=>{if(pg===1&&(i===6||i===7))return;const x=p[0],y=p[1],fe=i===8,mo=pg===1&&!fe,M=mo?LOJAMOEDAS[i]:null,inf=fe?{ben:pg?'Cristais':'Moedas',pr:'',own:false}:mo?{ben:M.c.toLocaleString('pt-BR'),pr:(window.CVPRECO&&CVPRECO(1,i))||M.pr,own:false,coin:1}:ljInfo(i);
     const c=el('div',[x,y,300,440],'cursor:pointer;pointer-events:auto',CW);const bg=img(LJU.lj_cartao,[0,0,300,440],c);
     if(fe&&pg===0){img(LJU.lj_moeda,[75,40,150,150],c);}else if(fe)img(LJU.lj_cristal,[75,40,150,150],c);else if(mo){const k=Math.min(5,1+i);for(let q=0;q<k;q++)img(LJU.lj_moeda,[70+((q*53)%110),30+q*22-(k>3?20:0),120,120],c);}else img(LJU['lj_prod_'+(i+1)],[30,20,240,190],c);
     img(LJU.lj_nome,[10,218,280,80],c);txt(fe?(pg===0?'MAIS<br>MOEDAS':'VOLTAR'):mo?'PACOTE DE<br>MOEDAS':LJN[i],[24,222,252,70],fe?32:29,'#fff',c,OUT);
@@ -10480,7 +10480,7 @@ function lojaReal(pg0){return new Promise(res=>{
       if(fe){try{tone([523],.04);}catch(_){}render(pg===0?1:0);return;}
       if(sel>=0&&cards[sel])cards[sel].bg.src=LJU.lj_cartao;sel=i;up();
       try{tone([523,659],.05);}catch(_){}
-      try{rwToast(inf.own?'Você já tem esse! Ele fica liberado pra sempre.':'Em breve! As compras vão funcionar quando o jogo estiver na App Store.');}catch(_){}});});};
+      if(!inf.own&&window.CVCOMPRA){CVCOMPRA(pg,i,()=>{upd();render(pg);});return;}try{rwToast(inf.own?'Você já tem esse! Ele fica liberado pra sempre.':'Em breve! As compras vão funcionar quando o jogo estiver na App Store.');}catch(_){}});});};
   render(pg0===1?1:0);
   const x=el('div',LJP.fechar,'cursor:pointer');img(LJU.lj_fechar,[0,0,120,120],x);
   x.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();x.style.transform='scale(.9)';});
@@ -17367,9 +17367,55 @@ window.CVNATIVO=/CapturadoresApp/.test(navigator.userAgent)||/[?&]ios=1/.test(lo
 if(window.CVNATIVO){try{document.documentElement.classList.add('cvnativo');}catch(e){}
   try{const st=document.createElement('style');st.textContent='html.cvnativo #cvClose{display:none!important}';document.head.appendChild(st);}catch(e){}
   /* LOJAIOS14NOV (revisão App Store: 'em breve' é recusado): no app do iPhone, sem a compra pela Apple ligada, não existe loja de dinheiro — só um aviso curto de onde ganhar cristais */
-  lojaReal=function(){return new Promise(res=>{const en=(window.CVLANG==='en');try{rwToast(en?'💎 Win crystals in stages, missions and the Arena!':'💎 Ganhe cristais nas fases, missões e na Arena!');}catch(e){}res();});};
+  window.__lojaOrig=lojaReal;  lojaReal=function(pg){if(window.CVLOJAOK)return window.__lojaOrig(pg);return new Promise(res=>{const en=(window.CVLANG==='en');try{rwToast(en?'💎 Win crystals in stages, missions and the Arena!':'💎 Ganhe cristais nas fases, missões e na Arena!');}catch(e){}res();});};
 }
 /* /APPIOS13NOV */
+/* COMPRAS15NOV (Felipe 15/nov: "quero lançar com compras"): compras de verdade pela Apple (StoreKit) no app do iPhone.
+   Usa o plugin cordova-plugin-purchase (window.CdvPurchase). Fora do app nada muda. Quando a loja da Apple responde, a LOJA volta
+   a abrir (com o preço da Apple no idioma/moeda do aparelho) e ganha o botão RESTAURAR COMPRAS. #compras0 desliga. */
+(function(){if(!window.CVNATIVO||/[?#&]compras0/.test(location.href))return;
+  const P='com.capturadoresdovale.app.',en=()=>window.CVLANG==='en';
+  const gem=n=>{addGems(n);};
+  const giveMon=()=>{const fx=['estrelim','trovim'];let sp=fx.find(k=>SP[k]&&!(flags.dex||{})[k]);if(!sp){gem(600);return en()?'+600 💎':'+600 💎';}try{const w=grantMon(sp,typeof teamAvg==='function'?teamAvg():10);setTimeout(()=>{try{revealMon(sp,w);}catch(_){}},400);}catch(_){}return SP[sp].name;};
+  const PASSEDIAS=30;
+  /* página 0 = LOJAREAL (8), página 1 = LOJAMOEDAS (6) */
+  const L0=[
+    {id:'cristais100',t:'CONSUMABLE',g:()=>{gem(100);return '+100 💎';}},
+    {id:'cristais550',t:'CONSUMABLE',g:()=>{gem(550);return '+550 💎';}},
+    {id:'cristais1200',t:'CONSUMABLE',g:()=>{gem(1200);return '+1.200 💎';}},
+    {id:'energia',t:'CONSUMABLE',g:()=>{try{enSt();flags.en.v=Math.max(flags.en.v,EN.MAX)+30;flags.en.t=Date.now();}catch(_){}return '⚡ +30';}},
+    {id:'passe30',t:'NON_RENEWING_SUBSCRIPTION',g:()=>{const now=Date.now(),p=flags.passe||{};p.ate=Math.max(p.ate||0,now)+PASSEDIAS*864e5;flags.passe=p;passeTick();return en()?'Month pass: 50 💎 a day!':'Passe do mês: 50 💎 por dia!';}},
+    {id:'monstrinhoraro',t:'CONSUMABLE',g:()=>{gem(100);const n=giveMon();return '+100 💎 · '+n;}},
+    {id:'dobro',t:'NON_CONSUMABLE',g:()=>{(flags.unl||(flags.unl={})).fast=1;return en()?'2x unlocked forever!':'2x liberado pra sempre!';}},
+    {id:'automatico',t:'NON_CONSUMABLE',g:()=>{(flags.unl||(flags.unl={})).auto=1;return en()?'AUTO unlocked forever!':'AUTOMÁTICO liberado pra sempre!';}}];
+  const L1=[5000,12000,30000,70000,150000,400000].map(c=>({id:'moedas'+c,t:'CONSUMABLE',g:()=>{flags.coins=(flags.coins||0)+c;return '+'+c.toLocaleString('pt-BR')+(en()?' coins':' moedas');}}));
+  const ALL=L0.concat(L1),BY={};ALL.forEach(o=>BY[P+o.id]=o);
+  function passeTick(){try{const p=flags.passe;if(!p||!(p.ate>Date.now()))return;const d=new Date().toDateString();if(p.dia===d)return;p.dia=d;gem(50);saveGame();rwToast(en()?'Month pass: +50 💎 today!':'Passe do mês: +50 💎 de hoje!');}catch(_){}}
+  setInterval(passeTick,60000);setTimeout(passeTick,8000);
+  let store=null,ok=false,cb=null;
+  window.CVPRECO=function(pg,i){if(!ok)return null;const o=(pg?L1:L0)[i];if(!o)return null;try{const p=store.get(P+o.id);return p&&p.pricing&&p.pricing.price||null;}catch(_){return null;}};
+  function deliver(tr){try{const done=[];for(const pr of (tr.products||[])){const o=BY[pr.id];if(!o)continue;
+      flags.compras=flags.compras||{};const tid=tr.transactionId||'';const key=pr.id+':'+tid;
+      if(o.t!=='NON_CONSUMABLE'&&tid&&flags.compras[key])continue;
+      if(o.t==='NON_CONSUMABLE'&&flags.compras[pr.id]){o.g();continue;}
+      const msg=o.g();flags.compras[o.t==='NON_CONSUMABLE'?pr.id:key]=Date.now();done.push(msg);}
+    saveGame();if(done.length)rwToast((en()?'Thank you! ':'Obrigado! ')+done.join(' · '));if(cb){const f=cb;cb=null;f();}}catch(e){}
+    try{tr.finish();}catch(_){}}
+  window.CVCOMPRA=function(pg,i,after){const o=(pg?L1:L0)[i];if(!o||!ok){rwToast(en()?'The App Store is not answering. Try again in a moment.':'A loja da Apple não respondeu. Tente de novo daqui a pouco.');return;}
+    const p=store.get(P+o.id);const of=p&&p.getOffer&&p.getOffer();if(!of){rwToast(en()?'Item not available yet.':'Esse item ainda não está disponível.');return;}
+    cb=after;store.order(of).then(r=>{if(r&&r.isError&&r.code!==CdvPurchase.ErrorCode.PAYMENT_CANCELLED)rwToast((en()?'Purchase failed: ':'A compra não foi: ')+(r.message||''));}).catch(()=>{});};
+  window.CVRESTAURAR=function(){if(!ok)return;rwToast(en()?'Restoring purchases…':'Restaurando compras…');store.restorePurchases().then(()=>{setTimeout(()=>{rwToast(en()?'Purchases restored.':'Compras restauradas.');},1500);}).catch(()=>{});};
+  function start(){const C=window.CdvPurchase;if(!C||!C.store)return false;store=C.store;
+    store.register(ALL.map(o=>({id:P+o.id,type:C.ProductType[o.t],platform:C.Platform.APPLE_APPSTORE})));
+    store.when().approved(tr=>deliver(tr));
+    store.initialize([C.Platform.APPLE_APPSTORE]).then(()=>{ok=true;window.CVLOJAOK=1;}).catch(()=>{});return true;}
+  if(!start()){document.addEventListener('deviceready',start,false);let n=0;const t=setInterval(()=>{if(store||++n>40){clearInterval(t);return;}start();},500);}
+  /* botão RESTAURAR COMPRAS dentro da LOJA (exigência da Apple) */
+  setInterval(()=>{try{const b=document.getElementById('ljBox');if(!b||!ok||document.getElementById('ljRest'))return;const st=b.firstChild;const e=document.createElement('div');e.id='ljRest';
+    e.style.cssText="position:absolute;left:340px;top:1800px;width:400px;height:84px;border-radius:42px;background:#1d3d8a;border:4px solid #f6d36a;color:#fff;font-family:CadBaloo,Fredoka,Arial,sans-serif;font-weight:800;font-size:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto";
+    e.textContent=en()?'RESTORE PURCHASES':'RESTAURAR COMPRAS';e.addEventListener('pointerup',ev=>{ev.preventDefault();ev.stopPropagation();CVRESTAURAR();});st.appendChild(e);}catch(_){}} ,300);
+})();
+/* /COMPRAS15NOV */
 /* AMGNAVEG13NOV (Felipe: 'o convite do amigo não abre o jogo, ele cria um novo'): no iPhone o link abre no Safari, que tem um jogo separado do app.
    Se o link de amigo abrir fora do app e não houver jogo salvo neste navegador, pergunta antes se a pessoa já joga no app e ensina a adicionar pelo número. */
 (function(){try{const lk=JSON.parse(localStorage.getItem('cv.amglink')||'null');if(!lk||!lk.tid)return;

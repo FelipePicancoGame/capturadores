@@ -35,21 +35,28 @@ for lc,t in TXT.items():
     a={'name':t['name'],'subtitle':t['subtitle'],'privacyPolicyUrl':SITE+'privacidade.html'}
     if lc in locs: req('PATCH',f'/v1/appInfoLocalizations/{locs[lc]}',{'data':{'type':'appInfoLocalizations','id':locs[lc],'attributes':a}})
     else: req('POST','/v1/appInfoLocalizations',{'data':{'type':'appInfoLocalizations','attributes':dict(a,locale=lc),'relationships':{'appInfo':{'data':{'type':'appInfos','id':iid}}}}})
-# idade 9+: só violência leve de desenho
+# idade: só violência leve de desenho; tem anúncios e prêmios aleatórios que dá pra comprar (lootBox)
 ar=req('GET',f'/v1/appInfos/{iid}/ageRatingDeclaration')
 if ar:
-    aid=ar['data']['id'];print('idade antes',ar['data']['attributes'])
-    attrs={k:('NONE' if isinstance(v,str) else (False if isinstance(v,bool) else v)) for k,v in ar['data']['attributes'].items() if v is not None or k in('violenceCartoonOrFantasy',)}
-    for k in list(ar['data']['attributes'].keys()):
-        v=ar['data']['attributes'][k]
-        if v is None:
-            if k in('gambling','unrestrictedWebAccess','lootBox','messagingAndChat','userGeneratedContent','parentalControls','ageAssurance','healthOrWellnessTopics','advertising'):attrs[k]=False
-            elif k in('kidsAgeBand','ageRatingOverride','ageRatingOverrideV2','koreaAgeRatingOverride'):pass
-            else:attrs[k]='NONE'
-    attrs['violenceCartoonOrFantasy']='INFREQUENT_OR_MILD'
-    if 'advertising' in ar['data']['attributes']:attrs['advertising']=True
-    for k in('kidsAgeBand','ageRatingOverride','ageRatingOverrideV2','koreaAgeRatingOverride'):attrs.pop(k,None)
-    req('PATCH',f'/v1/ageRatingDeclarations/{aid}',{'data':{'type':'ageRatingDeclarations','id':aid,'attributes':attrs}})
+    aid=ar['data']['id'];A0=ar['data']['attributes'];print('idade antes',A0)
+    SKIP={'kidsAgeBand','ageRatingOverride','ageRatingOverrideV2','koreaAgeRatingOverride','gracRatingClassificationNumber','developerAgeRatingInfoUrl'}
+    BOOL={'advertising','gambling','healthOrWellnessTopics','lootBox','messagingAndChat','parentalControls','ageAssurance','socialMedia','socialMediaAgeRestricted','unrestrictedWebAccess','userGeneratedContent'}
+    attrs={}
+    for k in A0:
+        if k in SKIP:continue
+        attrs[k]=False if k in BOOL else 'NONE'
+    attrs['violenceCartoonOrFantasy']='INFREQUENT_OR_MILD';attrs['advertising']=True;attrs['lootBox']=True
+    for tent in range(4):
+        r=requests.patch(B+f'/v1/ageRatingDeclarations/{aid}',headers=H(),data=json.dumps({'data':{'type':'ageRatingDeclarations','id':aid,'attributes':attrs}}))
+        if r.status_code<300:print('idade ok',r.json()['data']['attributes']);break
+        fix=0
+        for e in r.json().get('errors',[]):
+            k=(e.get('source') or {}).get('pointer','').split('/')[-1];d=e.get('detail','')
+            if 'Expected a BOOLEAN' in d and k in attrs:attrs[k]=attrs[k]=='INFREQUENT_OR_MILD' or False;fix=1
+            elif 'Expected a STRING' in d and k in attrs:attrs[k]='NONE';fix=1
+            elif k in attrs and ('not allowed' in d or 'unknown' in d.lower()):attrs.pop(k);fix=1
+            print('idade erro',k,d[:150])
+        if not fix:break
 # --- versão (descrição, palavras-chave, texto promocional, URLs, copyright)
 vs=req('GET',f'/v1/apps/{AID}/appStoreVersions?filter[platform]=IOS&limit=10')['data']
 v=[x for x in vs if x['attributes']['appStoreState'] in('PREPARE_FOR_SUBMISSION','DEVELOPER_REJECTED','REJECTED','METADATA_REJECTED')]

@@ -32,6 +32,8 @@ jobs:
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ inputs.build }}" App/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.0" App/Info.plist
           /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" App/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Delete :UIRequiresFullScreen" App/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :UIRequiresFullScreen bool true" App/Info.plist
           /usr/libexec/PlistBuddy -c "Delete :UIStatusBarHidden" App/Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :UIStatusBarHidden bool true" App/Info.plist
           /usr/libexec/PlistBuddy -c "Delete :UIViewControllerBasedStatusBarAppearance" App/Info.plist || true

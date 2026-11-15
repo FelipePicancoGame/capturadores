@@ -25,6 +25,14 @@ jobs:
           cd ios/App
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ inputs.build }}" App/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.0" App/Info.plist
+          /usr/libexec/PlistBuddy -c "Add :GADApplicationIdentifier string ca-app-pub-3940256099942544~1458002511" App/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems array" App/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems:0 dict" App/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems:0:SKAdNetworkIdentifier string cstr6suwn9.skadnetwork" App/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :GADApplicationIdentifier string ca-app-pub-3940256099942544~1458002511" App/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems array" App/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems:0 dict" App/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems:0:SKAdNetworkIdentifier string cstr6suwn9.skadnetwork" App/Info.plist || true
       - name: Montar e enviar
         run: |
           cd ios/App

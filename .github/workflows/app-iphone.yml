@@ -1,0 +1,37 @@
+name: app-iphone
+# Monta o app do iPhone (Capacitor) numa máquina Mac do GitHub e manda pro TestFlight.
+# Segredos (GitHub > Settings > Secrets > Actions): ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (conteúdo do .p8), APPLE_TEAM_ID.
+on:
+  workflow_dispatch:
+    inputs:
+      build: {description: "número do build (sobe 1 a cada envio)", required: true, default: "1"}
+jobs:
+  ios:
+    runs-on: macos-14
+    defaults: {run: {working-directory: app-ios}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 20}
+      - run: npm install && npm run www
+      - run: npx cap add ios || true
+      - run: npx cap sync ios
+      - name: Chave da App Store Connect
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "${{ secrets.ASC_KEY_P8 }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+      - name: Versão
+        run: |
+          cd ios/App
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ inputs.build }}" App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.0" App/Info.plist
+      - name: Montar e enviar
+        run: |
+          cd ios/App
+          AUTH="-allowProvisioningUpdates -authenticationKeyPath $HOME/.appstoreconnect/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8 -authenticationKeyID ${{ secrets.ASC_KEY_ID }} -authenticationKeyIssuerID ${{ secrets.ASC_ISSUER_ID }}"
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -archivePath $RUNNER_TEMP/App.xcarchive -destination 'generic/platform=iOS' DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }} CODE_SIGN_STYLE=Automatic $AUTH archive
+          cat > $RUNNER_TEMP/export.plist <<PL
+          <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict><key>method</key><string>app-store-connect</string><key>destination</key><string>upload</string><key>teamID</key><string>${{ secrets.APPLE_TEAM_ID }}</string><key>signingStyle</key><string>automatic</string></dict></plist>
+          PL
+          xcodebuild -exportArchive -archivePath $RUNNER_TEMP/App.xcarchive -exportOptionsPlist $RUNNER_TEMP/export.plist -exportPath $RUNNER_TEMP/out $AUTH

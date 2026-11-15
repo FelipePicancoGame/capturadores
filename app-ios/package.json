@@ -1,0 +1,16 @@
+{
+  "name": "capturadores-do-vale-ios",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "www": "rm -rf www && mkdir -p www && cp ../index.html ../manifest.webmanifest ../privacidade.html www/ && cp -R ../assets ../blobs ../icones www/"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/ios": "^6.1.2",
+    "cordova-plugin-purchase": "^13.10.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

@@ -19414,6 +19414,115 @@ window.__CT2=()=>{try{if(/[?#&]cartao0/.test(location.href)){localStorage.setIte
  function sync(){try{const u=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null;if(!want(u)){if(S.el)close();return;}if(S.u===u&&S.el&&document.body.contains(S.el))return;close();S.u=u;S.el=build(u);}catch(e){console.warn('ct2',e);}}
  {const _dt=drawTCard;drawTCard=function(u){if(want(u)){sync();return;}return _dt.apply(this,arguments);};}
  setInterval(sync,150);}
+/* Arena presentation only: existing deck, progression and action callbacks stay in the game. */
+(function () {
+  'use strict';
+  const sourceWidth = 898, sourceHeight = 2072, sourceOffset = 160;
+  const assetBase = 'assets/arena_borda_16nov/';
+  const original = new Image(), scenery = new Image();
+  original.src = assetBase + 'arena_original_limpa.webp';
+  scenery.src = assetBase + 'cenario_lateral.webp';
+  const controls = [
+    { id: 'close', legacy:[793,90,82,80], rect: [795,247,81,82] },
+    { id: 'style', legacy:[24,92,90,87], rect: [24,253,91,86] },
+    { id: 'swapTeam', legacy:[219,701,461,94], rect: [218,861,461,95], text: [329,880,314,53], pt:'TROCAR O TIME', en:'CHANGE TEAM', color:'#fff4da', outline:'#164771' },
+    { id: 'dungeons', legacy:[27,884,845,271], rect: [25,1043,845,271], text:[387,1101,448,85], pt:'MASMORRAS', en:'DUNGEONS', color:'#b6261a', outline:'#fce5a9' },
+    { id: 'endless', legacy:[63,1180,771,158], rect:[63,1338,771,164], text:[373,1357,278,73], pt:'SEM FIM', en:'ENDLESS', color:'#b3251a', outline:'#fce5a9' },
+    { id: 'together', legacy:[42,1359,399,166], rect:[42,1519,399,168], text:[259,1554,163,53], pt:'JUNTOS', en:'TOGETHER', color:'#9a211a', detail:[271,1606,145,39] },
+    { id: 'versus', legacy:[456,1359,397,166], rect:[457,1518,395,171], text:[656,1553,175,54], pt:'CONTRA', en:'VERSUS', color:'#a1271b', detail:[674,1606,147,39] }
+  ];
+  const texts = [
+    {rect:[283,347,338,95],pt:'ARENA',en:'ARENA',color:'#b01e16',outline:'#fce5a9',size:68},
+    {rect:[323,550,252,57],pt:'SEU TIME',en:'YOUR TEAM',color:'#63371e',size:41},
+    {rect:[337,974,286,41],pt:'Herói: congela todos',en:'Hero: freezes all',color:'#5b301e',size:28}
+  ];
+  let active = false, previous = null, geometry = null;
+  const ready = () => original.complete && original.naturalWidth === sourceWidth && scenery.complete && scenery.naturalWidth > 0;
+  const eligible = () => G.mode === 'arena' && AR && AR.lobby === 'entry' && !ui.length && Math.min(innerWidth, innerHeight) >= 600 && !document.body.classList.contains('rot');
+  function deactivate(restore) {
+    if (!active) return;
+    active = false; geometry = null;
+    if (restore && previous) {
+      document.body.classList.toggle('rotp', previous.rotated);
+      setScreen(previous.width, previous.height);
+    }
+    previous = null;
+  }
+  function prepare() {
+    if (!eligible() || !ready()) { deactivate(G.mode === 'arena'); return; }
+    if (!active) previous = { width: W, height: H, rotated: document.body.classList.contains('rotp') };
+    active = true;
+    document.body.classList.remove('rotp');
+    const ratio = innerWidth / innerHeight;
+    const width = ratio >= 1 ? Math.round(216 * ratio) : 216;
+    const height = ratio >= 1 ? 216 : Math.round(216 / ratio);
+    if (W !== width || H !== height) setScreen(width, height);
+  }
+  function label(box, value, color, outline, size) {
+    const [x,y,w,h] = box;
+    f13(value, x+w/2, y+h/2-sourceOffset, size || h*.7, color, w*.97, outline);
+  }
+  const oldTela = n13Tela;
+  n13Tela = function (key) {
+    if (key !== 'are' || !active) return oldTela.apply(this, arguments);
+    const screenRect = cv.getBoundingClientRect();
+    const unit = W / Math.max(1, screenRect.width);
+    const top = 64*unit, bottom = 22*unit, margin = 32*unit;
+    const scale = Math.min((H-top-bottom)/sourceHeight, (W-2*margin)/sourceWidth);
+    const width = sourceWidth*scale, height = sourceHeight*scale, left = (W-width)/2;
+    const border = 7*unit;
+    b.save();
+    b.imageSmoothingEnabled = true;
+    b.imageSmoothingQuality = 'high';
+    const cover = Math.max(W/scenery.naturalWidth, H/scenery.naturalHeight);
+    b.drawImage(scenery, (W-scenery.naturalWidth*cover)/2, (H-scenery.naturalHeight*cover)/2, scenery.naturalWidth*cover, scenery.naturalHeight*cover);
+    b.fillStyle='#71451e';b.fillRect(left-border,top-border,width+2*border,height+2*border);
+    b.strokeStyle='#e7bc5a';b.lineWidth=2*unit;b.strokeRect(left-border/2,top-border/2,width+border,height+border);
+    b.drawImage(original,left,top,width,height);
+    b.restore();
+    N13C = {k:scale,ox:left,oy:top+sourceOffset*scale};
+    const language = window.CVLANG === 'en' ? 'en' : 'pt';
+    for (const item of texts) label(item.rect,item[language],item.color,item.outline,item.size);
+    for (const item of controls) {
+      // Each control is painted from the identical source at the identical position.
+      const [x,y,w,h]=item.rect;
+      b.save();b.imageSmoothingEnabled=true;
+      b.drawImage(original,x,y,w,h,left+x*scale,top+y*scale,w*scale,h*scale);b.restore();
+      if(item.text)label(item.text,item[language],item.color,item.outline);
+      if(item.detail)label(item.detail,language==='en'?'2 devices':'2 celulares','#512e18');
+    }
+    geometry={width:W,height:H,cssWidth:screenRect.width,cssHeight:screenRect.height,scale,unit,group:[left,top,width,height],topCSS:64,borderCSS:7,locale:language,controls:[]};
+    return N13C;
+  };
+  const oldEntry = arEntry13;
+  arEntry13 = function (state) {
+    const result = oldEntry.apply(this, arguments);
+    if (!active || !result || !geometry) return result;
+    // Retain the game's original callbacks; only their touch rectangles move.
+    for (const item of controls) {
+      const oldRect=q13(item.legacy);
+      const hit=state.hits.find(h=>['x','y','w','h'].every(key=>Math.abs(h[key]-oldRect[key])<1e-6));
+      if (!hit) continue;
+      const [x,y,w,h]=item.rect, k=geometry.scale;
+      const visual=[N13C.ox+x*k,N13C.oy+(y-sourceOffset)*k,w*k,h*k];
+      const tw=Math.max(visual[2],44*geometry.unit),th=Math.max(visual[3],44*geometry.unit);
+      Object.assign(hit,{x:visual[0]+(visual[2]-tw)/2,y:visual[1]+(visual[3]-th)/2,w:tw,h:th});
+      geometry.controls.push({id:item.id,visual,touch:[hit.x,hit.y,hit.w,hit.h],callback:hit.f});
+    }
+    return result;
+  };
+  const oldRender = arRender2;
+  arRender2 = function () { prepare(); return oldRender.apply(this, arguments); };
+  // arLobbyShow already restores worldScreen on exit. Do not overwrite that screen.
+  function watchExit(){if(active && G.mode!=='arena')deactivate(false);requestAnimationFrame(watchExit);}
+  requestAnimationFrame(watchExit);
+  window.CVArenaBorder = {
+    version:'16nov-game-1',
+    audit(){return geometry && {...geometry,controls:geometry.controls.map(({callback,...item})=>item)};},
+    isActive(){return active;}
+  };
+})();
+
 window.__GH=()=>H;window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

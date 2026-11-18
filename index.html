@@ -4980,6 +4980,12 @@ function monLive(sp){const base=sp.replace('*',''),root=EVOBASE[base]||base,L=LI
     else if(kind==='spark'){const q=(t+ph)%50;if(q<8){b.save();b.globalCompositeOperation='lighter';glowAt(X,Y,8,'255,240,120',.7*(1-q/8));b.restore();ln([[X-3,Y-2],[X,Y+1],[X-1,Y+2],[X+3,Y+5]],.9,'#fff6a0');}}
     else if(kind==='lantern'){b.save();b.globalCompositeOperation='lighter';glowAt(X*k,Y+2,10+Math.sin(t/7)*2.5,'140,255,210',.5);b.restore();}
     b.globalAlpha=1;}}
+/* PEDORATO18NOV (Felipe: 'o rato que tá atacando parece voando — faz ele andar'): a arte do Ratonga (e de alguns outros) tem o pé mais alto que a dos outros,
+   então ele ficava acima da sombra. O jogo mede onde o pé está no desenho e põe o pé no chão, em cima da sombra. Quem voa de verdade continua voando. */
+const WFOOT={};function wFootDy(e,sc){try{if(e.boss||flyAr(e))return 0;const k=String(e.sp||'').replace('*','');let m=WFOOT[k];const now=performance.now();
+  if(!m||(m.n<3&&now-m.at>1500)){const c=document.createElement('canvas');c.width=c.height=160;const g=c.getContext('2d'),pb=b;b=g;try{drawMonFxW({sp:k,moving:true},k,80,80,.5,false,{act:'walk'});}finally{b=pb;}
+    const d=g.getImageData(0,0,160,160).data;let y1=-1;for(let y=159;y>=0&&y1<0;y--)for(let x=0;x<160;x+=2)if(d[(y*160+x)*4+3]>60){y1=y;break;}m=WFOOT[k]={f:y1<0?15:y1-80,n:(m?m.n:0)+1,at:now};}
+  const dy=15-m.f;return dy>1&&dy<12?dy*sc/.5:0;}catch(err){return 0;}}
 function eSc(e){return e.boss?1:e.kind==='tank'?.6:e.kind==='fast'?.42:.5;}
 function drawMonShadow(sp,x,y,sc=1,flip=false,alpha=.3,skew=-.55,flat=-.3){const s=silhouette(sp);b.save();b.globalAlpha=alpha;b.imageSmoothingEnabled=false;
   b.translate(Math.round(x),Math.round(y+20*sc));b.transform(1,0,skew,flat,0,0);b.scale(flip?-sc:sc,sc);b.imageSmoothingEnabled=true;b.drawImage(s,-40,-64,80,80);b.restore();}
@@ -6242,7 +6248,7 @@ function renderWall0(){const w=WL,t=w.t,sh=w.shake?((w.shake%4<2)?1:-1):0;
     if(e.shield>0){b.beginPath();b.arc(e.x,e.y,15,0,Math.PI*2);b.fillStyle='rgba(120,190,255,.22)';b.fill();b.lineWidth=1.6;b.strokeStyle=`rgba(160,215,255,${.6+Math.sin(t/5)*.3})`;b.stroke();b.beginPath();b.arc(e.x-4,e.y-5,4,Math.PI*1.1,Math.PI*1.6);b.strokeStyle='rgba(255,255,255,.8)';b.stroke();}
     if(e.age<14){b.save();b.globalCompositeOperation='lighter';glowAt(e.x,e.y,18*(1-e.age/14)+6,'200,160,255',.5*(1-e.age/14));b.restore();}
     const fp=foePose(e,t,moving);wFrostFoe(e,sc);if(e.elite)wEliteAura(e,t,sc);if(e.enr){b.save();b.globalCompositeOperation='lighter';glowAt(e.x,e.y,34+Math.sin(t/4)*4,'255,50,30',.5);b.restore();if(t%6===0)part(e.x+(Math.random()*30-15),e.y-20,'rgba(255,255,255,.7)',1,{kind:'smoke',sp:.3,up:.8,life:18,grav:-.02,size:2.4});}if(e.burn>0)burnFx(e.x+fp.ox,e.y,t,sc);
-    drawMonFxW((e.moving=moving,e),e.sp,e.x+fp.ox+(e.hit>0?(e.hit%2?1.5:-1.5):0),e.y+oy+fp.oy,sc*grow,e.flip,{act:moving?'walk':(e.y>=stop&&e.atk>24?'attack':'idle'),rot:rot+fp.rot,sx:sx*fp.sx,sy:sy*fp.sy,white:e.hit>0?e.hit/8*.85:0,alpha:(e.slow>0?.85:1)*fp.alpha,tint:stTint(e,t)});foeExtra(e,e.x+fp.ox,e.y+fp.oy,t,sc);if(e.elite)wEliteCrown(e,t,sc);if(e.archer)wArcherMark(e,t,sc);
+    drawMonFxW((e.moving=moving,e),e.sp,e.x+fp.ox+(e.hit>0?(e.hit%2?1.5:-1.5):0),e.y+oy+fp.oy+wFootDy(e,sc*grow),sc*grow,e.flip,{act:moving?'walk':(e.y>=stop&&e.atk>24?'attack':'idle'),rot:rot+fp.rot,sx:sx*fp.sx,sy:sy*fp.sy,white:e.hit>0?e.hit/8*.85:0,alpha:(e.slow>0?.85:1)*fp.alpha,tint:stTint(e,t)});foeExtra(e,e.x+fp.ox,e.y+fp.oy,t,sc);if(e.elite)wEliteCrown(e,t,sc);if(e.archer)wArcherMark(e,t,sc);
     if(e.slow>0&&!e.frz){E(e.x,e.y+2,12*sc/.5,12*sc/.5,'rgba(120,190,255,.35)',0,false);px(e.x-9,e.y-8,2,2,'#e0f4ff');px(e.x+7,e.y+3,2,2,'#e0f4ff');}
     if(e.root>0){for(const s2 of [-1,1]){curve(e.x+s2*10,e.y+14,e.x+s2*14,e.y+4,e.x+s2*3,e.y-2,2.2,'#2f7a33');E(e.x+s2*8,e.y+4,2,1.2,'#7fd36a',.5,false);}}
     if(e.stun>0&&!e.slp&&!e.frz)for(let k=0;k<3;k++){const a=t/8+k*2.1;star(e.x+Math.cos(a)*9,e.y-18+Math.sin(a)*3,2.5,C.yellow);}

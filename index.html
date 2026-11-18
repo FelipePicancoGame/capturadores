@@ -15194,16 +15194,16 @@ body.cadv.cadbig #rpBtn{left:auto;right:max(4px,env(safe-area-inset-right,0px));
 #rpBox .ok{background:#1f7a3a;color:#fff;border-color:#13562a}#rpBox .no{background:#fff;color:#154c5e}#rpBox .at{background:#e8f2f5;color:#154c5e;width:100%;margin-top:2px}
 #rpBox .msg{font-size:13px;min-height:16px;margin-top:6px}
 /* RPTECLADO (03/nov, Felipe: escrevendo o aviso não dava pra ver o texto): com o teclado aberto a caixa sobe pro alto e esconde as fotos */
-#rpBox.typing{align-items:flex-start;padding-top:calc(8px + env(safe-area-inset-top,0px))}#rpBox.typing .ims,#rpBox.typing .at,#rpBox.typing .p0{display:none}#rpBox.typing .pp{max-height:100%}#rpBox.typing textarea{min-height:70px}`;document.head.appendChild(css);
+#rpBox.typing{align-items:flex-start;padding-top:calc(8px + env(safe-area-inset-top,0px))}#rpBox.typing .ims,#rpBox.typing .at,#rpBox.typing .p0{display:none}#rpBox.typing .pp{max-height:100%}#rpBox.typing textarea{min-height:70px}#rpBox.typing #rpSel{display:block}`;document.head.appendChild(css);
 const btn=document.createElement('button');btn.id='rpBtn';btn.type='button';btn.textContent='🐞';btn.setAttribute('aria-label','Avisar um problema');btn.title='Avisar um problema';
 ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click'].forEach(ev=>btn.addEventListener(ev,e=>{e.stopPropagation();},{passive:true}));
 btn.addEventListener('click',()=>rpOpen());document.body.appendChild(btn);
-async function rpOpen(){if(document.getElementById('rpBox'))return;const shot=await rpShrink(rpShot(),360,.66);let print='';try{autoPause();}catch(e){}
+async function rpOpen(){if(document.getElementById('rpBox'))return;const shotFull=rpShot();let shot=await rpShrink(shotFull,360,.66),marcas=[];let print='';try{autoPause();}catch(e){}
   const box=document.createElement('div');box.id='rpBox';box.innerHTML=`<div class="pp" role="dialog" aria-label="Avisar um problema"><h3>🐞 Avisar um problema</h3>
    <p>Conte o que aconteceu. A foto desta tela já vai junto. Se você tirou um print, anexe também.</p>
    <p style="color:#1d7a3a;font-weight:bold">💎 Achou um problema de verdade? Quando ele for corrigido, você ganha 1 cristal!</p>
    <div class="ims"><div id="rpI1">${shot?'<img alt="Tela do jogo">':'sem foto da tela'}</div><div id="rpI2">nenhum print anexado</div></div>
-   <button class="at" id="rpAt" type="button">📷 Anexar um print</button><input id="rpF" type="file" accept="image/*" hidden>
+   <button class="at" id="rpSel" type="button" style="background:#ffe9a8;margin-bottom:6px">🎯 Marcar o problema na tela</button><button class="at" id="rpAt" type="button">📷 Anexar um print</button><input id="rpF" type="file" accept="image/*" hidden>
    <p style="margin-top:8px">O que aconteceu?</p>${(window.SpeechRecognition||window.webkitSpeechRecognition)?'<button class="at" id="rpMic" type="button" style="margin-bottom:6px">🎤 Falar em vez de escrever</button>':''}<textarea id="rpT" maxlength="1500" placeholder="Ex.: na Muralha, o botão de especial não funcionou depois da onda 3"></textarea>
    <div class="msg" id="rpM"></div><div class="bt"><button class="no" id="rpC" type="button">Cancelar</button><button class="ok" id="rpS" type="button">Enviar</button></div></div>`;
   ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup','click','keydown','keyup'].forEach(ev=>box.addEventListener(ev,e=>e.stopPropagation()));
@@ -15227,10 +15227,36 @@ async function rpOpen(){if(document.getElementById('rpBox'))return;const shot=aw
   try{const d=JSON.parse(localStorage.getItem(DK)||'null');if(d&&Date.now()-d.at<15*60e3&&d.t&&!$('#rpT').value)$('#rpT').value=d.t;}catch(e){}
   $('#rpT').addEventListener('input',dSave);
   $('#rpAt').onclick=()=>{dSave();$('#rpF').click();};
+  if(window.CVLANG==='en')$('#rpSel').textContent='🎯 Mark the problem on screen';
+  /* MARCAR18NOV (Felipe: 'selecionar na tela o que está acontecendo... fecha aquela telinha, volta a tela inteira e eu posso selecionar o problema'):
+     o 🎯 esconde a janela e mostra o jogo inteiro (parado); a pessoa arrasta o dedo em volta do problema (pode marcar mais de um).
+     Em 'Pronto' a janela volta e a foto do jogo que vai no aviso já leva as marcas em vermelho. */
+  $('#rpSel').onclick=()=>{const EN=window.CVLANG==='en';box.style.display='none';const rb=document.getElementById('rpBtn');if(rb)rb.style.visibility='hidden';
+    const ov=document.createElement('div');ov.id='rpMark';ov.style.cssText='position:fixed;inset:0;z-index:10080;touch-action:none;cursor:crosshair';
+    const cn=document.createElement('canvas');const dpr=Math.min(2,window.devicePixelRatio||1);cn.width=Math.round(innerWidth*dpr);cn.height=Math.round(innerHeight*dpr);cn.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;background:transparent!important;box-shadow:none!important;max-width:none;max-height:none';ov.appendChild(cn);
+    const bar=document.createElement('div');bar.style.cssText='position:absolute;left:50%;transform:translateX(-50%);top:calc(8px + env(safe-area-inset-top,0px));display:flex;gap:8px;align-items:center;background:rgba(255,250,240,.96);border:2px solid #154c5e;border-radius:14px;padding:6px 8px;font:700 14px CadBaloo,"Baloo 2",Fredoka,Arial,sans-serif;color:#154c5e;max-width:94vw;box-shadow:0 3px 10px rgba(0,0,0,.35)';
+    bar.innerHTML='<span style="padding:0 4px">'+(EN?'Drag around the problem':'Arraste o dedo em volta do problema')+'</span><button type="button" data-a="desf" style="font:inherit;border:2px solid #154c5e;border-radius:10px;background:#fff;color:#154c5e;padding:6px 8px;min-height:40px">'+(EN?'Undo':'Desfazer')+'</button><button type="button" data-a="ok" style="font:inherit;border:2px solid #13562a;border-radius:10px;background:#1f7a3a;color:#fff;padding:6px 10px;min-height:40px">'+(EN?'Done':'Pronto')+'</button>';
+    ov.appendChild(bar);document.body.appendChild(ov);const g=cn.getContext('2d');let cur=null;const R=[];
+    const pinta=()=>{g.clearRect(0,0,cn.width,cn.height);g.lineWidth=4*dpr;g.strokeStyle='#ff2a2a';g.fillStyle='rgba(255,42,42,.12)';for(const r of R.concat(cur?[cur]:[])){const x=Math.min(r.x0,r.x1)*dpr,y=Math.min(r.y0,r.y1)*dpr,w=Math.abs(r.x1-r.x0)*dpr,h=Math.abs(r.y1-r.y0)*dpr;g.fillRect(x,y,w,h);g.strokeRect(x,y,w,h);}};
+    const stop=e=>e.stopPropagation();['touchstart','touchend','mousedown','mouseup','click','keydown'].forEach(ev=>ov.addEventListener(ev,stop));
+    cn.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();try{cn.setPointerCapture(e.pointerId);}catch(_){}cur={x0:e.clientX,y0:e.clientY,x1:e.clientX,y1:e.clientY};pinta();});
+    cn.addEventListener('pointermove',e=>{e.stopPropagation();if(!cur)return;cur.x1=e.clientX;cur.y1=e.clientY;pinta();});
+    const solta=e=>{e.stopPropagation();if(!cur)return;if(Math.abs(cur.x1-cur.x0)<12&&Math.abs(cur.y1-cur.y0)<12){const m=40;cur={x0:cur.x0-m,y0:cur.y0-m,x1:cur.x0+m,y1:cur.y0+m};}R.push(cur);cur=null;pinta();};
+    cn.addEventListener('pointerup',solta);cn.addEventListener('pointercancel',solta);
+    bar.addEventListener('pointerdown',stop);
+    bar.querySelector('[data-a=desf]').onclick=e=>{e.stopPropagation();R.pop();pinta();};
+    bar.querySelector('[data-a=ok]').onclick=async e=>{e.stopPropagation();ov.remove();if(rb)rb.style.visibility='';box.style.display='';
+      if(!R.length)return;marcas=R.slice();
+      try{const c=document.getElementById('screen'),r=c.getBoundingClientRect(),im=new Image();await new Promise(ok=>{im.onload=ok;im.onerror=ok;im.src=shotFull;});
+        const t=document.createElement('canvas');t.width=c.width;t.height=c.height;const x=t.getContext('2d');if(im.naturalWidth)x.drawImage(im,0,0,t.width,t.height);
+        const kx=c.width/r.width,ky=c.height/r.height;x.lineWidth=Math.max(4,c.width/120);x.strokeStyle='#ff2a2a';x.fillStyle='rgba(255,42,42,.12)';
+        for(const q of R){const X=(Math.min(q.x0,q.x1)-r.left)*kx,Y=(Math.min(q.y0,q.y1)-r.top)*ky,W=Math.abs(q.x1-q.x0)*kx,H=Math.abs(q.y1-q.y0)*ky;x.fillRect(X,Y,W,H);x.strokeRect(X,Y,W,H);}
+        shot=await rpShrink(t.toDataURL('image/jpeg',.85),480,.72);const d=$('#rpI1');d.innerHTML='<img alt="">';d.querySelector('img').src=shot;
+        $('#rpSel').textContent=(EN?'🎯 Marked: ':'🎯 Marcado: ')+R.length+(EN?' (tap to redo)':' (toque pra refazer)');}catch(_){}};};
   $('#rpF').onchange=()=>{const f=$('#rpF').files&&$('#rpF').files[0];if(!f)return;const rd=new FileReader();rd.onload=async()=>{print=await rpShrink(rd.result,420,.66);$('#rpI2').innerHTML=print?'<img alt="Print anexado">':'não deu pra abrir';if(print)$('#rpI2 img').src=print;};rd.readAsDataURL(f);};
-  $('#rpS').onclick=async()=>{const t=$('#rpT').value.trim();if(!t&&!print){$('#rpM').textContent='Escreva o problema ou anexe um print.';return;}
+  $('#rpS').onclick=async()=>{const t=$('#rpT').value.trim();if(!t&&!print&&!marcas.length){$('#rpM').textContent='Escreva o problema ou anexe um print.';return;}
     $('#rpS').disabled=true;$('#rpM').textContent='Enviando…';
-    const r=Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:new Date().toISOString(),texto:t,tela_jogo:shot,print},rpCtx());
+    const r=Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),at:new Date().toISOString(),texto:t+(marcas.length?' [marcou '+marcas.length+' lugar(es) na tela]':''),tela_jogo:shot,print},rpCtx());
     const ok=await rpSend(r);if(!ok){const L=rpPend();L.push(r);rpSavePend(L);}
     $('#rpM').textContent=ok?'Enviado! Obrigado por ajudar a melhorar o jogo. 💛':'Sem internet agora. Guardei aqui e envio sozinho depois. 💛';
     try{tone([660,880,1320],.05);}catch(e){}setTimeout(close,1600);};
@@ -18438,12 +18464,18 @@ try{(function(){
   const cv=document.getElementById('screen');if(!cv)return;
   const st=document.createElement('style');st.textContent='#cvBlur{position:fixed;left:-40px;top:-40px;width:calc(100% + 80px);height:calc(100% + 80px);z-index:0;pointer-events:none;filter:blur(22px) brightness(.66) saturate(1.15);display:none}';document.head.appendChild(st);
   const bl=document.createElement('canvas');bl.id='cvBlur';bl.width=192;bl.height=120;const par=cv.parentElement||document.body;par.insertBefore(bl,par.firstChild);
-  const g=bl.getContext('2d');
+  const g0=bl.getContext('2d');
+  /* BLURLEVE18NOV (Felipe: 'lento no tesla'): o embaçado das laterais era um filtro CSS de 22px na tela inteira, que o Tesla refazia o tempo todo (Arena: 12 → 58 quadros/s no teste).
+     Agora o embaçado é feito uma vez no desenho pequeno (192 px) e a tela só amplia: mesma aparência, quase sem custo. Sem suporte a filtro no canvas, fica o jeito antigo. */
+  const FOK=(()=>{try{const t=document.createElement('canvas').getContext('2d');t.filter='blur(2px)';return t.filter==='blur(2px)';}catch(e){return false;}})();
+  const raw=document.createElement('canvas');const g=FOK?raw.getContext('2d'):g0;if(FOK)bl.style.filter='none';
+  const fin=(bw,bh)=>{if(!FOK)return;const pb=Math.max(1,22*bw/(innerWidth+80));g0.clearRect(0,0,bw,bh);g0.filter='blur('+pb.toFixed(2)+'px) brightness(.66) saturate(1.15)';const m=Math.ceil(pb*3);g0.drawImage(raw,0,0,bw,bh,-m,-m,bw+2*m,bh+2*m);g0.filter='none';};
   try{if(getComputedStyle(cv).position==='static')cv.style.position='relative';if(!cv.style.zIndex)cv.style.zIndex='1';}catch(e){}
   setInterval(()=>{try{const r=cv.getBoundingClientRect(),cls=document.body.classList,on=r.width>0&&r.width<innerWidth-60&&!cls.contains('rot')&&!cls.contains('rotp')&&!document.getElementById('cv-chapter');
     bl.style.display=on?'block':'none';if(!on)return;
     const bw=192,bh=Math.max(60,Math.round(192*innerHeight/innerWidth));if(bl.height!==bh)bl.height=bh;
-    if(window.__expSplit&&__expSplit()){g.drawImage(cv,0,cv.height*.18,cv.width,cv.height*.22,0,0,bw,bh);return;}const s=bw/innerWidth,sy=cv.height*.12,sh=cv.height*.6,sw=cv.width*.2;g.drawImage(cv,0,sy,sw,sh,0,0,r.left*s+3,bh);g.drawImage(cv,cv.width-sw,sy,sw,sh,r.right*s-3,0,(innerWidth-r.right)*s+3,bh);}catch(e){}},120);
+    if(FOK&&(raw.width!==bw||raw.height!==bh)){raw.width=bw;raw.height=bh;}if(cls.contains('cvTeslaOn'))return;/* a arte larga já cobre as laterais: não precisa refazer o embaçado */
+    if(window.__expSplit&&__expSplit()){g.drawImage(cv,0,cv.height*.18,cv.width,cv.height*.22,0,0,bw,bh);fin(bw,bh);return;}const s=bw/innerWidth,sy=cv.height*.12,sh=cv.height*.6,sw=cv.width*.2;g.drawImage(cv,0,sy,sw,sh,0,0,r.left*s+3,bh);g.drawImage(cv,cv.width-sw,sy,sw,sh,r.right*s-3,0,(innerWidth-r.right)*s+3,bh);fin(bw,bh);}catch(e){}},120);
 })();}catch(e){}
 /* TESLA15NOV (Felipe: 'pode colocar' os fundos inteiros do Buchecha para tela larga — Tesla/computador): quando o jogo em pé fica no meio de uma tela larga, as laterais mostram a arte larga da mesma tela (em vez do jogo embaçado). Descobre a tela pelo fundo que o jogo desenhou. */
 try{(function(){const ALL=/tesla=1/.test(location.search+location.hash);/* TESLA16NOV: fundo largo do Buchecha ENCAIXADO na tela do jogo (mesma posição e tamanho da prévia dele). Desligado no site até o Felipe aprovar; teste com ?tesla=1 */
@@ -18454,6 +18486,8 @@ const im=document.createElement('canvas');im.id='cvTesla';let imk=null;const PD=
   d(T,q,p);g.save();g.translate(q,p);g.scale(1,-1);d(T,0,0,w,p,0,0,w,p);g.restore();g.save();g.translate(q,p+h);g.scale(1,-1);d(T,0,h-p,w,p,0,-p,w,p);g.restore();
   g.save();g.translate(q,0);g.scale(-1,1);d(P,q,0,q,P.height,0,0,q,P.height);g.restore();g.save();g.translate(q+w,0);g.scale(-1,1);d(P,w,0,q,P.height,-q,0,q,P.height);g.restore();return PC[k]=P;};const par=cv.parentElement||document.body;const bl=document.getElementById('cvBlur');par.insertBefore(im,bl?bl.nextSibling:par.firstChild);
 let cur=null,at=0,geo=null;const TI={};const BASE=location.href.replace(/[?#].*$/,'').replace(/[^/]*$/,'');const D0=CanvasRenderingContext2D.prototype.drawImage;
+/* VISIVEL18NOV (Felipe: 'lento no celular'): a arte larga era desenhada inteira (3264x2040) a cada quadro, mesmo com quase tudo fora da tela — no Combina do celular eram ~22 telas cheias por quadro. Agora só o pedaço que aparece na tela é desenhado: a imagem fica igual. */
+const dPv=(g,P,dx,dy,dw,dh,cw,ch)=>{const x0=Math.max(0,dx),y0=Math.max(0,dy),x1=Math.min(cw,dx+dw),y1=Math.min(ch,dy+dh);if(x1<=x0||y1<=y0)return;const kx=P.width/dw,ky=P.height/dh;D0.call(g,P,(x0-dx)*kx,(y0-dy)*ky,(x1-x0)*kx,(y1-y0)*ky,x0,y0,x1-x0,y1-y0);};
 const tim=k=>{let T=TI[k];if(!T){T=TI[k]=new Image();T.src=k;}return T.complete&&T.naturalWidth?T:null;};
 CanvasRenderingContext2D.prototype.drawImage=function(x){try{const c=this.canvas;if(c&&x){let k=null,Rs=null,nw=0,nh=0;
  if(x.src){const p=(x.src.startsWith(BASE)?x.src.slice(BASE.length):x.src.replace(location.origin+'/','')).replace(/^\.\//,'').split('?')[0];k=MAP[p];const al=AL[p];if(k&&al){tim(k);const[s,ox,oy]=al;Rs={x:-ox/s,y:-oy/s,w:1920/s,h:1200/s};/* todas as artes largas são 1920x1200: não depende de a imagem já ter carregado (fundos guardados em cache, ex.: Muralha) */}nw=x.naturalWidth;nh=x.naturalHeight;}
@@ -18462,8 +18496,8 @@ CanvasRenderingContext2D.prototype.drawImage=function(x){try{const c=this.canvas
   if(n>=9){kx=A[7]/A[3];ky=A[8]/A[4];X0=A[5]-A[1]*kx;Y0=A[6]-A[2]*ky;}else if(n>=5){kx=A[3]/nw;ky=A[4]/nh;X0=A[1];Y0=A[2];}else{kx=ky=1;X0=A[1];Y0=A[2];}
   const t=this.getTransform();if(!t.b&&!t.c){X0=t.a*X0+t.e;Y0=t.d*Y0+t.f;kx*=t.a;ky*=t.d;
    const Rc={x:X0+Rs.x*kx,y:Y0+Rs.y*ky,w:Rs.w*kx,h:Rs.h*ky};
-   if(c===cv){if(Rc.w<c.width*.5&&Rc.h<c.height*.5)return D0.apply(this,arguments);const T=tim(k);if(T){const P=padOf(k,T),fx=Rc.w/T.naturalWidth,fy=Rc.h/T.naturalHeight;this.save();this.setTransform(1,0,0,1,0,0);D0.call(this,P,Rc.x-P.q*fx,Rc.y-P.p*fy,P.width*fx,P.height*fy);this.restore();}cur=k;at=performance.now();geo=Rc;}
-   else if(Rc.w>=c.width*.5||Rc.h>=c.height*.5){c.__tes={k,R:Rc};const T=tim(k);if(T){const P=padOf(k,T),fx=Rc.w/T.naturalWidth,fy=Rc.h/T.naturalHeight;this.save();this.setTransform(1,0,0,1,0,0);D0.call(this,P,Rc.x-P.q*fx,Rc.y-P.p*fy,P.width*fx,P.height*fy);this.restore();}}}}}}catch(e){}return D0.apply(this,arguments);};
+   if(c===cv){if(Rc.w<c.width*.5&&Rc.h<c.height*.5)return D0.apply(this,arguments);const T=tim(k);const cobre=x.__tes&&X0<=.5&&Y0<=.5&&X0+nw*kx>=c.width-.5&&Y0+nh*ky>=c.height-.5;/* o quadro do jogo já traz a arte larga e cobre a tela toda: não desenha de novo */if(T&&!cobre){const P=padOf(k,T),fx=Rc.w/T.naturalWidth,fy=Rc.h/T.naturalHeight;this.save();this.setTransform(1,0,0,1,0,0);dPv(this,P,Rc.x-P.q*fx,Rc.y-P.p*fy,P.width*fx,P.height*fy,c.width,c.height);this.restore();}cur=k;at=performance.now();geo=Rc;}
+   else if(Rc.w>=c.width*.5||Rc.h>=c.height*.5){c.__tes={k,R:Rc};const T=tim(k);if(T){const P=padOf(k,T),fx=Rc.w/T.naturalWidth,fy=Rc.h/T.naturalHeight;this.save();this.setTransform(1,0,0,1,0,0);dPv(this,P,Rc.x-P.q*fx,Rc.y-P.p*fy,P.width*fx,P.height*fy,c.width,c.height);this.restore();}}}}}}catch(e){}return D0.apply(this,arguments);};
 {const CP=CanvasRenderingContext2D.prototype;for(const nm of ['fillRect','clearRect']){const F=CP[nm];CP[nm]=function(x,y,w,h){try{const c=this.canvas;if(c&&c.__tes){const t=this.getTransform();if(Math.abs(w*t.a)>=c.width*.9&&Math.abs(h*t.d)>=c.height*.9)c.__tes=null;}}catch(e){}return F.apply(this,arguments);};}}
 setInterval(()=>{try{const r=cv.getBoundingClientRect(),cls=document.body.classList,side=r.width>0&&r.width<innerWidth-40&&!cls.contains('rot')&&!cls.contains('rotp')&&!document.getElementById('cv-chapter');const on=side&&cur&&geo&&performance.now()-at<1500;
  if(on){const f=r.width/cv.width;const T=tim(cur);if(!T)return;const P=padOf(cur,T);if(imk!==cur){im.width=P.width;im.height=P.height;im.getContext('2d').drawImage(P,0,0);imk=cur;}const kx=geo.w/T.naturalWidth,ky=geo.h/T.naturalHeight,px=P.q,py=P.p;const S=im.style;S.left=(r.left+(geo.x-px*kx)*f)+'px';S.top=(r.top+(geo.y-py*ky)*f)+'px';S.width=(im.width*kx*f)+'px';S.height=(im.height*ky*f)+'px';S.display='block';cls.add('cvTeslaOn');}else{im.style.display='none';cls.remove('cvTeslaOn');}}catch(e){}},150);

@@ -8380,7 +8380,7 @@ const SVPW={mag:{n:'ÍMÃ!',col:'#ff5a6a',rgb:'255,90,110'},bomb:{n:'BOMBA!',col
 function svPwSpawn(x,y,force){const S=SV,ks=Object.keys(SVPW).filter(q=>q!=='chest'),k=force||(S.pl.hp<S.pl.max*.4&&Math.random()<.5?'heal':ks[Math.floor(Math.random()*ks.length)]);if(x==null){const a=Math.random()*Math.PI*2,d=70+Math.random()*40;x=S.pl.x+Math.cos(a)*d;y=S.pl.y+Math.sin(a)*d;}if(S.map&&S.map.painted){const f=svPMfree(x,y+3);x=f[0];y=f[1]-3;}
   (S.pw=S.pw||[]).push({x,y,k,t:0});}
 function svPwStep(){const S=SV,P2=S.pl;S.pw=S.pw||[];if(S.time>0&&S.time%(38*60)===0)svPwSpawn();
-  for(const q of S.pw){q.t++;if(Math.hypot(q.x-P2.x,q.y-6-P2.y)<13){q.got=1;svPwApply(q);}}S.pw=S.pw.filter(q=>!q.got&&(q.t<60*30||q.k==='chest'));if(S.pwFx)S.pwFx.t++;}
+  for(const q of S.pw){q.t++;/* PEGABOMBA18NOV (TestFlight: 'não dá pra pegar a bomba'): chegando perto, o item vem até o herói (mesmo encostado em árvore/pedra) */const dd=Math.hypot(q.x-P2.x,q.y-6-P2.y);if(dd<34&&dd>1){const k=Math.min(dd,2.2)/dd;q.x+=(P2.x-q.x)*k;q.y+=(P2.y+6-q.y)*k;}if(Math.hypot(q.x-P2.x,q.y-6-P2.y)<16){q.got=1;svPwApply(q);}}S.pw=S.pw.filter(q=>!q.got&&(q.t<60*30||q.k==='chest'));if(S.pwFx)S.pwFx.t++;}
 function svPwApply(q){const S=SV,P2=S.pl,I=SVPW[q.k];S.banner={t:60,text:I.n};S.pwFx={k:q.k,t:0,x:q.x,y:q.y};svPart(q.x,q.y,I.col,18,{sp:2.4,life:26});tone([784,1047,1319],.07);
   if(q.k==='chest'){S.flash=.4;svPart(q.x,q.y,'#ffd23f',24,{kind:'coin',sp:2.4,up:2,life:36,grav:.09});svOffer(true);return;}
   if(q.k==='mag'){for(const g of S.gems)g.pull=1;}
@@ -13856,7 +13856,7 @@ function eqMon(K,m,cx,cy,r,sc,tt,k,lift){const mk=monKey(m);ukD(K,'med',cx-r,cy-
 function drawPartyArt(u){const cf=u.cfg;if(!cf.reorder||!ukReady('equipe')){PTLAY=null;return false;}u.t2=(u.t2||0)+1;const tt=u.t2,K='equipe',Y0=90;u.rects=[];u.boxR=null;
   ukBg(K);const V=ukBegin(2080,1080),R2=(x,y,w,h,i)=>V.R(x,y-Y0,w,h,i);b.translate(0,-Y0);
   ukD(K,'cab',60,120,960,260);ukBrown((cf.title||'EQUIPE').replace(/\s*\(.*\)\s*/,'').toUpperCase(),540,203,78,'#4a2a10','center',560);
-  b.save();b.font='bold 40px Arial,sans-serif';b.textAlign='center';b.textBaseline='middle';b.fillStyle='#4a2a10';b.fillText(`${storage.length} no Sítio`,540,318);b.restore();
+  b.save();b.font='bold 40px Arial,sans-serif';b.textAlign='center';b.textBaseline='middle';b.fillStyle='#4a2a10';b.fillText(window.CVLANG==='en'?`${storage.length} at the Farm · Team level ${teamAvg()}`:`${storage.length} no Sítio · Nível do time ${teamAvg()}`,540,318,300);/* NIVELTIME18NOV: média dos 3 primeiros */b.restore();
   const drag=DRAG&&DRAG.on&&party[DRAG.k],toL=sy=>(sy-V.oy)/V.k+Y0;let order=party.map((_,k)=>k),tg=-1;
   if(drag){tg=Math.max(0,Math.min(party.length-1,EQSLOT.reduce((bi,s,i)=>Math.abs(toL(DRAG.y)-(s[0]+s[1]/2))<Math.abs(toL(DRAG.y)-(EQSLOT[bi][0]+EQSLOT[bi][1]/2))?i:bi,0)));order.splice(DRAG.k,1);order.splice(tg,0,DRAG.k);}
   order.forEach((pk,slot)=>{const m=party[pk];if(!m)return;const s2=stats(m),ap=Math.min(1,Math.max(0,(tt-slot*2)/8));if(ap<=0)return;const ghost=drag&&pk===DRAG.k;b.save();b.globalAlpha*=ap*(ghost?.35:1);b.translate((1-ap)*60,0);
@@ -17060,8 +17060,8 @@ function sfxVolNode(){if(!window.__sv||window.__sv.context!==ACX){window.__sv=AC
     el.querySelectorAll('input').forEach(i=>{i.addEventListener('input',()=>{const k=i.dataset.k;flags[k]=+i.value;upd();try{if(ACX){musVolNode();sfxVolNode();}}catch(e){}if(k==='volS'){try{const n=performance.now();if(!el._t||n-el._t>180){el._t=n;tone([660,880],.05);}}catch(e){}}});i.addEventListener('change',()=>{try{saveGame();}catch(e){}});});
     document.body.appendChild(el);}
   /* VOLFIX (08/nov, Felipe: 'o ajuste de som não está funcionando'): a régua de Ícones nova não tem data-k e fazia esta função dar erro antes de aplicar o volume */function upd(){if(!el)return;el.querySelectorAll('input[data-k]').forEach(i=>{const v=flags[i.dataset.k]!=null?flags[i.dataset.k]:100;if(document.activeElement!==i)i.value=v;el.querySelector(`[data-v="${i.dataset.k}"]`).textContent=Math.round(v)+'%';});}
-  setInterval(()=>{try{const top=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null,c=top&&top.cfg,show=!!(c&&(c.cfgart||(c.cadAsk&&/AJUSTES|CONFIGURA/.test(String(c.cadAsk.q||'')))));
-    if(show){if(!el)mk();if(el.style.display!=='block'){el.style.display='block';upd();}}else if(el&&el.style.display!=='none')el.style.display='none';}catch(e){}},200);})();
+  setInterval(()=>{try{const top=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null,c=top&&top.cfg,show=!!(c&&(c.cfgart||c.gcart||(c.cadAsk&&/AJUSTES|CONFIGURA/.test(String(c.cadAsk.q||'')))));
+    if(show){if(!el)mk();if(el.style.display!=='block'){el.style.display='block';upd();}/* AJUSTESJOGO18NOV: volume também nos Ajustes de dentro dos minijogos; textos em inglês */try{const en=window.CVLANG==='en',sp=el.querySelectorAll('label>span');if(sp[0])sp[0].textContent=en?'🎵 Music':'🎵 Música';if(sp[1])sp[1].textContent=en?'💥 Effects':'💥 Efeitos';}catch(e){}}else if(el&&el.style.display!=='none')el.style.display='none';}catch(e){}},200);})();
 
 /* R182 (Gabi): a figura da missão ficava em cima da 1ª linha da fala. Agora a figura para em cima da caixa de fala de verdade (com a plaquinha do nome)
    e diminui quando não cabe. (troca feita no próprio msArt) */
@@ -17279,8 +17279,8 @@ function mfScale(m,w,h){const bw=Math.max(8,m.r-m.l),bh=Math.max(8,m.b-m.t),sc=M
    As artes já carregam quando o jogo abre, então a tela de texto não aparece mais antes. */
 function drawGcArt(u){const ks=['cfg_fundo','cartao_opcao','botao_voltar','interruptor_ligado','interruptor_desligado','cfg_icone_musica','cfg_icone_sons','cfg_icone_tremor'];const I={};for(const k of ks){I[k]=cfgImg(k);if(!I[k])return false;}
   u.rects=[];const s=Math.min(W*.98/941,H*.98/1672),fw=941*s,fh=1672*s,X=(W-fw)/2,Y=(H-fh)/2,p=(x,y)=>[X+x*s,Y+y*s],TC='#064657';
-  b.save();b.fillStyle='rgba(10,8,28,.55)';b.fillRect(0,0,W,H);b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(I.cfg_fundo,X,Y,fw,fh);b.textBaseline='middle';
-  const txt=(t,x,y,n,al,col,mw)=>{b.font=`800 ${n*s}px CadBaloo, "Baloo 2", Fredoka, Arial, sans-serif`;b.textAlign=al||'left';b.fillStyle=col||TC;const q=p(x,y);b.fillText(t,q[0],q[1],mw?mw*s:undefined);};
+  const FC=(typeof cfg13==='function')&&window.CVLANG==='en'?cfg13('fundo_caderno'):null;b.save();b.fillStyle='rgba(10,8,28,.55)';b.fillRect(0,0,W,H);b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(FC||I.cfg_fundo,X,Y,fw,fh);b.textBaseline='middle';
+  const txt=(t,x,y,n,al,col,mw)=>{b.font=`800 ${n*s}px CadBaloo, "Baloo 2", Fredoka, Arial, sans-serif`;b.textAlign=al||'left';b.fillStyle=col||TC;const q=p(x,y);b.fillText(t,q[0],q[1],mw?mw*s:undefined);};if(FC)txt('SETTINGS',490,170,74,'center','#164a5a',720);
   const g=gfxLv(),en=window.CVLANG==='en';
   const R=[['🖼️',en?'Graphics':'Gráficos',{t:GFXN[g],c:g===0?'#1f7a3a':g===1?'#a0661a':'#8a2f2f'}],[I.cfg_icone_musica,en?'Music':'Música',musOn()],[I.cfg_icone_sons,en?'Sounds':'Sons',!flags.sfxOff],['✨',en?'Glow':'Brilhos',!flags.glowOff],[I.cfg_icone_tremor,en?'Shake':'Tremor',!flags.fxOff],['🔊',en?'Narration':'Narração',!flags.narraOff],['🌧️',en?'Rain & fog':'Chuva e neblina',!flags.wxOff],['📶',en?'Offline':'Offline',{t:offShort(),c:'#1f6a7a'}],['🌐',en?'Language':'Idioma',{t:en?'English':'Português',c:'#2f5fa8'}]];
   const cx=95,cw=750,y0=u.cfg.gcart&&u.cfg.gcart.top||300,sp=Math.min(112,(1600-y0)/(R.length+1.2)),ch=sp-8;
@@ -17652,13 +17652,13 @@ function drawStageMapAtlas(u){const st=u.cfg.smap;st.t++;const t=st.t,key=st.key
   im('historia',[47,1651,84,84],1);u.rects.push({x:40*s,y:yb(1640),w:100*s,h:110*s,i:98});
   im('cartas',[757,1651,85,85],1);u.rects.push({x:748*s,y:yb(1640),w:105*s,h:110*s,i:97});if(typeof modeBuyN==='function'&&modeBuyN(key)>0)E(830*s,yb(1660),9*s,9*s,'#e8352e');
   im('painel_fase',[172,1644,548,100],1);{const MI=atI('mini'+(Math.floor(gi/5)%9+1));if(MI){const q=R([206,1654,94,74],1);b.drawImage(MI,q[0],q[1],q[2],q[3]);}}
-  tx((window.CVLANG==='en'?'Stage ':'Fase ')+n,[313,1666,149,54],1,40,'#512014');u.rects.push({x:172*s,y:yb(1644),w:368*s,h:100*s,i:96});
+  if(key==='wall'){/* NIVELREC18NOV (TestFlight: 'coloca o lvl sugestivo pra equipe nesse nível de fase'): nível sugerido e o nível do seu time */const rec=stgFoeLv(gi)+3,avg=teamAvg(),en=window.CVLANG==='en';tx((en?'Stage ':'Fase ')+n,[313,1656,149,46],1,36,'#512014');tx((en?'Lv ':'Nv ')+rec+(en?' · team ':' · time ')+avg,[300,1702,200,30],1,22,avg>=rec?'#1f6a2a':'#a8261c');}else tx((window.CVLANG==='en'?'Stage ':'Fase ')+n,[313,1666,149,54],1,40,'#512014');u.rects.push({x:172*s,y:yb(1644),w:368*s,h:100*s,i:96});
   {const pl=1+Math.sin(t/6)*.03,q=R([540,1609,164,161],1),cx=q[0]+q[2]/2,cy=q[1]+q[3]/2;b.save();b.translate(cx,cy);b.scale(pl,pl);b.translate(-cx,-cy);im('jogar',[540,1609,164,161],1);b.restore();
    tx(stars?'REPETIR':'JOGAR',[549,1652,145,68],1,stars?24:29,'#fff8e8','#042405');u.rects.push({x:q[0],y:q[1],w:q[2],h:q[3],i:100});}
   /* detalhes (toque no painel) */
   if(st.info){const x0=W*.1,w0=W*.8,h0=128*s*1.25,y0=yb(1630)-h0;rrect(x0,y0,w0,h0,14*s,'#f6e1ae',false);b.lineWidth=2;b.strokeStyle='#9f6224';b.beginPath();if(b.roundRect){b.roundRect(x0,y0,w0,h0,14*s);b.stroke();}
     const L=(str,yy,fp,col)=>T(str,x0+16*s,y0+yy*s,fp*s,'left','#47251c',w0-32*s,null);
-    L(`${window.CVLANG==='en'?'World':'Mundo'} ${WD+1} · ${window.CVLANG==='en'?'Stage':'Fase'} ${n}${boss?' · CHEFE':''}`,14,30);L(bio.n,50,26);
+    L(`${window.CVLANG==='en'?'World':'Mundo'} ${WD+1} · ${window.CVLANG==='en'?'Stage':'Fase'} ${n}${boss?' · CHEFE':''}`,14,30);L(bio.n+(key==='wall'?(window.CVLANG==='en'?` · suggested Lv ${stgFoeLv(gi)+3} · your team ${teamAvg()}`:` · Nv sugerido ${stgFoeLv(gi)+3} · seu time ${teamAvg()}`):''),50,26);
     L(stgObjTxt(key,gi),82,24);L(stars?`Repetir: +${3+Math.floor(gi/2)} moedas`:`1ª vez: +${3+WD+(boss?10:0)} 💎 e +${12+3*gi} moedas`,112,24);
     for(let k3=0;k3<3;k3++){const SI=atI(k3<stars?'estrela_cheia':'estrela_vazia');if(SI)b.drawImage(SI,x0+w0-(3-k3)*40*s-12*s,y0+12*s,36*s,36*s);}
     T('✕',x0+w0-14*s,y0+h0-34*s,22*s,'center','#572315');u.rects.push({x:x0,y:y0,w:w0,h:h0,i:96});}

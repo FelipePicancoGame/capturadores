@@ -15276,11 +15276,11 @@ async function jogEntrega(){if(!JOGPEND.length)return;const got=flags.rwGot=flag
   while(JOGPEND.length){const p=JOGPEND.shift();if(got.includes(p.k))continue;
     if(p.moedas>0){flags.coins=(flags.coins||0)+Math.floor(p.moedas);tm+=Math.floor(p.moedas);}
     if(p.cristais>0){addGems(Math.floor(p.cristais));tc+=Math.floor(p.cristais);}
-    for(const part of String(p.itens||'').split(/[,;]+/)){const m=part.trim().match(/^([^:=\d]+?)\s*[:=x]?\s*(\d+)?$/i);if(!m)continue;const key=JOGITEM[m[1].toLowerCase().replace(/\s+/g,'')];const n=Math.max(1,Math.min(99,+m[2]||1));if(!key)continue;bag[key]=(bag[key]||0)+n;it[key]=(it[key]||0)+n;}
+    for(const part of String(p.itens||'').split(/[,;]+/)){/* PRESENTE2X18NOV (Felipe: 'me dá 2x no TestFlight'): item '2x' na aba Premios libera a velocidade 2x pra sempre */if(/^\s*(2x|velocidade\s*2x|dobro)\s*$/i.test(part)){(flags.unl||(flags.unl={})).fast=1;it.__2x=1;continue;}const m=part.trim().match(/^([^:=\d]+?)\s*[:=x]?\s*(\d+)?$/i);if(!m)continue;const key=JOGITEM[m[1].toLowerCase().replace(/\s+/g,'')];const n=Math.max(1,Math.min(99,+m[2]||1));if(!key)continue;bag[key]=(bag[key]||0)+n;it[key]=(it[key]||0)+n;}
     if(p.msg&&!msgs.includes(p.msg))msgs.push(p.msg);const sp=jogSp(p.mon);if(sp&&SP[sp])mons.push([sp,p.monLv]);got.push(p.k);feitos.push(p.k);}
   saveGame();
   if(feitos.length){try{tone([523,659,784,1047],.09);}catch(_){}
-    const L=[],_en=window.CVLANG==='en';/* PLURAL18NOV (Gabi: '1 cristal, não 1 cristais') */if(tm)L.push(_en?(tm===1?'1 coin':`${tm} coins`):(tm===1?'1 moeda':`${tm} moedas`));if(tc)L.push(_en?(tc===1?'1 crystal':`${tc} crystals`):(tc===1?'1 cristal':`${tc} cristais`));for(const k in it)L.push(`${it[k]} ${itemName(k)}`);
+    const L=[],_en=window.CVLANG==='en';/* PLURAL18NOV (Gabi: '1 cristal, não 1 cristais') */if(tm)L.push(_en?(tm===1?'1 coin':`${tm} coins`):(tm===1?'1 moeda':`${tm} moedas`));if(tc)L.push(_en?(tc===1?'1 crystal':`${tc} crystals`):(tc===1?'1 cristal':`${tc} cristais`));for(const k in it){if(k==='__2x'){L.push(_en?'2x speed unlocked forever':'velocidade 2x liberada pra sempre');continue;}L.push(`${it[k]} ${itemName(k)}`);}
     const T0=[feitos.length>1?`🎁 Olha quem chegou! Trouxe ${feitos.length} PRESENTES pra você!`:`🎁 Olha quem chegou! Ó, trouxe um PRESENTE pra você, fera!`];for(const m of msgs.slice(0,3))T0.push(m);
     if(mons.length)T0.push(mons.length>1?`Tem ${mons.length} monstrinhos novos pra entrar no seu time! Cuida bem deles, hein? 💪`:'Esse aqui é especial, fera: um monstrinho novo pro seu time! Cuida bem dele, hein?');
     if(L.length)T0.push(`${mons.length||msgs.length?'E ainda tem mais: ':'Tudo isso é seu: '}${L.join(', ')}. Aproveita!`);

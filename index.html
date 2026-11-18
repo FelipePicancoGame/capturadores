@@ -19426,7 +19426,7 @@ window.__CT2=()=>{try{if(/[?#&]cartao0/.test(location.href)){localStorage.setIte
   /* quem me convidou: guarda fora do save também, porque o link chega antes do jogo abrir */
   try{const m=/amigo-(\d{4,6})/.exec(location.hash||'');if(m&&!localStorage.getItem('cv.convpor'))localStorage.setItem('cv.convpor',m[1]);}catch(e){}
   try{const r=JSON.parse(localStorage.getItem('cv.amglink')||'null');if(r&&r.tid&&!localStorage.getItem('cv.convpor'))localStorage.setItem('cv.convpor',String(r.tid));}catch(e){}
-  const porDe=()=>{try{if(!flags.convPor){const v=+localStorage.getItem('cv.convpor')||0;if(v&&v!==flags.tid)flags.convPor=v;}}catch(e){}return flags.convPor||0;};
+  const porDe=()=>{try{if(!flags.convPor){const v=+localStorage.getItem('cv.convpor')||0;if(v&&v!==flags.tid)flags.convPor=v;}}catch(e){}return flags.convPor||(+flags.refBy||0);};
   /* manda junto com os dados do jogador */
   const _jd=jogDados;jogDados=function(){const o=_jd.apply(this,arguments);try{const p=porDe();if(p)o.por=String(p);o.amigos=amgLista().map(x=>String(x.tid)).slice(0,60);}catch(e){}return o;};
   /* lê a resposta da planilha */

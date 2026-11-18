@@ -5,9 +5,10 @@ on:
   workflow_dispatch:
     inputs:
       build: {description: "número do build (sobe 1 a cada envio)", required: true, default: "1"}
+      maquina: {description: "máquina Mac do GitHub (macos-latest; se faltar máquina, tente macos-15)", required: false, default: "macos-latest"}
 jobs:
   ios:
-    runs-on: macos-latest
+    runs-on: ${{ inputs.maquina || 'macos-latest' }}
     defaults: {run: {working-directory: app-ios}}
     steps:
       - uses: actions/checkout@v4

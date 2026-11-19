@@ -18030,6 +18030,15 @@ function drawCfg13(u){for(const k of CFG13K)if(!cfg13(k))return false;const I={}
   {const r=[110,1488,170,64];img(I.atalho,r);txt(window.CVLANG==='en'?'🔒 Privacy':'🔒 Privacidade',r[0]+r[2]/2,r[1]+r[3]/2+2,26,'center',TC,156);hit(r,12);}/* PRIVACIDADE14NOV */
   b.restore();u.boxR={x:0,y:0,w:W,h:H};return true;}
 {const _d=drawCfgArt;drawCfgArt=function(u){if(drawCfg13(u))return true;CFG13.on=false;return _d(u);};}
+/* TOQUE48_18NOV (auditoria do Buchecha, tela deitada 844x390: chaves, setas, volume, Personagem, idioma, Voltar/Comparar/Treino com 21–33 px de toque):
+   a ÁREA DE TOQUE desses controles cresce até ~48 px (a arte continua igual), sem invadir o controle vizinho — cresce no máximo até a metade do espaço entre eles.
+   Em pé os controles já passam de 48 px, então nada muda. */
+function toque48(list,extra){try{if(!list||!list.length)return;const r0=cv.getBoundingClientRect(),k=Math.max(r0.width,r0.height)/Math.max(W,H);if(!(k>0))return;const m=48/k,all=list.concat(extra||[]),orig=all.map(r=>({x:r.x,y:r.y,w:r.w,h:r.h}));
+  list.forEach(r=>{const i=all.indexOf(r),o=orig[i];if(o.h<m){let up=(m-o.h)/2,dn=up;orig.forEach((q,j)=>{if(j===i||q.w<=0||q.h<=0)return;if(q.x<o.x+o.w&&q.x+q.w>o.x){if(q.y>=o.y+o.h-.01)dn=Math.min(dn,(q.y-(o.y+o.h))/2);else if(q.y+q.h<=o.y+.01)up=Math.min(up,(o.y-(q.y+q.h))/2);}});up=Math.max(0,up);dn=Math.max(0,dn);r.y=o.y-up;r.h=o.h+up+dn;}
+    if(o.w<m){let lf=(m-o.w)/2,rt=lf;orig.forEach((q,j)=>{if(j===i||q.w<=0||q.h<=0)return;if(q.y<o.y+o.h&&q.y+q.h>o.y){if(q.x>=o.x+o.w-.01)rt=Math.min(rt,(q.x-(o.x+o.w))/2);else if(q.x+q.w<=o.x+.01)lf=Math.min(lf,(o.x-(q.x+q.w))/2);}});lf=Math.max(0,lf);rt=Math.max(0,rt);r.x=o.x-lf;r.w=o.w+lf+rt;}});}catch(e){}}
+{const _c=drawCfg13;drawCfg13=function(u){const ok=_c.apply(this,arguments);if(ok){toque48(u.rects,CFG13.sl);toque48(CFG13.sl,u.rects);}return ok;};}
+{const _p=drawPartyArt;drawPartyArt=function(u){const ok=_p.apply(this,arguments);if(ok)toque48(u.rects.concat([u.backR,u.cmpR,u.trnR].filter(Boolean)));return ok;};}
+{const _g=drawGcArt;drawGcArt=function(u){const ok=_g.apply(this,arguments);if(ok)toque48(u.rects);return ok;};}
 try{const st=document.createElement('style');st.textContent='body.cfg13 #volPanel{display:none!important}';document.head.appendChild(st);}catch(e){}
 setInterval(()=>{try{const top=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null,c=top&&top.cfg;if(!(c&&c.cfgart)){CFG13.on=false;CFG13.drag=null;document.body.classList.remove('cfg13');}}catch(e){}},300);
 (function(){const gp=e=>{const p=e.touches?e.touches[0]||e.changedTouches[0]:e;try{return toCanvas(p);}catch(_){const r=cv.getBoundingClientRect();return [(p.clientX-r.left)*W/r.width,(p.clientY-r.top)*H/r.height];}};
@@ -19238,7 +19247,7 @@ window.__AJEQ=()=>{try{if(/[?#&]ajeq1/.test(location.href)){localStorage.setItem
   ['pointerdown','pointerup','pointermove','touchstart','touchend','touchmove','mousedown','mouseup','click','keydown','wheel'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation()));
   const c=mk(b,'div','left:0;top:0;width:1080px;height:1920px;transform-origin:0 0;');
   /* tela alta (celular): ocupa a largura toda e cresce para baixo, sem faixas vazias */
-  const fit=()=>{const tall=innerHeight/innerWidth>1920/1080,k=tall?innerWidth/1080:innerHeight/1920,Hs=tall?innerHeight/k:1920;c.style.height=Hs+'px';c.style.transform=`translate(${(innerWidth-1080*k)/2}px,0px) scale(${k})`;b._k=k;b._Hs=Hs;try{b._lay&&b._lay(Hs);}catch(e){}};b._fit=fit;/* EVENTOS18NOV (auditoria: cada tela aberta deixava um 'resize' pendurado pra sempre): sai sozinho quando a tela fecha */const onR=()=>{if(document.body.contains(b))fit();else removeEventListener('resize',onR);};addEventListener('resize',onR);document.body.appendChild(b);return {b,c,fit};}
+  const fit=()=>{const tall=innerHeight/innerWidth>1920/1080;let k=tall?innerWidth/1080:innerHeight/1920,Hs=tall?innerHeight/k:1920;/* AJUSTESDEITADO18NOV (auditoria: Ajustes pequeno com o celular deitado): os AJUSTES ficam maiores e a lista rola (Voltar fica embaixo) */if(id==='ajeqA'&&!tall&&innerHeight<700){k=Math.min(innerWidth*.9/1080,innerHeight/1300);Hs=innerHeight/k;}c.style.height=Hs+'px';c.style.transform=`translate(${(innerWidth-1080*k)/2}px,0px) scale(${k})`;b._k=k;b._Hs=Hs;try{b._lay&&b._lay(Hs);}catch(e){}};b._fit=fit;/* EVENTOS18NOV (auditoria: cada tela aberta deixava um 'resize' pendurado pra sempre): sai sozinho quando a tela fecha */const onR=()=>{if(document.body.contains(b))fit();else removeEventListener('resize',onR);};addEventListener('resize',onR);document.body.appendChild(b);return {b,c,fit};}
  function close(){if(AQS.el){try{AQS.scroll=AQS.el._sc?AQS.el._sc.scrollTop:AQS.scroll;}catch(e){}AQS.el.remove();}AQS.el=null;AQS.u=null;AQS.kind=null;}
  function fin(u,i){if(ui[ui.length-1]!==u)return;ui.pop();close();u.res(i);}
  /* ---------- AJUSTES ---------- */
@@ -19330,6 +19339,16 @@ window.__AJEQ=()=>{try{if(/[?#&]ajeq1/.test(location.href)){localStorage.setItem
  function sync(){try{const u=(typeof ui!=='undefined'&&ui.length)?ui[ui.length-1]:null,k=want(u);if(!k){if(AQS.el)close();return;}if(AQS.u===u&&AQS.kind===k&&AQS.el&&document.body.contains(AQS.el))return;const sc=AQS.el&&AQS.el._sc?AQS.el._sc.scrollTop:AQS.scroll;close();AQS.scroll=sc;AQS.u=u;AQS.kind=k;AQS.el=k==='aj'?ajBuild(u):eqBuild(u);}catch(e){console.warn('ajeq',e);}}
  {const _dm=drawMenu;drawMenu=function(u){if(want(u)){sync();return;}return _dm.apply(this,arguments);};}
  setInterval(sync,150);
+ /* TOQUE48_18NOV (auditoria do Buchecha, celular deitado 844x390: chaves, setas, volume, Personagem, idioma, Voltar/Comparar/Treino com 21–33 px de toque):
+    a área de toque (botão transparente) cresce até ~48 px na tela; a arte não muda. Cresce no máximo até a metade do espaço até o botão vizinho. Em pé já passam de 48 px: nada muda. */
+ function toq48(){try{const st=AQS.el;if(!st||!st._k)return;const k=st._k,m=48/k,key=k.toFixed(4);const grp=new Map();
+   st.querySelectorAll('button').forEach(bt=>{{const S=bt.style,cur=[S.left,S.top,S.width,S.height].map(parseFloat).join(',');if(bt.dataset.s&&bt.dataset.s!==cur){bt.dataset.o=cur;delete bt.dataset.k;}}if(!bt.dataset.o){const S=bt.style;if(!S.left||!S.width)return;bt.dataset.o=[S.left,S.top,S.width,S.height].map(parseFloat).join(',');}if(bt.dataset.k===key)return;const p=bt.parentElement;if(!grp.has(p))grp.set(p,[]);grp.get(p).push(bt);});
+   grp.forEach(L=>{const all=[...L[0].parentElement.children].filter(e=>e.tagName==='BUTTON'&&e.dataset.o),O=all.map(e=>{const v=e.dataset.o.split(',').map(Number);return{x:v[0],y:v[1],w:v[2],h:v[3]};});
+     L.forEach(bt=>{const i=all.indexOf(bt),o=O[i];if(!o)return;let x=o.x,y=o.y,w=o.w,h=o.h;
+       if(o.h<m){let up=(m-o.h)/2,dn=up;O.forEach((q,j)=>{if(j===i)return;if(q.x<o.x+o.w&&q.x+q.w>o.x){if(q.y>=o.y+o.h-.01)dn=Math.min(dn,(q.y-(o.y+o.h))/2);else if(q.y+q.h<=o.y+.01)up=Math.min(up,(o.y-(q.y+q.h))/2);}});up=Math.max(0,up);dn=Math.max(0,dn);y=o.y-up;h=o.h+up+dn;}
+       if(o.w<m){let lf=(m-o.w)/2,rt=lf;O.forEach((q,j)=>{if(j===i)return;if(q.y<o.y+o.h&&q.y+q.h>o.y){if(q.x>=o.x+o.w-.01)rt=Math.min(rt,(q.x-(o.x+o.w))/2);else if(q.x+q.w<=o.x+.01)lf=Math.min(lf,(o.x-(q.x+q.w))/2);}});lf=Math.max(0,lf);rt=Math.max(0,rt);x=o.x-lf;w=o.w+lf+rt;}
+       bt.style.left=x+'px';bt.style.top=y+'px';bt.style.width=w+'px';bt.style.height=h+'px';bt.dataset.k=key;bt.dataset.s=[x,y,w,h].map(v=>parseFloat(v+'px')).join(',');});});}catch(e){}}
+ setInterval(toq48,300);
  window.__AJEQSYNC=sync;}
 /* TRCP14NOV (Felipe: 'coloca' — TREINO_E_COMPARAR_AZUL_14nov do Buchecha): CAMPO DE TREINO e COMPARAR no estilo azul. #trcp1 volta ao antigo */
 window.__TRCP=()=>{try{if(/[?#&]trcp1/.test(location.href)){localStorage.setItem('cv.trcp','0');return false;}if(/[?#&]trcp2/.test(location.href))localStorage.setItem('cv.trcp','1');return localStorage.getItem('cv.trcp')!=='0';}catch(e){return !/trcp1/.test(location.href);}};/* Felipe: 'coloca' (14/nov 21:58) */

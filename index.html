@@ -10721,7 +10721,10 @@ function arNew(){const deck=arDeck();AR={t:0,deck,lv:{},mana:100,cost:10,lives:3
 /* ONDASRUSH13NOV (report do Felipe: 'Aumentar o número de waves. Copie o número do rush royale'): fora das Masmorras o chefe vem como no Rush Royale: ondas 10, 20, 30, 40, 50 e 60; depois da 60, em toda onda par. Nas Masmorras continua a cada 5 ondas. */
 /* MAISONDAS13NOV (Felipe: 'A arena tem que melhorar com mais waves e fazer com a dificuldade igual do rushroyal'): as fases da Arena têm o DOBRO de ondas (mundo 1: 10 a 20, mundo 2: 15 a 25, mundo 3: 20 a 30) e o chefe vem como no Rush Royale: ondas 10, 20, 30 e na última.
    A força total continua a mesma: a vida sobe na mesma curva até a última onda (k = ondas antigas / ondas novas), cada onda tem menos inimigos e dá menos mana no fim. Cada onda dura 20 s (era 30 s). */
-function arStgGoalOld(i){return 5+Math.floor((i%STGN)/3)+Math.floor(i/STGN)*2;}
+function arStgGoalOld0(i){return 5+Math.floor((i%STGN)/3)+Math.floor(i/STGN)*2;}
+/* ARSOBE18NOV (Felipe: 'subindo sempre'): na virada de mundo a fase nunca fica mais fraca nem mais curta que a anterior (antes o chefe caía ~33% da fase 15 pra 16 e da 30 pra 31) */
+function arRunMax(f,i){let m=0;for(let j=0;j<=(i|0);j++)m=Math.max(m,f(j));return m;}
+function arStgGoalOld(i){return arRunMax(arStgGoalOld0,i);}
 function arStgK(A){A=A||AR;if(!A||!A.goal||A.stgI==null||A.stgI<0)return 1;const g0=arStgGoalOld(A.stgI);return Math.max(.2,Math.min(1,(g0-1)/Math.max(1,A.goal-1)));}
 function arIsBossW(w,g){if(g)return w%10===0||w===g;return w<=60?w%10===0:w%2===0;}
 function arWaveInfo(w){const g=AR&&AR.goal,boss=arIsBossW(w,g),k=arStgK(),wk=1+(w-1)*k,hp=Math.round(36*Math.pow(1.24,wk-1)*((AR&&AR.hpMult)||1)),n=boss?3:Math.max(5,Math.round((8+Math.floor(wk*1.6))*k));return {boss,hp,n,spd:.34+Math.min(.3,wk*.012)};}
@@ -10864,7 +10867,8 @@ try{MGMODES.arena=1;}catch(e){}
    Estrelas: 3 sem perder vida, 2 perdendo 1, 1 perdendo 2. Os prêmios são os mesmos das outras fases (stgLaunch0). */
 try{STGINFO.arena={n:'ARENA',col:'#d83a8a'};}catch(e){}
 {const _o=stgObjTxt;stgObjTxt=function(k,i){return k==='arena'?`Aguente ${arStgGoal(i)} ondas (chefe a cada 10 e na última)`:_o(k,i);};}
-function arStgGoal(i){return 10+Math.round((i%STGN)*10/(STGN-1))+Math.floor(i/STGN)*5;}
+function arStgGoal0(i){return 10+Math.round((i%STGN)*10/(STGN-1))+Math.floor(i/STGN)*5;}
+function arStgGoal(i){return arRunMax(arStgGoal0,i);}
 function arStgPool(bio){const L=(SMMON[bio&&bio.k]||[]).filter(s=>SP[s]&&MONANIM[s]),base=arEnemyPool();return L.length?[...L.slice(0,2),...L.slice(0,2),...base.slice(0,4)]:base;}
 async function arenaStage(){if(!STG)return;await fadeTo(1);portraitScreen();document.body.classList.add('nopad');arNew();arDragInit();AR.goal=arStgGoal(STG.i);AR.stgI=STG.i;AR.hpMult=STG.mult*(1+.6*Math.min(1,STG.i/10));AR.pool=arStgPool(STG.bio);
   const bl=(SMMON[STG.bio&&STG.bio.k]||[])[2];if(bl&&SP[bl]&&MONANIM[bl])AR.bossSp=bl;G.mode='arena';await fadeTo(0);
@@ -10872,7 +10876,8 @@ async function arenaStage(){if(!STG)return;await fadeTo(1);portraitScreen();docu
   await say(`FASE ${STG.i+1}: aguente ${AR.goal} ondas. CHEFE a cada 10 ondas e na última!`);
   await new Promise(r=>{AR.done=r;});
   await fadeTo(1);document.body.classList.remove('nopad');worldScreen();G.mode='world';AR=null;saveGame();await fadeTo(0);}
-function arStgEnd(why){const A=AR;A.over=true;const win=why==='win',stars=win?Math.max(1,A.lives):0;try{if(STG&&STG.i!=null&&!STG.miss){const ups=[];const o=xpNovoTeam(party.slice(0,3),stgRuler(STG.i),win?1:Math.min(.9,(A.wave||0)/Math.max(1,A.goal||10)),ups,XPDUR.arena);A.xpMsg=o.map(q=>`${nm(q.m)} +${q.g} XP`).join(' · ');for(const u of ups)QTOAST.push({t:0,txt:u,ic:'star'});}}catch(e){console.log(e)}STGRES={win,stars};A.result={stg:1,win,stars};tone(win?[523,659,784,1046]:[392,330,262],.15);}
+function arStgEnd(why){const A=AR;A.over=true;const win=why==='win',stars=win?Math.max(1,A.lives):0;try{if(STG&&STG.i!=null&&!STG.miss){const ups=[];/* ARNIVEL18NOV: o XP da Arena vai pros monstrinhos que JOGARAM (o time da Arena), não pros 3 primeiros da equipe */let tm=[];try{const seen=new Set();for(const sp of (typeof arDeck==='function'?arDeck():[])){const m=arSpMon(sp);if(m&&!seen.has(m)){seen.add(m);tm.push(m);}}}catch(_){}if(!tm.length)tm=party.slice(0,3);
+    const o=xpNovoTeam(tm,stgRuler(STG.i),win?1:Math.min(.9,(A.wave||0)/Math.max(1,A.goal||10)),ups,XPDUR.arena);A.xpMsg=o.map(q=>`${nm(q.m)} +${q.g} XP`).join(' · ');for(const u of ups)QTOAST.push({t:0,txt:u,ic:'star'});}}catch(e){console.log(e)}STGRES={win,stars};A.result={stg:1,win,stars};tone(win?[523,659,784,1046]:[392,330,262],.15);}
 function arStgResultDraw(A){const R=A.result;b.fillStyle='rgba(10,6,30,.85)';b.fillRect(0,0,W,H);const cy=H*.32;
   T(R.win?'FASE CONCLUÍDA!':'NÃO FOI DESSA VEZ',W/2,cy,12,'center',R.win?'#7ae88a':'#ffd040',W-20,C.ink);
   if(R.win){for(let k=0;k<3;k++)star(W/2-22+k*22,cy+32,8,k<R.stars?'#ffd040':'#5a5070');}else T(`Chegou até a onda ${A.wave} de ${A.goal}`,W/2,cy+26,7.5,'center','#ffffff',W-20);
@@ -11197,7 +11202,9 @@ function arPvpDraw(A){const M=A.mp,P=M.peer||{};T(`Rival: ${P.n||'…'}`,W/2,2,6
 const ARWKT=['fogo','agua','planta','eletrico','rocha','gelo'],ARWKN={fogo:'Fogo',agua:'Água',planta:'Planta',eletrico:'Elétrico',rocha:'Pedra',gelo:'Gelo'};
 function arWeek(){const ms=7*864e5,n=Math.floor(Date.now()/ms);return {ty:ARWKT[n%ARWKT.length],left:(n+1)*ms-Date.now()};}
 {const _st=arStats;arStats=function(sp,star){const S=_st(sp,star);try{if(AR&&AR.goal&&S.ty===arWeek().ty)S.dmg*=1.5;}catch(e){}return S;};}
-function arSpLv(sp){let L=0;for(const m of party)if(m.sp===sp&&m.lv>L)L=m.lv;return L;}
+/* ARNIVEL18NOV (Felipe: 'qualquer monstrinho pode ganhar nível'): o bônus de nível da Arena usa o próprio monstrinho (da equipe OU do Sítio, mesma linha de evolução), não só a equipe principal */
+function arSpMon(sp){let best=null;const fb=evoBase(String(sp||'').replace('*',''));for(const m of [...(party||[]),...(typeof storage!=='undefined'&&storage||[])]){if(!m||!m.sp)continue;if(evoBase(String(m.sp).replace('*',''))!==fb)continue;if(!best||m.lv>best.lv)best=m;}return best;}
+function arSpLv(sp){const m=arSpMon(sp);return m?m.lv:0;}
 function arHit2(x,y,w,h,f){AR.hits.push({x,y,w,h,f});}
 function arBtn0(x,y,w,h,c1,c2,txt,size){rrect(x,y+1.5,w,h,6,'#0c1418',false);const g=b.createLinearGradient(0,y,0,y+h);g.addColorStop(0,c1);g.addColorStop(1,c2);b.fillStyle=g;b.beginPath();b.roundRect?b.roundRect(x,y,w,h,6):b.rect(x,y,w,h);b.fill();b.save();b.globalAlpha=.25;rrect(x+2,y+1,w-4,h*.4,5,'#ffffff',false);b.restore();if(txt)T(txt,x+w/2,y+h/2-(size||7)*.55,size||7,'center','#ffffff',w-6,C.ink);}
 function arChest0(x,y,s,open){rrect(x-7*s,y-3*s,14*s,9*s,2*s,'#7a4a1a',false);rrect(x-7*s,y-7*s,14*s,5*s,3*s,'#a0662a',false);px(x-7*s,y-3.5*s,14*s,1.4*s,'#f0c040');px(x-1*s,y-5*s,2*s,6*s,'#f0c040');px(x-1.2*s,y-2*s,2.4*s,2.4*s,'#ffe070');
@@ -11380,7 +11387,10 @@ async function wallHub(){while(true){const r=await arLobbyShow('wall');if(!r||r.
 function arFormOf(sp,star){let own;try{own=dexOwn();}catch(e){own=new Set();}let f=sp,fi=0;for(const need of [3,5]){if(star<need)break;const e=EVO[f];if(!e||!SP[e[0]]||!own.has(e[0]))break;f=e[0];fi++;}return {f,fi};}
 function arSetForm(u,announce,i){if(!u)return;const was=u.form||u.sp,o=arFormOf(u.sp,u.star);u.form=o.f;u.fi=o.fi;
   if(announce&&o.f!==was&&o.fi>0){const p=arCellXY(i);arBurst(p.x,p.y,'#ffffff',24);arPop(p.x,p.y-22,'EVOLUIU! '+((SP[o.f]&&SP[o.f].name)||''),'#fff3a0');if(ARAB[o.f])arPop(p.x,p.y-12,ARAB[o.f].n+'!','#ffd8a0');tone([523,784,1046,1318],.08);}}
-function arMerge(a,b){if(!arCanMerge(a,b))return false;const sp=AR.grid[b].sp,st=AR.grid[b].star+1;AR.grid[a]=null;const u={sp,star:st,cd:20,atk:0,born:AR.t};AR.grid[b]=u;
+/* VIRAOUTRO18NOV (Felipe: 'sempre que combinar o monstrinho ter chance dele mudar pra outro monstrinho do deck' — força trocar de monstrinho e fazer combos):
+   ao juntar, 50% de chance de virar OUTRO monstrinho do seu deck (mesmas estrelas). O sorteio usa a contagem de junções, então nos 2 celulares da dupla dá o mesmo resultado. */
+const ARVIRA=.5;function arViraSp(sp,a,b,st){try{const D=(AR.deck||[]).filter(x=>x&&x!==sp);if(!D.length)return sp;AR.mergeN=(AR.mergeN||0)+1;let h=(AR.mergeN*2654435761+a*97+b*131+st*17)>>>0;h=(h^(h>>>15))>>>0;h=Math.imul(h,2246822519)>>>0;h=(h^(h>>>13))>>>0;const r=(h%10000)/10000;if(r>=ARVIRA)return sp;return D[h%D.length];}catch(e){return sp;}}
+function arMerge(a,b){if(!arCanMerge(a,b))return false;const sp0=AR.grid[b].sp,st=AR.grid[b].star+1,sp=arViraSp(sp0,a,b,st);AR.grid[a]=null;const u={sp,star:st,cd:20,atk:0,born:AR.t};AR.grid[b]=u;if(sp!==sp0){try{const p=arCellXY(b);arPop(p.x,p.y-24,(window.CVLANG==='en'?'BECAME ':'VIROU ')+((SP[sp]&&SP[sp].name)||sp)+'!','#a8f0ff');}catch(e){}}
   const p=arCellXY(b);arBurst(p.x,p.y,'#fff3a0',18);arBurst(p.x,p.y,ARCOL[arType(sp)],14);arPop(p.x,p.y-14,'★'.repeat(Math.min(st,4))+(st>4?'+':''),'#fff3a0');tone([660,880,1100],.07);arSetForm(u,true,b);return true;}
 
 /* ARFORCA (05/nov, Felipe travou numa fase: "como eu fico mais forte?" / "já usei [a regra da semana] e to perdendo ainda"):
@@ -19561,6 +19571,23 @@ window.__CT2=()=>{try{if(/[?#&]cartao0/.test(location.href)){localStorage.setIte
         await say(T(`PROMOÇÃO: 10 amigos entraram pelo seu convite! Seu prêmio é o ${nomeT()}!`,`PROMO: 10 friends joined through your invite! Your prize is ${nomeT()}!`));await revealMon('trovim',where);}catch(e){}finally{dando=false;}})();return;}
     if(!mostrou&&(flags.convN!=null||Date.now()-t0>15000)){mostrou=true;if(!flags.convTrovim)abre();}}catch(e){}},1500);
 }catch(e){}})();
+/* ARENAAD18NOV (Felipe: 'sim' aos comerciais da Arena): 2 ajudas por exercício de 30s (o 'comercial' do jogo):
+   1) PERDEU numa fase da Arena: continuar com 1 vida extra (1 vez por partida) + 4 s de proteção (quem chega no portão nesse tempo não tira vida).
+      A vida extra não apaga as vidas perdidas: vencer assim dá 1 estrela.
+   2) NO FIM da fase: dobrar os fragmentos de carta que você ganhou (1 vez por recompensa).
+   O prêmio só vem depois do exercício terminar; se fechar antes, fica só o normal. Fica anotado em flags.arAjuda (vitórias com ajuda e sem ajuda). */
+{const _ae=arEnd;arEnd=async function(why){const A=AR;try{if(A&&!A.over&&A.goal&&!A.mp&&why!=='win'&&A.lives<=0&&!A.vidaAd&&!FPADON&&typeof fpadDomRun==='function'){A.vidaAd=1;A.over=true;const en=window.CVLANG==='en';
+    const j=await choose([en?'+1 LIFE · 30s EXERCISE':'+1 VIDA · EXERCÍCIO 30s',en?'NO, THANKS':'NÃO, OBRIGADO'],{cadAsk:{q:en?`So close! Wave ${A.wave} of ${A.goal}. Do a 30s exercise break and keep going with 1 extra life?`:`Quase! Onda ${A.wave} de ${A.goal}. Faça 30s de exercício e continue com 1 vida extra?`,nf:1,cols:['#1f7a3a','#8a2f2f']},noCancel:true});
+    if(AR===A&&j===0&&await fpadDomRun('+1 VIDA','+1 LIFE')&&AR===A){A.over=false;A.lives=1;A.prot=240;A.vidaUsou=1;const AJ=flags.arAjuda||(flags.arAjuda={});AJ.vida=(AJ.vida|0)+1;try{saveGame();}catch(e){}try{arPop(W/2,arGeo().ty+20,en?'+1 LIFE!':'+1 VIDA!','#7cf08a');tone([523,659,784,1047],.08);}catch(e){}return;}
+    A.over=false;}}catch(e){try{if(A)A.over=false;}catch(_){}}
+  if(A&&A.goal&&!A.mp&&why==='win'){try{const AJ=flags.arAjuda||(flags.arAjuda={});if(A.vidaUsou)AJ.vitComAjuda=(AJ.vitComAjuda|0)+1;else AJ.vitSemAjuda=(AJ.vitSemAjuda|0)+1;}catch(e){}}
+  return _ae.apply(this,arguments);};}
+{const _u=arUpdate;arUpdate=function(){const A=AR;if(A&&A.prot>0&&!A.over){A.prot--;const L=A.lives;A.lives=L+99;try{return _u.apply(this,arguments);}finally{if(AR===A)A.lives=L;}}return _u.apply(this,arguments);};}
+{const _fg=arFragGive;arFragGive=function(A,why){_fg.apply(this,arguments);try{if(A&&A.goal&&!A.mp&&A.fragGot)window.__arUltFrag={got:Object.assign({},A.fragGot),dob:0};}catch(e){}};}
+{const _as=arenaStage;arenaStage=async function(){window.__arUltFrag=null;const r=await _as.apply(this,arguments);try{const F=window.__arUltFrag;if(F&&!F.dob&&!FPADON&&typeof fpadDomRun==='function'&&Object.keys(F.got).length){const en=window.CVLANG==='en',n=Object.values(F.got).reduce((a,b)=>a+b,0);
+    const j=await choose([en?'DOUBLE · 30s EXERCISE':'DOBRAR · EXERCÍCIO 30s','OK'],{cadAsk:{q:en?`You got ${n} card fragments. Double them?`:`Você ganhou ${n} fragmentos de carta. Quer dobrar?`,nf:1,cols:['#1f7a3a','#5a5470']},noCancel:true});
+    if(j===0&&!F.dob&&await fpadDomRun('DOBRO DOS FRAGMENTOS','DOUBLE FRAGMENTS')){F.dob=1;flags.arFrag=flags.arFrag||{};for(const sp in F.got)flags.arFrag[sp]=(flags.arFrag[sp]|0)+F.got[sp];const AJ=flags.arAjuda||(flags.arAjuda={});AJ.dobro=(AJ.dobro|0)+1;try{saveGame();}catch(e){}
+      await say(en?`Doubled! +${n} card fragments.`:`Dobrou! +${n} fragmentos de carta.`);}}}catch(e){}return r;};}
 window.__GH=()=>H;window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

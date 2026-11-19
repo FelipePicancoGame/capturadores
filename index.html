@@ -5103,8 +5103,8 @@ function bHit(C2,e,dmg,type,o={}){if(!e||e.dead)return;/* SOMTIPO (04/nov, Felip
   else if(type==='fogo'&&o.burn)bSt(e,'burn',o.burn);
   if(type==='agua'){bSt(e,'wet',260);if(e.burn>0){e.burn=0;C2.part(e.x,e.y-8,'rgba(230,240,255,.85)',5,{kind:'smoke',sp:.6,up:.8,life:22,grav:-.02,size:3});}}
   if(!o.splash||Math.random()<.4)C2.fx.push({k:'hitfx',x:e.x+(Math.random()*6-3),y:e.y-6+(Math.random()*6-3),t:0,dur:9,col:TYPECOL[type]||'#ffffff',big:!o.splash});
-  {const _s=(o.shot&&o.shot.src)||o.src,_k=_s?(_s.m||_s):null,_h0=e.hp,_pv=BHSRC;BHSRC=_k;try{C2.hit(e,dmg,type,o);}finally{BHSRC=_pv;}if(_k&&!(typeof SV!=='undefined'&&SV&&C2===SV.ctx)){const d=Math.max(0,Math.max(0,_h0)-Math.max(0,e.hp));if(d>0){C2.dmg=C2.dmg||new Map();C2.dmg.set(_k,(C2.dmg.get(_k)||0)+d);}}}}
-var BHSRC=null;function svConta(k,d){try{if(!k||!(d>0)||!SV||!SV.ctx)return;const c=SV.ctx;c.dmg=c.dmg||new Map();c.dmg.set(k,(c.dmg.get(k)||0)+d);}catch(e){}}
+  {const _s=(o.shot&&o.shot.src)||o.src,_k=_s?(_s.m||_s):null,_h0=e.hp,_pv=BHSRC,_pt=BHTGT;BHSRC=_k;BHTGT=e;try{C2.hit(e,dmg,type,o);}finally{BHSRC=_pv;BHTGT=_pt;}if(_k&&!(typeof SV!=='undefined'&&SV&&C2===SV.ctx)){const d=Math.max(0,Math.max(0,_h0)-Math.max(0,e.hp));if(d>0){C2.dmg=C2.dmg||new Map();C2.dmg.set(_k,(C2.dmg.get(_k)||0)+d);}}}}
+var BHSRC=null,BHTGT=null;/* DANOMURALHA19NOV (M03): dano em área, corrente, queimadura e dano contínuo da Muralha também contam pro monstrinho */function wDmgConta(k,d){try{if(!k||!(d>0)||typeof WL==='undefined'||!WL||!WL.ctx)return;const c=WL.ctx;c.dmg=c.dmg||new Map();c.dmg.set(k,(c.dmg.get(k)||0)+d);}catch(_){}}function svConta(k,d){try{if(!k||!(d>0)||!SV||!SV.ctx)return;const c=SV.ctx;c.dmg=c.dmg||new Map();c.dmg.set(k,(c.dmg.get(k)||0)+d);}catch(e){}}
 function bShot(C2,s,ang,o={}){const sp=(o.spd||3.6)*(s.spd||1);C2.fx.push({k:'shot',x:s.x,y:s.y,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,type:o.type||s.type,mv:o.mv||s.mv,dmg:o.dmg??s.dmg*(o.m||1),pierce:(o.pierce||0)+(s.pierce||0),bounce:s.bounce||0,src:s.src,hitSet:new Set(),life:o.life||120,rot:0,home:o.home||null,hspd:sp,on:o.on,big:(o.big||1)*(s.pw||1),tier:s.tier||1,fast:(s.spd||1)>1.12});}
 function bLob(C2,s,x,y,o){C2.fx.push({k:'lob',x0:s.x,y0:s.y,x1:x,y1:y,t:-(o.delay||0),dur:o.dur||26,h:o.h||30,style:o.style||'rock',size:(o.size||5)*Math.min(1.6,s.pw||1),tier:s.tier||1,on:o.on,x:s.x,y:s.y});}
 function mkPuffs(n,r){return Array.from({length:n},(_,i)=>({a:i/n*Math.PI*2+Math.random()*.6,d:r*(.25+Math.random()*.55),s:r*(.28+Math.random()*.22),dl:Math.floor(Math.random()*4)}));}
@@ -5638,7 +5638,7 @@ function wUpdate(){const w=WL;w.t++;wDanger(w);if((flags.wallAuto||(w.duo&&w.duo
   bfxStep(w.ctx);
   for(const e of w.foes){if(e.dead)continue;bTick(w.ctx,e);if(e.dead)continue;fTick(w.ctx,e);if(e.ft&&e.ft.zig&&!e.stun)e.x=Math.max(10,Math.min(170,e.x+Math.sin(w.t/14+e.wob)*.5));e.age=(e.age||0)+1;if(e.hit>0)e.hit--;if(e.curse>0)e.curse--;
     if((e.kind==='tank'||e.boss)&&e.y<MSTOP()&&!e.stun&&!e.root&&Math.round(w.t+e.wob*10)%30===0){part(e.x+(Math.random()*10-5),e.y+(e.boss?26:16),'rgba(210,190,140,.8)',3,{kind:'smoke',sp:.5,life:18,grav:-.01,size:2.4});if(e.boss)w.shake=Math.max(w.shake,3);}
-    if(e.burn>0){e.burn--;if(e.burn%30===0){const bd=Math.max(1,Math.round(e.max*.035*(1+.5*((w.duo&&e._buK!=null?e._buK:w.burn)-1))));e.hp-=bd;wPop(e.x,e.y-14,bd,'#ff9a3a',7);part(e.x,e.y,'#ff7a2a',3,{sp:.6,up:.8,life:14,grav:-.03});if(e.hp<=0){wKill(e,'fogo');continue;}}}
+    if(e.burn>0){e.burn--;if(e.burn%30===0){const bd=Math.max(1,Math.round(e.max*.035*(1+.5*((w.duo&&e._buK!=null?e._buK:w.burn)-1))));wDmgConta(e._src,Math.min(Math.max(0,e.hp),bd));e.hp-=bd;wPop(e.x,e.y-14,bd,'#ff9a3a',7);part(e.x,e.y,'#ff7a2a',3,{sp:.6,up:.8,life:14,grav:-.03});if(e.hp<=0){wKill(e,'fogo');continue;}}}
     if(e.boss){e.stun=0;e.root=0;e.slow=0;}if(e.stun>0){e.stun--;continue;}if(e.root>0){e.root--;continue;}
     const stop=e.boss?MSTOP()-16:e.archer?MSTOP2(e):MSTOP();
     if(e.y<stop){if(e.slowIn&&e.y>=262-wRng(w,null)*.92)e.slowIn=0;e.y+=e.spd*MSPDK()*(e.slow>0?.4:1)*fMove(e)*(w.nearSlow&&!e.boss&&e.y>stop-70?1-w.nearSlow:1)*(e.slowIn?1:1);if(e.slow>0)e.slow--;if(e.kind==='fast'&&w.t%6===0)part(e.x,e.y+10,'rgba(210,190,140,.8)',1,{kind:'smoke',sp:.2,life:14,grav:0,size:2});}
@@ -5723,7 +5723,7 @@ function wOffer(){const w=WL;if(w.rr==null)w.rr=1;const cands=[];w.nextTheme=wNe
   w.defs.forEach((d,di)=>{for(const mc of MONCARDS){const key=mc.id+'#'+di;if(mc.max&&(w.lv[key]||0)>=mc.max)continue;if(mc.id==='mpierce'){let bk='';try{bk=behOf(d.sp,d.m&&d.m.lv).k;}catch(er){}if(['jet','aurora'].includes(bk))continue;}cands.push({id:mc.id,key,r:mc.r,ic:mc.ic,mon:di,n:nm(d.m),d:mc.d(d)+((w.lv[key]||0)>0?wMonTot(mc.id,d):''),f:w2=>mc.f(w2,d)});}});
   for(const c2 of WC){if(GLOBAL_SKIP.has(c2.id))continue;if(c2.max&&(w.lv[c2.id]||0)>=c2.max)continue;let mon=null;
     if(c2.need){const di=w.defs.findIndex(d=>SP[d.sp].type===c2.need);if(di<0)continue;mon=di;}{const _n=(w.lv[c2.id]||0)+1,_d=typeof c2.d==='function'?c2.d(_n,w):c2.d;cands.push({...c2,d:(c2.max>1&&!/^Nv /.test(_d)?`Nv ${_n}/${c2.max}: `:'')+_d,key:c2.id,mon});}}
-  const opts=[];let tries=0;while(opts.length<3&&tries++<300){const roll=Math.random(),lgOk=w.wave>=4&&!(STG&&STG.first);/* LENDAMENOS08NOV (Felipe: 'muita carta lendária aparecendo') */const r=lgOk&&!w.legN&&roll<.015?3:roll<.08?2:roll<.32?1:0;const pool=cands.filter(c2=>c2.r===r&&!opts.some(o=>o.key===c2.key));if(!pool.length)continue;
+  const opts=[];let tries=0;while(opts.length<3&&tries++<300){const roll=Math.random(),lgOk=w.wave>=4&&!(STG&&STG.first);/* LENDAMENOS08NOV (Felipe: 'muita carta lendária aparecendo') */const r=lgOk&&!w.legN&&!opts.some(o=>o.r===3)&&roll<.015?3:roll<.08?2:roll<.32?1:0;const pool=cands.filter(c2=>c2.r===r&&!opts.some(o=>o.key===c2.key));if(!pool.length)continue;
     const monPool=pool.filter(c2=>c2.mon!=null);const pick=(monPool.length&&Math.random()<.65?monPool:pool);opts.push(pick[Math.floor(Math.random()*pick.length)]);}
   let leg=false;/* LENDMENOS13NOV (Felipe: 'tá vindo muita carta lendária pra escolher'): no máximo 1 oferta de lendária por partida e com menos chance (antes: 35% na onda 5, certa na 6 e 25% na 8) */if(!w.legN&&((w.wave===5&&Math.random()<.2)||(w.wave===7&&!w.legSeen&&Math.random()<.5)||(w.wave===9&&Math.random()<.15))){w.legSeen=1;w.legN=1;const L=WLEG.filter(c2=>!(w.lv[c2.id]));if(L.length&&opts.length){const c2=L[Math.floor(Math.random()*L.length)];opts[Math.min(1,opts.length-1)]={...c2,key:c2.id,mon:null};leg=true;tone([659,880,1175,1568,2093],.09);}}
   const TH=w.nextTheme&&WTHEME[w.nextTheme];if(TH){const isC=c2=>TH.counter.includes(c2.id);if(!opts.some(isC)){const pool=cands.filter(c2=>isC(c2)&&!opts.some(o=>o.key===c2.key));if(pool.length)opts[opts.length-1]=pool[Math.floor(Math.random()*pool.length)];}for(const o of opts)o.rec=isC(o);}
@@ -6335,7 +6335,7 @@ function renderWall0(){const w=WL,t=w.t,sh=w.shake?((w.shake%4<2)?1:-1):0;
   if(!w.cards&&!w.paused)wBossHUD(w,t);
   for(const p of w.pops)T(p.t,p.x,Math.max(36-WOY,p.y),p.size*popK(p,42),'center',p.col,0,C.ink);
   bCutin(w.ctx);
-  if(w.cards){texts=[];const cs=w.cards;cs.t++;if(cs.t===1800&&!w.paused)setTimeout(()=>{try{if(WL&&WL.cards===cs)wPick(cs.i);}catch(e){}},0);b.fillStyle='rgba(10,8,28,.82)';b.fillRect(0,-WOY,W,H+WOY);
+  if(w.cards){texts=[];const cs=w.cards;cs.t++;if(cs.t===1800&&!w.paused&&(w.duo||w.duoG))/* SEMAUTO19NOV (M05): sozinho não escolhe carta por você (a contagem não aparecia na tela nova) */setTimeout(()=>{try{if(WL&&WL.cards===cs)wPick(cs.i);}catch(e){}},0);b.fillStyle='rgba(10,8,28,.82)';b.fillRect(0,-WOY,W,H+WOY);
     T(`ONDA ${w.wave} VENCIDA!`,90,14,11,'center',C.yellow,170,C.ink);{const TH=w.nextTheme&&WTHEME[w.nextTheme];if(TH){rrect(6,23,168,27,7,'rgba(200,40,60,.85)',false);T(`PRÓXIMA: ${TH.n}`,90,25,7.6,'center',C.white,160,C.ink);T(TH.d,90,34.5,5.8,'center','#ffe0e6',160);T('Cartas com ✓ ajudam nessa onda!',90,42,5.4,'center','#fff3a0',160);}else T(cs.leg?'✦ CARTA LENDÁRIA APARECEU! ✦':'Escolha uma carta',90,40,8,'center',cs.leg?hueC(t,0,75):C.white,170,cs.leg?C.ink:null);}
     cs.opts.forEach((cd,i)=>{const sel=i===cs.i,x=4+i*(cs.opts.length>3?44:58),y=68-(sel?Math.min(10,(cs.selT=(cs.selI===i?(cs.selT||0)+1:(cs.selI=i,0)))*2):0)+Math.max(0,20-cs.t*2)*(i+1),cw=(cs.opts.length>3?41:54),ch=128,rc=RAR[cd.r];
       const C2I=asImg('cd2_'+Math.min(3,cd.r));if(C2I){const ch2=cw*2.58,y2=y-4,ccx=x+cw/2,pcy=y2+ch2*.31;
@@ -6404,7 +6404,7 @@ async function wallMode(){if(!party.length)return;try{murPreload();}catch(e){}aw
   WL.ctx={fx:WL.fx,foes:()=>WL.foes.filter(e=>e.y>30-(WL.ext||0)),hit:(e,d,ty,o)=>wHit(e,d,ty,!!o.splash,o.shot),part:(...a)=>part(...a),pop:(...a)=>wPop(...a),shake:n=>{WL.shake=Math.max(WL.shake,n);},
     knock:(e,a)=>{if(e.boss)return;e.y=Math.max(8,e.y-a);},pull:(e,x,y,a)=>{if(e.boss)return;const dx=x-e.x,dy=y-e.y,l=Math.hypot(dx,dy)||1;if(l>4){e.x+=dx/l*a;e.y=Math.min(MSTOP(),e.y+dy/l*a);}},
     heal:v=>{const w=WL;if(v>=1){const h=Math.round(w.wallMax*v/100);w.wall=Math.min(w.wallMax,w.wall+h);wPop(90,262,`+${h}`,'#7fe88a',11);}else{w.healAcc=(w.healAcc||0)+v;if(w.healAcc>=1){const h=Math.floor(w.healAcc);w.healAcc-=h;w.wall=Math.min(w.wallMax,w.wall+h);}}},
-    rad:e=>e.boss?20:11,dot:(e,d,col)=>{e.hp-=d;wPop(e.x,e.y-14,d,col,7);if(e.hp<=0&&!e.dead)wKill(e,'inseto');},rx:()=>20+Math.random()*140,ry:()=>40-(WL.ext||0)+Math.random()*(190+(WL.ext||0)),fwd:-Math.PI/2,ultMul:3,bounds:[-10,-30-(Math.max(0,H-320)),190,300],
+    rad:e=>e.boss?20:11,dot:(e,d,col)=>{wDmgConta(BHSRC||e._src,Math.min(Math.max(0,e.hp),d));e.hp-=d;wPop(e.x,e.y-14,d,col,7);if(e.hp<=0&&!e.dead)wKill(e,'inseto');},rx:()=>20+Math.random()*140,ry:()=>40-(WL.ext||0)+Math.random()*(190+(WL.ext||0)),fwd:-Math.PI/2,ultMul:3,bounds:[-10,-30-(Math.max(0,H-320)),190,300],
     waveD:270+Math.max(0,H-320),waveL:100,waveC:[90,120],t:()=>WL.t,flash:v=>{WL.flash=Math.max(WL.flash,v);},allies:()=>WL.defs,moveFwd:(e,a)=>{if(e.y<MSTOP())e.y=Math.min(MSTOP()-1,e.y+a);},quakeR:999,allyPop:(a,txt,col)=>wPop(a.x,a.y-30,txt,col,7)};
   if(WL.duo)duoHostInit(WL);wBarrelSpawn(1);G.mode='wall';await fadeTo(0);
   if(!flags.wallSeen2){flags.wallSeen2=true;flags.wallCatSeen=true;flags.wallBarrel=true;flags.wallSeen3=true;/* 29/out: o tutorial com mãozinha ensina */}
@@ -15122,7 +15122,7 @@ window.__GM=function(){try{return G.mode;}catch(_){return '';}};
   window.__fotoPartida=function(force){try{const s=ST();if(!s)return;if(!force&&ui.length)return;const e=flags.emJogo;if(!e)return;
       const lead=(s[0]==='surv'&&SV&&SV.lead)?party.indexOf(SV.lead):null;
       /* SVAUD18NOV H02: o histórico de dano (ctx.dmg) vai junto na foto da partida */try{const c=s[1].ctx;if(c&&c.dmg instanceof Map)s[1]._dmgSave=c.dmg;}catch(_){}
-      const foto={mode:s[0],em:e,lead:lead>=0?lead:null,t:Date.now(),seg:Math.round((s[1].t||s[1].time||0)/60),st:ser(s[1])};const js=JSON.stringify(foto);
+      try{const c=s[1]&&s[1].cards;if(c&&Array.isArray(c.opts))c._ids=c.opts.map(o=>o&&{id:o.id,key:o.key,r:o.r,mon:o.mon,rec:o.rec||0,mcTag:o.mcTag||null});}catch(_){}/* VOLTACARTAS19NOV */const foto={mode:s[0],em:e,lead:lead>=0?lead:null,t:Date.now(),seg:Math.round((s[1].t||s[1].time||0)/60),st:ser(s[1])};const js=JSON.stringify(foto);
       try{localStorage.setItem('cv_partida',js);}catch(_){}
       if(Date.now()-lastCloud>15000&&typeof CLOUD!=='undefined'&&CLOUD&&CLOUD.db){lastCloud=Date.now();CLOUD.db.doc('data/users/'+CLOUD.uid+'/partida').set({json:js,t:foto.t}).catch(()=>{});}
     }catch(err){try{__EV('foto erro '+String(err).slice(0,60));}catch(_){}}};
@@ -15132,7 +15132,7 @@ window.__GM=function(){try{return G.mode;}catch(_){return '';}};
     if(!best||!best.em||!e)return null;const same=best.em.k===e.k&&(e.k==='ms'?best.em.id===e.id:(best.em.key===e.key&&best.em.i===e.i));if(!same||Date.now()-best.t>12*3600e3)return null;return best;};
   window.__fotoApagar=function(){try{localStorage.removeItem('cv_partida');}catch(_){}try{if(typeof CLOUD!=='undefined'&&CLOUD&&CLOUD.db)CLOUD.db.doc('data/users/'+CLOUD.uid+'/partida').delete().catch(()=>{});}catch(_){}};
   window.__fotoAplicar=function(mode,S){const F=window.__RESTORE;if(!F||F.mode!==mode)return false;window.__RESTORE=null;
-    try{rev(F.st,S);try{if(S._dmgSave instanceof Map&&S.ctx){const m=S.ctx.dmg instanceof Map?S.ctx.dmg:new Map();for(const [k,v] of S._dmgSave)if(k)m.set(k,(m.get(k)||0)+(+v||0));S.ctx.dmg=m;S._dmgSave=m;}}catch(_){}/* efeitos e tiros em andamento não voltam (fotos antigas guardavam sem a ação e travavam) */try{for(const k of ['fx','shots','lobs','zaps','meteors','dying','eshots','bolts'])if(Array.isArray(S[k]))S[k].length=0;}catch(_){}/* volta já jogando (sem pausa) */try{if(mode==='wall'){if(S.paused){S.paused=null;}S.running=true;S.ult=null;S.ultQ=[];}else if(mode==='surv'){S.paused=false;}else if(mode==='td'){S.paused=false;}}catch(_){}/* 26/out: as cartas na tela perdem a ação ao salvar (travava em 'escolher carta'): sorteia cartas novas na volta */try{if(S.cards){const ch=S.cards.chest;S.cards=null;if(mode==='wall')wOffer();else if(mode==='surv')svOffer(!!ch);else if(mode==='td')tdOffer();}}catch(e2){S.cards=null;}try{__EV('voltou pra partida '+mode+' aos '+F.seg+'s');}catch(_){}return true;}catch(err){try{__EV('foto falhou '+String(err).slice(0,60));}catch(_){}return false;}};
+    try{rev(F.st,S);try{if(S._dmgSave instanceof Map&&S.ctx){const m=S.ctx.dmg instanceof Map?S.ctx.dmg:new Map();for(const [k,v] of S._dmgSave)if(k)m.set(k,(m.get(k)||0)+(+v||0));S.ctx.dmg=m;S._dmgSave=m;}}catch(_){}/* efeitos e tiros em andamento não voltam (fotos antigas guardavam sem a ação e travavam) */try{for(const k of ['fx','shots','lobs','zaps','meteors','dying','eshots','bolts'])if(Array.isArray(S[k]))S[k].length=0;}catch(_){}/* volta já jogando (sem pausa) */try{if(mode==='wall'){if(S.paused){S.paused=null;}S.running=true;S.ult=null;S.ultQ=[];}else if(mode==='surv'){S.paused=false;}else if(mode==='td'){S.paused=false;}}catch(_){}/* 26/out: as cartas na tela perdem a ação ao salvar (travava em 'escolher carta'): sorteia cartas novas na volta */try{if(S.cards){const ch=S.cards.chest,old=S.cards;S.cards=null;if(mode==='wall'){wOffer();try{wCardsVolta(S,old);}catch(_){}}else if(mode==='surv')svOffer(!!ch);else if(mode==='td')tdOffer();}}catch(e2){S.cards=null;}try{__EV('voltou pra partida '+mode+' aos '+F.seg+'s');}catch(_){}return true;}catch(err){try{__EV('foto falhou '+String(err).slice(0,60));}catch(_){}return false;}};
   window.__fotoTeste={ser,rev};
 })();
 
@@ -16544,10 +16544,10 @@ function mcHasCounter(w,th){const TH=WTHEME[th];if(!TH)return false;for(const k 
 /* — escolha das cartas — */
 const MC_O={wOffer,wPick,wSpawn,wWallDmg};
 function mcPrice(k){if(k==='tres'){let n=3;try{n=WL.cards.opts.length;}catch(e){}return n>3?26:20;}return {troca:5,mais:10,dois:15}[k];}
-wOffer=function(){const w=WL;MC_O.wOffer.apply(this,arguments);try{if(!w||!w.cards||w.duo||w.duoG)return;const cs=w.cards;
+wOffer=function(){const w=WL;MC_O.wOffer.apply(this,arguments);try{if(w&&w.cards)wLegMark(w);}catch(_){}try{if(!w||!w.cards||w.duo||w.duoG)return;const cs=w.cards;
     /* o conjunto que a pessoa está montando aparece com frequência: se ela já tem carta de um grupo, 1 das opções é desse grupo (as outras seguem sorteadas) */
     try{const N=w.mcN||{},tops=Object.keys(N).filter(k=>N[k]>0&&N[k]<5).sort((a,b2)=>N[b2]-N[a]);const tg0=tops.length&&Math.random()<.75?tops[Math.random()<.7?0:Math.min(1,tops.length-1)]:null;
-      if(tg0&&!cs.opts.some(o=>mcTag(o,w)===tg0)){const keep=w.cards;let pool=[];for(let k=0;k<6&&pool.length===0;k++){w.cards=null;MC_O.wOffer();pool=((w.cards&&w.cards.opts)||[]).filter(o=>mcTag(o,w)===tg0&&!keep.opts.some(q=>(q.key||q.id)===(o.key||o.id)));}w.cards=keep;
+      if(tg0&&!cs.opts.some(o=>mcTag(o,w)===tg0)){const keep=w.cards,l0=w.legN,ls0=w.legSeen;let pool=[];for(let k=0;k<6&&pool.length===0;k++){w.cards=null;MC_O.wOffer();pool=((w.cards&&w.cards.opts)||[]).filter(o=>mcTag(o,w)===tg0&&o.r<3&&!keep.opts.some(q=>(q.key||q.id)===(o.key||o.id)));}w.cards=keep;w.legN=l0;w.legSeen=ls0;
         if(pool.length){let j=keep.opts.findIndex(o=>!o.rec&&o.r<3);if(j<0)j=keep.opts.length-1;keep.opts[j]=pool[0];}}}catch(_){}
     for(const o of cs.opts){const tg=mcTag(o,w);if(!tg)continue;const n=mcCount(w,tg)+1,nx=n<=3?3:5;o.mcTag=tg;
       }}catch(e){}};
@@ -16557,16 +16557,29 @@ function mcApplyCard(w,cd){/* mesmo efeito do ESCOLHER, sem passar de onda (pro 
 wPick=function(i){const w=WL;if(!w||!w.cards||w.duo||w.duoG)return MC_O.wPick.apply(this,arguments);const cs=w.cards,cd=cs.opts[i];if(!cd)return;
   if(cs.dois&&!cs.doisFeito){cs.doisFeito=1;mcApplyCard(w,cd);cs.opts.splice(i,1);cs.i=0;part(90,130,RAR[cd.r],24,{sp:3,life:30,grav:.04,size:2});try{tone([523,784],.06);}catch(e){}return;}
   mcCounted(w,cd);return MC_O.wPick.apply(this,arguments);};
+/* DANOMURALHA19NOV (M03): golpe secundário (explosão/corrente) mede a vida tirada de verdade e soma pra quem atacou; lembra quem bateu (queimadura) */
+{const _wh=wHit;wHit=function(e,dmgBase,type,isSplash,shot){const src=BHSRC;if(src&&e)e._src=src;if(!src||!e||e===BHTGT)return _wh.apply(this,arguments);const h0=Math.max(0,e.hp);const r=_wh.apply(this,arguments);wDmgConta(src,h0-Math.max(0,e.hp));return r;};}
+/* LENDA19NOV (M04): no máximo 1 lendária mostrada por partida, contando só o que aparece na tela */
+function wLegMark(w){try{if(w&&w.cards&&w.cards.opts.some(o=>o&&o.r===3))w.legN=1;}catch(_){}}
+/* VOLTACARTAS19NOV (M02): ao voltar pra partida, a escolha de cartas volta IGUAL (mesmas cartas, LEVAR 2 e +1 CARTA já pagos) */
+function wCardRe(w,o){if(!o)return null;try{if(o.key&&String(o.key).includes('#')){const [id,di]=String(o.key).split('#'),d=w.defs[+di],mc=MONCARDS.find(m=>m.id===id&&m.r===o.r)||MONCARDS.find(m=>m.id===id);if(!mc||!d)return null;return {id:mc.id,key:o.key,r:mc.r,ic:mc.ic,mon:+di,n:nm(d.m),d:mc.d(d)+((w.lv[o.key]||0)>0?wMonTot(mc.id,d):''),f:w2=>mc.f(w2,d)};}
+  const L=(typeof WLEG!=='undefined'?WLEG:[]).find(c=>c.id===o.id&&o.r===3&&!WC.some(q=>q.id===o.id&&q.r===3));if(L)return {...L,key:L.id,mon:null};
+  const c2=WC.find(c=>c.id===o.id&&c.r===o.r);if(!c2)return null;const _n=(w.lv[c2.id]||0)+1,_d=typeof c2.d==='function'?c2.d(_n,w):c2.d;return {...c2,d:(c2.max>1&&!/^Nv /.test(_d)?`Nv ${_n}/${c2.max}: `:'')+_d,key:c2.id,mon:o.mon==null?null:o.mon};}catch(_){return null;}}
+function wCardsVolta(w,old){const src=old&&(Array.isArray(old._ids)?old._ids:old.opts);if(!w||!w.cards||!Array.isArray(src))return;const cs=w.cards,ops=src.map(o=>{const c=wCardRe(w,o);if(c){if(o.rec)c.rec=o.rec;if(o.mcTag)c.mcTag=o.mcTag;}return c;});
+  if(ops.length&&ops.every(Boolean))cs.opts=ops;else if(old.mais&&cs.opts.length<4){const ex=ops.find(c=>c&&!cs.opts.some(q=>(q.key||q.id)===(c.key||c.id)));if(ex)cs.opts.push(ex);}
+  for(const k of ['dois','doisFeito','mais','leg'])if(old[k])cs[k]=old[k];cs.i=Math.min(Math.max(0,old.i|0),cs.opts.length-1);wLegMark(w);}
 /* compra com cristais */
 function mcBuy(k){const w=WL;if(!w||!w.cards||w.duo||w.duoG)return;const cs=w.cards,p=mcPrice(k);
   if(k==='troca'&&(w.rr||0)>0){w.rr--;w.cards=null;wOffer();try{tone([523,784],.06);}catch(e){}return;}
   if(k==='mais'&&(cs.mais||cs.opts.length>=4))return;if(k==='dois'&&cs.dois)return;if(k==='tres'&&cs.dois)return;
   if(gems()<p){try{tone([300,240],.06,'square',.03);}catch(e){}wPop(90,200,`Faltam ${p-gems()}💎`,'#ff9a8a',9);return;}
+  let extra=null;if(k==='mais'){/* MAISCARTA19NOV (M01): sorteia a carta nova ANTES de cobrar; se não tiver nenhuma diferente, não cobra */const keep=w.cards,l0=w.legN,ls0=w.legSeen;for(let t=0;t<12&&!extra;t++){w.cards=null;try{MC_O.wOffer();}catch(_){}extra=(w.cards&&w.cards.opts||[]).find(o=>!keep.opts.some(q=>(q.key||q.id)===(o.key||o.id))&&!(o.r===3&&(l0||keep.opts.some(q=>q.r===3))))||null;}w.cards=keep;w.legN=l0;w.legSeen=ls0;
+    if(!extra){wPop(90,200,window.CVLANG==='en'?'No new card to add':'Não tem outra carta pra mostrar','#ffcf8a',9);try{tone([300,240],.06,'square',.03);}catch(e){}return;}}
   flags.gems=gems()-p;saveGame();try{tone([880,1175,1568],.06);}catch(e){}
   if(k==='troca'){w.cards=null;wOffer();return;}
   if(k==='dois'){cs.dois=1;wPop(90,200,'Escolha 2 cartas!',C.yellow,10);return;}if(k==='tres'){mcTakeAll(w,cs);return;}
-  if(k==='mais'){cs.mais=1;/* mais uma opção do mesmo sorteio */const keep=w.cards;w.cards=null;MC_O.wOffer();const extra=(w.cards&&w.cards.opts||[]).find(o=>!keep.opts.some(q=>(q.key||q.id)===(o.key||o.id)));w.cards=keep;
-    if(extra){const tg=mcTag(extra,w);if(tg){const n=mcCount(w,tg)+1,nx=n<=3?3:5;extra.mcTag=tg;}keep.opts.push(extra);keep.i=keep.opts.length-1;}}}
+  if(k==='mais'){cs.mais=1;const keep=w.cards;
+    if(extra){const tg=mcTag(extra,w);if(tg){const n=mcCount(w,tg)+1,nx=n<=3?3:5;extra.mcTag=tg;}keep.opts.push(extra);keep.i=keep.opts.length-1;wLegMark(w);}}}
 /* — ondas com tema: com carta contra = mais fraca; sem = mais forte — */
 wSpawn=function(){const w=WL;const n0=w?w.foes.length:0;const r=MC_O.wSpawn.apply(this,arguments);try{if(!w||w.duo||w.duoG)return r;const e=w.foes[w.foes.length-1];if(!e||w.foes.length===n0||e._mc)return r;e._mc=1;
     /* inimigos crescem mais a cada onda nas fases (cartas fazem falta): +11% por onda em vez de +7,5% */
@@ -19071,8 +19084,9 @@ function ftDraw(w,t){const cs=w.cards,G=ftGeo(),k=G.k,X=v=>G.ox+v*k,Y=v=>G.oy+v*
 {const P=wTap;wTap=function(x,y){const w=WL;if(ftOn(w)){/* TOQUEFT14NOV (reports 'reroll fechou a tela' / 'o botão não vai'): o wTap recebe o y deslocado (H-320-wK); a tela Fortaleza é desenhada na tela inteira, então desfaz o deslocamento */const y0=y+Math.max(0,H-320)-wK(),cs=w.cards,G=ftGeo(),dx=(x-G.ox)/G.k,dy=(y0-G.oy)/G.k,inR=r=>dx>=r[0]&&dx<=r[0]+r[2]&&dy>=r[1]&&dy<=r[1]+r[3];
       const SL=ftCardSlots(cs.opts.length);for(let i=0;i<cs.opts.length;i++){const sl=SL[i],r=[sl.x,sl.y-20,337*sl.s,680*sl.s];if(inR(r)){if(cs.i===i&&cs.t>20)wPick(i);else{cs.i=i;try{tone([660,880],.04);}catch(e){}}return;}}
       if(inR([84,1430,913,160])){wPick(cs.i);return;}
-      if(inR([238,1593,605,101])){if((w.rr||0)>0){w.rr--;w.cards=null;wOffer();try{tone([523,784],.06);}catch(e){}}else mcBuy('troca');return;}
-      for(const [ty,kk,r] of (w._ftHits||[]))if(inR(r)){if(ty==='b')mcBuy(kk);else if(fpadCan(w))fpadStart(w);return;}
+      const inP=(r,b)=>dx>=r[0]-11&&dx<=r[0]+r[2]+11&&dy>=r[1]-15&&dy<=r[1]+r[3]+(b||15);/* TOQUEFT19NOV (M06): área de toque dos botões de baixo maior que a arte (≥44px no celular) */
+      if(inP([238,1593,605,101])){if((w.rr||0)>0){w.rr--;w.cards=null;wOffer();try{tone([523,784],.06);}catch(e){}}else mcBuy('troca');return;}
+      for(const [ty,kk,r] of (w._ftHits||[]))if(inP(r,r[1]>1840?45:15)){if(ty==='b')mcBuy(kk);else if(fpadCan(w))fpadStart(w);return;}
       return;}
     return P.apply(this,arguments);};}
 /* /FORTALEZA13NOV */

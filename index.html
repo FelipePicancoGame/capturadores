@@ -1878,7 +1878,10 @@ const CLOUDP=(async()=>{try{const [db,us]=await Promise.all([__CLUSE('db'),__CLU
 }catch(e){console.log('cloud',e)}})();
 function cloudSave(js){if(!CLOUD||js===_cLast||js.length>240000)return;clearTimeout(_cTimer);_cPend=js;_cTimer=setTimeout(cloudFlush,400);}
 let _cPend=null;function _sc2(o){try{if(!o||!o.party||!o.party.length)return -1;const f=o.flags||{},ms=f.ms||{};let s=0;for(const k in ms)if(ms[k]===2)s+=100;for(const m of [...o.party,...(o.storage||[])])s+=(m.lv||0);s+=Object.keys(f.dex||f.seen||{}).length*5;return s;}catch(e){return 0;}}
-function cloudFlush(){clearTimeout(_cTimer);const js=_cPend;_cPend=null;if(!CLOUD||!js||js===_cLast)return;_cLast=js;(async()=>{try{if(!window.__NOVOJOGO){const sn=await CLOUD.ref.get();const d=sn&&sn.exists?sn.data():null;if(d&&typeof d.json==='string'&&d.json!==js){let cl=null;try{cl=JSON.parse(d.json);}catch(e){}const mj=JSON.parse(js),same=cl&&cl.flags&&cl.flags.gid&&mj.flags&&cl.flags.gid===mj.flags.gid;const sc=_sc2(cl),sm=_sc2(mj);if(!same&&sc>sm+5){try{__EV('nuvem: guardei o jogo maior, não troquei');}catch(e){}try{await CLOUD.db.doc('data/users/'+CLOUD.uid+'/save_recusado').set({json:js,t:Date.now()});}catch(e){}return;}}}await CLOUD.ref.set({json:js,t:Date.now()});}catch(e){_cLast='';console.log('cloud save',e);}})();}
+/* SAVEFILA18NOV (auditoria: 2 gravações ao mesmo tempo podiam fazer o salvo da nuvem voltar pra trás — a mais velha terminava por último):
+   as gravações na nuvem agora vão numa fila, uma de cada vez e na ordem; se já tem uma mais nova esperando, a velha nem grava. */
+let _cQ=Promise.resolve(),_cSeq=0;function cloudQ(fn){const my=++_cSeq;const p=_cQ.then(()=>my<_cSeq?null:fn()).catch(e=>{console.log('cloud q',e);});_cQ=p;return p;}
+function cloudFlush(){clearTimeout(_cTimer);const js=_cPend;_cPend=null;if(!CLOUD||!js||js===_cLast)return;_cLast=js;cloudQ(async()=>{try{if(!window.__NOVOJOGO){const sn=await CLOUD.ref.get();const d=sn&&sn.exists?sn.data():null;if(d&&typeof d.json==='string'&&d.json!==js){let cl=null;try{cl=JSON.parse(d.json);}catch(e){}const mj=JSON.parse(js),same=cl&&cl.flags&&cl.flags.gid&&mj.flags&&cl.flags.gid===mj.flags.gid;const sc=_sc2(cl),sm=_sc2(mj);if(!same&&sc>sm+5){try{__EV('nuvem: guardei o jogo maior, não troquei');}catch(e){}try{await CLOUD.db.doc('data/users/'+CLOUD.uid+'/save_recusado').set({json:js,t:Date.now()});}catch(e){}return;}}}await CLOUD.ref.set({json:js,t:Date.now()});}catch(e){_cLast='';console.log('cloud save',e);}});}
 addEventListener('visibilitychange',()=>{try{if(document.hidden){if(party.length&&G.mode!=='title')saveGame();cloudFlush();}}catch(e){}});addEventListener('pagehide',()=>{try{if(party.length&&G.mode!=='title')saveGame();cloudFlush();}catch(e){}});
 setInterval(()=>{try{if(party.length&&G.mode==='world'&&!busy&&!ui.length)saveGame();}catch(e){}},20000);
 
@@ -1898,7 +1901,7 @@ async function loadMenu(){if(!(typeof CLOUD!=='undefined'&&CLOUD&&CLOUD.db)){awa
   await say(`${o.lb}: ${o.r}.`);const c=await choose(['Carregar este','Não, voltar'],{noCancel:true});if(c!==0)return false;
   try{const cur=localStorage.getItem(SAVE);if(cur&&cur!==o.json)await CLOUD.db.doc('data/users/'+CLOUD.uid+'/save_antes_carregar').set({json:cur,t:Date.now()});}catch(e){}
   try{localStorage.setItem(SAVE,o.json);}catch(e){}try{window.__fotoApagar&&__fotoApagar();}catch(e){}
-  window.__NOVOJOGO=1;try{await CLOUD.ref.set({json:o.json,t:Date.now()});_cLast=o.json;}catch(e){}
+  window.__NOVOJOGO=1;try{clearTimeout(_cTimer);_cPend=null;await cloudQ(()=>CLOUD.ref.set({json:o.json,t:Date.now()}));_cLast=o.json;}catch(e){}
   try{__EV('carregou '+o.k);}catch(e){}await say('Pronto! Jogo carregado. Toque em CONTINUAR.');return true;}
 /* cópia automática: 1 por dia, guarda 3 dias */
 setInterval(()=>{try{if(!(typeof CLOUD!=='undefined'&&CLOUD&&CLOUD.db)||!party.length||G.mode==='title')return;const d=new Date(),k=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;if(localStorage.getItem('cv_autobk')===k)return;const js=localStorage.getItem(SAVE);if(!js)return;

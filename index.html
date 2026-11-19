@@ -9522,7 +9522,7 @@ async function stageMap(key){const st={key,sel:null,t:0};
     if(j===98){const ch={wall:wallMode,td:towerMode,surv:survMode,exp:async()=>{await fadeTo(1);await expedition();await wait(1);}}[key];await chapterMenu(key,ch);continue;}
     if(j===97&&key==='arena'){await say('Na ARENA, você escolhe os 5 monstrinhos do seu DECK no menu da Arena. Capture mais monstrinhos para ter mais opções!');continue;}
     if(j===97){if(key==='surv')await svMetaShop();else if(key==='wall')await wallCardShop();else await shopMenu(MODEUPS[key]);continue;}
-    if(j===100){await stgLaunch(key,st.world*STGN+st.sel);const S3=stgPage(key,st.world);if(S3.next>st.sel)st.sel=S3.next;for(let w=1;w<STGW;w++)if(st.world===w-1&&stgWOpen(key,w)&&st.sel===STGN-1&&!flags['w'+(w+1)+'ok_'+key]){flags['w'+(w+1)+'ok_'+key]=1;saveGame();await say(`MUNDO ${w+1} liberado! Toque em MUNDO ${w+1} lá em cima: cenários novos e inimigos bem mais fortes.`);}/* SAIMAPA13NOV (Felipe: 'clicava no continuar e não saía da tela'): depois da partida o CONTINUAR volta pro mapa do Vale, não pro mapa de fases */return 'sair';}}}
+    if(j===100){await stgLaunch(key,st.world*STGN+st.sel);const S3=stgPage(key,st.world);if(S3.next>st.sel)st.sel=S3.next;for(let w=1;w<STGW;w++)if(st.world===w-1&&stgWOpen(key,w)&&st.sel===STGN-1&&!flags['w'+(w+1)+'ok_'+key]){flags['w'+(w+1)+'ok_'+key]=1;saveGame();await say(`MUNDO ${w+1} liberado! Toque em MUNDO ${w+1} lá em cima: cenários novos e inimigos bem mais fortes.`);}/* SAIMAPA13NOV → FICANOJOGO19NOV (Felipe, report 18-19/nov: 'toda vez que termino o jogo da muralha ele volta pro mapa inicial… não quero isso'): depois da partida volta pro mapa de FASES do mesmo jogo, com a próxima fase marcada; sai pro Vale só pelo X */continue;}}}
 async function stgLaunch(key,i){flags.emJogo={k:'stg',key,i,t:Date.now()};saveGame();try{return await stgLaunch0(key,i);}finally{delete flags.emJogo;try{__fotoApagar();}catch(e){}try{saveGame();}catch(e){}}}
 async function stgLaunch0(key,i){const bio=key!=='arena'?murBioI(i):BIOMES[Math.floor(i/3)%BIOMES.length];
   if(key==='exp'){const m0=flags.expMax||1;flags.expStage=Math.min(i+1,m0);await fadeTo(1);await expedition();await wait(1);const m1=flags.expMax||1;if(m1>m0){let g=0;for(let k=m0;k<m1;k++){if((flags.expGemPaid||1)>k)continue;g+=3+(k%5===0?10:0);ecoWeek();}if(g)addGems(g);saveGame();await say(`Fase nova liberada no mapa!${g?` +${g} ${g>1?'cristais':'cristal'} 💎`:''}`);}await rareCatchPending();return;}
@@ -9530,7 +9530,7 @@ async function stgLaunch0(key,i){const bio=key!=='arena'?murBioI(i):BIOMES[Math.
   try{await ({wall:wallMode,td:towerMode,surv:survMode,arena:arenaStage})[key]();}finally{STG=null;}
   const R=STGRES;STGRES=null;if(!R)return;const A=stgArr(key),old=A[i]||0;
   if(R.win){const first=!old,ns=Math.max(old,R.stars||1);A[i]=ns;let g=(first?3+(typeof WD!=='undefined'?WD:0)+((key!=='arena'?i%5===4:i%3===2)?10:0):ecoRep())+(ns===3&&old<3?3:0);ecoWeek();let _g0=0,c=first?12+3*i:3+Math.floor(i/2);if(key==='arena'&&window.bauGuarda){bauGuarda(i,g,c,first&&i%5===4?1:0);saveGame();tone([523,659,784,1047],.08);await say(window.CVLANG==='en'?`${first?'FLOOR CLEARED!':'Floor repeated!'} Tap the chest next to the floor to open your prize.`:`${first?'ANDAR CONCLUÍDO!':'Andar repetido!'} Toque no baú do lado do andar para abrir o prêmio.`);}else{/* MENOSPREMIO15NOV (Felipe: 'diminuir os prêmios de quem não assiste comercial'): no app com anúncio, quem nunca comprou ganha 70% do prêmio da fase; o vídeo dobra. #premio0 desliga */if(window.CVVIDEO&&!/[?#&]premio0/.test(location.href)){const vip=typeof unlOk==='function'&&unlOk('semads');g=Math.round(g*(vip?1.4:.7));c=Math.round(c*(vip?1.4:.7));}addGems(g);flags.coins=(flags.coins||0)+c;if(first&&i%5===4)essAdd(1,'chefe vencido');saveGame();
-    tone([523,659,784,1047],.08);await say(`${first?'FASE CONCLUÍDA!':'Fase repetida!'} ${g?`+${g} cristal 💎 e `:''}+${c} moedas.${first&&i<STGT-1?' A próxima fase foi liberada no mapa!':''}`);
+    tone([523,659,784,1047],.08);if(window.CVLANG==='en')await say(`${first?'STAGE CLEARED!':'Stage replayed!'} ${g?`+${g} ${g>1?'crystals':'crystal'} 💎 and `:''}+${c} coins.${first&&i<STGT-1?' The next stage is unlocked!':''}`);else await say(`${first?'FASE CONCLUÍDA!':'Fase repetida!'} ${g?`+${g} ${g>1?'cristais':'cristal'} 💎 e `:''}+${c} moedas.${first&&i<STGT-1?' A próxima fase foi liberada!':''}`);
     /* DOBRO15NOV: vídeo pra dobrar o prêmio da fase */
     if(window.CVVIDEO&&CVVIDEO.pode()&&!CVVIDEO.vip()){const en3=window.CVLANG==='en';const ov=[en3?'📺 VIDEO: DOUBLE PRIZE':'📺 VÍDEO: DOBRAR PRÊMIO',...(window.CVLOJAOK?[en3?'⭐ NO ADS: 140% ALWAYS':'⭐ SEM ANÚNCIOS: 140% SEMPRE']:[]),en3?'NO, THANKS':'NÃO, OBRIGADO'];const k=await choose(ov,{noCancel:true,cadAsk:{q:(en3?'Double your prize: ':'Dobre o prêmio: ')+`${g?`+${g} 💎 · `:''}+${c} `+(en3?'coins':'moedas'),nf:1,cols:ov.map(o=>/📺/.test(o)?'#b0601a':/⭐/.test(o)?'#c79a1a':'#5a5470')}});if(/⭐/.test(ov[k]||'')){try{await lojaReal(1);}catch(_){}}if(k===0&&await CVVIDEO.ver()){addGems(g);flags.coins=(flags.coins||0)+c;saveGame();try{rwToast((en3?'Prize doubled! ':'Prêmio dobrado! ')+`${g?`+${g} 💎 · `:''}+${c}`);}catch(_){}}}}}
   else{await say('Não foi dessa vez! Dá pra tentar de novo quantas vezes quiser (e repetir fases já vencidas pra ganhar mais).');try{await tioDica(key,i);}catch(e){}}
@@ -10816,7 +10816,7 @@ function renderArena(){const A=AR;if(!A)return;if(window.ARSTY!==0){arRender2();
   for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';{const o=e.boss?arBossOff(G2,p):[0,0];arDrawMon(e.sp,p.x+o[0],p.y+o[1]-arEY(e.sp,e.boss),arES(e.sp,e.sc,e.boss),'walk',p.dir,e.id*10);}b.restore();
     const _o=e.boss?arBossOff(G2,p):[0,0],bw=e.boss?24:12,bx=p.x+_o[0]-bw/2,by=p.y+_o[1]-arEB(e.sp,e.boss);px(bx,by,bw,2,'#2a0a0a');px(bx,by,bw*Math.max(0,e.hp/e.max),2,e.boss?'#ff4040':e.poison>0&&e.poisonT>0?'#7ae04a':'#ff7070');if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
   /* tiros */
-  for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
+  arFxTop(A,G2,t);for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
   if(A.zaps)for(const z of A.zaps){b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);const mx=(z.x1+z.x2)/2+(Math.random()-.5)*6,my=(z.y1+z.y2)/2+(Math.random()-.5)*6;b.lineTo(mx,my);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}
   for(const p of A.parts){b.globalAlpha=Math.max(0,p.life/22);px(p.x,p.y,1.6,1.6,p.col);}b.globalAlpha=1;
   b.restore();
@@ -11099,7 +11099,7 @@ function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);
     const _o=e.boss?arBossOff(G2,p):[0,0],by=p.y+_o[1]-arEB(e.sp,e.boss);if(e.boss)e._pf=e.hp/e.max;arHpBar(p.x+_o[0],by,e.hp/e.max,e.boss,e.poison>0&&e.poisonT>0?'#7ae04a':e.burnT>0?'#ff9a30':null);if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
   if(A.bdie&&A.bdie.length){A.bdie=A.bdie.filter(g=>g.t<36);for(const g of A.bdie){g.t++;const p=arPos(G2,g.d),o=arBossOff(G2,p),k=Math.min(1,g.t/22),fr=g.f*(1-k);b.save();b.globalAlpha=Math.max(0,1-g.t/36);b.filter='brightness('+(g.t%6<3?2.2:1.2)+')';
     arDrawMon(g.sp,p.x+o[0],p.y+o[1]-arEY(g.sp,true),arES(g.sp,g.sc,true)*(1+g.t*.006),'walk',p.dir,g.id*10);b.restore();const by=p.y+o[1]-arEB(g.sp,true);arHpBar(p.x+o[0],by,fr,true,null);T(window.CVLANG==='en'?'DEFEATED!':'DERROTADO!',p.x,by-7,5.5,'center','#ffffff',0,C.ink);}}
-  for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
+  arFxTop(A,G2,t);for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
   if(A.zaps)for(const z of A.zaps){b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);b.lineTo((z.x1+z.x2)/2+(Math.random()-.5)*6,(z.y1+z.y2)/2+(Math.random()-.5)*6);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}
   for(const p of A.parts){b.globalAlpha=Math.max(0,p.life/22);px(p.x,p.y,1.6,1.6,p.col);}b.globalAlpha=1;b.restore();
   if(ARSKIN==='areia'){arTopAreia(A,G2);arBottomAreia(A,G2,t);}else{
@@ -12076,6 +12076,64 @@ Object.assign(ARAB,{
     for(let k=0;k<e.sting;k++){const a=t/9+k*Math.PI*2/e.sting,bx=q.x+Math.cos(a)*R,by=cy+Math.sin(a)*R*.45;E(bx,by,1.6,1.2,'#ffd23a',0,false);px(bx-.5,by-1.1,.8,2.2,'#3a2a10');b.save();b.globalAlpha=.7;E(bx-.6,by-1.3,.9,.6,'#ffffff',0,false);b.restore();}}
   for(const q of A.bees||[]){const k=1-q.t/q.T;for(let j=0;j<3;j++){const kk=Math.max(0,Math.min(1,k-j*.08)),x=q.x0+(q.x1-q.x0)*kk+Math.sin(q.o+kk*14+j)*4,y=q.y0+(q.y1-q.y0)*kk+Math.cos(q.o+kk*12+j)*3;E(x,y,1.5,1.1,'#ffd23a',0,false);px(x-.4,y-1,.8,2,'#3a2a10');}}};}
 /* /ARINSETO */
+/* ARFX19NOV (Felipe: "colocar efeito nas magias e nos poderes da Arena, pra saber quem lançou e o que está acontecendo com os monstros: preso, empurrado, por quê"):
+   - quem lançou: a casa do monstrinho acende na cor do poder com o nome do poder, e um raio de luz liga ele ao inimigo afetado;
+   - os tiros com poder deixam rastro na cor do poder;
+   - empurrão vira um deslize (não teletransporta) com onda/poeira e risquinhos de movimento;
+   - em cima de cada inimigo: ícone do que está acontecendo (lento, preso, bolha, choque, congelado, queimando, veneno, medo, maldição) + efeito no corpo;
+   - a 1ª vez que cada poder faz algo na partida, aparece a explicação curta embaixo do tabuleiro. */
+function arFxTxt(s){try{return typeof tr==='function'?tr(s):s;}catch(_){return s;}}
+{const _oh=arOnHit;arOnHit=function(A,s,tp,dmg){const ab=s&&s.ab;if(!ab||!A)return _oh(A,s,tp,dmg);
+  const pre=A.en.map(e=>[e,e.d,e.frz||0,e.slowT||0,e.burnT||0,e.fear||0,e.curseT||0,e.poisonT||0]);_oh(A,s,tp,dmg);
+  let u=s.u||null;const ci=u?A.grid.indexOf(u):-1;let hit=0,kind=null;
+  for(const [e,d0,f0,sl0,b0,fe0,cu0,po0] of pre){if(!e)continue;let k=null;
+    if(!e.boss&&e.d<d0-.5){const dd=d0-e.d;e.d=d0;e.kb=(e.kb||0)+dd;e.kbT=22;e.kbCol=ab.col;k='push';}
+    if((e.frz||0)>f0+1){e.frzK=e.root>0?'raiz':e.ice>0?'gelo':ab.bolha?'bolha':(ab.paralisa||ab.raios)?'choque':'preso';e.frzCol=ab.col;k=k||e.frzK;}
+    if((e.fear||0)>fe0+1)k=k||'medo';if((e.curseT||0)>cu0+5)k=k||'maldicao';
+    if((e.slowT||0)>sl0+5&&(ab.lento||ab.poca)){e.slowCol=ab.col;k=k||'lento';}
+    if(e.hp>0&&k){e.fxSrc=ci;e.fxT=26;e.fxCol=ab.col;hit++;kind=kind||k;}}
+  if(hit&&u){u.castT=34;u.castCol=ab.col;u.castN=ab.n;
+    A.fxSeen=A.fxSeen||{};const key=(u.form||u.sp)+':'+kind;if(!A.fxSeen[key]&&!A.mp){A.fxSeen[key]=1;let nm='';try{nm=(SP[u.form||u.sp]&&SP[u.form||u.sp].name)||'';}catch(_){}
+      A.fxMsg={s:`${nm?nm+' · ':''}${arFxTxt(ab.n)}: ${arFxTxt(ab.d)}`,t:170,col:ab.col};}}};}
+{const _rt=arRushTick;arRushTick=function(A){_rt(A);for(const e of A.en){if(e.kb>0){const st=Math.min(e.kb,Math.max(.7,e.kb*.2));e.d=Math.max(0,e.d-st);e.kb-=st;if(e.d<=0)e.kb=0;}if(e.kbT>0)e.kbT--;if(e.fxT>0)e.fxT--;}
+  for(const u of A.grid)if(u&&u.castT>0)u.castT--;};}
+function arFxIcons(e){const L=[];if(e.frz>0)L.push(e.frzK==='bolha'?'🫧':e.frzK==='gelo'||e.ice>0?'❄️':e.frzK==='raiz'||e.root>0?'🌿':e.frzK==='choque'?'⚡':'💫');
+  if(e.kbT>0)L.push('💨');if(e.fear>0)L.push('😱');if(e.slow>0&&!(e.frz>0))L.push('🐌');if(e.burnT>0)L.push('🔥');if(e.poisonT>0&&e.poison>0)L.push('☠️');if(e.curseT>0)L.push('👻');return L.slice(0,3);}
+function arFxTop(A,G2,t){try{
+  /* rastro dos tiros com poder */
+  for(const s of A.shots){if(!s.ab)continue;s.tr=s.tr||[];s.tr.push(s.x,s.y);if(s.tr.length>10)s.tr.splice(0,2);if(s.tr.length<4)continue;b.save();b.globalCompositeOperation='lighter';b.lineCap='round';
+    for(let k=2;k<s.tr.length;k+=2){b.globalAlpha=k/s.tr.length*.7;b.strokeStyle=s.col;b.lineWidth=1+k/s.tr.length*1.8;b.beginPath();b.moveTo(s.tr[k-2],s.tr[k-1]);b.lineTo(s.tr[k],s.tr[k+1]);b.stroke();}b.restore();}
+  for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d);let hh=e.boss?40:20;try{if(typeof arEB==='function')hh=Math.max(12,arEB(e.sp,e.boss));}catch(_){}const cy=q.y-hh*.45;
+    /* quem lançou → inimigo */
+    if(e.fxT>0&&e.fxSrc>=0&&A.grid[e.fxSrc]){const c=arCellXY(e.fxSrc),a=e.fxT/26;b.save();b.globalCompositeOperation='lighter';b.globalAlpha=a*.8;b.strokeStyle=e.fxCol||'#fff';b.lineWidth=2.2;b.lineCap='round';b.setLineDash([3,3]);b.lineDashOffset=-t;b.beginPath();b.moveTo(c.x,c.y-6);b.quadraticCurveTo((c.x+q.x)/2,Math.min(c.y,q.y)-18,q.x,cy);b.stroke();b.setLineDash([]);
+      E(q.x,cy,6*(1.4-a*.4),4*(1.4-a*.4),e.fxCol||'#fff',0,false);b.restore();}
+    /* empurrão: risquinhos e onda */
+    if(e.kbT>0){const f=arPos(G2,e.d+8),dx=f.x-q.x,dy=f.y-q.y,l=Math.hypot(dx,dy)||1,ux=dx/l,uy=dy/l,a=e.kbT/22;b.save();b.globalAlpha=a;b.strokeStyle='#ffffff';b.lineWidth=1.2;b.lineCap='round';
+      for(let k=-1;k<=1;k++){const ox=-uy*k*4,oy=ux*k*4;b.beginPath();b.moveTo(q.x+ux*5+ox,cy+uy*5+oy);b.lineTo(q.x+ux*(11+a*6)+ox,cy+uy*(11+a*6)+oy);b.stroke();}
+      b.globalCompositeOperation='lighter';b.strokeStyle=e.kbCol||'#7ad0ff';b.lineWidth=2;b.beginPath();b.arc(q.x+ux*6,cy+uy*6,7+(1-a)*5,Math.atan2(uy,ux)-1.1,Math.atan2(uy,ux)+1.1);b.stroke();
+      for(let k=0;k<3;k++)E(q.x+(Math.random()-.5)*8,q.y+1,1.6+(1-a)*2,1+(1-a),e.kbCol||'#d8c8a8',0,false);b.restore();}
+    /* preso */
+    if(e.frz>0){const k=e.frzK||'preso';b.save();
+      if(k==='bolha'){const r=e.boss?16:10;b.globalAlpha=.32;E(q.x,cy,r,r,'#bfeaff',0,false);b.globalAlpha=.85;b.strokeStyle='#e8fbff';b.lineWidth=1;b.beginPath();b.arc(q.x,cy,r,0,Math.PI*2);b.stroke();E(q.x-r*.4,cy-r*.45,r*.22,r*.14,'#ffffff',0,false);
+        for(let j=0;j<2;j++){const yy=cy+r-((t*.6+j*9)%(r*2));E(q.x+Math.sin(t/7+j*3)*r*.5,yy,.9,.9,'#ffffff',0,false);}}
+      else if(k==='choque'){b.globalCompositeOperation='lighter';b.strokeStyle='#fff27a';b.lineWidth=1;for(let j=0;j<3;j++){if((t+j*3)%6<3)continue;const a0=j*2.1+t/5,R=e.boss?14:8;b.beginPath();b.moveTo(q.x+Math.cos(a0)*R,cy+Math.sin(a0)*R*.7);b.lineTo(q.x+Math.cos(a0+.4)*R*.55,cy+Math.sin(a0+.4)*R*.4);b.lineTo(q.x+Math.cos(a0+.8)*R,cy+Math.sin(a0+.8)*R*.7);b.stroke();}}
+      else if(k==='preso'){for(let j=0;j<3;j++){const a0=t/8+j*2.09;E(q.x+Math.cos(a0)*7,q.y-hh-1+Math.sin(a0)*2,1.3,1.3,'#ffe27a',0,false);}}
+      b.restore();}
+    /* lento: gotinhas e anel no pé */
+    if(e.slow>0&&!(e.frz>0)){b.save();b.globalAlpha=.55;b.strokeStyle=e.slowCol||'#7ac8ff';b.lineWidth=1;b.beginPath();b.ellipse(q.x,q.y+1,e.boss?11:7,e.boss?3.5:2.4,0,0,Math.PI*2);b.stroke();
+      b.globalAlpha=.8;for(let j=0;j<2;j++){const yy=cy-hh*.3+((t*.5+j*11)%(hh*.6));E(q.x-4+j*8,yy,.9,1.4,e.slowCol||'#8ad8ff',0,false);}b.restore();}
+    /* queimando: chamas no corpo */
+    if(e.burnT>0){b.save();b.globalCompositeOperation='lighter';for(let j=0;j<3;j++){const fx=q.x-4+j*4+Math.sin(t/3+j)*.8,fy=cy+2-((t+j*5)%10)*.5,s2=1-((t+j*5)%10)/12;E(fx,fy,1.6*s2+.6,2.6*s2+.6,'#ff7a1a',0,false);E(fx,fy+.4,.8*s2+.3,1.4*s2+.3,'#ffe060',0,false);}b.restore();}
+    /* ícones do estado em cima */
+    const ic=arFxIcons(e);if(ic.length){const by=q.y-hh-(e.boss?10:3),w=ic.length*6.4;b.save();b.globalAlpha=.85;rrect(q.x-w/2-1,by-3.6,w+2,7.2,3.6,'rgba(15,10,30,.6)',false);b.restore();ic.forEach((s2,j)=>T(s2,q.x-w/2+3.2+j*6.4,by-2.9,4.6,'center','#ffffff'));}}
+  /* quem lançou: casa acende com o nome do poder */
+  for(let i=0;i<15;i++){const u=A.grid[i];if(!u||!(u.castT>0))continue;const c=arCellXY(i),a=u.castT/34,cs=G2.cs;b.save();b.globalCompositeOperation='lighter';b.globalAlpha=.08+.16*a;rrect(c.x-cs/2+1,c.y-cs/2+1,cs-2,cs-2,4,u.castCol||'#ffffff',false);b.restore();
+    b.save();b.globalAlpha=Math.min(1,a*2);b.strokeStyle=u.castCol||'#fff';b.lineWidth=1.4;b.beginPath();b.roundRect(c.x-cs/2+.5,c.y-cs/2+.5,cs-1,cs-1,5);b.stroke();
+    if(u.castN)T(arFxTxt(u.castN),c.x,c.y-cs/2-5-(1-a)*3,4.4,'center','#ffffff',cs*1.8,'#1a1030');b.restore();}
+  /* explicação do poder (1ª vez na partida): embaixo do tabuleiro, sem tampar a estrada */
+  if(A.fxMsg&&A.fxMsg.t>0){A.fxMsg.t--;const y=G2.y0+G2.bh+4;b.save();b.globalAlpha=Math.min(1,A.fxMsg.t/25);rrect(10,y,W-20,14,5,'rgba(20,14,40,.86)',false);b.fillStyle=A.fxMsg.col||'#fff';b.fillRect(14,y+3,2.2,8);T(A.fxMsg.s,W/2+2,y+3.6,5,'center','#ffffff',W-34,C.ink);b.restore();}
+}catch(err){}}
+/* /ARFX19NOV */
 /* AR6ESTILOS (05/nov, Felipe: "interface nova no drive" — CINCO_INTERFACES_NATURAIS + Ateliê v2 do Buchecha, todas 1080x2340):
    6 estilos de tela inteira na Arena: ATELIÊ (v2), OUTONO, PRIMAVERA, LUAR, RIO e ESTUFA. Cada um tem a PARTIDA e a ENTRADA desenhadas;
    o jogo escreve por cima nos lugares do POSICOES.json de cada um. O 🎨 passa por todos (depois Jardim, Pedra, Areia). */

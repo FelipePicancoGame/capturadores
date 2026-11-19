@@ -10968,7 +10968,7 @@ function arNextBoss(A){const w0=Math.max(1,A.wave);for(let w=w0;w<w0+12;w++)if(a
 {const _sw=arStartWave;arStartWave=function(){_sw();const A=AR;if(!A)return;A.wt=A.wi&&A.wi.boss?0:(A.goal&&A.stgI>=0?20*60:ARWT);if(A.wi&&A.wi.boss){const P=ARBP[arBossPow(arBossSp(A))];A.ann={t:0,txt:`CHEFE! ${P.ic} ${P.n}`};}};}
 {const _sp=arSpawn;arSpawn=function(boss){_sp(boss);const A=AR;if(!boss||!A)return;const e=A.en[A.en.length-1];if(e&&e.boss){e.pw=arBossPow(e.sp);e.pt=200;e.age=0;}};}
 {const _k=arKill;arKill=function(e,p){_k(e,p);if(AR)AR.hpow=Math.min(ARHP,(AR.hpow||0)+(e.boss?12:1));};}
-{const _h=arHit;arHit=function(e,dmg,ty,col){const was=e&&e.hp>0;_h(e,dmg,ty,col);const A=AR;if(!was||!A||!(dmg>0))return;A.dmgT=(A.dmgT||0)+dmg;A.dn=A.dn||[];if(A.dn.length<26&&dmg>=1&&dmg>=e.max*.04){const p=arPos(arGeo(),e.d);A.dn.push({x:p.x+(Math.random()-.5)*8,y:p.y-(e.boss?46:24),v:Math.round(dmg),col:col||ARCOL[ty]||'#ffffff',life:28,big:dmg>=(e.max*.15)});}};}
+{const _h=arHit;arHit=function(e,dmg,ty,col){const was=e&&e.hp>0;_h(e,dmg,ty,col);const A=AR;if(!was||!A||!(dmg>0))return;A.dn=A.dn||[];if(A.dn.length<26&&dmg>=1&&dmg>=e.max*.04){const p=arPos(arGeo(),e.d);A.dn.push({x:p.x+(Math.random()-.5)*8,y:p.y-(e.boss?46:24),v:Math.round(dmg),col:col||ARCOL[ty]||'#ffffff',life:28,big:dmg>=(e.max*.15)});}};}
 function arRushTick(A){if(A.wt>0)A.wt--;if(A.hfx>0)A.hfx--;if(A.bfx&&A.bfx.t>0)A.bfx.t--;
   if(!A.mp&&A.wave>0&&!(A.wt>0)&&A.spawnLeft<=0&&!(A.wi&&A.wi.boss)&&!(A.goal&&A.wave>=A.goal)&&A.en.some(e=>e.hp>0)){arStartWave();A.between=150;}
   for(const e of A.en){if(e.hp<=0)continue;
@@ -11135,7 +11135,7 @@ function arLeg(G2){return G2.by-G2.ty;}
 {const _t=arTarget;arTarget=function(){const own=_t(),A=AR;if(!arCoop(A)||!A.gh)return own;const L=arLeg(arGeo());let g=null;for(const x of A.gh)if(x.hp>0&&x.d>=L&&(!g||x.d>g.d))g=x;if(!g)return own;if(!own)return g;
   /* os dois perto do portão: mira em quem está mais à frente */return g.d>own.d?g:own;};}
 {const _h2=arHit;arHit=function(e,dmg,ty,col){if(e&&e.ghost){if(e.hp<=0)return;e.hp-=dmg;e.hit=6;const A=AR;try{duoEmit(A.mp.S,'ad',{i:e.nid,d:Math.round(dmg*10)/10,t:ty});}catch(_){}
-    A.dn=A.dn||[];if(A.dn.length<26&&dmg>=e.max*.04){const p=arPos(arGeo(),e.d);A.dn.push({x:p.x,y:p.y-24,v:Math.round(dmg),col:col||'#ffffff',life:28});}A.dmgT=(A.dmgT||0)+dmg;return;}
+    A.dn=A.dn||[];if(A.dn.length<26&&dmg>=e.max*.04){const p=arPos(arGeo(),e.d);A.dn.push({x:p.x,y:p.y-24,v:Math.round(dmg),col:col||'#ffffff',life:28});}return;}
   _h2(e,dmg,ty,col);};}
 function arCoopDmg(d){const A=AR;if(!A)return;const e=A.en.find(x=>x.nid===d.i&&x.hp>0);if(e)arHit(e,+d.d||0,d.t||'normal');}
 function arGhosts(A){if(!arCoop(A))return;const P=A.mp.peer||{},G2=arGeo(),PL=arPathLen(G2),old={};for(const g of A.gh||[])old[g.nid]=g;const out=[];
@@ -11459,12 +11459,12 @@ function arFire(A,u,i,S,p,tg){const ab=arAbOf(u);if(!ab){A.shots.push({x:p.x,y:p
   u.nshot=(u.nshot||0)+1;const er=(ab.erupcao&&u.nshot%ab.erupcao[0]===0)||(ab.tsunami&&u.nshot%ab.tsunami[0]===0);
   let T=[tg];if(ab.foco){let bst=null;for(const e of A.en)if(e.hp>0&&(!bst||e.hp>bst.hp))bst=e;if(bst)T=[bst];}if(ab.multi){const L=A.en.filter(e=>e.hp>0).sort((a,b)=>b.d-a.d);T=L.slice(0,ab.multi);if(!T.length)T=[tg];}
   for(const t of T)A.shots.push({x:p.x,y:p.y-6,tg:t,dmg:S.dmg/(ab.multi?1.6:1),ty:'x',ab,er,col:ab.col,star:u.star+(er?3:0),life:90});}
-function arBurn(e,dps,dur){if(!e||e.hp<=0)return;e.burn=Math.max(e.burn||0,dps);e.burnT=Math.max(e.burnT||0,dur);}
+function arBurn(e,dps,dur){if(!e||e.hp<=0)return;if(dps>=(e.burn||0)||!(e.burnT>0))e.burnSrc=AR_CUR;e.burn=Math.max(e.burn||0,dps);e.burnT=Math.max(e.burnT||0,dur);}
 function arOnHit(A,s,tp,dmg){const ab=s.ab,G2=arGeo();
   if(ab.area){const [r,f]=ab.area;for(const e of A.en){if(e===s.tg||e.hp<=0)continue;const q=arPos(G2,e.d);if(Math.hypot(q.x-tp.x,q.y-tp.y)<r){arHit(e,dmg*f,'x',ab.col);if(ab.queima)arBurn(e,dmg*ab.queima[0]/60,ab.queima[1]);}}
     A.fx=(A.fx||[]).concat([{x:tp.x,y:tp.y-4,r,col:ab.col,t:14,T:14}]);}
   if(ab.queima)arBurn(s.tg,dmg*ab.queima[0]/60,ab.queima[1]);
-  if(ab.poca){const [len,dur,f,sl]=ab.poca;A.zones=(A.zones||[]).filter(z=>z.t>0);if(A.zones.length<14)A.zones.push({d:s.tg.d+len*.35,len,t:dur,T:dur,dps:dmg*f/60,slow:sl,col:ab.col,base:ab.base||'#7a1a00'});}
+  if(ab.poca){const [len,dur,f,sl]=ab.poca;A.zones=(A.zones||[]).filter(z=>z.t>0);if(A.zones.length<14)A.zones.push({src:AR_CUR,d:s.tg.d+len*.35,len,t:dur,T:dur,dps:dmg*f/60,slow:sl,col:ab.col,base:ab.base||'#7a1a00'});}
   if(s.er&&ab.erupcao){const [,r,f]=ab.erupcao;for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d);if(Math.hypot(q.x-tp.x,q.y-tp.y)<r)arHit(e,dmg*f,'x',ab.col);}
     A.fx=(A.fx||[]).concat([{x:tp.x,y:tp.y-4,r,col:'#ffd040',t:22,T:22}]);arPop(tp.x,tp.y-26,'ERUPÇÃO!','#ffb040');A.shake=5;tone([140,90],.12,'sawtooth',.06);}
   const e0=s.tg;
@@ -11478,8 +11478,8 @@ function arOnHit(A,s,tp,dmg){const ab=s.ab,G2=arGeo();
     arPop(W/2,G2.ty+20,'TSUNAMI!','#7ad0ff');A.fx=(A.fx||[]).concat([{x:W/2,y:G2.ty+40,r:90,col:'#3a9aff',t:24,T:24}]);A.shake=5;tone([300,200,150],.1,'sine',.07);}
   if(ab.espalha&&s.tg.hp<=0){let nb=null,nd=60;for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d),dd=Math.hypot(q.x-tp.x,q.y-tp.y);if(dd<nd){nd=dd;nb=e;}}if(nb)arBurn(nb,(s.tg.burn||dmg*.3/60)*1.2,ab.queima?ab.queima[1]:120);}}
 {const _rt=arRushTick;arRushTick=function(A){_rt(A);const G2=arGeo();
-  for(const e of A.en){if(e.hp<=0)continue;if(e.burnT>0){e.burnT--;e.hp-=e.burn;if(e.hp<=0){arKill(e,arPos(G2,e.d));continue;}}}
-  if(A.zones){for(const z of A.zones){z.t--;for(const e of A.en){if(e.hp<=0)continue;if(Math.abs(e.d-z.d)<z.len/2){e.hp-=z.dps;if(z.slow){e.slow=Math.max(e.slow||0,z.slow);e.slowT=Math.max(e.slowT||0,3);}if(e.hp<=0)arKill(e,arPos(G2,e.d));}}}A.zones=A.zones.filter(z=>z.t>0);}
+  for(const e of A.en){if(e.hp<=0)continue;if(e.burnT>0){e.burnT--;const _a=e.hp;e.hp-=e.burn;arConta(e,_a,e.burnSrc);if(e.hp<=0){arKill(e,arPos(G2,e.d));continue;}}}
+  if(A.zones){for(const z of A.zones){z.t--;for(const e of A.en){if(e.hp<=0)continue;if(Math.abs(e.d-z.d)<z.len/2){const _a=e.hp;e.hp-=z.dps;arConta(e,_a,z.src);if(z.slow){e.slow=Math.max(e.slow||0,z.slow);e.slowT=Math.max(e.slowT||0,3);}if(e.hp<=0)arKill(e,arPos(G2,e.d));}}}A.zones=A.zones.filter(z=>z.t>0);}
   if(A.fx){for(const f of A.fx)f.t--;A.fx=A.fx.filter(f=>f.t>0);}};}
 function arAbDraw(A,G2,t){/* poças de lava no caminho e explosões */
   for(const z of A.zones||[]){const a=Math.min(1,z.t/30);for(let k=-2;k<=2;k++){const q=arPos(G2,Math.max(0,z.d+k*z.len/5));b.save();b.globalAlpha=.55*a;E(q.x,q.y+1,6.5,3.6,z.base||'#7a1a00',0,false);b.globalAlpha=.75*a;E(q.x+Math.sin(t/7+k)*1,q.y,5,2.6,z.col,0,false);b.globalAlpha=.6*a;E(q.x-1.5,q.y-.6,2,1,'#ffe080',0,false);b.restore();}}
@@ -12363,7 +12363,10 @@ function arUmGP(pd){const L=arUmLeg();if(pd<L){const T=arUmTop(),Lt=Math.hypot(T
    ao tocar em SAIR, aparece a ESTATÍSTICA (quem bateu mais, %, dano) e, no JUNTOS/CONTRA, quanto você e o outro deram no total. */
 var AR_CUR=null;
 {const _f=arFire;arFire=function(A,u,i,S,p,tg){const n0=A&&A.shots?A.shots.length:0;const r=_f.apply(this,arguments);try{const sp=u&&(u.form||u.sp);if(sp)for(let k=n0;k<A.shots.length;k++)if(!A.shots[k].src)A.shots[k].src=sp;}catch(e){}return r;};}
-{const _h=arHit;arHit=function(e,dmg,ty,col){try{const A=AR;if(A&&AR_CUR&&e&&e.hp>0&&dmg>0){const by=A.dmgBy||(A.dmgBy={});by[AR_CUR]=(by[AR_CUR]||0)+Math.min(dmg,e.hp);}}catch(_){}return _h.apply(this,arguments);};}
+/* DANOCONTA18NOV (auditoria do Buchecha na Arena: total e por monstrinho com regras diferentes; maldição contada errado; queimadura e poça fora da conta):
+   um lugar só conta o dano — a vida que o inimigo PERDEU de verdade (depois da maldição, sem passar do que ele tinha), no total e pra quem causou */
+function arConta(e,antes,src){try{const A=AR;if(!A||!e)return;const d=Math.max(0,antes-Math.max(0,e.hp));if(!(d>0))return;A.dmgT=(A.dmgT||0)+d;if(src){const by=A.dmgBy||(A.dmgBy={});by[src]=(by[src]||0)+d;}}catch(_){}}
+{const _h=arHit;arHit=function(e,dmg,ty,col){const antes=e&&e.hp>0?e.hp:0,src=AR_CUR;const r=_h.apply(this,arguments);if(antes>0)arConta(e,antes,src);return r;};}
 async function arStatsShow(A){try{const by=A.dmgBy||{},L=Object.entries(by).filter(([sp,d])=>SP[sp]&&d>0).sort((a,c)=>c[1]-a[1]).slice(0,6);if(!L.length)return;
   const out=L.map(([sp,d])=>({m:mk(sp,1),d:Math.round(d),g:null,cl:null}));let foot=null;
   if(A.mp){const P=A.mp.peer||{},en=window.CVLANG==='en';await duoCompare({n:en?'You':'Você',t:A.dmgT||0,L:Object.entries(by).filter(([sp,d])=>SP[sp]&&d>0)},{n:P.n||(en?'Partner':'Parceiro'),t:P.dm||0,L:Array.isArray(P.by)?P.by:[]},{jogo:'arena-'+A.mp.mode,host:A.mp.role==='host'});return;}

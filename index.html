@@ -10006,7 +10006,7 @@ function xpNovoTeam(mons,R,frac,ups,dur){const out=[];for(const m of mons){if(!m
 function mgAward(ctx,mons,xp,ups,cls){if(XPN!=null&&STG&&STG.i!=null&&!STG.miss){const fr=XPN;XPN=null;const D=(ctx&&ctx.dmg)||new Map();{const ex=[...D.keys()].filter(k=>k&&k.sp&&!mons.includes(k)&&(D.get(k)||0)>0);if(ex.length)mons=mons.concat(ex);}
     const R=stgRuler(STG.i),n=Math.max(1,mons.length),tot=mons.reduce((a,m)=>a+(D.get(m)||0),0),out=[];
     mons.forEach((m,mi)=>{const sh=tot>0?(D.get(m)||0)/tot:1/n,g=xpNovoG(m,R,fr,xpDur(STG.mode));/* todos do time ganham igual: 5 vitórias = 1 nível pra cada um */m.xp=Math.max(m.xp,m.lv**3)+g;mgLvUp(m,ups);out.push({m,sh,g,d:Math.round(D.get(m)||0),cl:cls?cls[mi]:null});});
-    const pts=tot>0?Math.max(1,Math.round(mgTrainPts()*Math.max(0,Math.min(1,fr)))):0;/* DESISTIR13NOV + PONTOSPROP18NOV (Felipe aprovou: pontos de treino de acordo com o quanto jogou; vitória = cheio) */flags.xpPts=(flags.xpPts||0)+pts;MGLAST={out,pts};return MGLAST;}
+    const pts=tot>0?Math.max(1,Math.round(mgTrainPts()*Math.max(0,Math.min(1,fr)))):0;/* DESISTIR13NOV + PONTOSPROP18NOV (Felipe aprovou: pontos de treino de acordo com o quanto jogou; vitória = cheio) */flags.xpPts=(flags.xpPts||0)+pts;MGLAST={out,pts,fr};/* STATSTXT19NOV: quanto da fase foi feito (pra explicar treino parcial) */try{const md=STG&&STG.mode,f2=Math.max(0,Math.min(1,fr));if(f2<1){const en=window.CVLANG==='en';MGLAST.prog=md==='wall'?(en?`${Math.round(f2*10)} of 10 waves`:`${Math.round(f2*10)} de 10 ondas`):md==='td'?(en?`${Math.round(f2*15)} of 15 waves`:`${Math.round(f2*15)} de 15 ondas`):(en?`${Math.round(f2*100)}% of the stage`:`${Math.round(f2*100)}% da fase`);}}catch(_){}return MGLAST;}
   XPN=null;const D=(ctx&&ctx.dmg)||new Map();{const ex=[...D.keys()].filter(k=>k&&k.sp&&!mons.includes(k)&&(D.get(k)||0)>0);if(ex.length)mons=mons.concat(ex);}const n=Math.max(1,mons.length),tot=mons.reduce((a,m)=>a+(D.get(m)||0),0),out=[];
   mons.forEach((m,mi)=>{const sh=tot>0?(D.get(m)||0)/tot:1/n,g=Math.max(1,Math.round(xp*MGDIRECT*n*sh));m.xp+=mgXP(m,g);mgLvUp(m,ups);out.push({m,sh,g,d:Math.round(D.get(m)||0),cl:cls?cls[mi]:null});});
   const pts=tot>0?mgTrainPts():0;/* DESISTIR13NOV (Felipe: 'abro a muralha, desisto logo e ganho pontos de treino sem fazer nada'): sem dano nenhum, sem pontos */flags.xpPts=(flags.xpPts||0)+pts;MGLAST={out,pts};return MGLAST;}
@@ -10015,7 +10015,7 @@ let MGLAST=null;
 function mgTrainPts(){const lv=Math.max(1,...party.map(m=>m.lv));return Math.max(1,Math.ceil(((lv+1)**3-lv**3)/5));}
 /* ESTATÍSTICA DA PARTIDA (todas as fases da Muralha, Torres e Horda): quem bateu mais, quanto e a % do dano */
 let DUOSTATS=null;/* DUOSTATS07NOV: na Muralha em dupla, embaixo da estatística vem o total de cada um */
-async function mgStatsShow(){if(DUOSTATS&&DUOSTATS.meL){const D0=DUOSTATS;DUOSTATS=null;const en=window.CVLANG==='en';await duoCompare({n:en?'You':'Você',t:D0.me,L:D0.meL},{n:D0.pn||(en?'Partner':'Parceiro'),t:D0.pa,L:D0.paL},{jogo:'muralha',host:!!D0.host});return;}if(!MGLAST||!MGLAST.out.length){DUOSTATS=null;return;}const st={t:0,L:MGLAST.out.slice().sort((a,c)=>c.d-a.d),pts:MGLAST.pts};if(DUOSTATS){const en=window.CVLANG==='en',f=n=>Math.round(n||0).toLocaleString(en?'en-US':'pt-BR');st.foot=`${en?'You':'Você'} ${f(DUOSTATS.me)}  ·  ${String(DUOSTATS.pn||(en?'Partner':'Parceiro')).slice(0,12)} ${f(DUOSTATS.pa)}`;DUOSTATS=null;}await choose(['x'],{mgstats:st});}
+async function mgStatsShow(){if(DUOSTATS&&DUOSTATS.meL){const D0=DUOSTATS;DUOSTATS=null;const en=window.CVLANG==='en';await duoCompare({n:en?'You':'Você',t:D0.me,L:D0.meL},{n:D0.pn||(en?'Partner':'Parceiro'),t:D0.pa,L:D0.paL},{jogo:'muralha',host:!!D0.host});return;}if(!MGLAST||!MGLAST.out.length){DUOSTATS=null;return;}const st={t:0,L:MGLAST.out.slice().sort((a,c)=>c.d-a.d),pts:MGLAST.pts,prog:MGLAST.prog||null};if(DUOSTATS){const en=window.CVLANG==='en',f=n=>Math.round(n||0).toLocaleString(en?'en-US':'pt-BR');st.foot=`${en?'You':'Você'} ${f(DUOSTATS.me)}  ·  ${String(DUOSTATS.pn||(en?'Partner':'Parceiro')).slice(0,12)} ${f(DUOSTATS.pa)}`;DUOSTATS=null;}await choose(['x'],{mgstats:st});}
 function drawMgStats(u){const st=u.cfg.mgstats;st.t++;const t=st.t,L=st.L,ap=Math.min(1,t/10),tot=L.reduce((a,o)=>a+o.d,0)||1;u.rects=[];u.boxR=null;
   b.fillStyle=`rgba(8,6,24,${.88*ap})`;b.fillRect(0,0,W,H);if(ap<1)return;
   const rh=34,cw=Math.min(W-12,176),ch=58+L.length*rh+40,cx=(W-cw)/2,cy=Math.max(8,(H-ch)/2);
@@ -16688,7 +16688,7 @@ const FPAD_EX=[['AGACHAMENTOS','SQUATS'],['FLEXÕES','PUSH-UPS'],['POLICHINELOS'
 const FPAD_IMG={};setTimeout(()=>{try{fpadImg('assets/fpad/simbolo.png');}catch(e){}},6000);function fpadImg(src){let im=FPAD_IMG[src];if(!im){im=new Image();im.decoding='async';im.src=src;FPAD_IMG[src]=im;}return im.complete&&im.naturalWidth?im:null;}
 function fpadL(pt,en){return window.CVLANG==='en'?en:pt;}
 /* ANUNCIO2_11NOV (Felipe: 'nas fases difíceis tem que assistir 1 ou 2 comerciais'): 2 anúncios por partida nas 2 fases antes/no chefe, 1 nas outras */function fpadMax(w){try{return STG&&(STG.mode==='wall'||STG.mode==='td')&&STG.i!=null&&STG.i%5>=3?2:1;}catch(e){return 1;}}function fpadCan(w){const cs=w&&w.cards;return !!(cs&&!w.duo&&!w.duoG&&!cs.dois&&(w.fpadUsed||0)<fpadMax(w)&&!w.fpad&&cs.opts.length>1);}
-function fpadStart(w){const n=flags.fpadN||0;w.fpad={t0:performance.now(),ex:FPAD_EX[n%FPAD_EX.length],exi:n%FPAD_EX.length,cs:w.cards,ct:w.cards.t||0,vz:{}};flags.fpadN=n+1;w.fpadUsed=(w.fpadUsed||0)+1;try{tone([523,659,784],.06);}catch(e){}try{saveGame();}catch(e){}}
+function fpadStart(w){const n=flags.fpadN||0;w.fpad={t0:performance.now(),ex:FPAD_EX[n%FPAD_EX.length],exi:n%FPAD_EX.length,cs:w.cards,ct:w.cards.t||0,vz:{}};flags.fpadN=n+1;/* AJUDAFIM19NOV (auditoria Muralha): a ajuda só conta como usada quando o prêmio é entregue (fechar antes não gasta) */try{tone([523,659,784],.06);}catch(e){}try{saveGame();}catch(e){}}
 /* FPADVOZ10NOV: voz do Felipe (ElevenLabs "Felipe P") — abertura, contagem 1..8 no ritmo do exercício (a cada 2,4s) e "Muito bem!".
    Aberturas de agachamento, flexão e polichinelo gravadas (11/nov). Só em português. */
 const FPAD_VD='assets/fpad/voz/',FPAD_AB=['fpad_abertura','fpad_abertura_flexao','fpad_abertura_polichinelo'],FPAD_C0=11,FPAD_CS=2.4;
@@ -16701,7 +16701,7 @@ function fpadTF(A,done){const el=(performance.now()-A.t0)/1000;if(done){const a=
 setTimeout(()=>{try{for(const s of FPAD_EXS)fpadImg(s);}catch(e){}},8000);
 function fpadRep(A){const el=(performance.now()-A.t0)/1000;return el<FPAD_C0?0:Math.min(8,1+Math.floor((el-FPAD_C0)/FPAD_CS));}
 function fpadLeft(w){return Math.max(0,FPAD_S-(performance.now()-w.fpad.t0)/1000);}
-function fpadDone(w){const A=w.fpad,cs=A.cs;w.fpad=null;if(w.cards!==cs)return;flags.fpadTot=(flags.fpadTot||0)+1;try{saveGame();}catch(e){}if(typeof TD!=='undefined'&&w===TD){tdTakeAll(w,cs);return;}mcTakeAll(w,cs);}
+function fpadDone(w){const A=w.fpad,cs=A.cs;w.fpad=null;if(w.cards!==cs)return;w.fpadUsed=(w.fpadUsed||0)+1;flags.fpadTot=(flags.fpadTot||0)+1;try{saveGame();}catch(e){}if(typeof TD!=='undefined'&&w===TD){tdTakeAll(w,cs);return;}mcTakeAll(w,cs);}
 function fpadDraw(w,t){const A=w.fpad;if(!A)return;if(w.cards!==A.cs){w.fpad=null;return;}A.cs.t=A.ct;/* o tempo da escolha fica parado durante o anúncio */
   const left=fpadLeft(w),done=left<=0,sec=Math.ceil(left),ex=fpadL(A.ex[0],A.ex[1]);texts=[];
   const rp=fpadRep(A);if(!done){if(performance.now()-A.t0>200)fpadVoz(A,'ab',FPAD_AB[A.exi]);if(rp>0)fpadVoz(A,'c'+rp,'fpad_'+rp);}else fpadVoz(A,'fim','fpad_fim');
@@ -18272,14 +18272,14 @@ const SL={titulo:[123,150,305,63],sub:[84,263,400,44],rk:[{posicao:[61,377,40,30
 const _ds=drawMgStats;
 drawMgStats=function(u){const st=u.cfg.mgstats;if(!st||!okI('est'))return _ds(u);
   st.t++;const t=st.t,ap=Math.min(1,t/10),L=st.L.slice().sort((a,b)=>(b.d||0)-(a.d||0)).slice(0,4),tot=st.L.reduce((a,o)=>a+o.d,0)||1;u.boxR=null;u.rects=t>40?[{x:0,y:0,w:W,h:H,i:0}]:[];base('est',ap);if(ap<1)return;
-  tx(L2('ESTATÍSTICAS','STATISTICS'),SL.titulo,44,'#fff6e0','center','#1a2a6a');tx(L2('Quem bateu mais nesta partida','Who hit the most this match'),SL.sub,24,'#1e2a6a');
+  tx(L2('ESTATÍSTICAS','STATISTICS'),SL.titulo,44,'#fff6e0','center','#1a2a6a');tx(L2('Quem bateu mais · % = parte do dano da equipe','Who hit the most · % = share of team damage'),SL.sub,24,'#1e2a6a');
   SL.rk.forEach((R,i)=>{const o=L[i];if(!o){const [x,y,w,h]=P([55,R.cab[1]-12,457,R.dx[1]+R.dx[3]-R.cab[1]+18]);rrect(x,y,w,h,8*KK().k,'#f7ebd2',false);return;}
     if(t<=10+i*6)return;const kk=Math.min(1,(t-10-i*6)/24),pc=o.d/tot,mvp=i===0&&o.d>0;
     tx(`${i+1}º`,R.posicao,26,'#2a1f14');portrait(monKey(o.m),R.retrato,1.6);
     tx(nm(o.m),[R.cab[0],R.cab[1],200,R.cab[3]],26,'#1e2a6a','left');tx(`${Math.round(pc*100*kk)}%`,[R.cab[0]+200,R.cab[1],R.cab[2]-200,R.cab[3]],28,mvp?'#8a3a00':'#1e2a6a','right');
     if(pc>0){const [x,y,w,h]=P(R.barra),fw=Math.max(h,w*pc*kk);const g=b.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'#7fd0ff');g.addColorStop(1,'#2a7ae0');b.save();rpath(x+1,y+1,fw-2,h-2,h/2);b.fillStyle=g;b.fill();b.fillStyle='rgba(255,255,255,.35)';b.fillRect(x+2,y+1.5,fw-4,h*.28);b.restore();}
     tx(`${fmt(o.d*kk)} ${L2('de dano','damage')}`+(o.g!=null?`  ·  +${o.g} XP`:''),R.dx,18,'#3a2a1a','left');});
-  if(t>30&&st.pts!=null){const r=SL.treino;tx(`+${fmt(st.pts)} ${L2('pontos de treino','training points')}`,[r[0]+8,r[1],r[2]-8,r[3]*.55],26,'#1e2a6a');tx(L2('Use no Menu › Treino','Use it in Menu › Training'),[r[0],r[1]+r[3]*.55,r[2],r[3]*.45],18,'#2a3a7a');}
+  if(t>30&&st.pts!=null){const r=SL.treino;tx(`+${fmt(st.pts)} ${L2('pontos de treino','training points')}`,[r[0]+8,r[1],r[2]-8,r[3]*.55],26,'#1e2a6a');tx(st.prog?L2(`Parcial: ${st.prog} · use no Menu › Treino`,`Partial: ${st.prog} · use in Menu › Training`):L2('Use no Menu › Treino','Use it in Menu › Training'),[r[0],r[1]+r[3]*.55,r[2],r[3]*.45],18,'#2a3a7a');}
   if(t>30&&st.foot)tx(st.foot,[110,990,407,30],18,'#1e2a6a');
   if(t>40)tx(L2('CONTINUAR','CONTINUE'),SL.cont,34,'#ffffff','center','#0e1a5a');};
 setTimeout(()=>{for(const k in MRU)if(!okI(k)){const i=new Image();i.src=MRU[k];MRB[k]=i;}},5000);

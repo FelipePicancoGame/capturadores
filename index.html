@@ -18250,7 +18250,7 @@ try{Object.assign(window.CVEN||{},{'Enfermeira':'Nurse','Prontinho! Todos recupe
 /* MURRES08NOV (Felipe mandou Muralha_Resultados_03 · Salão dos Troféus): telas de VITÓRIA/FIM e ESTATÍSTICAS da Muralha com as bases novas do Buchecha (sem texto).
    Todo texto é escrito pelo jogo (PT/EN); valores, nomes, retratos e porcentagens vêm da partida. Retângulos do LAYOUT.json (base 627x1254). */
 (function(){try{
-const MRU={vit:'assets/murres/vit.webp',est:'assets/murres/est.webp'},MRB={};
+const MRU={vit:'assets/murres/vit.webp',est:'assets/murres/est2.webp'/* ESTXP19NOV: arte nova do Buchecha com trilho verde de XP (aprovada pelo Felipe 19/nov) */},MRB={};
 for(const k in MRU){const i=new Image();i.decoding='async';i.src=MRU[k];MRB[k]=i;}
 const okI=k=>MRB[k]&&MRB[k].complete&&MRB[k].naturalWidth>0;
 const EN=()=>window.CVLANG==='en',L2=(pt,en)=>EN()?en:pt;
@@ -18297,7 +18297,7 @@ drawResult=function(u){const R2=u.cfg.result;if(!R2||!RES_KEYS[R2.key]||!okI('vi
     if(sp&&t>34){portrait(sp,VL.mr,1.7);tx(R2.mvpName||'',VL.mn,30,'#1e2a6a','left');tx(`${fmt(mx)} ${L2('de dano','damage')}`,VL.md,20,'#5a3410');}}
   if(t>30)tx(L2('CONTINUAR','CONTINUE'),VL.cont,34,'#ffffff','center','#0e1a5a');};
 /* ---------- ESTATÍSTICAS ---------- */
-const SL={titulo:[123,150,305,63],sub:[84,263,400,44],rk:[{posicao:[61,377,40,30],retrato:[113,364,68,65],cab:[205,337,287,42],barra:[208,386,280,12],dx:[205,403,287,33]},{posicao:[61,503,40,30],retrato:[113,487,68,65],cab:[205,467,287,39],barra:[208,513,280,12],dx:[205,530,287,32]},{posicao:[61,624,40,30],retrato:[113,605,68,65],cab:[205,588,287,38],barra:[208,632,280,12],dx:[205,649,287,32]},{posicao:[61,740,40,30],retrato:[113,722,68,65],cab:[205,706,287,37],barra:[208,749,280,12],dx:[205,766,287,32]}],
+const SL={titulo:[123,150,305,63],sub:[84,263,400,44],rk:[{posicao:[61,377,40,30],retrato:[113,364,68,65],cab:[205,337,287,31],barra:[207,385,283,14],dx:[205,426,287,17],xpb:[205,410,150,12],xpt:[362,407,133,18]},{posicao:[61,503,40,30],retrato:[113,487,68,65],cab:[205,467,287,31],barra:[207,512,283,14],dx:[205,554,287,17],xpb:[205,538,150,12],xpt:[362,535,133,18]},{posicao:[61,624,40,30],retrato:[113,605,68,65],cab:[205,588,287,31],barra:[207,632,283,14],dx:[205,672,287,17],xpb:[205,656,150,12],xpt:[362,653,133,18]},{posicao:[61,740,40,30],retrato:[113,722,68,65],cab:[205,706,287,31],barra:[207,749,283,14],dx:[205,789,287,17],xpb:[205,773,150,12],xpt:[362,770,133,18]}],
   treino:[151,876,295,72],cont:[97,1054,371,80]};
 const _ds=drawMgStats;
 drawMgStats=function(u){const st=u.cfg.mgstats;if(!st||!okI('est'))return _ds(u);
@@ -18308,9 +18308,10 @@ drawMgStats=function(u){const st=u.cfg.mgstats;if(!st||!okI('est'))return _ds(u)
     tx(`${i+1}º`,R.posicao,26,'#2a1f14');portrait(monKey(o.m),R.retrato,1.6);
     tx(nm(o.m),[R.cab[0],R.cab[1],200,R.cab[3]],26,'#1e2a6a','left');tx(`${Math.round(pc*100*kk)}%`,[R.cab[0]+200,R.cab[1],R.cab[2]-200,R.cab[3]],28,mvp?'#8a3a00':'#1e2a6a','right');
     if(pc>0){const [x,y,w,h]=P(R.barra),fw=Math.max(h,w*pc*kk);const g=b.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'#7fd0ff');g.addColorStop(1,'#2a7ae0');b.save();rpath(x+1,y+1,fw-2,h-2,h/2);b.fillStyle=g;b.fill();b.fillStyle='rgba(255,255,255,.35)';b.fillRect(x+2,y+1.5,fw-4,h*.28);b.restore();}
-    tx(`${fmt(o.d*kk)} ${L2('de dano','damage')}`+(o.g!=null?`  ·  +${o.g} XP`:''),R.dx,18,'#3a2a1a','left');});
+    tx(`${fmt(o.d*kk)} ${L2('de dano','damage')}`+(o.g!=null?`  ·  +${o.g} XP`:''),R.dx,16,'#3a2a1a','center');
+    /* ESTXP19NOV: trilho verde = quanto falta pro próximo nível (valor real do monstrinho) */if(o.g!=null&&o.m&&o.m.lv&&R.xpb){const lv=o.m.lv,a0=lv**3,a1=(lv+1)**3,fr=Math.max(0,Math.min(1,((o.m.xp||0)-a0)/(a1-a0)));const [x,y,w,h]=P(R.xpb),fw=Math.max(fr>0?h:0,(w-2)*fr*kk);if(fw>0){const g=b.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'#9cf06a');g.addColorStop(1,'#2f9a2a');b.save();rpath(x+1,y+1,fw,h-2,(h-2)/2);b.fillStyle=g;b.fill();b.restore();}tx(`${L2('Nv','Lv')}${lv} → ${lv+1}: ${Math.round(fr*100)}%`,R.xpt,15,'#1d5a1d','right');}});
   if(t>30&&st.pts!=null){const r=SL.treino;tx(`+${fmt(st.pts)} ${L2('pontos de treino','training points')}`,[r[0]+8,r[1],r[2]-8,r[3]*.55],26,'#1e2a6a');tx(st.prog?L2(`Parcial: ${st.prog} · use no Menu › Treino`,`Partial: ${st.prog} · use in Menu › Training`):L2('Use no Menu › Treino','Use it in Menu › Training'),[r[0],r[1]+r[3]*.55,r[2],r[3]*.45],18,'#2a3a7a');}
-  if(t>30&&st.foot)tx(st.foot,[110,990,407,30],18,'#1e2a6a');else if(t>30&&st.L.length>4){/* TOR07_19NOV: mostra quanto ficou com quem não coube nas 4 linhas */const rest=st.L.slice().sort((a,b)=>(b.d||0)-(a.d||0)).slice(4),rd=rest.reduce((a,o)=>a+(o.d||0),0);tx(L2(`+${rest.length} outros: ${Math.round(rd/tot*100)}% do dano`,`+${rest.length} others: ${Math.round(rd/tot*100)}% of damage`),[110,990,407,30],18,'#1e2a6a');}
+  if(t>30&&st.foot)tx(st.foot,[115,815,370,22],17,'#1e2a6a');else if(t>30&&st.L.length>4){/* TOR07_19NOV: mostra quanto ficou com quem não coube nas 4 linhas */const rest=st.L.slice().sort((a,b)=>(b.d||0)-(a.d||0)).slice(4),rd=rest.reduce((a,o)=>a+(o.d||0),0);tx(L2(`+${rest.length} outros: ${Math.round(rd/tot*100)}% do dano`,`+${rest.length} others: ${Math.round(rd/tot*100)}% of damage`),[115,815,370,22],17,'#1e2a6a');}
   if(t>40)tx(L2('CONTINUAR','CONTINUE'),SL.cont,34,'#ffffff','center','#0e1a5a');};
 setTimeout(()=>{for(const k in MRU)if(!okI(k)){const i=new Image();i.src=MRU[k];MRB[k]=i;}},5000);
 }catch(e){console.warn('murres',e);}})();

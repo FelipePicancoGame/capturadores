@@ -12136,7 +12136,7 @@ function arFxTop(A,G2,t){try{
     /* queimando: chamas no corpo */
     if(e.burnT>0){b.save();b.globalCompositeOperation='lighter';for(let j=0;j<3;j++){const fx=q.x-4+j*4+Math.sin(t/3+j)*.8,fy=cy+2-((t+j*5)%10)*.5,s2=1-((t+j*5)%10)/12;E(fx,fy,1.6*s2+.6,2.6*s2+.6,'#ff7a1a',0,false);E(fx,fy+.4,.8*s2+.3,1.4*s2+.3,'#ffe060',0,false);}b.restore();}
     /* ícones do estado em cima */
-    const ic=arFxIcons(e);if(ic.length){const by=q.y-hh-(e.boss?10:3),w=ic.length*6.4;b.save();b.globalAlpha=.85;rrect(q.x-w/2-1,by-3.6,w+2,7.2,3.6,'rgba(15,10,30,.6)',false);b.restore();ic.forEach((s2,j)=>T(s2,q.x-w/2+3.2+j*6.4,by-2.9,4.6,'center','#ffffff'));}}
+    const ic=[];/* SEMICONE19NOV (Felipe: 'os ícones tira') */if(ic.length){const by=q.y-hh-(e.boss?10:3),w=ic.length*6.4;b.save();b.globalAlpha=.85;rrect(q.x-w/2-1,by-3.6,w+2,7.2,3.6,'rgba(15,10,30,.6)',false);b.restore();ic.forEach((s2,j)=>T(s2,q.x-w/2+3.2+j*6.4,by-2.9,4.6,'center','#ffffff'));}}
   /* quem lançou: casa acende com o nome do poder */
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u||!(u.castT>0))continue;const c=arCellXY(i),a=u.castT/34,cs=G2.cs;b.save();b.globalCompositeOperation='lighter';b.globalAlpha=.08+.16*a;rrect(c.x-cs/2+1,c.y-cs/2+1,cs-2,cs-2,4,u.castCol||'#ffffff',false);b.restore();
     b.save();b.globalAlpha=Math.min(1,a*2);b.strokeStyle=u.castCol||'#fff';b.lineWidth=1.4;b.beginPath();b.roundRect(c.x-cs/2+.5,c.y-cs/2+.5,cs-1,cs-1,5);b.stroke();

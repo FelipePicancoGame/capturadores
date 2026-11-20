@@ -1,2 +1,5 @@
 t*.html
 !index.html
+audit.html
+teste-codex/*.png
+teste/

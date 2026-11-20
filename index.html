@@ -32,6 +32,27 @@ html body #cv-novas .nvf-next:active{transform:translateY(.6cqw);box-shadow:0 .4
  html body #cv-novas .nvf-next{bottom:calc(env(safe-area-inset-bottom,0px) + 4%)}
 }
 </style>
+<script>/* COPIA_TESTE_CODEX (20/nov) — SÓ NA BRANCH codex-arena-teste. NÃO LEVAR PARA A main.
+   Isola esta cópia do jogo oficial mesmo se rodar na mesma origem:
+   1) todo localStorage/sessionStorage ganha o prefixo "TESTE_CODEX::" (o save real 'capturadores-vale-v1' nunca é lido nem escrito);
+   2) service worker desligado (não registra, não usa Cache Storage);
+   3) rede de dados desligada: Google Apps Script (jogadores, reports, presentes, dupla) e Supabase (FPimpulse) respondem {"ok":1} falso;
+   4) primeira abertura carrega o save de teste teste-codex/save_teste.json; ?reset=1 apaga e recarrega o save de teste;
+   5) faixa vermelha "CÓPIA DE TESTE" no topo. */
+(function(){var P='TESTE_CODEX::',SP=Storage.prototype,g=SP.getItem,s=SP.setItem,r=SP.removeItem,k=SP.key,c=SP.clear,ln=Object.getOwnPropertyDescriptor(SP,'length');
+ function own(st){var o=[];for(var i=0;i<ln.get.call(st);i++){var n=k.call(st,i);if(n&&n.indexOf(P)===0)o.push(n);}return o;}
+ SP.getItem=function(n){return g.call(this,P+n);};SP.setItem=function(n,v){return s.call(this,P+n,v);};SP.removeItem=function(n){return r.call(this,P+n);};
+ SP.key=function(i){var o=own(this)[i];return o?o.slice(P.length):null;};SP.clear=function(){var t=this;own(t).forEach(function(n){r.call(t,n);});};
+ try{Object.defineProperty(SP,'length',{configurable:true,get:function(){return own(this).length;}});}catch(e){}
+ try{if(navigator.serviceWorker){navigator.serviceWorker.register=function(){return Promise.reject(new Error('SW desligado na cópia de teste'));};}}catch(e){}
+ var BLOQ=/script\.google\.com|script\.googleusercontent\.com|supabase\.co/;
+ var _f=window.fetch;window.fetch=function(u,o){var url=typeof u==='string'?u:(u&&u.url)||'';if(BLOQ.test(url)){console.log('[TESTE] rede bloqueada:',url.slice(0,80));return Promise.resolve(new Response('{"ok":1,"teste":1,"premios":[]}',{status:200,headers:{'content-type':'application/json'}}));}return _f.apply(this,arguments);};
+ try{navigator.sendBeacon=function(){return true;};}catch(e){}
+ var q=location.search;if(/[?&]reset=1/.test(q)){own(localStorage).forEach(function(n){r.call(localStorage,n);});}
+ if(g.call(localStorage,P+'capturadores-vale-v1')==null){try{var x=new XMLHttpRequest();x.open('GET','teste-codex/save_teste.json',false);x.send();if(x.status===200){s.call(localStorage,P+'capturadores-vale-v1',x.responseText);s.call(localStorage,P+'cv.lang','pt');}}catch(e){console.warn('[TESTE] save de teste não carregou',e);}}
+ window.CV_TESTE=1;
+ addEventListener('DOMContentLoaded',function(){var b=document.createElement('div');b.textContent='CÓPIA DE TESTE · não é o jogo oficial';b.style.cssText='position:fixed;left:0;right:0;top:0;z-index:2147483647;pointer-events:none;background:rgba(200,0,0,.75);color:#fff;font:700 10px sans-serif;text-align:center;padding:1px 0';document.body.appendChild(b);});
+})();</script>
 <script>/* RECOR09NOV (Felipe: 'Brasinha azul… consegue trocar a cor dele?' → 'Vermelho'): Brasinha e Brasalor são de Fogo e a arte era azul. Toda imagem deles (retrato, animações, costas, Arena, Muralha, carta) é pintada de vermelho quando carrega: só o azul vira vermelho, o resto (contorno, barriga, brilho) fica igual. */
 try{(function(){const SET=new Set(["assets/cartas/brasalor_a.webp", "assets/cartas/brasalor_b.webp", "assets/cartas/brasinha.webp", "assets/monstros/brasalor.webp", "assets/monstros/brasinha.webp", "assets/outros/brasinha.webp", "blobs/01333a5112553d8ebc1342190545428b.webp", "blobs/094db2f8bd30d010b732ab4b8d971258.webp", "blobs/10d6612c3a094474a74de2baa1f97517.webp", "blobs/13bb6751e67c6272a56a91c5ec477ba8.webp", "blobs/15ea55362fec25863c2db647902bd36d.webp", "blobs/1ab28dc646e8b181d4f50d13499e48bd.webp", "blobs/248da0f2a64e83b0dcb18e3937d1fde1.webp", "blobs/37f0596cb948cfa9e6993ceb34d9b651.webp", "blobs/3b23f7ca69dd3945119641626234cefa.webp", "blobs/455fbe584f44a24cd8dedea872435afe.webp", "blobs/4d9d9f6e7a65a0314f99fd200b5f45fd.webp", "blobs/50e861bf3d9f84d8fe6412a905fe78c2.webp", "blobs/5411af6f816a2a6384eafa2d97e9b02d.webp", "blobs/6aa64ae8082a9694ca4d5c4897eb2be9.webp", "blobs/7d573dd1c5e84cc5fa66f5b455efbe21.webp", "blobs/97b996850bf15de5e7e35531b3c739c4.webp", "blobs/a1742d22e22f2c337b3bc1a478397941.webp", "blobs/a4942cac451f6191b5b81a201cd80955.webp", "blobs/a85bb3350cc83be38293335238bd264c.webp", "blobs/arv_brasalor.webp", "blobs/arv_brasinha.webp", "blobs/b41f8dfdee7c57702f69c5c8f92dd201.webp", "blobs/bddb3ed49897f16dc5fed3450dc6b081.webp", "blobs/c2e1a7b488d855c07c1afa54c3e348b5.webp", "blobs/c6ffd82f7c078ca2fb0cb3cd0add83b6.webp", "blobs/ce1b99f9f34b1ed1f76ea4f4c136839f.webp", "blobs/e0011240bc3dc9f7315c861887cafb27.webp", "blobs/f4278d00509caf31c878ee775f97a232.webp", "blobs/f87b18411b0cad078a535398cc465b36.webp", "blobs/fe109f9d77a5cfb16cf0f5217848c282.webp"]),D=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src');if(!D||!D.set)return;
   const norm=v=>{v=String(v||'');const i=v.indexOf('/_blob/');if(i>=0)return v.slice(i);const j=v.search(/(assets|blobs)\//);return j>=0?v.slice(j):v;};

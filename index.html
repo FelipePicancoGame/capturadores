@@ -572,7 +572,7 @@ window.CVNovasHistoriasDados={"versao": 1, "status": "PROPOSTAS_NOVAS_EM_COPIA_D
 }catch(e){}})();
 </script>
 <style>html,body{margin:0;padding:0;background:#0b0d18}#tbtn,#tban{display:none!important}</style>
-<style>/* BOTOES09NOV (Felipe: 'sobe o botão de continuar e de voltar, tá muito próximo do final da tela') */html body #cv-chapter .c1-nav{bottom:11%!important}</style></head><body>
+<style>/* BOTOES09NOV (Felipe: 'sobe o botão de continuar e de voltar, tá muito próximo do final da tela') */html body #cv-chapter .c1-nav{bottom:11%!important}</style><style>/* FRENTE20NOV (Felipe: 'tira o jump e o report da frente'): com a loja aberta o PULAR e a joaninha somem */body:has(#ljBox) #cvJump,body:has(#ljBox) #rpBtn{display:none!important}</style></head><body>
 
 
 <style>
@@ -10475,7 +10475,10 @@ function ljInfo(i){const o=LOJAREAL[i]||{},sub=String(o.sub||''),p=sub.lastIndex
   const own=(i===6&&typeof unlOk==='function'&&unlOk('fast'))||(i===7&&typeof unlOk==='function'&&unlOk('auto'))||(i===5&&typeof flags!=='undefined'&&['estrelim','trovim'].every(k=>(flags.dex||{})[k]));let pr2=pr;try{if(window.CVPRECO){const q=CVPRECO(0,i);if(q)pr2=q;}}catch(_){}return {ben,pr:pr2,own,gem:/💎/.test(sub)};}
 /* MOEDASREAL09NOV (Felipe 09/nov: 'coloca' pacotes de moedas): 2ª página da loja com 6 pacotes de moedas. Preços provisórios; pagamento ainda não ligado. */
 const LOJAMOEDAS=[{c:5000,pr:'US$ 0,99'},{c:12000,pr:'US$ 1,99'},{c:30000,pr:'US$ 4,99'},{c:70000,pr:'US$ 9,99'},{c:150000,pr:'US$ 19,99'},{c:400000,pr:'US$ 49,99'}];
-try{Object.assign(window.CVEN||{},{'SEM<br>ANÚNCIOS':'NO<br>ADS','140% sempre':'140% always','MOEDAS':'COINS','PACOTE DE':'PACK OF','MAIS':'MORE','VOLTAR':'BACK'});}catch(e){}
+/* MONNOVO20NOV (Felipe: 'coloque à venda também o monstrinho novo do que vamos lançar sempre'): na 2ª página da loja, o monstrinho NOVO da vez.
+   Trocar a espécie aqui a cada lançamento (MONNOVO_SP). Compra consumível (com.capturadoresdovale.app.monstronovo): dá o monstrinho no nível do time. */
+const MONNOVO_SP='estrelim';function monNovo(){return (window.SP&&SP[MONNOVO_SP])?MONNOVO_SP:'estrelim';}
+try{Object.assign(window.CVEN||{},{'MONSTRINHO NOVO':'NEW MONSTER','MONSTRINHO<br>NOVO':'NEW<br>MONSTER','SEM ANÚNCIOS':'NO ADS'/* SEMADSEN20NOV */,'SEM<br>ANÚNCIOS':'NO<br>ADS','140% sempre':'140% always','MOEDAS':'COINS','PACOTE DE':'PACK OF','MAIS':'MORE','VOLTAR':'BACK'});}catch(e){}
 /* LOJAEN10NOV (chefe de tradução; roadmap "nomes da loja em português no modo inglês"): a Loja escrevia o texto direto, sem traduzir,
    e os nomes vinham quebrados em 2 linhas ("PUNHADO DE<br>CRISTAIS"), então nem a tradução palavra por palavra pegava a frase inteira.
    Agora: junta as linhas, traduz a frase INTEIRA, quebra de novo no meio; preço e milhar no formato inglês ($0.99 · 1,200). */
@@ -10505,10 +10508,10 @@ function lojaReal(pg0){return new Promise(res=>{
   const close=()=>{removeEventListener('resize',fit);clearInterval(tk);box.remove();res();};
   const CW=el('div',[0,0,1080,1920],'pointer-events:none');
   const render=(pg)=>{CW.innerHTML='';cards.length=0;sel=-1;
-  LJP.c.forEach((p,i)=>{if(pg===1&&i===7)return;const vip=pg===1&&i===6;if(vip&&!window.CVLOJAOK)return;const x=p[0],y=p[1],fe=i===8,mo=pg===1&&!fe&&!vip,M=mo?LOJAMOEDAS[i]:null,inf=fe?{ben:pg?'Cristais':'Moedas',pr:'',own:false}:vip?{ben:'140% sempre',pr:(window.CVPRECO&&CVPRECO(1,6))||'US$ 4,99',own:typeof unlOk==='function'&&unlOk('semads')}:mo?{ben:M.c.toLocaleString('pt-BR'),pr:(window.CVPRECO&&CVPRECO(1,i))||M.pr,own:false,coin:1}:ljInfo(i);
+  LJP.c.forEach((p,i)=>{const nv=pg===1&&i===7;if(nv&&!window.CVLOJAOK)return;const vip=pg===1&&i===6;if(vip&&!window.CVLOJAOK)return;const x=p[0],y=p[1],fe=i===8,mo=pg===1&&!fe&&!vip&&!nv,NSP=monNovo(),M=mo?LOJAMOEDAS[i]:null,inf=fe?{ben:pg?'Cristais':'Moedas',pr:'',own:false}:nv?{ben:(SP[NSP]&&SP[NSP].name)||NSP,pr:(window.CVPRECO&&CVPRECO(1,7))||'US$ 4,99',own:false}:vip?{ben:'140% sempre',pr:(window.CVPRECO&&CVPRECO(1,6))||'US$ 4,99',own:typeof unlOk==='function'&&unlOk('semads')}:mo?{ben:M.c.toLocaleString('pt-BR'),pr:(window.CVPRECO&&CVPRECO(1,i))||M.pr,own:false,coin:1}:ljInfo(i);
     const c=el('div',[x,y,300,440],'cursor:pointer;pointer-events:auto',CW);const bg=img(LJU.lj_cartao,[0,0,300,440],c);
-    if(fe&&pg===0){img(LJU.lj_moeda,[75,40,150,150],c);}else if(fe)img(LJU.lj_cristal,[75,40,150,150],c);else if(mo){const k=Math.min(5,1+i);for(let q=0;q<k;q++)img(LJU.lj_moeda,[70+((q*53)%110),30+q*22-(k>3?20:0),120,120],c);}else img(LJU['lj_prod_'+(i+1)],[30,20,240,190],c);
-    img(LJU.lj_nome,[10,218,280,80],c);txt(fe?(pg===0?'MAIS<br>MOEDAS':'VOLTAR'):vip?'SEM<br>ANÚNCIOS':mo?'PACOTE DE<br>MOEDAS':LJN[i],[24,222,252,70],fe?32:29,'#fff',c,OUT);
+    if(fe&&pg===0){img(LJU.lj_moeda,[75,40,150,150],c);}else if(fe)img(LJU.lj_cristal,[75,40,150,150],c);else if(nv){img('assets/monstros/'+NSP+'.webp',[40,14,220,200],c,'object-fit:contain');}else if(mo){const k=Math.min(5,1+i);for(let q=0;q<k;q++)img(LJU.lj_moeda,[70+((q*53)%110),30+q*22-(k>3?20:0),120,120],c);}else img(LJU['lj_prod_'+(i+1)],[30,20,240,190],c);
+    img(LJU.lj_nome,[10,218,280,80],c);txt(fe?(pg===0?'MAIS<br>MOEDAS':'VOLTAR'):nv?'MONSTRINHO<br>NOVO':vip?'SEM<br>ANÚNCIOS':mo?'PACOTE DE<br>MOEDAS':LJN[i],[24,222,252,70],fe?32:29,'#fff',c,OUT);
     img(LJU.lj_beneficio,[20,302,260,45],c);
     if(!fe&&inf.gem)img(LJU.lj_cristal,[32,306,38,38],c);if(!fe&&inf.coin)img(LJU.lj_moeda,[32,306,38,38],c);const ic=!fe&&(inf.gem||inf.coin);
     txt(inf.ben,[ic?66:28,302,ic?200:244,45],26,'#3a2a10',c);
@@ -17619,6 +17622,7 @@ if(window.CVNATIVO){try{document.documentElement.classList.add('cvnativo');}catc
   const L1=[5000,12000,30000,70000,150000,400000].map(c=>({id:'moedas'+c,t:'CONSUMABLE',g:()=>{flags.coins=(flags.coins||0)+c;return '+'+c.toLocaleString('pt-BR')+(en()?' coins':' moedas');}}));
   /* SEMADS15NOV (Felipe: 'vende não ver o anúncio pra ganhar os 140 direto'): compra única — sem anúncio entre fases, prêmio da fase 140% direto e os vídeos com prêmio viram prêmio na hora */
   L1.push({id:'semanuncios',t:'NON_CONSUMABLE',g:()=>{(flags.unl||(flags.unl={})).semads=1;return en()?'No ads forever! Prizes at 140%.':'Sem anúncios pra sempre! Prêmios a 140%.';}});
+  L1.push({id:'monstronovo',t:'CONSUMABLE',g:()=>{const sp=monNovo();try{const w=grantMon(sp,typeof teamAvg==='function'?teamAvg():10);setTimeout(()=>{try{revealMon(sp,w);}catch(_){}},400);}catch(_){}return SP[sp].name;}});/* MONNOVO20NOV: índice 7 da página 1 */
   const ALL=L0.concat(L1),BY={};ALL.forEach(o=>BY[P+o.id]=o);
   function passeTick(){try{const p=flags.passe;if(!p||!(p.ate>Date.now()))return;const d=new Date().toDateString();if(p.dia===d)return;p.dia=d;gem(50);saveGame();rwToast(en()?'Month pass: +50 💎 today!':'Passe do mês: +50 💎 de hoje!');}catch(_){}}
   setInterval(passeTick,60000);setTimeout(passeTick,8000);
@@ -18593,7 +18597,7 @@ try{(function(){
     el.style.cssText='position:fixed;left:max(4px,env(safe-area-inset-left,0px));top:calc(42% - 44px);z-index:10059;padding:0 10px;height:34px;border-radius:17px;border:2px solid #154c5e;background:#fffaf0;color:#154c5e;font:700 14px Fredoka,system-ui,sans-serif;box-shadow:0 2px 0 rgba(0,0,0,.35);opacity:.9;display:none;touch-action:manipulation';
     ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup'].forEach(ev=>el.addEventListener(ev,e=>e.stopPropagation(),{passive:true}));
     el.addEventListener('click',e=>{e.stopPropagation();jump();});document.body.appendChild(el);}
-  function vis(){try{if(document.getElementById('cv-chapter')||document.querySelector('#cv-novas .nv-board,.c1-modal'))return false;const rb=document.getElementById('rpBtn');if(rb&&getComputedStyle(rb).display==='none')return false;if(G.mode==='world')return !busy&&!(ui&&ui.length);if(G.mode==='surv')return !!(SV&&SV.pl&&!SV.cards&&!SV.paused&&!SV.ask&&!(ui&&ui.length)&&!SV.over&&!SV.result&&!(typeof busy!=='undefined'&&busy&&SV.pl.hp<=0));/* SVAUD18NOV H09: some nas telas de resultado */}catch(e){}return false;}
+  function vis(){try{if(document.getElementById('cv-chapter')||document.getElementById('ljBox')/* PULOLOJA20NOV: o PULAR ficava em cima da loja */||document.querySelector('#cv-novas .nv-board,.c1-modal'))return false;const rb=document.getElementById('rpBtn');if(rb&&getComputedStyle(rb).display==='none')return false;if(G.mode==='world')return !busy&&!(ui&&ui.length);if(G.mode==='surv')return !!(SV&&SV.pl&&!SV.cards&&!SV.paused&&!SV.ask&&!(ui&&ui.length)&&!SV.over&&!SV.result&&!(typeof busy!=='undefined'&&busy&&SV.pl.hp<=0));/* SVAUD18NOV H09: some nas telas de resultado */}catch(e){}return false;}
   function pos(){try{if(G.mode==='world')return[P.px,P.py];if(G.mode==='surv')return[SV.pl.x,SV.pl.y];}catch(e){}return null;}
   function freeW(x,y){try{return !blocked(x,y);}catch(e){return false;}}
   function freeS(x,y){try{const u={x,y,st:SV.pl.st,hp:SV.pl.hp};svSolidPush(u,5);return Math.hypot(u.x-x,u.y-y)<.6;}catch(e){return false;}}

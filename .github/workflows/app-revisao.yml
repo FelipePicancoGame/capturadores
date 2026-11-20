@@ -1,0 +1,14 @@
+name: app-revisao
+# Manda a foto de revisão de cada compra (app-ios/asc/revisao.py).
+on: workflow_dispatch
+jobs:
+  iap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pyjwt cryptography requests
+      - run: python app-ios/asc/revisao.py
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID || '9HYCAW3MQK' }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID || '32050277-c8a2-423a-a5cf-567c40018bca' }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}

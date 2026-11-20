@@ -10746,6 +10746,11 @@ function arStgGoalOld(i){return arRunMax(arStgGoalOld0,i);}
 function arStgK(A){A=A||AR;if(!A||!A.goal||A.stgI==null||A.stgI<0)return 1;const g0=arStgGoalOld(A.stgI);return Math.max(.2,Math.min(1,(g0-1)/Math.max(1,A.goal-1)));}
 function arIsBossW(w,g){if(g)return w%10===0||w===g;return w<=60?w%10===0:w%2===0;}
 function arWaveInfo(w){const g=AR&&AR.goal,boss=arIsBossW(w,g),k=arStgK(),wk=1+(w-1)*k,hp=Math.round(36*Math.pow(1.24,wk-1)*((AR&&AR.hpMult)||1)),n=boss?3:Math.max(5,Math.round((8+Math.floor(wk*1.6))*k));return {boss,hp,n,spd:.34+Math.min(.3,wk*.012)};}
+/* ARMAIS19NOV (Felipe: 'tem que ter mais inimigos pra poder ter mais mana e conseguir brincar mais juntando os monstrinhos. Na wave 20 tem que ter vários monstrinhos lvl 4. A mecânica de combinar tem que fazer parte do jogo'):
+   ondas normais com 4× mais inimigos (cada um com a vida ÷2,4: a onda inteira fica 1,67× mais forte) e chegando 4× mais rápido; cada um continua dando 10 de mana;
+   chamar monstrinho sobe o preço de 5 em 5 (era 10 em 10). Chefe igual. Robô médio na fase 15: 5-9 → 20-36 inimigos por onda; na onda 19 tem ★4/★5 (antes no máximo ★3). */
+const ARNK=4,ARHK=2.4,ARCUSTO=5;
+{const _wi=arWaveInfo;arWaveInfo=function(w){const I=_wi(w);if(I&&!I.boss){I.n=Math.min(60,Math.round(I.n*ARNK));I.hp=Math.max(1,Math.round(I.hp/ARHK));}return I;};}
 function arStartWave(){if(AR.wave>0){const k=arStgK();AR.mana+=Math.round((20+(1+(AR.wave-1)*k)*2)*k);}AR.wave++;const I=arWaveInfo(AR.wave);AR.wi=I;AR.spawnLeft=I.n;AR.spawnT=0;AR.bossDone=!I.boss;if(I.boss){AR.ann={t:0,txt:`CHEFE! Onda ${AR.wave}`};tone([220,165,110],.18,'sawtooth',.08);}else{AR.ann={t:0,txt:`Onda ${AR.wave}`};}}
 function arSpawn(boss){const G2=arGeo(),I=AR.wi,sp=AR.pool[Math.floor(Math.random()*AR.pool.length)],hp=boss?I.hp*(AR.stgI>=0?20:28):I.hp;AR.en.push({sp:boss?(AR.bossSp||(AR.bossSp=AR.pool[Math.floor(Math.random()*AR.pool.length)])):sp,d:0,hp,max:hp,spd:boss?I.spd*.55:I.spd*(.9+Math.random()*.2),slow:0,slowT:0,poison:0,poisonT:0,boss:!!boss,id:Math.random(),sc:boss?.5:.28,hit:0});}
 function arStats(sp,star){const ty=arType(sp),up=AR.lv[sp]||0,base=9*Math.pow(1.75,star-1)*(1+.3*up);
@@ -10755,7 +10760,7 @@ function arTarget(){let best=null;for(const e of AR.en)if(e.hp>0&&(!best||e.d>be
 function arCellXY(i){const G2=arGeo(),c=i%5,r=Math.floor(i/5);return {x:G2.x0+c*G2.cs+G2.cs/2,y:G2.y0+r*G2.ch+G2.ch/2};}
 function arCellAt(x,y){const G2=arGeo(),c=Math.floor((x-G2.x0)/G2.cs),r=Math.floor((y-G2.y0)/G2.ch);return (c>=0&&c<5&&r>=0&&r<3)?r*5+c:-1;}
 function arBuy(){if(AR.over)return;const free=AR.grid.map((u,i)=>u?-1:i).filter(i=>i>=0);if(!free.length){arPop(W/2,arGeo().y0-4,'Sem espaço!','#ffd0d0');return;}if(AR.mana<AR.cost){arPop(W/2,arGeo().y0-4,'Falta mana','#ffd0d0');tone([180],.06);return;}
-  AR.mana-=AR.cost;AR.cost+=10;const i=free[Math.floor(Math.random()*free.length)],sp=AR.deck[Math.floor(Math.random()*AR.deck.length)];AR.grid[i]={sp,star:1,cd:20,atk:0,born:AR.t};const p=arCellXY(i);arBurst(p.x,p.y,ARCOL[arType(sp)],10);tone([520,780],.06);}
+  AR.mana-=AR.cost;AR.cost+=ARCUSTO;const i=free[Math.floor(Math.random()*free.length)],sp=AR.deck[Math.floor(Math.random()*AR.deck.length)];AR.grid[i]={sp,star:1,cd:20,atk:0,born:AR.t};const p=arCellXY(i);arBurst(p.x,p.y,ARCOL[arType(sp)],10);tone([520,780],.06);}
 function arCanMerge(a,b){const A=AR.grid[a],B=AR.grid[b];return a!==b&&A&&B&&A.sp===B.sp&&A.star===B.star&&A.star<7;}
 function arMerge(a,b){if(!arCanMerge(a,b))return false;const st=AR.grid[b].star+1,sp=AR.deck[Math.floor(Math.random()*AR.deck.length)];AR.grid[a]=null;AR.grid[b]={sp,star:st,cd:20,atk:0,born:AR.t};const p=arCellXY(b);arBurst(p.x,p.y,'#fff3a0',18);arBurst(p.x,p.y,ARCOL[arType(sp)],14);arPop(p.x,p.y-14,'★'.repeat(Math.min(st,4))+(st>4?'+':''),'#fff3a0');tone([660,880,1100],.07);return true;}
 function arUpCost(sp){return 100*((AR.lv[sp]||0)+1);}
@@ -10770,7 +10775,7 @@ function arKill(e,p){AR.kills++;arMpKill(e);const gain=e.boss?50+AR.wave*10:10;A
 function arUpdate(){const A=AR;if(!A||A.over)return;const G2=arGeo(),PL=arPathLen(G2);
   for(let step=0;step<A.speed;step++){A.t++;arRushTick(A);
   if(A.spawnLeft<=0&&!A.en.some(e=>e.hp>0))arWaveCtl(A);
-  if(A.spawnLeft>0){A.spawnT--;if(A.spawnT<=0){const boss=A.wi.boss&&A.spawnLeft===A.wi.n;arSpawn(boss);A.spawnLeft--;A.spawnT=boss?60:Math.max(16,40-A.wave);}}
+  if(A.spawnLeft>0){A.spawnT--;if(A.spawnT<=0){const boss=A.wi.boss&&A.spawnLeft===A.wi.n;arSpawn(boss);A.spawnLeft--;A.spawnT=boss?60:Math.max(5,Math.round(Math.max(16,40-A.wave)/ARNK));}}
   for(const e of A.en){if(e.hp<=0)continue;if(e.slowT>0)e.slowT--;else e.slow=0;if(e.poisonT>0){e.poisonT--;e.hp-=e.poison;if(e.hp<=0){arKill(e,arPos(G2,e.d));continue;}}
     e.d+=e.spd*(1-e.slow);if(e.hit>0)e.hit--;if(e.d>=PL){e.hp=0;A.lives-=e.boss?3:1;arMpLeak(e.boss?3:1);tone([200,140],.15,'square',.07);arPop(G2.rx-8,G2.by-10,e.boss?'-3 ❤':'-1 ❤','#ff8080');A.shake=10;if(e.boss)A.bossDone=true;}}
   /* CHEFEMORTE14NOV (Felipe: 'o chefe às vezes parece morrer com vida'): um golpe grande matava o chefe e ele sumia com a barra ainda cheia. Agora ele fica 0,6 s piscando com a barra descendo até zero e um estouro. */

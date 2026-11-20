@@ -10851,8 +10851,8 @@ function renderArena(){const A=AR;if(!A)return;if(window.ARSTY!==0){arRender2();
   for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';{const o=e.boss?arBossOff(G2,p):[0,0];arDrawMon(e.sp,p.x+o[0],p.y+o[1]-arEY(e.sp,e.boss),arES(e.sp,e.sc,e.boss),'walk',p.dir,e.id*10);}b.restore();
     const _o=e.boss?arBossOff(G2,p):[0,0],bw=e.boss?24:12,bx=p.x+_o[0]-bw/2,by=p.y+_o[1]-arEB(e.sp,e.boss);px(bx,by,bw,2,'#2a0a0a');px(bx,by,bw*Math.max(0,e.hp/e.max),2,e.boss?'#ff4040':e.poison>0&&e.poisonT>0?'#7ae04a':'#ff7070');if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
   /* tiros */
-  arFxTop(A,G2,t);for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
-  if(A.zaps)for(const z of A.zaps){b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);const mx=(z.x1+z.x2)/2+(Math.random()-.5)*6,my=(z.y1+z.y2)/2+(Math.random()-.5)*6;b.lineTo(mx,my);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}
+  arFxTop(A,G2,t);if(!window.__AFXON)for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
+  if(A.zaps&&!window.__AFXON)for(const z of A.zaps){b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);const mx=(z.x1+z.x2)/2+(Math.random()-.5)*6,my=(z.y1+z.y2)/2+(Math.random()-.5)*6;b.lineTo(mx,my);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}
   for(const p of A.parts){b.globalAlpha=Math.max(0,p.life/22);px(p.x,p.y,1.6,1.6,p.col);}b.globalAlpha=1;
   b.restore();
   /* topo */
@@ -11141,8 +11141,8 @@ function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);
     const _o=e.boss?arBossOff(G2,p):[0,0],by=p.y+_o[1]-arEB(e.sp,e.boss)*(e.tam||1);if(e.boss)e._pf=e.hp/e.max;arHpBar(p.x+_o[0],by,e.hp/e.max,e.boss,e.poison>0&&e.poisonT>0?'#7ae04a':e.burnT>0?'#ff9a30':null);if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
   if(A.bdie&&A.bdie.length){A.bdie=A.bdie.filter(g=>g.t<36);for(const g of A.bdie){g.t++;const p=arPos(G2,g.d),o=arBossOff(G2,p),k=Math.min(1,g.t/22),fr=g.f*(1-k);b.save();b.globalAlpha=Math.max(0,1-g.t/36);b.filter='brightness('+(g.t%6<3?2.2:1.2)+')';
     arDrawMon(g.sp,p.x+o[0],p.y+o[1]-arEY(g.sp,true),arES(g.sp,g.sc,true)*(1+g.t*.006),'walk',p.dir,g.id*10);b.restore();const by=p.y+o[1]-arEB(g.sp,true);arHpBar(p.x+o[0],by,fr,true,null);T(window.CVLANG==='en'?'DEFEATED!':'DERROTADO!',p.x,by-7,5.5,'center','#ffffff',0,C.ink);}}
-  arFxTop(A,G2,t);for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
-  if(A.zaps)for(const z of A.zaps){b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);b.lineTo((z.x1+z.x2)/2+(Math.random()-.5)*6,(z.y1+z.y2)/2+(Math.random()-.5)*6);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}
+  arFxTop(A,G2,t);if(!window.__AFXON)for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
+  if(A.zaps&&!window.__AFXON)for(const z of A.zaps){b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);b.lineTo((z.x1+z.x2)/2+(Math.random()-.5)*6,(z.y1+z.y2)/2+(Math.random()-.5)*6);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}
   for(const p of A.parts){b.globalAlpha=Math.max(0,p.life/22);px(p.x,p.y,1.6,1.6,p.col);}b.globalAlpha=1;b.restore();
   if(ARSKIN==='areia'){arTopAreia(A,G2);arBottomAreia(A,G2,t);}else{
   /* topo */
@@ -12177,6 +12177,126 @@ function arFxTop(A,G2,t){try{
   if(A.fxMsg&&A.fxMsg.t>0){A.fxMsg.t--;const y=G2.y0+G2.bh+4;b.save();b.globalAlpha=Math.min(1,A.fxMsg.t/25);rrect(10,y,W-20,14,5,'rgba(20,14,40,.86)',false);b.fillStyle=A.fxMsg.col||'#fff';b.fillRect(14,y+3,2.2,8);T(A.fxMsg.s,W/2+2,y+3.6,5,'center','#ffffff',W-34,C.ink);b.restore();}
 }catch(err){}}
 /* /ARFX19NOV */
+/* ARFXART19NOV (Buchecha, ARENA_FX_19nov — 6 pranchas; Felipe pediu: integrar as artes e testar na Arena jogável). NO JOGO desde cv-v680 (Felipe 20/nov: "botar os poderes agora no jogo da arena, lançando os poderes de cada um").
+   status em cima dos inimigos, projéteis girados pro alvo, impactos, áreas no caminho (aparecer/loop/sumir), especiais de tela inteira,
+   raio em cadeia esticado entre os alvos, sinais (lançou, empurrão, crítico, esmagou, +1 mana), auras (flor/pedra) e os gestos das 3 estrelas.
+   Sem a arte carregada, cada parte volta pro desenho antigo por código. Desligar: #semfxarte */
+(function(){try{
+if(/semfxarte/.test(location.hash))return;
+window.__AFXON=true;
+const BASE=window.__AFXBASE||'assets/arfx/',IM={},TINT={};
+function S(n){let o=IM[n];if(!o){const m=n.match(/_(\d+)q_(\d+)(?:x(\d+))?$/);if(!m)return null;o=IM[n]={im:new Image(),n:+m[1],cw:+m[2],ch:+(m[3]||m[2])};o.im.decoding='async';o.im.src=BASE+n+'.webp';}return o.im.complete&&o.im.naturalWidth?o:null;}
+function D(n,f,x,y,w,h,o){const s=S(n);if(!s)return false;o=o||{};const img=o.tint?tinted(n,s,o.tint):s.im;if(!img)return false;
+  const cols=Math.max(1,Math.round(s.im.naturalWidth/s.cw));f=Math.max(0,Math.min(s.n-1,f|0));const sx=(f%cols)*s.cw,sy=Math.floor(f/cols)*s.ch;
+  const ax=(o.ax!=null?o.ax:.5)*w,ay=(o.ay!=null?o.ay:.5)*h;b.save();if(o.a!=null)b.globalAlpha*=Math.max(0,Math.min(1,o.a));if(o.comp)b.globalCompositeOperation=o.comp;
+  b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.translate(x,y);if(o.rot)b.rotate(o.rot);b.drawImage(img,sx,sy,s.cw,s.ch,-ax,-ay,w,h);b.restore();return true;}
+function tinted(n,s,col){const k=n+'|'+col;let c=TINT[k];if(c)return c;try{c=document.createElement('canvas');c.width=s.im.naturalWidth;c.height=s.im.naturalHeight;const x=c.getContext('2d');x.drawImage(s.im,0,0);x.globalCompositeOperation='multiply';x.fillStyle=col;x.fillRect(0,0,c.width,c.height);x.globalCompositeOperation='destination-in';x.drawImage(s.im,0,0);TINT[k]=c;return c;}catch(e){return s.im;}}
+const FR=(age,fps,n,loop)=>{const k=Math.floor(Math.max(0,age)*fps/60);return loop?k%n:Math.min(n-1,k);};
+const DUR=(fps,n)=>Math.ceil(n*60/fps);
+/* qual família de arte cada poder usa */
+const FAM={semente:'brotim arvorito florestao florina florabela floraia cacauzinho',pedra:'pedrisco pedregao cordilhao rochedo montanhao cabrito cabritao carneirao cascal cascopedra',
+  gelo:'flocolino nevascao glacimor pinguinho pinguimperador',fantasma:'assombro assombrao espectron auroril aurorion',sombra:'sombrin sombrale noctavio',ferrao:'zumbel zumbirex zumbitron',
+  pena:'pipiu ventania furacao corujito corujao corujarca',mental:'psiuto mentora psiquara',estrela:'estrelim estrelux estelarion',veneno:'cogumelim cogumelao cogumestre'};
+const PROJ={};for(const k in FAM)for(const sp of FAM[k].split(' '))PROJ[sp]=k;
+const IMPX={pena:'vento'};const PANC='ratonga ratangao ratorrei caranguejo caranguerra pincador tubarete'.split(' ');
+const AREA={fagulho:'explosao_fogo',fornalho:'explosao_fogo',infernalho:'explosao_fogo',dracobrasa:'explosao_fogo',nevascao:'nevasca',glacimor:'nevasca',corujao:'nevoa',corujarca:'nevoa',
+  cogumelao:'toxica',cogumestre:'toxica',rochedo:'tremor',montanhao:'tremor',assombrao:'pavor',sombrale:'pavor',aurorion:'aurora'};
+const ELEC='choquinho trovoar tempestor'.split(' ');
+const GLOB={'TSUNAMI!':'tsunami','ERUPÇÃO!':'erupcao','TEMPESTADE!':'tempestade','ERA DO GELO!':'gelo','FURACÃO!':'vento','CICLONE!':'vento','PESADELO!':'pesadelo','SUPERNOVA!':'supernova','ENXAME!':'enxame'};
+const SIG={'CRÍTICO!':'sinal_critico_6q_128','ESMAGOU!':'sinal_executa_8q_128'};
+let AK=null;function key(ab){if(!ab)return null;if(!AK||!AK.has(ab)){AK=new Map();for(const k in ARAB)AK.set(ARAB[k],k);}return AK.get(ab)||null;}
+/* pré-carrega */
+['status_bolha_8q_128','status_choque_8q_128','status_congelado_8q_128','status_congelado_quebra_8q_128','status_ferrao_8q_128','status_lento_8q_128','status_maldicao_8q_128','status_medo_8q_128','status_queimando_8q_128','status_raiz_8q_128','status_tonto_8q_128','status_veneno_8q_128',
+ 'link_raio_6q_256x64','sinal_empurrao_8q_128','sinal_lancou_8q_128','sinal_mana_8q_64','sinal_critico_6q_128','sinal_executa_8q_128','aura_flor_8q_256x128','aura_pedra_8q_256x128','imp_pancada_8q_128',
+ 'area_lava_8q_256x128','area_lava_aparecer_4q_256x128','area_lava_sumir_4q_256x128','area_redemoinho_8q_256x128','area_redemoinho_aparecer_4q_256x128','area_redemoinho_sumir_4q_256x128','area_espinhos_8q_256x128','area_espinhos_aparecer_4q_256x128','area_espinhos_sumir_4q_256x128']
+ .concat(Object.keys(FAM).map(k=>'proj_'+k+'_6q_64'),Object.keys(FAM).filter(k=>k!=='pena').map(k=>'imp_'+k+'_8q_128'),['imp_vento_8q_128']).forEach(S);
+function afxAdd(A,o){A.afx=A.afx||[];if(A.afx.length<40)A.afx.push(Object.assign({t0:A.t},o));}
+
+/* registra o que cada golpe fez, pra tocar a arte certa */
+{const _oh=arOnHit;arOnHit=function(A,s,tp,dmg){const ab=s&&s.ab;if(!ab||!A)return _oh(A,s,tp,dmg);
+  const k=key(ab),nfx=(A.fx||[]).length,pre=A.en.map(e=>[e,e.frz||0]);_oh(A,s,tp,dmg);
+  try{const fam=PROJ[k],imp=fam?(IMPX[fam]||fam):(PANC.includes(k)?'pancada':null);
+    if(imp)afxAdd(A,{n:'imp_'+imp+'_8q_128',x:tp.x,y:tp.y-7,w:30,h:30,fps:20,nf:8});
+    const nw=(A.fx||[]).slice(nfx);
+    for(const f of nw){if(f.r>=80){f.afxSkip=1;continue;}/* anel grande: virou especial de tela inteira */
+      if(ab.bolha&&f.col==='#9ae8ff'&&f.r<12){f.afxSkip=1;continue;}
+      if(f.col==='#ffd040'&&k==='magmorra'){f.afxSkip=1;continue;}
+      const ar=AREA[k];if(ar&&ab.area&&Math.abs(f.r-ab.area[0])<1){f.afxSkip=1;const w=Math.max(34,f.r*2.6);
+        if(ar==='explosao_fogo'||ar==='aurora')afxAdd(A,{n:'area_'+ar+'_10q_256x256',x:f.x,y:f.y,w:w,h:w,fps:20,nf:10,ay:.62});
+        else if(ar==='tremor'||ar==='pavor')afxAdd(A,{n:'area_'+ar+'_8q_256x128',x:f.x,y:f.y+3,w:w*1.2,h:w*.6,fps:12,nf:8});
+        else afxAdd(A,{area:ar,x:f.x,y:f.y+3,w:w*1.15,h:w*.575});}}
+    for(const [e,f0] of pre){if(!e||e.hp<=0||!((e.frz||0)>f0+1))continue;
+      e.afxK=ab.bolha&&e.frzK==='bolha'?'bolha':(e.root>0?'raiz':e.ice>0?'congelado':(ab.cadeia||ELEC.includes(k))?'choque':ab.bolha?'bolha':'tonto');}
+  }catch(_){} };}
+{const _p=arPop;arPop=function(x,y,t,col){_p(x,y,t,col);try{const A=AR;if(!A||A.lobby)return;
+  if(GLOB[t]){A.gfx={n:'global_'+GLOB[t]+'_12q_540x1170',t0:A.t};S(A.gfx.n);}
+  else if(SIG[t])afxAdd(A,{n:SIG[t],x,y:y+12,w:34,h:34,fps:20,nf:SIG[t].includes('6q')?6:8});
+  else if(t==='ESTILHAÇOU!')afxAdd(A,{n:'status_congelado_quebra_8q_128',x,y:y+20,w:32,h:32,fps:12,nf:8,ay:100/128});
+  else if(/^\+\d+ mana$/.test(t))afxAdd(A,{n:'sinal_mana_8q_64',x,y:y+8,w:16,h:16,fps:20,nf:8});}catch(_){}};}
+
+/* chão: poças/redemoinho/espinhos com aparecer → loop → sumir; auras embaixo das peças; explosões antigas só quando não há arte */
+{const _ad=arAbDraw;arAbDraw=function(A,G2,t){
+  const ZN={'#7a1a00':'lava','#0a2a5a':'redemoinho','#1a4a10':'espinhos'};const keep=[];
+  for(const z of A.zones||[]){const kd=ZN[z.base||'#7a1a00']||'lava';if(!S('area_'+kd+'_8q_256x128')){keep.push(z);continue;}
+    const p1=arPos(G2,Math.max(0,z.d-z.len/2)),p2=arPos(G2,z.d+z.len/2),c=arPos(G2,z.d),L=Math.hypot(p2.x-p1.x,p2.y-p1.y),w=Math.max(G2.cs*.95,L*1.2),h=w*.5;
+    let rot=Math.atan2(p2.y-p1.y,p2.x-p1.x);if(rot>Math.PI/2)rot-=Math.PI;if(rot<-Math.PI/2)rot+=Math.PI;rot*=.35;/* segue a estrada só um pouco: a arte é vista de cima-frente */
+    const age=z.T-z.t;let n,f;if(age<24){n='area_'+kd+'_aparecer_4q_256x128';f=FR(age,10,4,false);}else if(z.t<24){n='area_'+kd+'_sumir_4q_256x128';f=FR(24-z.t,10,4,false);}else{n='area_'+kd+'_8q_256x128';f=FR(age,10,8,true);}
+    D(n,f,c.x,c.y+1,w,h,{rot,a:.95});}
+  for(let i=0;i<15;i++){const u=A.grid[i];if(!u)continue;const ab=arAbOf(u);if(!ab||!ab.aura)continue;const kk=key(ab),nm=kk==='cascopedra'?'aura_pedra_8q_256x128':'aura_flor_8q_256x128',p=arCellXY(i),cs=G2.cs;
+    D(nm,FR(t+i*7,10,8,true),p.x,p.y+cs*.22,cs*1.25,cs*.62,{a:.9});}
+  const Z0=A.zones,F0=A.fx;A.zones=keep;A.fx=(A.fx||[]).filter(f=>!f.afxSkip);
+  const bt=A.en.map(e=>[e,e.burnT]);for(const e of A.en)if(S('status_queimando_8q_128'))e.burnT=0;/* faíscas antigas: a arte de queimando substitui */
+  try{_ad(A,G2,t);}finally{A.zones=Z0;A.fx=F0;for(const [e,v] of bt)e.burnT=v;}};}
+
+/* desenhos antigos que a arte substitui (só a parte visual; a contagem dos estados continua igual) */
+arPlantaDraw=function(A,G2,t){for(const e of A.en){if(e.hp<=0)continue;if(e.root>0&&e.frz>0)e.root--;if(!(e.poisonT>0))e.poiN=0;if(e.ice>0){e.ice--;if(!(e.frz>0))e.ice=0;}}
+  for(const q of A.bees||[]){const k=1-q.t/q.T;for(let j=0;j<3;j++){const kk=Math.max(0,Math.min(1,k-j*.08)),x=q.x0+(q.x1-q.x0)*kk+Math.sin(q.o+kk*14+j)*4,y=q.y0+(q.y1-q.y0)*kk+Math.cos(q.o+kk*12+j)*3;E(x,y,1.5,1.1,'#ffd23a',0,false);px(x-.4,y-1,.8,2,'#3a2a10');}}};
+
+function stList(e){const L=[];if(e.frz>0){let k=e.afxK||(e.ice>0?'congelado':e.root>0?'raiz':e.frzK==='bolha'?'bolha':e.frzK==='choque'?'choque':'tonto');L.push(k);}else if(e.slow>0)L.push('lento');
+  if(e.burnT>0)L.push('queimando');if(e.poisonT>0&&e.poison>0)L.push('veneno');if(e.fear>0)L.push('medo');if(e.curseT>0)L.push('maldicao');if(e.sting>0&&e.stingT>0)L.push('ferrao');return L;}
+const _ft=arFxTop;
+arFxTop=function(A,G2,t){try{
+  /* inimigos: estados */
+  for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d);const o=e.boss&&typeof arBossOff==='function'?arBossOff(G2,q):[0,0],x=q.x+o[0],y=q.y+o[1];
+    let hh=e.boss?40:20;try{hh=Math.max(12,arEB(e.sp,e.boss));}catch(_){}const sz=hh*1.75;
+    for(const k of stList(e)){const n='status_'+k+'_8q_128';
+      if(k==='ferrao'){const row=e.sting>=5?2:e.sting>=3?1:0;D(n,row*8+FR(t,10,8,true),x,y,sz,sz,{ay:100/128});continue;}
+      if(!D(n,FR(t+(e.id||0)*3,10,8,true),x,y,sz,sz,{ay:100/128,a:k==='congelado'?.92:1}))_old(A,G2,t,e,k,x,y,hh);}
+    /* empurrão: sinal na direção em que ele vai */
+    if(e.kbT>0){if(!e._kb0)e._kb0=A.t;const f=arPos(G2,Math.max(0,e.d-8)),rot=Math.atan2(f.y-q.y,f.x-q.x)+Math.PI/2;
+      if(!D('sinal_empurrao_8q_128',FR(A.t-e._kb0,20,8,false),x,y-hh*.35,sz*.95,sz*.95,{rot,a:Math.min(1,e.kbT/8)}))_old(A,G2,t,e,'kb',x,y,hh);}else e._kb0=0;}
+  /* quem lançou: casa acende + anel "lançou" na cor do poder */
+  for(let i=0;i<15;i++){const u=A.grid[i];if(!u)continue;if(u.castT>0){if(!u._lc0||u.castT>u._lcp)u._lc0=A.t;u._lcp=u.castT;const c=arCellXY(i),cs=G2.cs,a=u.castT/34;
+      D('sinal_lancou_8q_128',FR(A.t-u._lc0,20,8,false),c.x,c.y+cs*.15,cs*1.35,cs*1.35,{tint:u.castCol||'#ffffff',comp:'lighter'});
+      b.save();b.globalAlpha=Math.min(1,a*2);if(u.castN)T(arFxTxt(u.castN),c.x,c.y-cs/2-5-(1-a)*3,4.4,'center','#ffffff',cs*1.8,'#1a1030');b.restore();}else u._lcp=0;}
+  /* tiros: arte do projétil girada pro alvo (fogo, água e raio seguem com a bolinha + rastro) */
+  for(const s of A.shots){const fam=s.ab&&PROJ[key(s.ab)],tp=s.tg&&s.tg.hp>0?arPos(G2,s.tg.d):null,rot=tp?Math.atan2(tp.y-6-s.y,tp.x-s.x):0,sz=13*(1+Math.min(6,s.star||0)*.05);
+    if(fam&&D('proj_'+fam+'_6q_64',FR(A.t,15,6,true),s.x,s.y,sz,sz,{rot})){s.afxDrawn=1;continue;}
+    if(s.ab){s.tr=s.tr||[];s.tr.push(s.x,s.y);if(s.tr.length>10)s.tr.splice(0,2);if(s.tr.length>=4){b.save();b.globalCompositeOperation='lighter';b.lineCap='round';for(let k=2;k<s.tr.length;k+=2){b.globalAlpha=k/s.tr.length*.7;b.strokeStyle=s.col;b.lineWidth=1+k/s.tr.length*1.8;b.beginPath();b.moveTo(s.tr[k-2],s.tr[k-1]);b.lineTo(s.tr[k],s.tr[k+1]);b.stroke();}b.restore();}}
+    b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
+  /* raio em cadeia: arte esticada entre os dois alvos */
+  for(const z of A.zaps||[]){const dx=z.x2-z.x1,dy=z.y2-z.y1,L=Math.hypot(dx,dy);if(L<2)continue;const w=L*256/245;
+    if(!D('link_raio_6q_256x64',FR(A.t,20,6,true),z.x1,z.y1,w,Math.max(9,Math.min(16,L*.25)),{ax:5/256,ay:.5,rot:Math.atan2(dy,dx),a:Math.min(1,z.life/4),comp:'lighter'})){
+      b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);b.lineTo((z.x1+z.x2)/2+(Math.random()-.5)*6,(z.y1+z.y2)/2+(Math.random()-.5)*6);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}}
+  /* impactos, áreas de um golpe e sinais */
+  A.afx=(A.afx||[]).filter(f=>{const age=A.t-f.t0;
+    if(f.area){const ap=24,lp=36,sm=24,base='area_'+f.area;let ok;if(age<ap)ok=D(base+'_aparecer_4q_256x128',FR(age,10,4,false),f.x,f.y,f.w,f.h);else if(age<ap+lp)ok=D(base+'_8q_256x128',FR(age-ap,10,8,true),f.x,f.y,f.w,f.h);else ok=D(base+'_sumir_4q_256x128',FR(age-ap-lp,10,4,false),f.x,f.y,f.w,f.h);
+      if(!ok&&age<14){b.save();b.globalAlpha=(1-age/14)*.7;b.globalCompositeOperation='lighter';E(f.x,f.y,f.w*.3,f.w*.21,'#ffffff',0,false);b.restore();}return age<ap+lp+sm;}
+    D(f.n,FR(age,f.fps,f.nf,false),f.x,f.y,f.w,f.h,{ay:f.ay});return age<DUR(f.fps,f.nf);});
+  /* especial de tela inteira */
+  if(A.gfx){const g=A.gfx,age=A.t-g.t0,s=S(g.n);if(age>DUR(12,12)+2)A.gfx=null;else if(s){const sc=Math.max(W/540,H/1170);D(g.n,FR(age,12,12,false),W/2,H/2,540*sc,1170*sc,{a:age<4?age/4:1});}}
+  /* explicação do poder (1ª vez na partida) */
+  if(A.fxMsg&&A.fxMsg.t>0){A.fxMsg.t--;const y=G2.y0+G2.bh+4;b.save();b.globalAlpha=Math.min(1,A.fxMsg.t/25);rrect(10,y,W-20,14,5,'rgba(20,14,40,.86)',false);b.fillStyle=A.fxMsg.col||'#fff';b.fillRect(14,y+3,2.2,8);T(A.fxMsg.s,W/2+2,y+3.6,5,'center','#ffffff',W-34,C.ink);b.restore();}
+}catch(err){try{console.warn('ARFXART',err);}catch(_){}}};
+/* desenho antigo por código, se a arte daquele estado ainda não carregou */
+function _old(A,G2,t,e,k,x,y,hh){const cy=y-hh*.45;b.save();
+  if(k==='bolha'){const r=e.boss?16:10;b.globalAlpha=.32;E(x,cy,r,r,'#bfeaff',0,false);}
+  else if(k==='congelado'){const h=e.boss?30:18,w=e.boss?20:13;b.globalAlpha=.55;rrect(x-w/2,y-h+1,w,h,3,'#bfeaff',false);}
+  else if(k==='queimando'){b.globalCompositeOperation='lighter';E(x,cy,2,3,'#ff7a1a',0,false);}
+  else if(k==='lento'){b.globalAlpha=.55;b.strokeStyle='#7ac8ff';b.lineWidth=1;b.beginPath();b.ellipse(x,y+1,7,2.4,0,0,Math.PI*2);b.stroke();}
+  b.restore();}
+}catch(e){try{console.warn('ARFXART init',e);}catch(_){}}})();
+/* /ARFXART19NOV */
 /* ANDARFALSO19NOV (report Felipe 19/nov: 'Não tem animação de andar' — Metalon/caranguerra e mais ~25 monstrinhos não têm a arte de andar):
    enquanto o Buchecha não manda o andar desenhado, quem não tem anda com passinho: sobe e desce, balança de um lado pro outro e amassa no pé. Quem tem a arte continua igual. */
 const SEMAND={};function semAndar(sp){const k=String(sp).replace('*','');if(k in SEMAND)return SEMAND[k];let r=false;try{const ok=a=>!!(a&&a.walk&&a.walk.src&&!/^data:image\/gif/.test(a.walk.src));r=!!SP[k]&&!ok(MONANIMSRC[k])&&!ok(MONANIMSRC[k+'@e'])&&!ok(MONANIMSRC[k+'@s']);}catch(e){r=false;}return SEMAND[k]=r;}
@@ -18832,7 +18952,7 @@ try{(function(){
     b.restore();return true;}catch(e){try{b.restore();}catch(_){}console.error(e);return false;}};
 })();}catch(e){}
 window.__ATK66={"arvorito":{"u":"assets/atk/arvorito.webp","b":[56,23,141,212]},"assombrao":{"u":"assets/atk/assombrao.webp","b":[47,22,162,213]},"assombro":{"u":"assets/atk/assombro.webp","b":[41,23,172,213]},"auroril":{"u":"assets/atk/auroril.webp","b":[65,24,128,211]},"aurorion":{"u":"assets/atk/aurorion.webp","b":[22,22,210,213]},"brasalor":{"u":"assets/atk/brasalor.webp","b":[50,22,157,213]},"brasinha":{"u":"assets/atk/brasinha.webp","b":[69,26,121,209]},"cabritao":{"u":"assets/atk/cabritao.webp","b":[66,22,123,214]},"cabrito":{"u":"assets/atk/cabrito.webp","b":[52,23,154,212]},"cacauzinho":{"u":"assets/atk/cacauzinho.webp","b":[78,24,112,212]},"caranguejo":{"u":"assets/atk/caranguejo.webp","b":[22,22,213,212]},"caranguerra":{"u":"assets/atk/caranguerra.webp","b":[15,32,223,204]},"carneirao":{"u":"assets/atk/carneirao.webp","b":[47,22,163,213]},"cascal":{"u":"assets/atk/cascal.webp","b":[18,23,223,212]},"cascopedra":{"u":"assets/atk/cascopedra.webp","b":[51,23,155,213]},"choquinho":{"u":"assets/atk/choquinho.webp","b":[58,25,141,211]},"cogumelao":{"u":"assets/atk/cogumelao.webp","b":[40,23,178,212]},"cogumelim":{"u":"assets/atk/cogumelim.webp","b":[14,25,224,210]},"cogumestre":{"u":"assets/atk/cogumestre.webp","b":[57,22,142,214]},"cordilhao":{"u":"assets/atk/cordilhao.webp","b":[30,23,195,213]},"corujao":{"u":"assets/atk/corujao.webp","b":[19,22,217,214]},"corujarca":{"u":"assets/atk/corujarca.webp","b":[17,65,222,172]},"corujito":{"u":"assets/atk/corujito.webp","b":[12,35,217,201]},"dracobrasa":{"u":"assets/atk/dracobrasa.webp","b":[22,23,212,212]},"espectron":{"u":"assets/atk/espectron.webp","b":[31,25,195,210]},"flocolino":{"u":"assets/atk/flocolino.webp","b":[38,26,182,210]},"florabela":{"u":"assets/atk/florabela.webp","b":[22,25,216,211]},"floraia":{"u":"assets/atk/floraia.webp","b":[40,24,176,211]},"florestao":{"u":"assets/atk/florestao.webp","b":[30,21,178,214]},"florina":{"u":"assets/atk/florina.webp","b":[47,23,161,213]},"fornalho":{"u":"assets/atk/fornalho.webp","b":[72,22,110,213]},"furacao":{"u":"assets/atk/furacao.webp","b":[39,48,177,194]},"glacimor":{"u":"assets/atk/glacimor.webp","b":[44,23,169,213]},"infernalho":{"u":"assets/atk/infernalho.webp","b":[56,24,147,211]},"lesmagma":{"u":"assets/atk/lesmagma.webp","b":[48,42,164,193]},"magmorra":{"u":"assets/atk/magmorra.webp","b":[47,35,164,201]},"maremoto":{"u":"assets/atk/maremoto.webp","b":[57,21,146,214]},"mentora":{"u":"assets/atk/mentora.webp","b":[16,82,225,153]},"montanhao":{"u":"assets/atk/montanhao.webp","b":[32,24,191,212]},"nevascao":{"u":"assets/atk/nevascao.webp","b":[42,21,173,213]},"noctavio":{"u":"assets/atk/noctavio.webp","b":[57,33,119,201]},"pedregao":{"u":"assets/atk/pedregao.webp","b":[66,23,126,213]},"peixonete":{"u":"assets/atk/peixonete.webp","b":[32,22,193,214]},"pincador":{"u":"assets/atk/pincador.webp","b":[24,22,208,213]},"pinguimperador":{"u":"assets/atk/pinguimperador.webp","b":[34,28,190,207]},"pinguinho":{"u":"assets/atk/pinguinho.webp","b":[46,26,163,208]},"pipiu":{"u":"assets/atk/pipiu.webp","b":[62,25,131,212]},"psiquara":{"u":"assets/atk/psiquara.webp","b":[17,21,224,214]},"psiuto":{"u":"assets/atk/psiuto.webp","b":[47,24,163,211]},"ratangao":{"u":"assets/atk/ratangao.webp","b":[56,25,147,210]},"ratonga":{"u":"assets/atk/ratonga.webp","b":[49,24,158,211]},"ratorrei":{"u":"assets/atk/ratorrei.webp","b":[51,23,158,213]},"rochedo":{"u":"assets/atk/rochedo.webp","b":[25,23,207,212]},"sombrale":{"u":"assets/atk/sombrale.webp","b":[76,29,114,206]},"sombrin":{"u":"assets/atk/sombrin.webp","b":[76,23,113,212]},"tempestor":{"u":"assets/atk/tempestor.webp","b":[80,26,98,210]},"trovim2":{"u":"assets/atk/trovim2.webp","b":[79,24,98,212]},"trovim3":{"u":"assets/atk/trovim3.webp","b":[66,21,126,214]},"tsunamor":{"u":"assets/atk/tsunamor.webp","b":[47,25,162,211]},"tubarete":{"u":"assets/atk/tubarete.webp","b":[70,21,117,214]},"tubarrei":{"u":"assets/atk/tubarrei.webp","b":[38,25,156,211]},"ventania":{"u":"assets/atk/ventania.webp","b":[52,23,152,216]},"vulcanela":{"u":"assets/atk/vulcanela.webp","b":[63,47,132,188]},"zumbel":{"u":"assets/atk/zumbel.webp","b":[16,24,228,212]},"zumbirex":{"u":"assets/atk/zumbirex.webp","b":[19,29,217,207]},"zumbitron":{"u":"assets/atk/zumbitron.webp","b":[21,36,214,199]}};
-/* ARGESTO09NOV (Felipe: 'quero testar a nova animação' — entrega do GPT/Buchecha Arena_5_principais_ataques_20q_SEM_EFEITO_09nov): na Arena, Fagulho, Marolo, Brotim, Pedrisco e Trovim fazem o ataque novo de 20 quadros (1 gesto, 1 s, sem efeito de poder). Toca uma vez por ataque, do começo ao fim; os outros monstrinhos seguem como antes. */
+try{if(!/semfxarte/.test(location.hash))Object.assign(window.__ATK66,{estrelim:{u:"assets/arfx/atk_estrelim.webp",b:[58,36,143,204]},estrelux:{u:"assets/arfx/atk_estrelux.webp",b:[74,26,123,214]},estelarion:{u:"assets/arfx/atk_estelarion.webp",b:[24,34,201,206]}});}catch(e){}/* ARGESTO09NOV (Felipe: 'quero testar a nova animação' — entrega do GPT/Buchecha Arena_5_principais_ataques_20q_SEM_EFEITO_09nov): na Arena, Fagulho, Marolo, Brotim, Pedrisco e Trovim fazem o ataque novo de 20 quadros (1 gesto, 1 s, sem efeito de poder). Toca uma vez por ataque, do começo ao fim; os outros monstrinhos seguem como antes. */
 /* SINCRO09NOV (Felipe: 'só lança quando abrir a boca ou a mão estiver estendida' / 'a magia sai da boca, de onde ele lança' / 'fica virado pro último alvo, sem ir e voltar'):
    o gesto dura o tempo entre dois ataques (no máximo 1 s); a magia sai no quadro 10 (boca aberta / mão estendida) e nasce no ponto de onde ele lança, já girado pro alvo. Depois ele fica virado pra lá. */
 try{(function(){const GS={"fagulho":{"u":"blobs/8b78fa3668930ce909ad3625623cdb7c.webp","b":[69,16,108,220]},"marolo":{"u":"blobs/5140040d6afc11c7c9fff30a59d6baff.webp","b":[41,22,174,216]},"brotim":{"u":"blobs/1a2d7f6b2593f4789ef304944353d005.webp","b":[48,27,164,211]},"pedrisco":{"u":"blobs/b670ab8ccdf541a0f36b4e950e84ca54.webp","b":[62,21,131,217]},"trovim":{"u":"blobs/3a11bc35c709069ce37e88687e90f08b.webp","b":[62,22,132,216]}},IM={},DUR=[60,60,60,60,60,35,35,35,35,55,55,50,50,50,50,50,50,50,50,50],

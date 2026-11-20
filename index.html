@@ -12431,6 +12431,72 @@ function arCardArt(sp){if(!ARCART.has(sp))return null;let i=ARCI[sp];if(!i){try{
 {const _mm=m7Mon;m7Mon=function(sp,r,...x){const I=arCardArt(sp);if(!I)return _mm(sp,r,...x);
   m7Rot(r,()=>{const q=m7R(r),s=Math.min(q.w/I.naturalWidth,q.h/I.naturalHeight),w=I.naturalWidth*s,h=I.naturalHeight*s;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';b.drawImage(I,q.x+(q.w-w)/2,q.y+(q.h-h)/2,w,h);b.restore();});};}
 /* /ARCARTAART */
+/* ARWIDE20NOV (Felipe: menu da Arena na horizontal para Tesla e PC — arte aprovada ARENA_MASTER_APROVADA_19nov + peças sem texto do Buchecha, 20/nov).
+   Só em tela larga (largura ≥ 1,3 × altura). No celular nada muda. O jogo escreve os textos (PT/EN) e põe o time de verdade nas cartas.
+   Os botões chamam as mesmas ações do menu em pé. Desligar: #semarlargo */
+(function(){try{if(/semarlargo/.test(location.hash))return;
+const U='assets/arwide/',BW=1920,BH=1200;
+const PC={titulo_arena:[518,48,883,241],painel_time:[354,251,1209,344],poder_heroi:[406,596,555,80],trocar_time:[970,586,541,100],masmorras:[213,683,742,230],sem_fim:[966,683,744,228],
+ juntos:[289,923,659,173],contra:[971,923,662,173],fechar:[1431,104,122,115],estilo:[366,96,130,129],carta_01:[464,334,184,229],carta_02:[668,334,183,229],carta_03:[871,334,184,229],carta_04:[1074,334,184,229],carta_05:[1278,334,183,229]};
+const TX={titulo:[795,127,337,90],seutime:[822,258,278,62],heroi:[585,618,322,40],trocar:[1103,607,377,52],masm:[533,730,385,75],andar:[590,815,282,50],sem:[1317,730,330,75],rec:[1340,815,287,50],
+ jun:[570,945,287,72],junS:[597,1015,235,45],con:[1247,945,287,72],conS:[1277,1015,247,45]};
+const RET=[[477,370,156,115],[680,370,157,115],[883,370,157,115],[1087,370,156,115],[1290,370,157,115]];
+const t_=s=>{try{return typeof tr==='function'?tr(s):s;}catch(_){return s;}},EN=()=>window.CVLANG==='en';
+const css=document.createElement('style');css.textContent=`
+#arWide{position:fixed;inset:0;z-index:60;display:none;overflow:hidden;background:#3a1a08;font-family:'Lilita One','Fredoka',system-ui,sans-serif;-webkit-user-select:none;user-select:none}
+#arWide .bgb{position:absolute;inset:-4%;background:url(${U}fundo.webp) center/cover;filter:blur(18px) brightness(.8)}
+#arWide .st{position:absolute;left:50%;top:50%;width:${BW}px;height:${BH}px;transform-origin:0 0;background:url(${U}fundo.webp) 0 0/100% 100%}
+#arWide .pc{position:absolute;background-size:100% 100%;background-repeat:no-repeat}
+#arWide .bt{cursor:pointer;transition:transform .08s,filter .12s}#arWide .bt:hover{filter:brightness(1.08)}#arWide .bt:active{transform:scale(.97)}
+#arWide .tx{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap;pointer-events:none;line-height:1}
+#arWide .big{color:#fff;-webkit-text-stroke:0;text-shadow:0 4px 0 #5a1f0c,3px 0 0 #5a1f0c,-3px 0 0 #5a1f0c,0 -3px 0 #5a1f0c,0 6px 6px rgba(0,0,0,.35)}
+#arWide .sub{color:#4a2a10;font-family:'Fredoka',system-ui,sans-serif;font-weight:700}
+#arWide .rt{position:absolute;border-radius:10px;overflow:hidden;background:#fff3df center/cover no-repeat;pointer-events:none}
+#arWide .bar{position:absolute;border-radius:9px;background:rgba(40,30,15,.85);overflow:hidden;pointer-events:none}
+#arWide .bar i{position:absolute;left:2px;top:2px;bottom:2px;border-radius:7px;background:#3ab0c8}
+#arWide .bar b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff3df;font:700 21px 'Fredoka',system-ui,sans-serif}
+#arWide .msg{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);background:rgba(60,40,20,.94);color:#fff;font:600 30px 'Fredoka',system-ui,sans-serif;padding:14px 28px;border-radius:18px;display:none;white-space:nowrap}
+`;document.head.appendChild(css);
+let root=null,st=null,last=0,curA=null,sig='';
+function el(cls,r,parent,img){const d=document.createElement('div');d.className=cls;if(r){d.style.left=r[0]+'px';d.style.top=r[1]+'px';d.style.width=r[2]+'px';d.style.height=r[3]+'px';}if(img)d.style.backgroundImage=`url(${U}${img}.webp)`;(parent||st).appendChild(d);return d;}
+function txt(r,s,cls,size,extra){const d=el('tx '+(cls||''),r);d.style.fontSize=size+'px';d.textContent=s;if(extra)Object.assign(d.style,extra);return d;}
+function act(f){return e=>{e.preventDefault();e.stopPropagation();try{if(curA&&!curA.busy&&!(typeof ui!=='undefined'&&ui.length)){try{tone([660,880],.05);}catch(_){}f(curA);sig='';}}catch(err){console.warn('ARWIDE',err);}};}
+function build(A){st.innerHTML='';
+  for(const k of ['titulo_arena','painel_time','poder_heroi'])el('pc',PC[k],null,k);
+  const B=(k,f)=>{const d=el('pc bt',PC[k],null,k);d.addEventListener('click',act(f));return d;};
+  B('trocar_time',A=>arTimeEdit(A));B('masmorras',A=>{A.lobby='dg';A.scroll=null;});B('sem_fim',A=>A.pick({k:'solo'}));B('juntos',A=>A.pick({k:'coop'}));B('contra',A=>A.pick({k:'pvp'}));
+  B('fechar',A=>A.pick({k:'x'}));B('estilo',A=>m6Next(A));
+  txt(TX.titulo,'ARENA','',86,{color:'#d2462e',textShadow:'0 4px 0 #7a2416,3px 0 0 #fff3df,-3px 0 0 #fff3df,0 -3px 0 #fff3df'});
+  txt(TX.seutime,t_('SEU TIME'),'',46,{color:'#5a3a1a'});
+  txt(TX.heroi,EN()?'Hero: freezes all':'Herói: congela todos','sub',30);
+  txt(TX.trocar,t_('TROCAR O TIME'),'big',40,{textShadow:'0 3px 0 #0b3a8a,2px 0 0 #0b3a8a,-2px 0 0 #0b3a8a,0 -2px 0 #0b3a8a'});
+  const S=stgState('arena'),ch=Math.floor(S.next/STGN),fl=S.next%STGN;
+  txt(TX.masm,t_('MASMORRAS'),'big',66);txt(TX.andar,EN()?`Ch. ${ch+1} · Floor ${fl+1}`:`Cap. ${ch+1} · Andar ${fl+1}`,'sub',27);
+  txt(TX.sem,t_('SEM FIM'),'big',66);txt(TX.rec,EN()?`Record: wave ${flags.arenaBest||0}`:`Recorde: onda ${flags.arenaBest||0}`,'sub',27);
+  txt(TX.jun,t_('JUNTOS'),'big',62);txt(TX.junS,EN()?'2 phones':'2 celulares','sub',27);
+  txt(TX.con,t_('CONTRA'),'big',62);txt(TX.conS,EN()?'2 phones':'2 celulares','sub',27);
+  (A.deck||[]).slice(0,5).forEach((sp,i)=>{const k='carta_0'+(i+1),c=el('pc bt',PC[k],null,k),[x,y,w,h]=RET[i];
+    const rt=el('rt',[x,y,w,h]);try{if(ARCART.has(sp))rt.style.backgroundImage=`url(blobs/arc_${sp}.webp)`;else{const c=spr(sp);rt.style.backgroundImage=`url(${c.toDataURL()})`;rt.style.backgroundSize='auto 150%';rt.style.backgroundPosition='50% 62%';rt.style.backgroundColor='#f3e2c0';}}catch(_){}
+    const RR=arRar(sp),cl=arCardLv(sp),fr=arFrag(sp),nd=arCardNeed(cl,sp),can=cl<ARCMAX&&fr>=nd;
+    txt([x,342,w,25],t_(RR.n),'sub',20,{color:RR.ink||'#3d2a1c'});txt([x,488,w,30],(EN()?'card ':'carta ')+cl,'sub',24);
+    const bar=el('bar',[x+6,522,w-12,27]),fi=document.createElement('i'),bb=document.createElement('b');fi.style.width=`calc(${Math.round(100*Math.min(1,cl>=ARCMAX?1:fr/nd))}% - 4px)`;if(can)fi.style.background='#4ac83a';
+    bb.textContent=cl>=ARCMAX?'MÁX':can?(EN()?'LEVEL UP!':'SUBIR!'):`${fr}/${nd}`;bar.appendChild(fi);bar.appendChild(bb);
+    c.addEventListener('click',act(A=>arCardUp(A,sp)));});
+  const m=document.createElement('div');m.className='msg';st.appendChild(m);}
+function fit(){const s=Math.min(innerWidth/BW,innerHeight/BH);st.style.transform=`translate(${-BW*s/2}px,${-BH*s/2}px) scale(${s})`;}
+function init(){root=document.createElement('div');root.id='arWide';root.innerHTML='<div class="bgb"></div><div class="st"></div>';document.body.appendChild(root);st=root.querySelector('.st');
+  root.addEventListener('pointerdown',e=>e.stopPropagation());addEventListener('resize',()=>{if(root.style.display!=='none')fit();});}
+function hook(){if(arEntryDraw.__arw)return;const _e=arEntryDraw;arEntryDraw=function(A){last=performance.now();curA=A;return _e(A);};arEntryDraw.__arw=1;}/* fica por fora de todos os outros (o menu Telas13 embrulha depois) */
+setInterval(()=>{try{hook();const wide=innerWidth>=700&&innerWidth>=innerHeight*1.3,A=curA,hub=document.getElementById('arHub');
+  const on=wide&&A&&A===AR&&A.lobby&&A.lobby!=='dg'&&A.lobby!=='wall'&&performance.now()-last<300&&!(typeof ui!=='undefined'&&ui.length)&&!(hub&&!hub.hidden)&&typeof G!=='undefined'&&G.mode==='arena';
+  if(!on){if(root&&root.style.display!=='none')root.style.display='none';return;}
+  if(!root)init();const S=stgState('arena'),s2=[(A.deck||[]).join(),window.CVLANG,flags.arenaBest,S.next,(A.deck||[]).map(sp=>arCardLv(sp)+':'+arFrag(sp)).join()].join('|');
+  if(s2!==sig){sig=s2;build(A);}if(root.style.display!=='block'){root.style.display='block';fit();}
+  const m=st.querySelector('.msg');if(m){if(A.msg&&A.msg.t>0){m.textContent=A.msg.s;m.style.display='block';}else m.style.display='none';}
+}catch(err){}},150);
+}catch(e){try{console.warn('ARWIDE init',e);}catch(_){}}})();
+/* /ARWIDE20NOV */
+
 /* SEMATELIE (05/nov, Felipe: "esquece essa do ateliê, use as outras"): o Ateliê sai da Arena; o padrão vira OUTONO e o 🎨 passa só pelas 5 naturais (e depois Jardim, Pedra, Areia). */
 M6X.outono='primavera';M6X.primavera='luar';M6X.luar='rio';M6X.rio='estufa';M6X.estufa='jardim';M6X.jardim='pedra';M6X.pedra='areia';M6X.areia='outono';M6X.atelie='outono';
 {const _sk=arSk;arSk=function(){const s=_sk();if(s==='atelie'){try{if(flags)flags.arSkin='outono';}catch(e){}return 'outono';}return s;};}

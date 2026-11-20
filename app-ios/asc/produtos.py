@@ -17,6 +17,7 @@ PRODS=[  # id, tipo, preço US$, nome PT, descrição PT, nome EN, descrição E
  ('dobro','NON_CONSUMABLE','4.99','2x Pra Sempre','Velocidade 2x em todos os modos','2x Forever','2x speed in every mode'),
  ('automatico','NON_CONSUMABLE','4.99','Automático Pra Sempre','Modo automático em todos os modos','Auto Forever','Auto mode in every mode'),
  ('semanuncios','NON_CONSUMABLE','4.99','Sem Anúncios','Sem anúncios e prêmios a 140%','No Ads','No ads and 140% prizes'),
+ ('monstronovo','CONSUMABLE','4.99','Monstrinho Novo','O monstrinho novo da vez','New Monster','The newest monster'),
  ('passe30','NON_RENEWING_SUBSCRIPTION','4.99','Passe do Mês','50 cristais por dia por 30 dias','Month Pass','50 crystals a day for 30 days'),
 ]
 B='https://api.appstoreconnect.apple.com'

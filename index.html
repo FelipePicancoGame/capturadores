@@ -12174,7 +12174,7 @@ function arFxTop(A,G2,t){try{
     b.save();b.globalAlpha=Math.min(1,a*2);b.strokeStyle=u.castCol||'#fff';b.lineWidth=1.4;b.beginPath();b.roundRect(c.x-cs/2+.5,c.y-cs/2+.5,cs-1,cs-1,5);b.stroke();
     if(u.castN)T(arFxTxt(u.castN),c.x,c.y-cs/2-5-(1-a)*3,4.4,'center','#ffffff',cs*1.8,'#1a1030');b.restore();}
   /* explicação do poder (1ª vez na partida): embaixo do tabuleiro, sem tampar a estrada */
-  if(A.fxMsg&&A.fxMsg.t>0){A.fxMsg.t--;const y=G2.y0+G2.bh+4;b.save();b.globalAlpha=Math.min(1,A.fxMsg.t/25);rrect(10,y,W-20,14,5,'rgba(20,14,40,.86)',false);b.fillStyle=A.fxMsg.col||'#fff';b.fillRect(14,y+3,2.2,8);T(A.fxMsg.s,W/2+2,y+3.6,5,'center','#ffffff',W-34,C.ink);b.restore();}
+  if(false&&A.fxMsg&&A.fxMsg.t>0){/* MINIMAL20NOV: sem faixa de explicação */A.fxMsg.t--;const y=G2.y0+G2.bh+4;b.save();b.globalAlpha=Math.min(1,A.fxMsg.t/25);rrect(10,y,W-20,14,5,'rgba(20,14,40,.86)',false);b.fillStyle=A.fxMsg.col||'#fff';b.fillRect(14,y+3,2.2,8);T(A.fxMsg.s,W/2+2,y+3.6,5,'center','#ffffff',W-34,C.ink);b.restore();}
 }catch(err){}}
 /* /ARFX19NOV */
 /* ARFXART19NOV (Buchecha, ARENA_FX_19nov — 6 pranchas; Felipe pediu: integrar as artes e testar na Arena jogável). NO JOGO desde cv-v680 (Felipe 20/nov: "botar os poderes agora no jogo da arena, lançando os poderes de cada um").
@@ -12210,29 +12210,31 @@ let AK=null;function key(ab){if(!ab)return null;if(!AK||!AK.has(ab)){AK=new Map(
  'link_raio_6q_256x64','sinal_empurrao_8q_128','sinal_lancou_8q_128','sinal_mana_8q_64','sinal_critico_6q_128','sinal_executa_8q_128','aura_flor_8q_256x128','aura_pedra_8q_256x128','imp_pancada_8q_128',
  'area_lava_8q_256x128','area_lava_aparecer_4q_256x128','area_lava_sumir_4q_256x128','area_redemoinho_8q_256x128','area_redemoinho_aparecer_4q_256x128','area_redemoinho_sumir_4q_256x128','area_espinhos_8q_256x128','area_espinhos_aparecer_4q_256x128','area_espinhos_sumir_4q_256x128']
  .concat(Object.keys(FAM).map(k=>'proj_'+k+'_6q_64'),Object.keys(FAM).filter(k=>k!=='pena').map(k=>'imp_'+k+'_8q_128'),['imp_vento_8q_128']).forEach(S);
-function afxAdd(A,o){A.afx=A.afx||[];if(A.afx.length<40)A.afx.push(Object.assign({t0:A.t},o));}
+function afxAdd(A,o){A.afx=A.afx||[];if(A.afx.length<12)A.afx.push(Object.assign({t0:A.t},o));}
 
 /* registra o que cada golpe fez, pra tocar a arte certa */
 {const _oh=arOnHit;arOnHit=function(A,s,tp,dmg){const ab=s&&s.ab;if(!ab||!A)return _oh(A,s,tp,dmg);
   const k=key(ab),nfx=(A.fx||[]).length,pre=A.en.map(e=>[e,e.frz||0]);_oh(A,s,tp,dmg);
   try{const fam=PROJ[k],imp=fam?(IMPX[fam]||fam):(PANC.includes(k)?'pancada':null);
-    if(imp)afxAdd(A,{n:'imp_'+imp+'_8q_128',x:tp.x,y:tp.y-7,w:30,h:30,fps:20,nf:8});
+    if(imp)afxAdd(A,{n:'imp_'+imp+'_8q_128',x:tp.x,y:tp.y-7,w:18,h:18,fps:20,nf:8,a:.8});
     const nw=(A.fx||[]).slice(nfx);
     for(const f of nw){if(f.r>=80){f.afxSkip=1;continue;}/* anel grande: virou especial de tela inteira */
       if(ab.bolha&&f.col==='#9ae8ff'&&f.r<12){f.afxSkip=1;continue;}
       if(f.col==='#ffd040'&&k==='magmorra'){f.afxSkip=1;continue;}
-      const ar=AREA[k];if(ar&&ab.area&&Math.abs(f.r-ab.area[0])<1){f.afxSkip=1;const w=Math.max(34,f.r*2.6);
+      const ar=AREA[k];if(ar&&ab.area&&Math.abs(f.r-ab.area[0])<1){f.afxSkip=1;const w=Math.max(28,f.r*2.1);
         if(ar==='explosao_fogo'||ar==='aurora')afxAdd(A,{n:'area_'+ar+'_10q_256x256',x:f.x,y:f.y,w:w,h:w,fps:20,nf:10,ay:.62});
         else if(ar==='tremor'||ar==='pavor')afxAdd(A,{n:'area_'+ar+'_8q_256x128',x:f.x,y:f.y+3,w:w*1.2,h:w*.6,fps:12,nf:8});
         else afxAdd(A,{area:ar,x:f.x,y:f.y+3,w:w*1.15,h:w*.575});}}
     for(const [e,f0] of pre){if(!e||e.hp<=0||!((e.frz||0)>f0+1))continue;
       e.afxK=ab.bolha&&e.frzK==='bolha'?'bolha':(e.root>0?'raiz':e.ice>0?'congelado':(ab.cadeia||ELEC.includes(k))?'choque':ab.bolha?'bolha':'tonto');}
   }catch(_){} };}
-{const _p=arPop;arPop=function(x,y,t,col){_p(x,y,t,col);try{const A=AR;if(!A||A.lobby)return;
+/* MINIMAL20NOV (Felipe: 'as magias têm que ser minimalistas, sem poluir'): sem palavras voando dos poderes (a arte já mostra) e sem os números de mana de cada inimigo */
+const MUDO=/^(PRESO!|PARALISADO!|CONGELADO!|FERROADO!|BUUU!|PRAGA!|CRÍTICO!|ESMAGOU!|ESTILHAÇOU!|TSUNAMI!|TEMPESTADE!|ERUPÇÃO!|ENXAME!|ERA DO GELO!|FURACÃO!|CICLONE!|PESADELO!|SUPERNOVA!|\+\d+( mana)?)$/;
+{const _p=arPop;arPop=function(x,y,t,col){if(!(MUDO.test(t)&&AR&&!AR.lobby))_p(x,y,t,col);try{const A=AR;if(!A||A.lobby)return;
   if(GLOB[t]){A.gfx={n:'global_'+GLOB[t]+'_12q_540x1170',t0:A.t};S(A.gfx.n);}
-  else if(SIG[t])afxAdd(A,{n:SIG[t],x,y:y+12,w:34,h:34,fps:20,nf:SIG[t].includes('6q')?6:8});
+  else if(false&&SIG[t])afxAdd(A,{n:SIG[t],x,y:y+12,w:34,h:34,fps:20,nf:SIG[t].includes('6q')?6:8});
   else if(t==='ESTILHAÇOU!')afxAdd(A,{n:'status_congelado_quebra_8q_128',x,y:y+20,w:32,h:32,fps:12,nf:8,ay:100/128});
-  else if(/^\+\d+ mana$/.test(t))afxAdd(A,{n:'sinal_mana_8q_64',x,y:y+8,w:16,h:16,fps:20,nf:8});}catch(_){}};}
+  else if(false)afxAdd(A,{n:'sinal_mana_8q_64',x,y:y+8,w:16,h:16,fps:20,nf:8});}catch(_){}};}
 
 /* chão: poças/redemoinho/espinhos com aparecer → loop → sumir; auras embaixo das peças; explosões antigas só quando não há arte */
 {const _ad=arAbDraw;arAbDraw=function(A,G2,t){
@@ -12241,9 +12243,9 @@ function afxAdd(A,o){A.afx=A.afx||[];if(A.afx.length<40)A.afx.push(Object.assign
     const p1=arPos(G2,Math.max(0,z.d-z.len/2)),p2=arPos(G2,z.d+z.len/2),c=arPos(G2,z.d),L=Math.hypot(p2.x-p1.x,p2.y-p1.y),w=Math.max(G2.cs*.95,L*1.2),h=w*.5;
     let rot=Math.atan2(p2.y-p1.y,p2.x-p1.x);if(rot>Math.PI/2)rot-=Math.PI;if(rot<-Math.PI/2)rot+=Math.PI;rot*=.35;/* segue a estrada só um pouco: a arte é vista de cima-frente */
     const age=z.T-z.t;let n,f;if(age<24){n='area_'+kd+'_aparecer_4q_256x128';f=FR(age,10,4,false);}else if(z.t<24){n='area_'+kd+'_sumir_4q_256x128';f=FR(24-z.t,10,4,false);}else{n='area_'+kd+'_8q_256x128';f=FR(age,10,8,true);}
-    D(n,f,c.x,c.y+1,w,h,{rot,a:.95});}
+    D(n,f,c.x,c.y+1,w*.85,h*.85,{rot,a:.7});}
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u)continue;const ab=arAbOf(u);if(!ab||!ab.aura)continue;const kk=key(ab),nm=kk==='cascopedra'?'aura_pedra_8q_256x128':'aura_flor_8q_256x128',p=arCellXY(i),cs=G2.cs;
-    D(nm,FR(t+i*7,10,8,true),p.x,p.y+cs*.22,cs*1.25,cs*.62,{a:.9});}
+    D(nm,FR(t+i*7,10,8,true),p.x,p.y+cs*.22,cs*1.1,cs*.55,{a:.55});}
   const Z0=A.zones,F0=A.fx;A.zones=keep;A.fx=(A.fx||[]).filter(f=>!f.afxSkip);
   const bt=A.en.map(e=>[e,e.burnT]);for(const e of A.en)if(S('status_queimando_8q_128'))e.burnT=0;/* faíscas antigas: a arte de queimando substitui */
   try{_ad(A,G2,t);}finally{A.zones=Z0;A.fx=F0;for(const [e,v] of bt)e.burnT=v;}};}
@@ -12258,19 +12260,18 @@ const _ft=arFxTop;
 arFxTop=function(A,G2,t){try{
   /* inimigos: estados */
   for(const e of A.en){if(e.hp<=0)continue;const q=arPos(G2,e.d);const o=e.boss&&typeof arBossOff==='function'?arBossOff(G2,q):[0,0],x=q.x+o[0],y=q.y+o[1];
-    let hh=e.boss?40:20;try{hh=Math.max(12,arEB(e.sp,e.boss));}catch(_){}const sz=hh*1.75;
-    for(const k of stList(e)){const n='status_'+k+'_8q_128';
+    let hh=e.boss?40:20;try{hh=Math.max(12,arEB(e.sp,e.boss));}catch(_){}const sz=hh*1.3;
+    for(const k of stList(e).slice(0,1)){const n='status_'+k+'_8q_128';
       if(k==='ferrao'){const row=e.sting>=5?2:e.sting>=3?1:0;D(n,row*8+FR(t,10,8,true),x,y,sz,sz,{ay:100/128});continue;}
-      if(!D(n,FR(t+(e.id||0)*3,10,8,true),x,y,sz,sz,{ay:100/128,a:k==='congelado'?.92:1}))_old(A,G2,t,e,k,x,y,hh);}
+      if(!D(n,FR(t+(e.id||0)*3,10,8,true),x,y,sz,sz,{ay:100/128,a:k==='congelado'?.8:.75}))_old(A,G2,t,e,k,x,y,hh);}
     /* empurrão: sinal na direção em que ele vai */
     if(e.kbT>0){if(!e._kb0)e._kb0=A.t;const f=arPos(G2,Math.max(0,e.d-8)),rot=Math.atan2(f.y-q.y,f.x-q.x)+Math.PI/2;
-      if(!D('sinal_empurrao_8q_128',FR(A.t-e._kb0,20,8,false),x,y-hh*.35,sz*.95,sz*.95,{rot,a:Math.min(1,e.kbT/8)}))_old(A,G2,t,e,'kb',x,y,hh);}else e._kb0=0;}
+      if(!D('sinal_empurrao_8q_128',FR(A.t-e._kb0,20,8,false),x,y-hh*.35,sz*.7,sz*.7,{rot,a:Math.min(.7,e.kbT/8)}))_old(A,G2,t,e,'kb',x,y,hh);}else e._kb0=0;}
   /* quem lançou: casa acende + anel "lançou" na cor do poder */
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u)continue;if(u.castT>0){if(!u._lc0||u.castT>u._lcp)u._lc0=A.t;u._lcp=u.castT;const c=arCellXY(i),cs=G2.cs,a=u.castT/34;
-      D('sinal_lancou_8q_128',FR(A.t-u._lc0,20,8,false),c.x,c.y+cs*.15,cs*1.35,cs*1.35,{tint:u.castCol||'#ffffff',comp:'lighter'});
-      b.save();b.globalAlpha=Math.min(1,a*2);if(u.castN)T(arFxTxt(u.castN),c.x,c.y-cs/2-5-(1-a)*3,4.4,'center','#ffffff',cs*1.8,'#1a1030');b.restore();}else u._lcp=0;}
+      D('sinal_lancou_8q_128',FR(A.t-u._lc0,20,8,false),c.x,c.y+cs*.15,cs*1.05,cs*1.05,{tint:u.castCol||'#ffffff',comp:'lighter',a:.45});}else u._lcp=0;}
   /* tiros: arte do projétil girada pro alvo (fogo, água e raio seguem com a bolinha + rastro) */
-  for(const s of A.shots){const fam=s.ab&&PROJ[key(s.ab)],tp=s.tg&&s.tg.hp>0?arPos(G2,s.tg.d):null,rot=tp?Math.atan2(tp.y-6-s.y,tp.x-s.x):0,sz=13*(1+Math.min(6,s.star||0)*.05);
+  for(const s of A.shots){const fam=s.ab&&PROJ[key(s.ab)],tp=s.tg&&s.tg.hp>0?arPos(G2,s.tg.d):null,rot=tp?Math.atan2(tp.y-6-s.y,tp.x-s.x):0,sz=11*(1+Math.min(6,s.star||0)*.04);
     if(fam&&D('proj_'+fam+'_6q_64',FR(A.t,15,6,true),s.x,s.y,sz,sz,{rot})){s.afxDrawn=1;continue;}
     if(s.ab){s.tr=s.tr||[];s.tr.push(s.x,s.y);if(s.tr.length>10)s.tr.splice(0,2);if(s.tr.length>=4){b.save();b.globalCompositeOperation='lighter';b.lineCap='round';for(let k=2;k<s.tr.length;k+=2){b.globalAlpha=k/s.tr.length*.7;b.strokeStyle=s.col;b.lineWidth=1+k/s.tr.length*1.8;b.beginPath();b.moveTo(s.tr[k-2],s.tr[k-1]);b.lineTo(s.tr[k],s.tr[k+1]);b.stroke();}b.restore();}}
     b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
@@ -12280,13 +12281,13 @@ arFxTop=function(A,G2,t){try{
       b.save();b.strokeStyle='#fff6a0';b.lineWidth=1.2;b.globalAlpha=z.life/8;b.beginPath();b.moveTo(z.x1,z.y1);b.lineTo((z.x1+z.x2)/2+(Math.random()-.5)*6,(z.y1+z.y2)/2+(Math.random()-.5)*6);b.lineTo(z.x2,z.y2);b.stroke();b.restore();}}
   /* impactos, áreas de um golpe e sinais */
   A.afx=(A.afx||[]).filter(f=>{const age=A.t-f.t0;
-    if(f.area){const ap=24,lp=36,sm=24,base='area_'+f.area;let ok;if(age<ap)ok=D(base+'_aparecer_4q_256x128',FR(age,10,4,false),f.x,f.y,f.w,f.h);else if(age<ap+lp)ok=D(base+'_8q_256x128',FR(age-ap,10,8,true),f.x,f.y,f.w,f.h);else ok=D(base+'_sumir_4q_256x128',FR(age-ap-lp,10,4,false),f.x,f.y,f.w,f.h);
+    if(f.area){const ap=24,lp=36,sm=24,base='area_'+f.area;let ok;if(age<ap)ok=D(base+'_aparecer_4q_256x128',FR(age,10,4,false),f.x,f.y,f.w,f.h,{a:.7});else if(age<ap+lp)ok=D(base+'_8q_256x128',FR(age-ap,10,8,true),f.x,f.y,f.w,f.h,{a:.7});else ok=D(base+'_sumir_4q_256x128',FR(age-ap-lp,10,4,false),f.x,f.y,f.w,f.h,{a:.7});
       if(!ok&&age<14){b.save();b.globalAlpha=(1-age/14)*.7;b.globalCompositeOperation='lighter';E(f.x,f.y,f.w*.3,f.w*.21,'#ffffff',0,false);b.restore();}return age<ap+lp+sm;}
-    D(f.n,FR(age,f.fps,f.nf,false),f.x,f.y,f.w,f.h,{ay:f.ay});return age<DUR(f.fps,f.nf);});
+    D(f.n,FR(age,f.fps,f.nf,false),f.x,f.y,f.w,f.h,{ay:f.ay,a:f.a!=null?f.a:.85});return age<DUR(f.fps,f.nf);});
   /* especial de tela inteira */
-  if(A.gfx){const g=A.gfx,age=A.t-g.t0,s=S(g.n);if(age>DUR(12,12)+2)A.gfx=null;else if(s){const sc=Math.max(W/540,H/1170);D(g.n,FR(age,12,12,false),W/2,H/2,540*sc,1170*sc,{a:age<4?age/4:1});}}
+  if(A.gfx){const g=A.gfx,age=A.t-g.t0,s=S(g.n);if(age>DUR(12,12)+2)A.gfx=null;else if(s){const sc=Math.max(W/540,H/1170);D(g.n,FR(age,12,12,false),W/2,H/2,540*sc,1170*sc,{a:(age<4?age/4:1)*.7});}}
   /* explicação do poder (1ª vez na partida) */
-  if(A.fxMsg&&A.fxMsg.t>0){A.fxMsg.t--;const y=G2.y0+G2.bh+4;b.save();b.globalAlpha=Math.min(1,A.fxMsg.t/25);rrect(10,y,W-20,14,5,'rgba(20,14,40,.86)',false);b.fillStyle=A.fxMsg.col||'#fff';b.fillRect(14,y+3,2.2,8);T(A.fxMsg.s,W/2+2,y+3.6,5,'center','#ffffff',W-34,C.ink);b.restore();}
+  if(false&&A.fxMsg&&A.fxMsg.t>0){/* MINIMAL20NOV: sem faixa de explicação */A.fxMsg.t--;const y=G2.y0+G2.bh+4;b.save();b.globalAlpha=Math.min(1,A.fxMsg.t/25);rrect(10,y,W-20,14,5,'rgba(20,14,40,.86)',false);b.fillStyle=A.fxMsg.col||'#fff';b.fillRect(14,y+3,2.2,8);T(A.fxMsg.s,W/2+2,y+3.6,5,'center','#ffffff',W-34,C.ink);b.restore();}
 }catch(err){try{console.warn('ARFXART',err);}catch(_){}}};
 /* desenho antigo por código, se a arte daquele estado ainda não carregou */
 function _old(A,G2,t,e,k,x,y,hh){const cy=y-hh*.45;b.save();

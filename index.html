@@ -10749,7 +10749,8 @@ function arWaveInfo(w){const g=AR&&AR.goal,boss=arIsBossW(w,g),k=arStgK(),wk=1+(
 /* ARMAIS19NOV (Felipe: 'tem que ter mais inimigos pra poder ter mais mana e conseguir brincar mais juntando os monstrinhos. Na wave 20 tem que ter vários monstrinhos lvl 4. A mecânica de combinar tem que fazer parte do jogo'):
    ondas normais com 4× mais inimigos (cada um com a vida ÷2,4: a onda inteira fica 1,67× mais forte) e chegando 4× mais rápido; cada um continua dando 10 de mana;
    chamar monstrinho sobe o preço de 5 em 5 (era 10 em 10). Chefe igual. Robô médio na fase 15: 5-9 → 20-36 inimigos por onda; na onda 19 tem ★4/★5 (antes no máximo ★3). */
-const ARNK=4,ARHK=2.4,ARCUSTO=5;
+/* ARMAIS19NOV-B (Felipe escolheu '1'): cada inimigo 5× mais forte que na v670 (vida ÷0,48 em vez de ÷2,4), mesma quantidade e mesma mana */
+const ARNK=4,ARHK=0.48,ARCUSTO=5;
 {const _wi=arWaveInfo;arWaveInfo=function(w){const I=_wi(w);if(I&&!I.boss){I.n=Math.min(60,Math.round(I.n*ARNK));I.hp=Math.max(1,Math.round(I.hp/ARHK));}return I;};}
 function arStartWave(){if(AR.wave>0){const k=arStgK();AR.mana+=Math.round((20+(1+(AR.wave-1)*k)*2)*k);}AR.wave++;const I=arWaveInfo(AR.wave);AR.wi=I;AR.spawnLeft=I.n;AR.spawnT=0;AR.bossDone=!I.boss;if(I.boss){AR.ann={t:0,txt:`CHEFE! Onda ${AR.wave}`};tone([220,165,110],.18,'sawtooth',.08);}else{AR.ann={t:0,txt:`Onda ${AR.wave}`};}}
 function arSpawn(boss){const G2=arGeo(),I=AR.wi,sp=AR.pool[Math.floor(Math.random()*AR.pool.length)],hp=boss?I.hp*(AR.stgI>=0?20:28):I.hp;AR.en.push({sp:boss?(AR.bossSp||(AR.bossSp=AR.pool[Math.floor(Math.random()*AR.pool.length)])):sp,d:0,hp,max:hp,spd:boss?I.spd*.55:I.spd*(.9+Math.random()*.2),slow:0,slowT:0,poison:0,poisonT:0,boss:!!boss,id:Math.random(),sc:boss?.5:.28,hit:0});}

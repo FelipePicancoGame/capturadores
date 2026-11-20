@@ -10753,7 +10753,13 @@ function arWaveInfo(w){const g=AR&&AR.goal,boss=arIsBossW(w,g),k=arStgK(),wk=1+(
 const ARNK=4,ARHK=0.6,ARCUSTO=5;/* ESPACO20NOV: espalhados, os ataques em área pegam menos inimigos de uma vez — vida ÷0,6 (era ÷0,48) mantém a dificuldade */
 /* RAMPA19NOV: robô perdia na onda 1-2 (time ainda pequeno). As primeiras ondas começam leves (vida ÷2,4, como a v670) e chegam na força nova (÷0,48) na onda 8. */
 /* ESPACO20NOV (Felipe: 'os inimigos estão vindo muito junto'): espalha a chegada pela onda toda (~17 s dos 20 s) em vez de vir em bolo */
-function arGapSpawn(A){const n=Math.max(1,(A.wi&&A.wi.n)||20);return Math.max(12,Math.min(Math.max(16,40-A.wave),Math.floor(1000/n)));}
+/* TAMANHOS20NOV (Felipe: 'alterna entre inimigos espalhados e juntos' + 'coloca os menores juntos e os maiores espalhados'):
+   a onda vem em ciclos de 6: um bando de 5 PEQUENOS bem juntos (menores, mais rápidos, vida ×0,6) e depois 1 GRANDE sozinho (maior, mais lento, vida ×2), com espaço antes e depois. */
+function arTamDe(k){return k%6===5?'g':'p';}
+function arGapSpawn(A){const n=Math.max(1,(A.wi&&A.wi.n)||20),k=n-A.spawnLeft;/* k = quantos já saíram */
+  if(arTamDe(k-1)==='p'&&arTamDe(k)==='p')return 6;return Math.max(20,Math.min(160,Math.round((6000/n-24)/2)));}
+{const _spT=arSpawn;arSpawn=function(boss){const A=AR,k=A&&A.wi?A.wi.n-A.spawnLeft:0;_spT(boss);if(boss||!A)return;const e=A.en[A.en.length-1];if(!e||e.boss)return;
+  if(arTamDe(k)==='g'){e.sc=.32;e.tam=1.14;e.hp=e.max=e.max*2;e.spd*=.85;}else{e.sc=.22;e.tam=.79;e.hp=e.max=Math.max(1,e.max*.6);e.spd*=1.12;}};}
 function arHkOnda(w){return ARHK+(2.4-ARHK)*Math.max(0,1-((w||1)-1)/7);}
 {const _wi=arWaveInfo;arWaveInfo=function(w){const I=_wi(w);if(I&&!I.boss){I.n=Math.min(60,Math.round(I.n*ARNK));I.hp=Math.max(1,Math.round(I.hp/arHkOnda(w)));}return I;};}
 function arStartWave(){if(AR.wave>0){const k=arStgK();AR.mana+=Math.round((20+(1+(AR.wave-1)*k)*2)*k);}AR.wave++;const I=arWaveInfo(AR.wave);AR.wi=I;AR.spawnLeft=I.n;AR.spawnT=0;AR.bossDone=!I.boss;if(I.boss){AR.ann={t:0,txt:`CHEFE! Onda ${AR.wave}`};tone([220,165,110],.18,'sawtooth',.08);}else{AR.ann={t:0,txt:`Onda ${AR.wave}`};}}
@@ -11119,8 +11125,8 @@ function arRender2(){const A=AR;if(A.lobby){A.t++;if(A.lobby==='dg')arDgDraw(A);
   for(let i=0;i<15;i++){const u=A.grid[i];if(!u||(A.drag&&A.drag.i===i))continue;const p=arCellXY(i),pop=Math.max(0,1-(t-u.born)/12);arSPiece(u,p.x,p.y,(1+pop*.25)*G2.cs/30,t,{glow:selU&&i!==A.sel&&arCanMerge(A.sel,i),sel:i===A.sel,atk:u.atk>0,seed:i*.37});}
   arAuraDraw(A,G2,t);if(A.drag&&A.grid[A.drag.i])arSPiece(A.grid[A.drag.i],A.drag.x,A.drag.y,1.12*G2.cs/30,t,{sel:1});
   const EN=[...A.en].sort((a,b2)=>arPos(G2,a.d).y-arPos(G2,b2.d).y);
-  for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';{const o=e.boss?arBossOff(G2,p):[0,0];arDrawMon(e.sp,p.x+o[0],p.y+o[1]-arEY(e.sp,e.boss),arES(e.sp,e.sc,e.boss),'walk',p.dir,e.id*10);}b.restore();
-    const _o=e.boss?arBossOff(G2,p):[0,0],by=p.y+_o[1]-arEB(e.sp,e.boss);if(e.boss)e._pf=e.hp/e.max;arHpBar(p.x+_o[0],by,e.hp/e.max,e.boss,e.poison>0&&e.poisonT>0?'#7ae04a':e.burnT>0?'#ff9a30':null);if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
+  for(const e of EN){const p=arPos(G2,e.d);E(p.x,p.y+2,e.boss?10:5,e.boss?3:2,'rgba(0,0,0,.3)',0,false);b.save();if(e.hit>0)b.filter='brightness(1.8)';else if(e.slow>0)b.filter='hue-rotate(170deg) saturate(1.3)';{const o=e.boss?arBossOff(G2,p):[0,0];arDrawMon(e.sp,p.x+o[0],p.y+o[1]-arEY(e.sp,e.boss)*(e.tam||1),arES(e.sp,e.sc,e.boss),'walk',p.dir,e.id*10);}b.restore();
+    const _o=e.boss?arBossOff(G2,p):[0,0],by=p.y+_o[1]-arEB(e.sp,e.boss)*(e.tam||1);if(e.boss)e._pf=e.hp/e.max;arHpBar(p.x+_o[0],by,e.hp/e.max,e.boss,e.poison>0&&e.poisonT>0?'#7ae04a':e.burnT>0?'#ff9a30':null);if(e.boss)T('CHEFE',p.x,by-7,5,'center','#ffd040',0,C.ink);}
   if(A.bdie&&A.bdie.length){A.bdie=A.bdie.filter(g=>g.t<36);for(const g of A.bdie){g.t++;const p=arPos(G2,g.d),o=arBossOff(G2,p),k=Math.min(1,g.t/22),fr=g.f*(1-k);b.save();b.globalAlpha=Math.max(0,1-g.t/36);b.filter='brightness('+(g.t%6<3?2.2:1.2)+')';
     arDrawMon(g.sp,p.x+o[0],p.y+o[1]-arEY(g.sp,true),arES(g.sp,g.sc,true)*(1+g.t*.006),'walk',p.dir,g.id*10);b.restore();const by=p.y+o[1]-arEB(g.sp,true);arHpBar(p.x+o[0],by,fr,true,null);T(window.CVLANG==='en'?'DEFEATED!':'DERROTADO!',p.x,by-7,5.5,'center','#ffffff',0,C.ink);}}
   arFxTop(A,G2,t);for(const s of A.shots){b.save();b.globalCompositeOperation='lighter';E(s.x,s.y,2.2+s.star*.3,2.2+s.star*.3,s.col,0,false);E(s.x,s.y,1.2,1.2,'#ffffff',0,false);b.restore();}
@@ -12322,7 +12328,7 @@ arDrawMon=function(sp,x,y,sc,act,dir,seed,fix){if(act==='walk'&&arWalk(sp))retur
 /* DESTRAVA (05/nov, reports Gabi 'Travou' e Felipe 'travou quando saí da arena em dupla'): se no mapa o jogo ficar 'ocupado' sem nenhuma janela aberta por mais de 15 s, solta o toque */
 {let bz=0;setInterval(()=>{try{if(typeof G==='undefined'||G.mode!=='world'||!busy||ui.length||document.getElementById('nomeBox')||document.querySelector('#arBox:not([hidden]),#duoBox:not([hidden]),#convO,#rpBox,#sdBox')){bz=0;return;}if(++bz>=15){bz=0;busy=false;try{__EV&&__EV('destravou mapa');}catch(_){}}}catch(e){}},1000);}
 
-/* ARBOSS (05/nov, report: 'Boss está andando fora da estrada'): inimigo com arte vista de cima fica no meio da estrada e no tamanho certo (chefe no máx. ~1,4 casa) */function arEY(sp,bo){return ARV.has(sp)?3:(bo?16:9);}function arES(sp,sc,bo){return ARV.has(sp)?Math.min(sc,bo?.42:.3):sc;}function arEB(sp,bo){return ARV.has(sp)?(bo?25:17):(bo?42:22);}
+/* ARBOSS (05/nov, report: 'Boss está andando fora da estrada'): inimigo com arte vista de cima fica no meio da estrada e no tamanho certo (chefe no máx. ~1,4 casa) */function arEY(sp,bo){return ARV.has(sp)?3:(bo?16:9);}function arES(sp,sc,bo){return ARV.has(sp)?(bo?Math.min(sc,.42):sc):sc;}function arEB(sp,bo){return ARV.has(sp)?(bo?25:17):(bo?42:22);}
 /* ARCHEFEJUNTOS12NOV (R349, report: chefe com a vida dentro do tabuleiro do parceiro no JUNTOS): na estrada única do meio a faixa é estreita, então a vida do chefe fica colada na cabeça dele e não sobe pro tabuleiro de cima */
 {const _eb=arEB;arEB=function(sp,bo){const v=_eb(sp,bo);try{if(bo&&AR&&AR.mp&&arCoop(AR))return Math.min(v,13);}catch(e){}return v;};}
 

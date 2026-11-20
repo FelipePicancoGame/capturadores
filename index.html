@@ -15641,6 +15641,7 @@ function tutCss(){if(document.getElementById('tutCss'))return;const st=document.
 #tutL .ok.fz{background:#fff3c8;font-size:13px}
 #tutL .sk{position:absolute;top:-15px;right:12px;pointer-events:auto;font:700 12px Fredoka,'Trebuchet MS',sans-serif;padding:3px 11px;border-radius:999px;border:2px solid #6b4a2a;background:#fff3c8;color:#6b4a2a;cursor:pointer}
 #tutL .hint{font-size:12px;color:#8a6a3a;font-weight:600}
+#tutL .bl.cmp{padding:8px 10px 7px 10px;gap:8px}#tutL .bl.cmp .pf{flex-basis:44px;height:44px}#tutL .bl.cmp .nm{font-size:11px;margin-bottom:2px}#tutL .bl.cmp .ms{font-size:15px;line-height:20px}#tutL .bl.cmp .ft{margin-top:3px}#tutL .bl.cmp .ok{padding:4px 14px;font-size:14px}
 `;document.head.appendChild(st);}
 /* gesto da mãozinha: tap, hold, drag (from->to) */
 function tutHand(L,g,a,c){L.querySelectorAll('.hd,.rp,.tr').forEach(e=>{try{e.getAnimations().forEach(x=>x.cancel());}catch(_){}e.remove();});if(!g||!a)return;
@@ -15708,9 +15709,10 @@ async function tutRun(key,steps,alive){flags.tut=flags.tut||{};if(TUTON||flags.t
         else{bks.forEach((d,k)=>{d.style.display=k?'none':'';});const d=bks[0];d.className='bk';d.style.left='0';d.style.top='0';d.style.width=vw+'px';d.style.height=vh+'px';ho.style.display='none';}
         /* balão longe do alvo: no maior espaço livre, sem cobrir o furo */
         bl.style.display='';const bh=bl.offsetHeight||150,sa=12;let top;
-        if(hole){const up=hole.y,dn=vh-(hole.y+hole.h);if(S.pos==='top'||(S.pos!=='bottom'&&up>=dn))top=Math.max(sa,Math.min(vh*.08+40,up-bh-14));else top=Math.min(vh-bh-sa,Math.max(hole.y+hole.h+14,vh-bh-sa-24));
+        /* TUTTORRE20NOV (Felipe: 'primeira torre sempre sendo coberta pelas instruções'): nas Torres o balão fica compacto e colado embaixo, sem cobrir o pedestal do portão */const tdB=key==='td';bl.classList.toggle('cmp',tdB);
+        if(hole){const up=hole.y,dn=vh-(hole.y+hole.h);if(S.pos==='top'||(S.pos!=='bottom'&&up>=dn))top=Math.max(sa,Math.min(vh*.08+40,up-bh-14));else top=Math.min(vh-bh-sa,Math.max(hole.y+hole.h+14,vh-bh-sa-(tdB?0:24)));
           if(top<hole.y+hole.h&&top+bh>hole.y)top=up>=dn?Math.max(sa,hole.y-bh-10):Math.min(vh-bh-sa,hole.y+hole.h+10);}
-        else top=S.pos==='top'?vh*.12:vh-bh-Math.max(24,vh*.06);
+        else top=S.pos==='top'?vh*.12:vh-bh-(tdB?sa+4:Math.max(24,vh*.06));
         bl.style.top=Math.round(top)+'px';bl.style.bottom='';
         const key2=(tgt?S.g:'')+'|'+(a?Math.round(a.x)+','+Math.round(a.y):'')+'|'+(b2?Math.round(b2.x)+','+Math.round(b2.y):'');if(tgt&&key2!==L.__hk){L.__hk=key2;tutHand(L,S.g,a,b2);}else if(!tgt&&L.__hk!=='-'){L.__hk='-';tutHand(L,null);}};
       cp.style.display='none';

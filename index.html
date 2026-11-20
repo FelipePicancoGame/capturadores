@@ -10751,7 +10751,9 @@ function arWaveInfo(w){const g=AR&&AR.goal,boss=arIsBossW(w,g),k=arStgK(),wk=1+(
    chamar monstrinho sobe o preço de 5 em 5 (era 10 em 10). Chefe igual. Robô médio na fase 15: 5-9 → 20-36 inimigos por onda; na onda 19 tem ★4/★5 (antes no máximo ★3). */
 /* ARMAIS19NOV-B (Felipe escolheu '1'): cada inimigo 5× mais forte que na v670 (vida ÷0,48 em vez de ÷2,4), mesma quantidade e mesma mana */
 const ARNK=4,ARHK=0.48,ARCUSTO=5;
-{const _wi=arWaveInfo;arWaveInfo=function(w){const I=_wi(w);if(I&&!I.boss){I.n=Math.min(60,Math.round(I.n*ARNK));I.hp=Math.max(1,Math.round(I.hp/ARHK));}return I;};}
+/* RAMPA19NOV: robô perdia na onda 1-2 (time ainda pequeno). As primeiras ondas começam leves (vida ÷2,4, como a v670) e chegam na força nova (÷0,48) na onda 8. */
+function arHkOnda(w){return ARHK+(2.4-ARHK)*Math.max(0,1-((w||1)-1)/7);}
+{const _wi=arWaveInfo;arWaveInfo=function(w){const I=_wi(w);if(I&&!I.boss){I.n=Math.min(60,Math.round(I.n*ARNK));I.hp=Math.max(1,Math.round(I.hp/arHkOnda(w)));}return I;};}
 function arStartWave(){if(AR.wave>0){const k=arStgK();AR.mana+=Math.round((20+(1+(AR.wave-1)*k)*2)*k);}AR.wave++;const I=arWaveInfo(AR.wave);AR.wi=I;AR.spawnLeft=I.n;AR.spawnT=0;AR.bossDone=!I.boss;if(I.boss){AR.ann={t:0,txt:`CHEFE! Onda ${AR.wave}`};tone([220,165,110],.18,'sawtooth',.08);}else{AR.ann={t:0,txt:`Onda ${AR.wave}`};}}
 function arSpawn(boss){const G2=arGeo(),I=AR.wi,sp=AR.pool[Math.floor(Math.random()*AR.pool.length)],hp=boss?I.hp*(AR.stgI>=0?20:28):I.hp;AR.en.push({sp:boss?(AR.bossSp||(AR.bossSp=AR.pool[Math.floor(Math.random()*AR.pool.length)])):sp,d:0,hp,max:hp,spd:boss?I.spd*.55:I.spd*(.9+Math.random()*.2),slow:0,slowT:0,poison:0,poisonT:0,boss:!!boss,id:Math.random(),sc:boss?.5:.28,hit:0});}
 function arStats(sp,star){const ty=arType(sp),up=AR.lv[sp]||0,base=9*Math.pow(1.75,star-1)*(1+.3*up);

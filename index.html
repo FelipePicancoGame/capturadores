@@ -1928,7 +1928,7 @@ function drawCfgArt(u){const ks=['cfg_fundo','cartao_opcao','seletor_personagem'
   {b.fillStyle='rgba(120,150,110,.5)';const q=p(150,990);b.fillRect(q[0],q[1],640*s,Math.max(1,3*s));}
   {const y=1018,h=130;card(I.botao_salvar,cx,y,cw,h,4);const is=104,q=p(cx+48,y+(h-is)/2);b.drawImage(I.cfg_icone_salvar,q[0],q[1],is*s,is*s);txt('SALVAR AGORA',cx+cw*.57,y+h/2+3,54,'center',TC,460);}
   {const w=740,h=w*177/951,y=1160;card(I.botao_carregar,cx+5,y,w,h,5);const is=104,q=p(cx+50,y+(h-is)/2);b.drawImage(I.cfg_icone_carregar,q[0],q[1],is*s,is*s);txt('CARREGAR JOGO',cx+cw*.57,y+h/2+3,54,'center',TC,460);}
-  {const y=1322,w=245,h=62,xs=[100,348,596],T=['📖 História','🖐️ Tutoriais','📶 '+offShort()],C=['#7a4a1a','#6a3fa0','#1f6a7a'],I2=[6,7,10];for(let k=0;k<3;k++){const q=p(xs[k],y);txt(T[k],xs[k]+w/2,y+h/2,34,'center',C[k],w-8);u.rects.push({x:q[0],y:q[1],w:w*s,h:h*s,i:I2[k]});}}
+  {const y=1322,w=245,h=62,xs=[222,474],T=['🖐️ Tutoriais','📶 '+offShort()],C=['#6a3fa0','#1f6a7a'],I2=[7,10];for(let k=0;k<2;k++){const q=p(xs[k],y);txt(T[k],xs[k]+w/2,y+h/2,34,'center',C[k],w-8);u.rects.push({x:q[0],y:q[1],w:w*s,h:h*s,i:I2[k]});}}
   {const w=520,h=w*206/857,x=(941-w)/2,y=1415;card(I.botao_voltar,x,y,w,h,8);txt('VOLTAR',x+w*.58,y+h/2+4,52,'center',TC,260);}
   b.restore();return true;}
 /* PRIVACIDADE14NOV (revisão App Store): política de privacidade e APAGAR MEUS DADOS dentro do jogo */
@@ -1946,7 +1946,7 @@ async function privMenu(){const en=window.CVLANG==='en';
   try{const ks=[];for(let i=0;i<localStorage.length;i++){const kk=localStorage.key(i);if(/^(capturadores|cv\.)/.test(kk))ks.push(kk);}ks.forEach(kk=>localStorage.removeItem(kk));}catch(e){}
   try{window.__NOVOJOGO=1;}catch(e){}location.reload();}
 async function cfgMenu(){while(true){const sOn=!flags.sfxOff,fOn=!flags.fxOff;
-  const mOn=musOn(),L=[`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${fOn?'LIGADO':'DESLIGADO'}`,`PERSONAGEM: ${flags.hero==='menina'?'MENINA':'MENINO'}`,'SALVAR AGORA','CARREGAR JOGO','VER A HISTÓRIA','VER TUTORIAIS','VOLTAR',`NARRAÇÃO: ${!flags.narraOff?'LIGADA':'DESLIGADA'}`,offLabel(),window.CVLANG==='en'?'🌐 LANGUAGE: ENGLISH':'🌐 IDIOMA: PORTUGUÊS','PRIVACIDADE'];
+  const mOn=musOn(),L=[`MÚSICA: ${mOn?'LIGADA':'DESLIGADA'}`,`SONS: ${sOn?'LIGADOS':'DESLIGADOS'}`,`TREMOR: ${fOn?'LIGADO':'DESLIGADO'}`,`PERSONAGEM: ${flags.hero==='menina'?'MENINA':'MENINO'}`,'SALVAR AGORA','CARREGAR JOGO','—','VER TUTORIAIS','VOLTAR',`NARRAÇÃO: ${!flags.narraOff?'LIGADA':'DESLIGADA'}`,offLabel(),window.CVLANG==='en'?'🌐 LANGUAGE: ENGLISH':'🌐 IDIOMA: PORTUGUÊS','PRIVACIDADE'];
   /* 27/out (Felipe): mesmo estilo do Caderno com adesivo (balão de destaque + tirinhas de papel com fita) */
   const j=await choose(L,{cfgart:1,cadAsk:{q:'CONFIGURAÇÕES — toque pra ligar ou desligar',nf:cfgMenu.open?1:0,cols:[mOn?'#1f7a3a':'#8a2f2f',sOn?'#1f7a3a':'#8a2f2f',fOn?'#1f7a3a':'#8a2f2f',flags.hero==='menina'?'#a8326e':'#2f5fa8','#154c5e','#154c5e','#154c5e','#7a4fb0','#6a4a2a',!flags.narraOff?'#1f7a3a':'#8a2f2f','#1f6a7a','#2f5fa8']}});cfgMenu.open=1;if(j===12){await privMenu();continue;}if(j===11){cvSetLang(window.CVLANG==='en'?'pt':'en');return;}
   if(j===0){flags.music=!musOn();saveGame();try{tone([660,880],.06);}catch(e){}continue;}
@@ -1955,7 +1955,7 @@ async function cfgMenu(){while(true){const sOn=!flags.sfxOff,fOn=!flags.fxOff;
   if(j===3){flags.hero=flags.hero==='menina'?'menino':'menina';saveGame();try{tone([660,880],.06);}catch(e){}continue;}
   if(j===4){saveGame();try{cloudFlush();}catch(e){}await say(window.__saveOK===false?'Não consegui salvar neste aparelho (memória cheia?). Tente de novo.':'Jogo salvo!');continue;}/* AUDIT14NOV F03 */
   if(j===5){const ok=await loadMenu();if(ok){try{_cPend=null;}catch(e){}party=[];G.mode='title';location.reload();return;}continue;}
-  if(j===6){await hqPlay(hqAll());continue;}
+  if(j===6){continue;}/* SEMHQ19NOV: Felipe tirou a história antiga */
   if(j===9){flags.narraOff=!flags.narraOff;saveGame();if(flags.narraOff)narPara();else narFala('Narração ligada. Eu vou ler as histórias pra você.','');continue;}
   if(j===10){await offMenu();continue;}
   if(j===7){flags.tut={};saveGame();await say('Pronto! Os tutoriais vão aparecer de novo, um em cada parte do jogo.');cfgMenu.open=0;return;}
@@ -10162,7 +10162,7 @@ async function openMenu(){if(flags.migMsg){const t=flags.migMsg;delete flags.mig
     if(i===-8){await dexMenu();continue;}
     if(i===-4){if(await stageMap('td')==='sair')break;continue;}
     if(i===-7){if(await stageMap('surv')==='sair')break;continue;}
-    if(i===-5){flags.newsSeen=NOVIDADES.length;const list=NOVIDADES.slice().reverse();let pg=0;while(true){const j=await choose(['◀','▶','Voltar'],{news:{list,pg}});if(j===0)pg=Math.max(0,pg-1);else if(j===1)pg=Math.min(Math.ceil(list.length/4)-1,pg+1);else if(j>=10&&j<14){const n=list[pg*4+j-10];if(n){if(n.hq)await hqPlay(hqAll());else await say(n.t);}}else break;}continue;}
+    if(i===-5){flags.newsSeen=NOVIDADES.length;const list=NOVIDADES.filter(n=>!n.hq).reverse();let pg=0;/* SEMHQ19NOV */while(true){const j=await choose(['◀','▶','Voltar'],{news:{list,pg}});if(j===0)pg=Math.max(0,pg-1);else if(j===1)pg=Math.min(Math.ceil(list.length/4)-1,pg+1);else if(j>=10&&j<14){const n=list[pg*4+j-10];if(n){if(n.hq)await hqPlay(hqAll());else await say(n.t);}}else break;}continue;}
     if(i===-2){if(await stageMap('exp')==='sair')break;continue;}
     if(i===-3){if(await wallHub()==='sair')break;continue;}
     if(i===0){let k=await partyPick(storage.length?`Equipe (${storage.length} no Sítio)`:'Sua equipe',false,true);if(k===-50){await cmpMenu();continue;}if(k===-51){await trainMenu();continue;}if(k>=0){let o,j;while(true){o=[];if(k>0)o.push('Pôr na frente');if(storage.length)o.push('Trocar com o Sítio');o.push('Comparar');o.push('Voltar');
@@ -19407,8 +19407,8 @@ window.__AJEQ=()=>{try{if(/[?#&]ajeq1/.test(location.href)){localStorage.setItem
   sec(EN()?'GAME':'JOGO',[52,2045,976,91],[97,2062,880,52]);
   const bt=(n,r,tr,t,i,cor)=>{im(ct,'aj_'+n,C(r));tx(ct,t,C(tr),t.length>12?36:42,cor||BR,'c','white-space:normal;text-align:center');hit(ct,C(r),t,()=>fin(u,i));};
   bt('botao_salvar',[36,2172,498,201],[64,2217,436,101],EN()?'SAVE NOW':'SALVAR AGORA',4,'#0b3a18');bt('botao_carregar',[549,2172,497,201],[580,2217,436,101],EN()?'LOAD GAME':'CARREGAR JOGO',5,'#0b2a5a');
-  bt('botao_historia',[36,2399,498,203],[64,2446,436,101],EN()?'STORY':'HISTÓRIA',6);bt('botao_tutoriais',[549,2399,497,203],[580,2446,436,101],EN()?'TUTORIALS':'TUTORIAIS',7);
-  bt('botao_offline',[36,2627,498,201],[64,2670,436,101],EN()?'PLAY OFFLINE':'JOGAR OFFLINE',10);bt('botao_privacidade',[549,2627,497,201],[580,2670,436,101],EN()?'PRIVACY':'PRIVACIDADE',12);
+  /* SEMHQ19NOV: Felipe tirou o botão HISTÓRIA (história antiga) */bt('botao_tutoriais',[36,2399,498,203],[64,2446,436,101],EN()?'TUTORIALS':'TUTORIAIS',7);bt('botao_offline',[549,2399,497,203],[580,2446,436,101],EN()?'PLAY OFFLINE':'JOGAR OFFLINE',10);
+  bt('botao_privacidade',[292,2627,497,201],[323,2670,436,101],EN()?'PRIVACY':'PRIVACIDADE',12);
   im(ct,'aj_linha_idioma',C([36,2869,1010,191]));tx(ct,EN()?'Language':'Idioma',C([82,2930,355,75]),44,BR,'l');
   const en=EN();im(ct,en?'aj_idioma_inativo':'aj_idioma_ativo',C([482,2903,264,124]));im(ct,en?'aj_idioma_ativo':'aj_idioma_inativo',C([761,2903,260,124]));
   tx(ct,'PT',C([516,2937,188,72]),46,en?BR:'#0b2a5a');tx(ct,'EN',C([792,2937,189,72]),46,en?'#0b2a5a':BR);

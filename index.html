@@ -11482,6 +11482,13 @@ function arFragDraw(A){if(!A.fragGot)return;const L=Object.entries(A.fragGot),y=
 const ARRAR=[{k:'comum',n:'COMUM',col:'#9aa0a8',ink:'#3a3f48',mul:1,w:4,cost:1},{k:'rara',n:'RARA',col:'#3a8ae8',ink:'#0e2a6a',mul:1.15,w:3,cost:1.4},{k:'epica',n:'ÉPICA',col:'#a050e0',ink:'#3a0e6a',mul:1.3,w:2,cost:2},{k:'lendaria',n:'LENDÁRIA',col:'#f0b020',ink:'#6a3a00',mul:1.5,w:1,cost:3}];
 function arRar(sp){const S=SP[sp];if(!S)return ARRAR[0];if(sp==='auroril'||sp==='aurorion')return ARRAR[3];const t=(S.base||[]).reduce((a,b)=>a+b,0);return ARRAR[t>=300?3:t>=260?2:t>=215?1:0];}
 {const _st4=arStats;arStats=function(sp,star){const S=_st4(sp,star);try{S.dmg*=arRar(sp).mul;}catch(e){}return S;};}
+/* ESTILO21NOV (report 555, Felipe: 'vários monstrinhos têm o mesmo poder, velocidade e força — tem que ter mais diferença'; aprovado 'sim' em 21/nov):
+   cada espécie ganha um jeito de lutar pelos atributos dela. Velocidade alta = ataca mais rápido e bate mais fraco; ataque alto e lento = bate forte e devagar.
+   A força média (dano por segundo) fica quase igual: dano × e tempo ÷ andam juntos; só o ataque da espécie mexe um pouco (±12%). */
+const AREST=(()=>{let n=0,sa=0,sv=0;for(const k in SP){const B=SP[k]&&SP[k].base;if(B&&B.length>=4){n++;sa+=B[1];sv+=B[3];}}return {a:sa/Math.max(1,n),v:sv/Math.max(1,n),c:{}};})();
+function arEstilo(sp){let o=AREST.c[sp];if(o)return o;const B=(SP[sp]&&SP[sp].base)||[50,50,50,50];const an=B[1]/AREST.a,vn=B[3]/AREST.v;
+  const cdm=Math.max(.62,Math.min(1.6,Math.pow(vn,-1.1))),tilt=Math.max(.88,Math.min(1.12,Math.pow(an,.35)));o={cdm,dm:cdm*tilt,k:cdm<.85?'rapido':cdm>1.18?'forte':'medio'};AREST.c[sp]=o;return o;}
+{const _st5=arStats;arStats=function(sp,star){const S=_st5(sp,star);try{const E=arEstilo(sp);S.dmg*=E.dm;S.cd=Math.max(7,Math.round(S.cd*E.cdm));S.estilo=E.k;}catch(e){}return S;};}
 
 /* ARPODERES (05/nov, Felipe: "criar poderes diferentes para os monstrinhos... o Fornalho joga fogo, a Lesmagma joga lava no chão onde o cara vai passar... um para cada um" → "vamos começar por elementos: fogo, depois água..."):
    cada monstrinho tem o SEU poder na Arena (segue a forma: quando evolui, o poder muda). Quem não tem poder próprio ainda usa o do tipo (antigo).

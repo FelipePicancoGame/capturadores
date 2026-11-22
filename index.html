@@ -12652,8 +12652,8 @@ const CV=(()=>{const D={"sair":[15,16,150,78],"onda":[275,16,240,83],"tempo":[54
 {const _bg=m7Bg;m7Bg=function(I){if(!arUm()||I!==ARDUP)return _bg(I);const t=m7T(),k=t.k,w=1080*k,s=I.naturalHeight/1920,sp=t.sp;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';
   if(t.ox>0){b.drawImage(I,0,0,3,I.naturalHeight,0,0,t.ox+1,H);b.drawImage(I,I.naturalWidth-3,0,3,I.naturalHeight,t.ox+w-1,0,t.ox+1,H);}
   /* DUOTOPO21NOV (report 546 'tela bem errada'): a faixa de cima era verde lisa; agora é a própria arte bem desfocada (feita pequena e ampliada), sem mostrar pedaço repetido */
-  if(t.ex>0){let C=window.__duoBlur;if(!C||C.src!==I.src){const c=document.createElement('canvas');c.width=5;c.height=3;const x=c.getContext('2d');x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';
-     x.drawImage(I,0,0,I.naturalWidth,I.naturalHeight*.06,0,0,5,3);C=window.__duoBlur={c,src:I.src};}
+  if(t.ex>0){let C=window.__duoBlur;if(!C||C.img!==I){const c=document.createElement('canvas');c.width=5;c.height=3;const x=c.getContext('2d');x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';
+     x.drawImage(I,0,0,I.naturalWidth,I.naturalHeight*.06,0,0,5,3);C=window.__duoBlur={c,img:I};}
    b.drawImage(C.c,.5,.5,4,2,-W*.05,-t.ex*.2,W*1.1,t.ex*1.4);const g=b.createLinearGradient(0,0,0,t.ex);g.addColorStop(0,'rgba(25,45,15,.45)');g.addColorStop(1,'rgba(25,45,15,.1)');b.fillStyle=g;b.fillRect(0,0,W,t.ex+1);}
   b.drawImage(I,0,0,I.naturalWidth,I.naturalHeight,t.ox,t.ex,w,1920*k);b.restore();};}
 function arUmLeg(){const G=arGeo();const P=G&&G.pts;return P&&P.length>1?Math.hypot(P[1][0]-P[0][0],P[1][1]-P[0][1]):0;}
@@ -18212,11 +18212,14 @@ function arEntry13(A){if(!n13Tela('are'))return false;const t=A.t;A.hits=[];
   const CB=n13('carta');
   (A.deck||[]).slice(0,5).forEach((sp,i)=>{const r=N13CARD[i],q=q13(r),cx=r[0]+r[2]/2;let RR={n:'',ink:'#3d2a1c'},cl=1,fr=0,nd=1;try{RR=arRar(sp);cl=arCardLv(sp);fr=arFrag(sp);nd=arCardNeed(cl,sp);}catch(e){}const can=cl<ARCMAX&&fr>=nd;
     if(CB){b.save();b.imageSmoothingEnabled=true;b.drawImage(CB,q.x,q.y,q.w,q.h);b.restore();}
-    f13(String(RR.n||'').toUpperCase(),cx,r[1]+25,20,RR.ink||'#3d2a1c',r[2]-22);
+    /* RARIDADE21NOV (reports 535 e 556: 'mostre melhor quais cartas são raras e épicas' / 'mostrar a quantidade de cartas'): moldura e faixa na cor da raridade; contador de cartas maior com 🃏 */
+    {const cq=q13([r[0]+4,r[1]+4,r[2]-8,r[3]-8]);b.save();b.strokeStyle=RR.col||'#9aa0a8';b.lineWidth=Math.max(2,6*N13C.k);if((RR.w||4)<=2){b.shadowColor=RR.col;b.shadowBlur=10*N13C.k*(1+.4*Math.sin(t/8));}b.beginPath();if(b.roundRect)b.roundRect(cq.x,cq.y,cq.w,cq.h,10*N13C.k);else b.rect(cq.x,cq.y,cq.w,cq.h);b.stroke();b.restore();
+     const fq=q13([r[0]+14,r[1]+10,r[2]-28,30]);rrect(fq.x,fq.y,fq.w,fq.h,fq.h/2,RR.col||'#9aa0a8',false);}
+    f13(String(RR.n||'').toUpperCase(),cx,r[1]+25,21,'#ffffff',r[2]-34,RR.ink||'#3d2a1c');
     try{const CI=(typeof cardIlu==='function')?cardIlu(sp):null,m=q13([r[0]+16,r[1]+40,r[2]-32,104]);if(CI){cardIluDraw(CI,m.x,m.y,m.w,m.h,6*N13C.k);}else{const I=arCardArt(sp);if(I){const s=Math.min(m.w/I.naturalWidth,m.h/I.naturalHeight),w=I.naturalWidth*s,h=I.naturalHeight*s;b.save();b.imageSmoothingEnabled=true;b.drawImage(I,m.x+(m.w-w)/2,m.y+(m.h-h)/2,w,h);b.restore();}else arDrawMon(sp,m.x+m.w/2,m.y+m.h*.6,r[3]/600,'idle','s',i);}}catch(e){}
     f13(`carta ${cl}`,cx,r[1]+164,22,'#3d2a1c',r[2]-20);
     const bq=q13([r[0]+17,r[1]+187,r[2]-34,17]);rrect(bq.x+.4,bq.y+.4,Math.max(0,(bq.w-.8)*Math.min(1,cl>=ARCMAX?1:fr/Math.max(1,nd))),bq.h-.8,bq.h/2,can?'#4ac83a':'#e0a020',false);
-    f13(cl>=ARCMAX?'MÁX':can?'SUBIR!':`${fr}/${nd}`,cx,r[1]+196,15,'#fff3df',r[2]-34,'#3a2010');
+    f13(cl>=ARCMAX?'MÁX':can?'SUBIR!':`🃏 ${fr}/${nd}`,cx,r[1]+196,19,'#fff3df',r[2]-26,'#3a2010');
     if(can){b.save();b.globalAlpha=.55+.4*Math.sin(t/5);f13('⬆',r[0]+r[2]-16,r[1]+18,34,'#4ad83a',0,'#1a4a10');b.restore();}
     hit13(r,()=>arCardUp(A,sp));});
   hit13([219,701,461,94],()=>arTimeEdit(A));
@@ -19231,8 +19234,8 @@ let CHEFEPOS=(()=>{try{const o=JSON.parse(localStorage.getItem('cv.chefePos')||'
 const MCHNM={sem:'SEM FIM',mas:'MASMORRA',jun:'JUNTOS',con:'CONTRA',conI:'CONTRA (inimigo)',junI:'JUNTOS (parceiro)'};
 let MCHFORCE=null;function mchKey(){if(MCHFORCE)return MCHFORCE;try{if(AR&&AR.mp)return AR.mp.mode==='pvp'?'con':'jun';if(AR&&AR.goal>0)return 'mas';}catch(e){}return 'sem';}
 const CHEFEPOSM=(()=>{let m=null;try{m=JSON.parse(localStorage.getItem('cv.chefePosM')||'null');}catch(e){}m=m||{};/* CHEFEPOSFELIPE14NOV: posições que o Felipe montou e mandou (JUNTOS e CONTRA); SEM FIM e MASMORRA usam as do JUNTOS até ele mandar */
-const J={sc:.3,L:[-1,-10.5],T:[3,-12],R:[-.5,-9.5],hb:19},C2={sc:.3,L:[-1,-10.5],T:[3,-13.5],R:[-.5,-9.5],hb:19},D={sem:J,mas:J,jun:J,con:C2,conI:{sc:.3,L:[4,-8],T:[-3.5,-10.5],R:[-5.5,-.5],hb:19},junI:{sc:.3,L:[4,-8],T:[-12.5,-14],R:[-5.5,-.5],hb:19}};
-for(const k of ['sem','mas','jun','con','conI','junI'])if(!m[k]||!m[k].sc||!m._v16)m[k]=JSON.parse(JSON.stringify(D[k]));m._v16=1;return m;})();
+const J={sc:.3,L:[-1,-10.5],T:[3,-12],R:[-.5,-9.5],hb:19},C2={sc:.3,L:[-1,-10.5],T:[3,-13.5],R:[-.5,-9.5],hb:19},S1={sc:.3,L:[-1,-3],T:[0,1],R:[-.5,-3],hb:19}/* CHEFESOLO21NOV (report 539 'fora da estrada o boss'): masmorra e sem fim tinham a posição do JUNTOS (12 acima da estrada); agora o pé fica na estrada */,D={sem:S1,mas:S1,jun:J,con:C2,conI:{sc:.3,L:[4,-8],T:[-3.5,-10.5],R:[-5.5,-.5],hb:19},junI:{sc:.3,L:[4,-8],T:[-12.5,-14],R:[-5.5,-.5],hb:19}};
+for(const k of ['sem','mas','jun','con','conI','junI'])if(!m[k]||!m[k].sc||!m._v17)m[k]=JSON.parse(JSON.stringify(D[k]));m._v17=1;return m;})();
 function cpSel(){const k=mchKey();if(CHEFEPOSM[k]!==CHEFEPOS)CHEFEPOS=CHEFEPOSM[k];return CHEFEPOS;}
 function arBossLeg(G2,p){if(p.y<=G2.ty+.5)return 'T';if(p.x<=G2.lx+.5)return 'L';if(p.x>=G2.rx-.5)return 'R';return null;}
 function arBossOff(G2,p){try{cpSel();const k=arBossLeg(G2,p);if(k&&CHEFEPOS[k])return CHEFEPOS[k];}catch(e){}return [0,0];}
@@ -20051,6 +20054,7 @@ function migTr(t){t=String(t||'');if(window.CVLANG!=='en')return t;const p=t.spl
    2) fala da Vó Ipê sem o nome na frente ("Que coleção linda! Tome: …"). */
 try{const _t=window.tr;window.tr=function(s){const r=_t(s);if(s==null||window.CVLANG!=='en'||typeof r!=='string')return r;const k=String(s);if(k==='fragmentos')return 'shards';if(k==='fragmento')return 'shard';
  let m=/^Que coleção linda! Tome: (.+)\.$/.exec(k);if(m)return 'What a beautiful collection! Here: '+m[1].split(', ').map(x=>tr(x.replace(/Poção Forte|Potion Forte/,'Strong Potion'))).join(', ')+'.';
+ if(r===k){const m0=/^(.+?)([.!?…]+)$/.exec(k);if(m0){const r0=_t(m0[1]);if(r0!==m0[1]&&typeof r0==='string')return r0+m0[2];}}
  if(r===k&&/^[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]/.test(k)){const lo=k[0].toLowerCase()+k.slice(1),r2=_t(lo);if(r2!==lo&&typeof r2==='string')return r2[0].toUpperCase()+r2.slice(1);
   const m2=/^(.+?)([.!?])$/.exec(lo);if(m2){const r3=_t(m2[1]);if(r3!==m2[1]&&typeof r3==='string')return r3[0].toUpperCase()+r3.slice(1)+m2[2];}}
  return r;};}catch(e){}</script>

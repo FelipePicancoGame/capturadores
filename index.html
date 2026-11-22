@@ -2005,7 +2005,8 @@ const SPEAKERS={'Sábia Luna':{look:'celeste',col:'#6a5ad8'},'Kai':{look:'leo',c
 const NPC_OF={mae:'home',leo:'route',bruna:'gym',caio:'gym',vovo:'town',enf:'centro',vend:'centro',menina:'town'};
 /* NARRACAO (02/nov): a voz do próprio celular lê as falas e as histórias, pra quem não sabe ler ainda.
    Liga/desliga em AJUSTES (vem ligada). Lê: falas do jogo (menos as da batalha), páginas do Capítulo 1 e as Histórias novas. */
-const NAR={on:()=>!(typeof flags!=='undefined'&&flags&&flags.narraOff)&&'speechSynthesis' in window,last:null,lastDom:'',voz:null,ok:0};
+/* SEMVOZCEL21NOV (report 532, Felipe: 'tira a narração do celular porque acho que ela está bugando as outras'): a voz robô do aparelho (speechSynthesis) fica desligada; só tocam as vozes gravadas */
+const NAR={on:()=>false,last:null,lastDom:'',voz:null,ok:0};
 function narVozEn(){try{const vs=speechSynthesis.getVoices()||[];const en=vs.filter(v=>/^en[-_]US/i.test(v.lang));const e2=en.length?en:vs.filter(v=>/^en/i.test(v.lang));for(const n of ['Samantha','Google US English','Ava','Allison','Aria','Jenny']){const v=e2.find(v=>v.name.indexOf(n)>=0);if(v)return v;}return e2[0]||null;}catch(e){return null;}}
 function narVoz(){try{const vs=speechSynthesis.getVoices()||[];const pt=vs.filter(v=>/^pt[-_]BR/i.test(v.lang));const pt2=pt.length?pt:vs.filter(v=>/^pt/i.test(v.lang));
   const pref=['Luciana','Google português do Brasil','Francisca','Thalita','Felipe'];for(const n of pref){const v=pt2.find(v=>v.name.indexOf(n)>=0);if(v)return v;}return pt2[0]||null;}catch(e){return null;}}
@@ -10844,7 +10845,7 @@ function renderArena(){const A=AR;if(!A)return;if(window.ARSTY!==0){arRender2();
     /* ESTRELAS20NOV (Felipe: 'muitas vezes não dá pra ver as estrelas... achar outra maneira de mostrar que ele melhorou'): cor por nível no chão + selo com o número no canto da casa */
     const STC=['#e8e8e8','#e8e8e8','#5fd35a','#3fa4ff','#b768ff','#ffae22','#ff4a4a','#ff6fd8'],stc=STC[Math.min(7,u.star)];if(u.star>=2){b.save();b.globalAlpha=.5+.12*Math.sin(t/9+i);E(p.x,p.y+9,12.5,4.2,stc,0,false);b.restore();}
     E(p.x,p.y+9,10,3,'rgba(0,0,0,.25)',0,false);const pop=Math.max(0,1-(t-u.born)/12);((window.arGestDraw&&arGestDraw(u,p.x,p.y-1-pop*4,.3*(1+pop*.3)))||arDrawMon(u.sp,p.x,p.y-1-pop*4,.3*(1+pop*.3),u.atk>0?'attack':'idle','s',i*.37));
-    {const bx=p.x-G2.cs/2+1.5,by=p.y-G2.ch/2+1.5;rrect(bx-.6,by-.6,15.2,10.2,4.5,'rgba(20,10,40,.85)',false);rrect(bx,by,14,9,4,stc,false);T(u.star+'★',bx+7,by+1.3,7,'center','#ffffff',0,'#1a1030');}}
+    if(!ui.length&&!STGRES){const bx=p.x-G2.cs/2+1.5,by=p.y-G2.ch/2+1.5;rrect(bx-.6,by-.6,15.2,10.2,4.5,'rgba(20,10,40,.85)',false);rrect(bx,by,14,9,4,stc,false);T(u.star+'★',bx+7,by+1.3,7,'center','#ffffff',0,'#1a1030');}}
   if(A.drag&&A.grid[A.drag.i]){const u=A.grid[A.drag.i];arDrawMon(u.sp,A.drag.x,A.drag.y+2,.34,'idle','s',0);}
   /* inimigos */
   const EN=[...A.en].sort((a,b2)=>arPos(G2,a.d).y-arPos(G2,b2.d).y);
@@ -11359,7 +11360,7 @@ function arSPiece0(u,x,y,k,t,o){o=o||{};const cs=26*k;
   /* ESTRELAS20NOV: cor do nível no chão */const STC=['#e8e8e8','#e8e8e8','#5fd35a','#3fa4ff','#b768ff','#ffae22','#ff4a4a','#ff6fd8'],stc=STC[Math.min(7,u.star||1)];if((u.star||1)>=2){b.save();b.globalAlpha=.5+.12*Math.sin(t/9+x);E(x,y+cs*.36,cs*.46,cs*.16,stc,0,false);b.restore();}
   E(x,y+cs*.36,cs*.34,cs*.11,'rgba(20,40,10,.35)',0,false);
   b.save();if(u.stone>0)b.filter='grayscale(1) brightness(.85)';((window.arGestDraw&&arGestDraw(u,x,y-1.2*k,.36*k*(o.pop||1)))||arDrawMon(u.form||u.sp,x,y-1.2*k,.36*k*(o.pop||1),o.atk?'attack':'idle','s',o.seed||0));b.restore();
-  /* ESTRELAS20NOV: selo com o número de estrelas no canto (antes: estrelinhas pequenas embaixo, difíceis de ver) */{const n=u.star||1,bw=cs*.62,bh=cs*.36,bx=x-cs*.56,by=y-cs*.6;rrect(bx-.6,by-.6,bw+1.2,bh+1.2,bh*.5,'rgba(20,10,40,.85)',false);rrect(bx,by,bw,bh,bh*.45,stc,false);T(n+'★',bx+bw/2,by+bh*.12,bh*.82,'center','#ffffff',0,'#1a1030');}}
+  /* ESTRELAS20NOV: selo com o número de estrelas no canto (antes: estrelinhas pequenas embaixo, difíceis de ver). R538: some quando abre a tela de resultado */if(!ui.length&&!STGRES){const n=u.star||1,bw=cs*.62,bh=cs*.36,bx=x-cs*.56,by=y-cs*.6;rrect(bx-.6,by-.6,bw+1.2,bh+1.2,bh*.5,'rgba(20,10,40,.85)',false);rrect(bx,by,bw,bh,bh*.45,stc,false);T(n+'★',bx+bw/2,by+bh*.12,bh*.82,'center','#ffffff',0,'#1a1030');}}
 function arStrip0(A,G2,y){const pv=A.mp&&A.mp.mode==='pvp',x0=pv?4:31,x1=pv?W-4:W-50,h=20,T2=arTimerTxt(A),bsp=arBossSp(A),now=A.wi&&A.wi.boss&&A.wave>0,nb=arNextBoss(A),P=A.mp&&A.mp.peer||{};
   arPill(x0,y,x1-x0,h);const ink='#4a2c14';T(`ONDA ${Math.max(1,A.wave)}${A.goal?'/'+A.goal:''}`,x0+7,y+5.2,7,'left',ink,38);const dvx=x0+(pv?52:44);px(dvx,y+4,1.4,h-8,'#c09060');
   if(a2('icone_relogio'))b.drawImage(a2('icone_relogio'),dvx+4,y+h/2-5,10,10);else{E(dvx+9,y+h/2,4.6,4.6,'#e8a020',0,false);E(dvx+9,y+h/2,3.4,3.4,'#fff4d0',0,false);px(dvx+8.6,y+h/2-2.6,.9,2.8,ink);px(dvx+8.6,y+h/2-.2,2.4,.9,ink);}
@@ -20041,4 +20042,12 @@ function migTr(t){t=String(t||'');if(window.CVLANG!=='en')return t;const p=t.spl
 (function(){let el=null;function mk(){el=document.createElement('button');el.id='cvLangBtn';el.style.cssText='position:fixed;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;padding:8px 12px;border-radius:12px;border:2px solid #fff3df;background:#2f5fa8;color:#fff;font:700 15px system-ui,sans-serif;box-shadow:0 3px 0 rgba(0,0,0,.35);display:none';
   el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();try{cvSetLang(window.CVLANG==='en'?'pt':'en');}catch(_){}});document.body.appendChild(el);}
  setInterval(()=>{try{if(!el){if(!document.body)return;mk();}const t=window.__GM&&window.__GM()==='title';el.textContent=window.CVLANG==='en'?'🌐 Português':'🌐 English';el.style.display=t?'block':'none';}catch(_){}},400);})();</script>
+<script>/* TRCAPS21NOV (reports 528 e 540: frases em português no inglês) — último embrulho do tr():
+   1) frase que começa com letra maiúscula e não achou tradução: tenta com a 1ª letra minúscula (ex.: "Queimadura forte que passa para o vizinho");
+   2) fala da Vó Ipê sem o nome na frente ("Que coleção linda! Tome: …"). */
+try{const _t=window.tr;window.tr=function(s){const r=_t(s);if(s==null||window.CVLANG!=='en'||typeof r!=='string')return r;const k=String(s);
+ let m=/^Que coleção linda! Tome: (.+)\.$/.exec(k);if(m)return 'What a beautiful collection! Here: '+m[1].split(', ').map(x=>tr(x.replace(/Poção Forte|Potion Forte/,'Strong Potion'))).join(', ')+'.';
+ if(r===k&&/^[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]/.test(k)){const lo=k[0].toLowerCase()+k.slice(1),r2=_t(lo);if(r2!==lo&&typeof r2==='string')return r2[0].toUpperCase()+r2.slice(1);
+  const m2=/^(.+?)([.!?])$/.exec(lo);if(m2){const r3=_t(m2[1]);if(r3!==m2[1]&&typeof r3==='string')return r3[0].toUpperCase()+r3.slice(1)+m2[2];}}
+ return r;};}catch(e){}</script>
 </body></html>

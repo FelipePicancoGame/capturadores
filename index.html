@@ -10845,7 +10845,7 @@ function renderArena(){const A=AR;if(!A)return;if(window.ARSTY!==0){arRender2();
     /* ESTRELAS20NOV (Felipe: 'muitas vezes não dá pra ver as estrelas... achar outra maneira de mostrar que ele melhorou'): cor por nível no chão + selo com o número no canto da casa */
     const STC=['#e8e8e8','#e8e8e8','#5fd35a','#3fa4ff','#b768ff','#ffae22','#ff4a4a','#ff6fd8'],stc=STC[Math.min(7,u.star)];if(u.star>=2){b.save();b.globalAlpha=.5+.12*Math.sin(t/9+i);E(p.x,p.y+9,12.5,4.2,stc,0,false);b.restore();}
     E(p.x,p.y+9,10,3,'rgba(0,0,0,.25)',0,false);const pop=Math.max(0,1-(t-u.born)/12);((window.arGestDraw&&arGestDraw(u,p.x,p.y-1-pop*4,.3*(1+pop*.3)))||arDrawMon(u.sp,p.x,p.y-1-pop*4,.3*(1+pop*.3),u.atk>0?'attack':'idle','s',i*.37));
-    if(!ui.length&&!STGRES){const bx=p.x-G2.cs/2+1.5,by=p.y-G2.ch/2+1.5;rrect(bx-.6,by-.6,15.2,10.2,4.5,'rgba(20,10,40,.85)',false);rrect(bx,by,14,9,4,stc,false);T(u.star+'★',bx+7,by+1.3,7,'center','#ffffff',0,'#1a1030');}}
+    if(!ui.length&&!STGRES&&!(AR&&AR.result)){const bx=p.x-G2.cs/2+1.5,by=p.y-G2.ch/2+1.5;rrect(bx-.6,by-.6,15.2,10.2,4.5,'rgba(20,10,40,.85)',false);rrect(bx,by,14,9,4,stc,false);T(u.star+'★',bx+7,by+1.3,7,'center','#ffffff',0,'#1a1030');}}
   if(A.drag&&A.grid[A.drag.i]){const u=A.grid[A.drag.i];arDrawMon(u.sp,A.drag.x,A.drag.y+2,.34,'idle','s',0);}
   /* inimigos */
   const EN=[...A.en].sort((a,b2)=>arPos(G2,a.d).y-arPos(G2,b2.d).y);
@@ -11360,7 +11360,7 @@ function arSPiece0(u,x,y,k,t,o){o=o||{};const cs=26*k;
   /* ESTRELAS20NOV: cor do nível no chão */const STC=['#e8e8e8','#e8e8e8','#5fd35a','#3fa4ff','#b768ff','#ffae22','#ff4a4a','#ff6fd8'],stc=STC[Math.min(7,u.star||1)];if((u.star||1)>=2){b.save();b.globalAlpha=.5+.12*Math.sin(t/9+x);E(x,y+cs*.36,cs*.46,cs*.16,stc,0,false);b.restore();}
   E(x,y+cs*.36,cs*.34,cs*.11,'rgba(20,40,10,.35)',0,false);
   b.save();if(u.stone>0)b.filter='grayscale(1) brightness(.85)';((window.arGestDraw&&arGestDraw(u,x,y-1.2*k,.36*k*(o.pop||1)))||arDrawMon(u.form||u.sp,x,y-1.2*k,.36*k*(o.pop||1),o.atk?'attack':'idle','s',o.seed||0));b.restore();
-  /* ESTRELAS20NOV: selo com o número de estrelas no canto (antes: estrelinhas pequenas embaixo, difíceis de ver). R538: some quando abre a tela de resultado */if(!ui.length&&!STGRES){const n=u.star||1,bw=cs*.62,bh=cs*.36,bx=x-cs*.56,by=y-cs*.6;rrect(bx-.6,by-.6,bw+1.2,bh+1.2,bh*.5,'rgba(20,10,40,.85)',false);rrect(bx,by,bw,bh,bh*.45,stc,false);T(n+'★',bx+bw/2,by+bh*.12,bh*.82,'center','#ffffff',0,'#1a1030');}}
+  /* ESTRELAS20NOV: selo com o número de estrelas no canto (antes: estrelinhas pequenas embaixo, difíceis de ver). R538: some quando abre a tela de resultado */if(!ui.length&&!STGRES&&!(AR&&AR.result)){const n=u.star||1,bw=cs*.62,bh=cs*.36,bx=x-cs*.56,by=y-cs*.6;rrect(bx-.6,by-.6,bw+1.2,bh+1.2,bh*.5,'rgba(20,10,40,.85)',false);rrect(bx,by,bw,bh,bh*.45,stc,false);T(n+'★',bx+bw/2,by+bh*.12,bh*.82,'center','#ffffff',0,'#1a1030');}}
 function arStrip0(A,G2,y){const pv=A.mp&&A.mp.mode==='pvp',x0=pv?4:31,x1=pv?W-4:W-50,h=20,T2=arTimerTxt(A),bsp=arBossSp(A),now=A.wi&&A.wi.boss&&A.wave>0,nb=arNextBoss(A),P=A.mp&&A.mp.peer||{};
   arPill(x0,y,x1-x0,h);const ink='#4a2c14';T(`ONDA ${Math.max(1,A.wave)}${A.goal?'/'+A.goal:''}`,x0+7,y+5.2,7,'left',ink,38);const dvx=x0+(pv?52:44);px(dvx,y+4,1.4,h-8,'#c09060');
   if(a2('icone_relogio'))b.drawImage(a2('icone_relogio'),dvx+4,y+h/2-5,10,10);else{E(dvx+9,y+h/2,4.6,4.6,'#e8a020',0,false);E(dvx+9,y+h/2,3.4,3.4,'#fff4d0',0,false);px(dvx+8.6,y+h/2-2.6,.9,2.8,ink);px(dvx+8.6,y+h/2-.2,2.4,.9,ink);}
@@ -12651,7 +12651,11 @@ const CV=(()=>{const D={"sair":[15,16,150,78],"onda":[275,16,240,83],"tempo":[54
 {const _a=am7;am7=function(k){if(k==='pvp'&&arUm())return ARDUP.complete&&ARDUP.naturalWidth?ARDUP:null;return _a(k);};}
 {const _bg=m7Bg;m7Bg=function(I){if(!arUm()||I!==ARDUP)return _bg(I);const t=m7T(),k=t.k,w=1080*k,s=I.naturalHeight/1920,sp=t.sp;b.save();b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';
   if(t.ox>0){b.drawImage(I,0,0,3,I.naturalHeight,0,0,t.ox+1,H);b.drawImage(I,I.naturalWidth-3,0,3,I.naturalHeight,t.ox+w-1,0,t.ox+1,H);}
-  if(t.ex>0){const g=b.createLinearGradient(0,0,0,t.ex);g.addColorStop(0,'#2f5a2a');g.addColorStop(1,'#4f7f3a');b.fillStyle=g;b.fillRect(0,0,W,t.ex+1);}b.drawImage(I,0,0,I.naturalWidth,I.naturalHeight,t.ox,t.ex,w,1920*k);b.restore();};}
+  /* DUOTOPO21NOV (report 546 'tela bem errada'): a faixa de cima era verde lisa; agora é a própria arte bem desfocada (feita pequena e ampliada), sem mostrar pedaço repetido */
+  if(t.ex>0){let C=window.__duoBlur;if(!C||C.src!==I.src){const c=document.createElement('canvas');c.width=5;c.height=3;const x=c.getContext('2d');x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';
+     x.drawImage(I,0,0,I.naturalWidth,I.naturalHeight*.06,0,0,5,3);C=window.__duoBlur={c,src:I.src};}
+   b.drawImage(C.c,.5,.5,4,2,-W*.05,-t.ex*.2,W*1.1,t.ex*1.4);const g=b.createLinearGradient(0,0,0,t.ex);g.addColorStop(0,'rgba(25,45,15,.45)');g.addColorStop(1,'rgba(25,45,15,.1)');b.fillStyle=g;b.fillRect(0,0,W,t.ex+1);}
+  b.drawImage(I,0,0,I.naturalWidth,I.naturalHeight,t.ox,t.ex,w,1920*k);b.restore();};}
 function arUmLeg(){const G=arGeo();const P=G&&G.pts;return P&&P.length>1?Math.hypot(P[1][0]-P[0][0],P[1][1]-P[0][1]):0;}
 function arUmTop(){return CV.rpath.map(q=>m7P(q[0],q[1]));}
 /* inimigo do parceiro: pd = quanto ele andou na estrada DELE (mesmo desenho). Antes da junção ele está na estrada de CIMA; depois, na estrada do meio (igual à minha) */
@@ -12678,7 +12682,7 @@ var AR_CUR=null;
 {const _f=arFire;arFire=function(A,u,i,S,p,tg){const n0=A&&A.shots?A.shots.length:0;const r=_f.apply(this,arguments);try{const sp=u&&(u.form||u.sp);if(sp)for(let k=n0;k<A.shots.length;k++)if(!A.shots[k].src)A.shots[k].src=sp;}catch(e){}return r;};}
 /* DANOCONTA18NOV (auditoria do Buchecha na Arena: total e por monstrinho com regras diferentes; maldição contada errado; queimadura e poça fora da conta):
    um lugar só conta o dano — a vida que o inimigo PERDEU de verdade (depois da maldição, sem passar do que ele tinha), no total e pra quem causou */
-function arConta(e,antes,src){try{const A=AR;if(!A||!e)return;const d=Math.max(0,antes-Math.max(0,e.hp));if(!(d>0))return;A.dmgT=(A.dmgT||0)+d;if(src){const by=A.dmgBy||(A.dmgBy={});by[src]=(by[src]||0)+d;}}catch(_){}}
+function arConta(e,antes,src){try{const A=AR;if(!A||!e)return;/* DANOREAL21NOV (report 548: 'meu dano foi igual ao da Gabi'): conta o golpe inteiro, até o que passa da vida que faltava — antes, quem limpava todos os inimigos tinha sempre o mesmo total */const d=Math.max(0,antes-e.hp);if(!(d>0))return;A.dmgT=(A.dmgT||0)+d;if(src){const by=A.dmgBy||(A.dmgBy={});by[src]=(by[src]||0)+d;}}catch(_){}}
 {const _h=arHit;arHit=function(e,dmg,ty,col){const antes=e&&e.hp>0?e.hp:0,src=AR_CUR;const r=_h.apply(this,arguments);if(antes>0)arConta(e,antes,src);return r;};}
 async function arStatsShow(A){try{const by=A.dmgBy||{},L=Object.entries(by).filter(([sp,d])=>SP[sp]&&d>0).sort((a,c)=>c[1]-a[1]).slice(0,6);if(!L.length)return;
   const out=L.map(([sp,d])=>({m:mk(sp,1),d:Math.round(d),g:null,cl:null}));let foot=null;
@@ -20045,7 +20049,7 @@ function migTr(t){t=String(t||'');if(window.CVLANG!=='en')return t;const p=t.spl
 <script>/* TRCAPS21NOV (reports 528 e 540: frases em português no inglês) — último embrulho do tr():
    1) frase que começa com letra maiúscula e não achou tradução: tenta com a 1ª letra minúscula (ex.: "Queimadura forte que passa para o vizinho");
    2) fala da Vó Ipê sem o nome na frente ("Que coleção linda! Tome: …"). */
-try{const _t=window.tr;window.tr=function(s){const r=_t(s);if(s==null||window.CVLANG!=='en'||typeof r!=='string')return r;const k=String(s);
+try{const _t=window.tr;window.tr=function(s){const r=_t(s);if(s==null||window.CVLANG!=='en'||typeof r!=='string')return r;const k=String(s);if(k==='fragmentos')return 'shards';if(k==='fragmento')return 'shard';
  let m=/^Que coleção linda! Tome: (.+)\.$/.exec(k);if(m)return 'What a beautiful collection! Here: '+m[1].split(', ').map(x=>tr(x.replace(/Poção Forte|Potion Forte/,'Strong Potion'))).join(', ')+'.';
  if(r===k&&/^[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]/.test(k)){const lo=k[0].toLowerCase()+k.slice(1),r2=_t(lo);if(r2!==lo&&typeof r2==='string')return r2[0].toUpperCase()+r2.slice(1);
   const m2=/^(.+?)([.!?])$/.exec(lo);if(m2){const r3=_t(m2[1]);if(r3!==m2[1]&&typeof r3==='string')return r3[0].toUpperCase()+r3.slice(1)+m2[2];}}

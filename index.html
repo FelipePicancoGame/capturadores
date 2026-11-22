@@ -16348,7 +16348,13 @@ function amgZap(){try{window.open('https://wa.me/?text='+encodeURIComponent(amgL
 setInterval(()=>{try{if(G.mode!=='world'||!party.length||ui.length||busy)return;const r=localStorage.getItem('cv.amglink');if(!r)return;localStorage.removeItem('cv.amglink');
   const a=JSON.parse(r);if(!a||!a.tid||a.tid===amgNo())return;const ja=amgLista().some(x=>x.tid===a.tid);amgAdd(a.tid,a.nome);
   if(!ja)say((a.nome||'Seu amigo')+' agora é seu amigo no jogo! Para jogar junto, abra AMIGOS.');
-  if(duoNoApp())amgFala(a.tid,{k:'oi',tid:amgNo(),nome:String(flags.nome||'').slice(0,14)},8000);}catch(e){}},2500);
+  /* AMIGOVOLTA21NOV (report 545: 'Gabi me adicionou pelo QR mas não aparece como minha amiga, só pra ela'): o aviso pro outro lado só chegava se ele
+     estivesse com o jogo aberto naquele segundo. Agora fica guardado e o jogo tenta de novo a cada minuto (e toda vez que abre) até o outro responder. */
+  if(!Array.isArray(flags.amgOiPend))flags.amgOiPend=[];if(!flags.amgOiPend.includes(a.tid))flags.amgOiPend.push(a.tid);try{saveGame();}catch(_){}
+  if(duoNoApp())amgFala(a.tid,{k:'oi',tid:amgNo(),nome:String(flags.nome||'').slice(0,14)},8000).then(r=>{if(r&&r.k==='recebi'){flags.amgOiPend=(flags.amgOiPend||[]).filter(x=>x!==a.tid);try{saveGame();}catch(_){}}});}catch(e){}},2500);
+{let rodando=false;setInterval(async()=>{try{if(typeof flags!=='undefined'&&flags&&!flags.amgOiMig&&typeof G!=='undefined'&&G.mode==='world'){flags.amgOiMig=1;flags.amgOiPend=[...new Set([...(flags.amgOiPend||[]),...amgLista().map(x=>x.tid)])];}/* quem já era amigo antes desta versão também avisa o outro lado uma vez */
+  if(rodando||!duoNoApp()||typeof G==='undefined'||G.mode!=='world'||!flags||!Array.isArray(flags.amgOiPend)||!flags.amgOiPend.length)return;rodando=true;
+  for(const tid of flags.amgOiPend.slice(0,3)){const r=await amgFala(tid,{k:'oi',tid:amgNo(),nome:String(flags.nome||'').slice(0,14)},7000);if(r&&r.k==='recebi'){flags.amgOiPend=flags.amgOiPend.filter(x=>x!==tid);try{saveGame();}catch(_){}}}}catch(e){}finally{rodando=false;}},60000);}
 {const _r=amgRecebe;amgRecebe=function(c,m){if(m&&m.k==='oi'){const t=parseInt(m.tid,10);if(t&&t!==flags.tid){const ja=amgLista().some(x=>x.tid===t);amgAdd(t,m.nome);
     if(!ja&&G.mode==='world'&&!ui.length)try{say((m.nome||'Um amigo')+' entrou pelo seu convite e agora é seu amigo!');}catch(e){}}try{c.send({k:'recebi',tid:flags.tid,nome:String(flags.nome||'').slice(0,14)});}catch(e){}return;}return _r(c,m);};}
 {const _p=amgPainel;amgPainel=function(){_p();try{const pn=document.getElementById('amgPn');if(!pn||document.getElementById('amgLk'))return;const d=document.createElement('div');d.id='amgLk';

@@ -5095,7 +5095,8 @@ function lvOf(s){const u=s&&s.src;return u?(u.m?u.m.lv:u.lv)||1:1;}
 try{if(typeof DRAW==='object'&&!DRAW.trovim)DRAW.trovim=function(){DRAW.marolo();};}catch(e){}
 try{BEH.trovim2=BEH.trovim3=BEH.trovim;}catch(e){}
 function behOf(sp,lv){if(sp==='fagulho'&&(lv||0)>=12)return BEH_FAG2;return BEH[sp]||BEH[EVOPREV[sp]]||BEH[BEH_T[SP[sp].type]]||BEH.pipiu;}
-const ULTDESC={trovim:'Onda gigante de água eletrificada: empurra e dá choque',fagulho:'Uma roda de fogo em cada inimigo mais perto (até 8)',lesmagma:'Cospe lava que vira poças ardentes',marolo:'Onda gigante que empurra todos',brotim:'Nuvem de pólen gigante: envenena quem está dentro',florina:'Pétalas cortam tudo e curam a base',choquinho:'Raios saem dele e pulam em todos',pedrisco:'Uma pedra gigante rola em linha e esmaga todos na frente',rochedo:'Pisão que atordoa todos',zumbel:'Solta um enxame venenoso',pipiu:'Tornado que puxa e machuca',ratonga:'Golpe gigante no inimigo mais forte',corujito:'Ondas hipnóticas: todos dormem',assombro:'Lanternas fantasmas amaldiçoam todos',auroril:'Leque de auroras que congela'};ULTDESC.trovim2=ULTDESC.trovim3=ULTDESC.trovim;
+const ULTDESC={trovim:'Onda gigante de água eletrificada: empurra e dá choque',fagulho:'Uma roda de fogo em cada inimigo mais perto (até 8)',lesmagma:'Cospe lava que vira poças ardentes',marolo:'Onda gigante que empurra todos',brotim:'Nuvem de pólen gigante: envenena quem está dentro',florina:'Pétalas cortam tudo e curam a base',choquinho:'Raios saem dele e pulam em todos',pedrisco:'Uma pedra gigante rola em linha e esmaga todos na frente',rochedo:'Pisão que atordoa todos',zumbel:'Solta um enxame venenoso',pipiu:'Tornado que puxa e machuca',ratonga:'Golpe gigante no inimigo mais forte',corujito:'Ondas hipnóticas: todos dormem',assombro:'Lanternas fantasmas amaldiçoam todos',auroril:'Leque de auroras que congela'};
+/* GELOESP21NOV: texto do especial do gelo */try{for(const k in SP){if(SP[k]&&SP[k].type==='gelo'&&!ULTDESC[k])ULTDESC[k]='Era do Gelo: onda gelada que congela todos por 2 s e dá dano';}}catch(e){}ULTDESC.trovim2=ULTDESC.trovim3=ULTDESC.trovim;
 function bSt(e,k,v){e[k]=Math.max(e[k]||0,v);}
 function bCC(e,k,v){bSt(e,k,Math.round(e.boss?v*.4:v));}
 function bNear(C2,x,y,r,ex){return C2.foes().filter(e=>!e.dead&&e!==ex&&Math.hypot(e.x-x,e.y-y)<=r);}
@@ -5119,7 +5120,9 @@ function bBoom(C2,x,y,r,type,dmg,sh,main,all){C2.fx.push({k:'boom',x,y,r,t:0,dur
   for(const e of bNear(C2,x,y,r,main)){bHit(C2,e,all?dmg:dmg*.6,type,{splash:true,src:sh&&sh.src});if(type==='fogo'&&sh&&sh.t2)bSt(e,'burn',150);}if(main&&!main.dead&&type==='fogo'&&sh&&sh.t2)bSt(main,'burn',150);}
 function bBeam(C2,s,ang,o){const len=o.len||240,x2=s.x+Math.cos(ang)*len,y2=s.y+Math.sin(ang)*len,dmg=o.dmg??s.dmg;
   C2.fx.push({k:'beam',x1:s.x,y1:s.y,x2,y2,t:0,dur:14,w:o.w||7,style:o.style||'jet'});
-  for(const e of C2.foes()){if(e.dead)continue;if(segDist(e.x,e.y,s.x,s.y,x2,y2)<(o.w||7)+C2.rad(e)*.6){bHit(C2,e,dmg,s.type,{shot:mkS(s)});if(o.on&&!e.dead)o.on(e);}}}
+  /* RAIOPERDE21NOV (report 553: 'raio do pinguim batendo demais em área sem perder potência, acertando tudo em linha'): o raio perde força a cada inimigo que atravessa (100%, 70%, 50%, 40%… mínimo 30%) */
+  const hs=[];for(const e of C2.foes()){if(e.dead)continue;if(segDist(e.x,e.y,s.x,s.y,x2,y2)<(o.w||7)+C2.rad(e)*.6)hs.push(e);}hs.sort((p,q)=>Math.hypot(p.x-s.x,p.y-s.y)-Math.hypot(q.x-s.x,q.y-s.y));
+  hs.forEach((e,i)=>{const f=[1,.7,.5,.4][i]||.3;bHit(C2,e,dmg*f,s.type,{shot:mkS(s)});if(o.on&&!e.dead)o.on(e);});}
 function bChain(C2,s,tg,n,dmg){const pts=[[s.x,s.y]],hit=[];let cur=tg,d=dmg;
   for(let i=0;i<=n&&cur;i++){pts.push([cur.x,cur.y-4]);hit.push([cur,d]);d*=.75;const last=cur;cur=C2.foes().filter(e=>!e.dead&&!hit.some(h=>h[0]===e)&&Math.hypot(e.x-last.x,e.y-last.y)<55).sort((a,c2)=>Math.hypot(a.x-last.x,a.y-last.y)-Math.hypot(c2.x-last.x,c2.y-last.y))[0];}
   C2.fx.push({k:'bolt',pts,t:0,dur:12});for(const [e,dd] of hit)bHit(C2,e,dd,'eletrico',{shot:mkS(s)});}
@@ -5216,7 +5219,9 @@ function bUltGo(C2,s0,P){const s={...s0,sp:TRV(s0.sp)?'marolo':evoBase(s0.sp)};c
   case 'corujito':C2.fx.push({k:'wave',x:s.x,y:s.y,t:0,dur:60,maxR:270,style:'hypno',hit:new Set(),on:e=>{bHit(C2,e,P*.35,'normal',{splash:true,src:s.src});bCC(e,'stun',180);bCC(e,'slp',180);}});break;
   case 'assombro':L().slice(0,10).forEach((e,i)=>bShot(C2,s,C2.fwd+(i-4.5)*.3,{mv:'ghostwisp',type:'fantasma',dmg:P*.55,spd:2.4,home:e,life:220,on:o=>{bSt(o,'curse',500);C2.fx.push({k:'spirit',x:o.x,y:o.y-6,t:0,dur:26});}}));break;
   case 'auroril':/* AURMIRA (04/nov, Felipe: 'especial do Auroril atira pra lugares onde não tem ninguém'): cada raio mira um inimigo vivo (antes era um leque de 7 raios abertos) */for(let i=0;i<7;i++)C2.fx.push({k:'delay',t:-i*3,run:()=>{const F=C2.foes().filter(e=>!e.dead);if(!F.length)return;F.sort((p,q)=>Math.hypot(p.x-s.x,p.y-s.y)-Math.hypot(q.x-s.x,q.y-s.y));const tg=F[i%F.length],j=Math.floor(i/F.length);bBeam(C2,s,Math.atan2(tg.y-s.y,tg.x-s.x)+(j?(j%2?1:-1)*.05*Math.ceil(j/2):0),{len:270,w:6,style:'aurora',dmg:P*.3,on:e=>{bCC(e,'stun',120);bCC(e,'frz',120);}});}});break;
-  default:{/* GOLPES2 (03/nov, Felipe: "o dragãozinho azul que vira vermelho solta onda azul, nada com fogo"): sem especial próprio, usa o especial do TIPO do monstrinho */const ty=(SP[s.sp]||{}).type,rep={fogo:'fagulho',planta:'brotim',rocha:'pedrisco',eletrico:'choquinho',fantasma:'assombro',inseto:'zumbel',normal:'pipiu'}[ty];if(rep&&!s0.__rep){bUltGo(C2,{...s0,sp:rep,__rep:1,type:ty},P/SC);break;}
+  case '__gelo':/* GELOESP21NOV (report 554: 'Blizzaron e o pinguim estão sem especial'): especial próprio do gelo — ERA DO GELO: uma onda gelada congela todos por 2 s e dá dano */
+    if(C2.flash)C2.flash(.18);C2.fx.push({k:'wave',x:s.x,y:s.y,t:0,dur:56,maxR:290,style:'water',hit:new Set(),on:e=>{bHit(C2,e,P*.55,'gelo',{splash:true,src:s.src});bCC(e,'frz',120);bSt(e,'slow',200);C2.fx.push({k:'ring',x:e.x,y:e.y-4,r:16,t:0,dur:14,col:'#bfe8ff'});try{C2.part(e.x,e.y-6,'#e8f6ff',6,{kind:'smoke',sp:.9,life:30,grav:-.01,size:3});}catch(_){}}});break;
+  default:{/* GOLPES2 (03/nov, Felipe: "o dragãozinho azul que vira vermelho solta onda azul, nada com fogo"): sem especial próprio, usa o especial do TIPO do monstrinho */const ty=(SP[s.sp]||{}).type,rep={fogo:'fagulho',planta:'brotim',rocha:'pedrisco',eletrico:'choquinho',fantasma:'assombro',inseto:'zumbel',normal:'pipiu',gelo:'__gelo'}[ty];if(rep&&!s0.__rep){bUltGo(C2,{...s0,sp:rep,__rep:1,type:ty},P/SC);break;}
     C2.fx.push({k:'wave',x:s.x,y:s.y,t:0,dur:50,maxR:270,style:'water',hit:new Set(),on:e=>bHit(C2,e,P*.6,s.type,{splash:true,src:s.src})});}}}
 /* efeitos que duram por cima dos inimigos */
 function bTick(C2,e){if(e.dead)return;if(e.slp>0)e.slp--;if(e.frz>0)e.frz--;if(e.wet>0)e.wet--;
@@ -15125,7 +15130,12 @@ let MSAUTO=null;
 function msGoStart(){const t=msTarget();if(!t){run(msJournal);return;}MSAUTO={n:0};tone([660,880],.05);msGoStep();}
 function msGoStep(){if(!MSAUTO)return;if(++MSAUTO.n>40){MSAUTO=null;return;}const t=msTarget();if(!t){MSAUTO=null;return;}const tx=Math.floor(t.x/16),ty=Math.floor(t.y/16);
   let goals=t.here?[[tx,ty+1],[tx,ty-1],[tx-1,ty],[tx+1,ty],[tx,ty]].filter(g=>walkable(g[0],g[1])):[[tx,ty]];if(!t.here&&!walkable(tx,ty))goals=[[tx,ty+1],[tx,ty-1],[tx-1,ty],[tx+1,ty]].filter(g=>walkable(g[0],g[1]));
-  if(!goals.length){MSAUTO=null;return;}const r=findPath(goals);if(!r){MSAUTO=null;P.mark={x:tx,y:ty,t:30,bad:true};return;}
+  /* MISSAOLONGE21NOV (reports 530, 543, 544: 'ir automático não está indo' / 'não dá pra fazer essa missão'): quando não há casa livre
+     colada no alvo (ex.: NPC em cima da pedra), o herói vai até a casa livre mais perto (até 3 de distância) e a conversa começa dali */
+  const far=()=>{const G2=[];for(let d=2;d<=3;d++)for(let dy=-d;dy<=d;dy++)for(let dx=-d;dx<=d;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==d)continue;if(walkable(tx+dx,ty+dy))G2.push([tx+dx,ty+dy]);}
+    if(!G2.length)return false;const r2=findPath(G2);if(!r2)return false;const fala=()=>{MSAUTO=null;const n=npcAt(tx,ty);if(t.here&&n&&n.talk){const dx=tx-P.x,dy=ty-P.y;P.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');run(async()=>{const d0=n.dir;n.dir=OPP[P.dir];await n.talk();n.dir=d0;});}else if(t.here)run(interact);};
+    if(!r2.path.length){fala();return true;}goTo(G2,fala);return true;};
+  if(!goals.length){if(!far())MSAUTO=null;return;}const r=findPath(goals);if(!r){if(far())return;MSAUTO=null;P.mark={x:tx,y:ty,t:30,bad:true};return;}
   if(!r.path.length){MSAUTO=null;if(t.here){const dx=tx-P.x,dy=ty-P.y;if(dx||dy){P.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');run(interact);}}return;}
   goTo(goals,()=>{if(t.here){const dx=tx-P.x,dy=ty-P.y;MSAUTO=null;if(dx||dy){P.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');run(interact);}}});}
 function msGoTick(){if(!MSAUTO||P.path||P.walking||busy||ui.length||G.mode!=='world')return;MSAUTO.w=(MSAUTO.w||0)+1;if(MSAUTO.w<20)return;MSAUTO.w=0;msGoStep();}

@@ -20000,6 +20000,37 @@ window.__CT2=()=>{try{if(/[?#&]cartao0/.test(location.href)){localStorage.setIte
   if(FLIP[base+'|'+d]&&act==='walk')flip=!flip;
   if(f){const s1=(sc||1)*f;return _dm.call(this,sp,x,y+28*((sc||1)-s1),s1,flip,o);}
   return _dm.call(this,sp,x,y,sc,flip,o);}catch(e){return _dm.apply(this,arguments);}};}
+/* DERROTA24NOV (Felipe: 'coloque isso no final dos games pra incentivar as pessoas a melhorarem algo ou comprarem algo — quando perderem'):
+   depois do resultado de uma derrota aparece FIQUE MAIS FORTE com 3 caminhos: subir o nível dos monstrinhos (Treino), as melhorias daquele jogo
+   (Muralha, Torres, Horda, Expedição) e a Loja. Cada botão abre a tela certa; CONTINUAR segue o jogo normal. */
+{const _sr=showResult;
+ const icon=(fn)=>{const c=document.createElement('canvas');c.width=c.height=160;const dr=()=>{const pb=b;try{b=c.getContext('2d');b.clearRect(0,0,160,160);b.imageSmoothingEnabled=true;fn();}catch(e){}finally{b=pb;}};dr();[250,700,1500].forEach(t=>setTimeout(dr,t));return c;};
+ window.dgPainel=function(key){return new Promise(res=>{const en=window.CVLANG==='en';document.querySelectorAll('#dgBox').forEach(x=>x.remove());
+  const ups={wall:()=>wallCardShop(),surv:()=>svMetaShop(),td:()=>shopMenu(MODEUPS.td),exp:()=>shopMenu(MODEUPS.exp)}[key];
+  const nmUp={wall:en?'UPGRADE THE WALL':'MELHORAR A MURALHA',surv:en?'HORDE UPGRADES':'MELHORIAS DA HORDA',td:en?'TOWER UPGRADES':'MELHORIAS DAS TORRES',exp:en?'EXPEDITION UPGRADES':'MELHORIAS DA EXPEDIÇÃO'}[key];
+  const lead=(typeof party!=='undefined'&&party[0])?party[0].sp:'fagulho';
+  const L=[{t:en?'LEVEL UP YOUR MONSTERS':'SUBIR NÍVEL DOS MONSTRINHOS',i:icon(()=>{drawMon(lead,80,62,2.1);}),arrow:1,go:()=>trainMenu()}];
+  if(ups)L.push({t:nmUp,i:icon(()=>{const a=LOJUP.wallHp;b.save();b.beginPath();b.rect(0,13,160,134);b.clip();const ok=ukD('loja','up_'+(key==='wall'?a:LOJUP.coinMul),-55,17,270,218);b.restore();if(!ok)drawCrystal(80,80,4);}),go:ups});
+  L.push({t:en?'VISIT THE SHOP':'VISITAR A LOJA',i:icon(()=>{drawCrystal(80,84,5.2);}),go:()=>lojaReal(0)});
+  const el=document.createElement('div');el.id='dgBox';
+  el.style.cssText='position:fixed;inset:0;z-index:2147482000;background:radial-gradient(ellipse at 50% 30%,rgba(150,30,30,.92),rgba(45,6,10,.96));display:flex;align-items:center;justify-content:center;font-family:CadBaloo,Fredoka,Arial,sans-serif;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))';
+  el.innerHTML=`<div style="width:min(420px,100%);display:flex;flex-direction:column;align-items:center;gap:14px">
+   <div style="position:relative;width:100%;text-align:center"><div style="display:inline-block;background:linear-gradient(#e2453a,#a91f1c);border:4px solid #4a0b0b;border-radius:14px;padding:10px 30px;color:#fff;font-size:clamp(30px,9vw,44px);font-weight:800;letter-spacing:2px;text-shadow:0 3px 0 #4a0b0b;box-shadow:0 6px 0 #4a0b0b">${en?'DEFEAT':'DERROTA'}</div></div>
+   <div style="width:100%;background:linear-gradient(#2f7fd8,#1b5bb0);border:3px solid #0d2f66;border-radius:10px;color:#fff;font-weight:800;font-size:clamp(18px,5.4vw,24px);text-align:center;padding:6px;text-shadow:0 2px 0 #0d2f66">${en?'GET STRONGER':'FIQUE MAIS FORTE'}</div>
+   <div id="dgL" style="width:100%;display:flex;flex-direction:column;gap:12px"></div>
+   <button id="dgC" style="margin-top:8px;width:78%;min-height:64px;border-radius:20px;border:4px solid #0d2f66;background:linear-gradient(#5fb0ff,#2a74d6);color:#fff;font-family:inherit;font-weight:800;font-size:clamp(24px,7vw,32px);text-shadow:0 3px 0 #0d2f66;box-shadow:0 6px 0 #0d2f66;cursor:pointer">${en?'CONTINUE':'CONTINUAR'}</button></div>`;
+  const box=el.querySelector('#dgL');
+  L.forEach(o=>{const r=document.createElement('div');r.style.cssText='display:flex;align-items:center;gap:10px;background:#fbf1dc;border:4px solid #a7865a;border-radius:16px;padding:8px 12px;box-shadow:0 5px 0 rgba(0,0,0,.35)';
+   const ic=document.createElement('div');ic.style.cssText='position:relative;width:84px;height:84px;flex:0 0 84px';o.i.style.cssText='width:84px;height:84px;background:transparent;box-shadow:none;position:static;transform:none';ic.appendChild(o.i);
+   if(o.arrow){const a=document.createElement('div');a.style.cssText='position:absolute;right:-4px;bottom:-2px;width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-bottom:24px solid #2fd14a;filter:drop-shadow(0 2px 0 #0b5a1a)';ic.appendChild(a);}
+   const rt=document.createElement('div');rt.style.cssText='flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px';
+   rt.innerHTML=`<div style="color:#4a3420;font-weight:800;font-size:clamp(16px,4.6vw,21px);text-align:center;line-height:1.1">${o.t}</div>`;
+   const bt=document.createElement('button');bt.textContent=en?'GO':'IR';bt.style.cssText='min-width:58%;min-height:48px;border-radius:14px;border:3px solid #0d2f66;background:linear-gradient(#5fd0ff,#2a8ee0);color:#fff;font-family:inherit;font-weight:800;font-size:24px;text-shadow:0 2px 0 #0d2f66;box-shadow:0 4px 0 #0d2f66;cursor:pointer';
+   bt.addEventListener('click',async ev=>{ev.stopPropagation();el.remove();try{tone([660,880],.05);}catch(_){}try{await o.go();}catch(e){console.warn(e);}res(1);});
+   rt.appendChild(bt);r.appendChild(ic);r.appendChild(rt);box.appendChild(r);});
+  el.querySelector('#dgC').addEventListener('click',ev=>{ev.stopPropagation();el.remove();res(0);});
+  document.body.appendChild(el);});};
+ showResult=async function(R2){const r=await _sr.apply(this,arguments);try{if(R2&&!R2.win&&!/[?#&]semderrota/.test(location.href)&&(flags.lvl||0)!==-1&&typeof party!=='undefined'&&party.length)await dgPainel(R2.key);}catch(e){console.warn(e);}return r;};}
 window.__GH=()=>H;window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

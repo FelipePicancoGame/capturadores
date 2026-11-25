@@ -4993,7 +4993,8 @@ function monLive(sp){const base=sp.replace('*',''),root=EVOBASE[base]||base,L=LI
     b.globalAlpha=1;}}
 /* PEDORATO18NOV (Felipe: 'o rato que tá atacando parece voando — faz ele andar'): a arte do Ratonga (e de alguns outros) tem o pé mais alto que a dos outros,
    então ele ficava acima da sombra. O jogo mede onde o pé está no desenho e põe o pé no chão, em cima da sombra. Quem voa de verdade continua voando. */
-const WFOOT={};function wFootDy(e,sc){try{if(e.boss||flyAr(e))return 0;const k=String(e.sp||'').replace('*','');let m=WFOOT[k];const now=performance.now();
+/* PEMONTADOR24NOV (Felipe ajustou no Montador da Muralha): altura extra de cada inimigo, em px do jogo */const WPEAJ={ratonga:16.5,zumbel:-9};
+const WFOOT={};function wFootDy(e,sc){const _aj=(WPEAJ[String(e&&e.sp||'').replace('*','')]||0)*sc/.5;return (e&&e.boss?0:_aj)+wFootDy0(e,sc);}function wFootDy0(e,sc){try{if(e.boss||flyAr(e))return 0;const k=String(e.sp||'').replace('*','');let m=WFOOT[k];const now=performance.now();
   if(!m||(m.n<3&&now-m.at>1500)){const c=document.createElement('canvas');c.width=c.height=160;const g=c.getContext('2d'),pb=b;b=g;try{drawMonFxW({sp:k,moving:true},k,80,80,.5,false,{act:'walk'});}finally{b=pb;}
     const d=g.getImageData(0,0,160,160).data;let y1=-1;for(let y=159;y>=0&&y1<0;y--)for(let x=0;x<160;x+=2)if(d[(y*160+x)*4+3]>60){y1=y;break;}m=WFOOT[k]={f:y1<0?15:y1-80,n:(m?m.n:0)+1,at:now};}
   const dy=15-m.f;return dy>1&&dy<12?dy*sc/.5:0;}catch(err){return 0;}}

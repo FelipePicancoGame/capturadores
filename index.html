@@ -19990,6 +19990,16 @@ window.__CT2=()=>{try{if(/[?#&]cartao0/.test(location.href)){localStorage.setIte
     const j=await choose([en?'DOUBLE · 30s EXERCISE':'DOBRAR · EXERCÍCIO 30s','OK'],{cadAsk:{q:en?`You got ${n} card fragments. Double them?`:`Você ganhou ${n} fragmentos de carta. Quer dobrar?`,nf:1,cols:['#1f7a3a','#5a5470']},noCancel:true});
     if(j===0&&!F.dob&&await fpadDomRun('DOBRO DOS FRAGMENTOS','DOUBLE FRAGMENTS')){F.dob=1;flags.arFrag=flags.arFrag||{};for(const sp in F.got)flags.arFrag[sp]=(flags.arFrag[sp]|0)+F.got[sp];const AJ=flags.arAjuda||(flags.arAjuda={});AJ.dobro=(AJ.dobro|0)+1;try{saveGame();}catch(e){}
       await say(en?`Doubled! +${n} card fragments.`:`Dobrou! +${n} fragmentos de carta.`);}}}catch(e){}return r;};}
+/* APROVFIX24NOV (Felipe no Aprovador de Monstrinhos): tamanhos errados e lado trocado.
+   Cascopedra, Zumbel e Trovim 2 pequenos de frente; Zumbel atacando de costas grande demais;
+   Estrelim/Estrelux/Estelarion parados de frente na diagonal → usam o andar de frente (reto) parado. */
+{const SZ={'cascopedra|f|idle':1.39,'zumbel|f|idle':1.47,'trovim2|f|idle':1.45,'zumbel|costas|attack':.66},FLIP={},RETO={estrelim:1,estrelux:1,estelarion:1};
+ const _dm=drawMonFx;drawMonFx=function(sp,x,y,sc,flip,o){try{const base=String(sp||'').replace('*',''),o2=o||{},act=o2.act||'idle',d=MONDIR;
+  const dk=(!d||d==='s')?'f':d;let f=SZ[base+'|'+dk+'|'+act];
+  if(RETO[base]&&dk==='f'&&act==='idle'&&MONANIM[base]&&MONANIM[base].walk){const pm=MONDIR;MONDIR='s';try{return _dm.call(this,sp,x,y,sc,flip,Object.assign({},o2,{act:'walk',fix:0}));}finally{MONDIR=pm;}}
+  if(FLIP[base+'|'+d]&&act==='walk')flip=!flip;
+  if(f){const s1=(sc||1)*f;return _dm.call(this,sp,x,y+28*((sc||1)-s1),s1,flip,o);}
+  return _dm.call(this,sp,x,y,sc,flip,o);}catch(e){return _dm.apply(this,arguments);}};}
 window.__GH=()=>H;window.__T={MONANIM,get WL(){return WL},run:f=>run(f),wallMode,wUpdate,wPick,get ui(){return ui}};
 setTimeout(start,2500);
 })();

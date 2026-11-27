@@ -16337,9 +16337,9 @@ function amgQR(url,text){return new Promise(res=>{const EN=window.CVLANG==='en';
 <div style="font-size:14px;margin-bottom:10px">${EN?'Point the phone camera at the code to open the invite':'Aponte a câmera do celular para o código e abra o convite'}</div>
 <div id="amgQRc" style="display:inline-block;background:#fff;padding:10px;border-radius:12px"></div>
 <div style="font-size:12px;word-break:break-all;margin:10px 0;max-width:360px">${url.replace(/[<>&]/g,'')}</div>
-<button style="font:800 18px Fredoka,system-ui,sans-serif;padding:11px 30px;border:0;border-radius:14px;background:#1f7a3a;color:#fff;box-shadow:0 4px 0 #0e4a20">${EN?'CLOSE':'FECHAR'}</button></div>`;
+<button id="amgQRler" style="display:block;margin:0 auto 10px;font:800 16px Fredoka,system-ui,sans-serif;padding:10px 18px;border:0;border-radius:14px;background:#2f5fa8;color:#fff;box-shadow:0 4px 0 #1a3a70">${EN?'📷 Scan my friend\'s code instead':'📷 Ler o código do amigo'}</button><button style="font:800 18px Fredoka,system-ui,sans-serif;padding:11px 30px;border:0;border-radius:14px;background:#1f7a3a;color:#fff;box-shadow:0 4px 0 #0e4a20">${EN?'CLOSE':'FECHAR'}</button></div>`;
   document.body.appendChild(el);['pointerdown','pointerup','touchstart','touchend','mousedown'].forEach(k=>el.addEventListener(k,e=>e.stopPropagation()));
-  el.querySelector('button').onclick=()=>{el.remove();res();};
+  el.querySelectorAll('button')[1].onclick=()=>{el.remove();res();};el.querySelector('#amgQRler').onclick=()=>{el.remove();res();try{amgLerQR();}catch(e){}};
   const draw=()=>{try{const Q=window.QRMini,q=new Q(-1,Q.L.M);q.addData(url);q.make();const n=q.getModuleCount(),px=Math.floor(240/n),cv=document.createElement('canvas');cv.width=cv.height=n*px;const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.fillStyle='#000';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))x.fillRect(c*px,r*px,px,px);el.querySelector('#amgQRc').appendChild(cv);}catch(e){}};
   if(window.QRMini)draw();else{const s=document.createElement('script');s.src='assets/lib/qrmini.js';s.onload=draw;document.head.appendChild(s);}
   try{navigator.clipboard&&navigator.clipboard.writeText(text+' '+url).catch(()=>{});}catch(e){}});}
@@ -16440,12 +16440,12 @@ function arAmgPainel(mode){if(!duoNoApp())return;const ini=document.getElementBy
 <h3>JOGAR COM AMIGO</h3><div class="eu">Seu Nº de amigo: <b>${amgNo()}</b></div>
 <div class="ls">${L.length?L.map(a=>`<div class="am"><b>${esc(a.nome||'Amigo')}<small>Nº ${a.tid}</small></b><button data-t="${a.tid}">Convidar</button></div>`).join(''):'<div class="vz">Você ainda não tem amigos no jogo. Mande o link ou adicione pelo Nº do amigo.</div>'}</div>
 <div class="ad"><input id="arAmgN" inputmode="numeric" maxlength="6" placeholder="Nº do amigo"><button id="arAmgAdd">Adicionar</button></div>
-<button class="lk" id="arAmgLink">Mandar link pro amigo (WhatsApp, mensagem…)</button><button class="lk" id="arAmgQR" style="margin-top:6px;background:#2f5fa8;color:#fff">📱 Mostrar QR code (o amigo lê com a câmera)</button>
+<button class="lk" id="arAmgLink">Mandar link pro amigo (WhatsApp, mensagem…)</button><button class="lk" id="arAmgQR" style="margin-top:6px;background:#2f5fa8;color:#fff">📱 Mostrar QR code (o amigo lê com a câmera)</button><button class="lk" id="arAmgLer" style="margin-top:6px;background:#1f7a3a;color:#fff">📷 Ler o QR code do amigo</button>
 <p style="margin:10px 0 0;text-align:center;font-size:13px;color:#c8b8e0">ou crie uma sala e passe o código:</p>`;
   ['pointerdown','pointerup','touchstart','touchend','touchmove','mousedown','mouseup','click','keydown','keyup'].forEach(ev=>pn.addEventListener(ev,e=>e.stopPropagation()));
   pn.querySelectorAll('.am button').forEach(bt=>bt.onclick=()=>arAmgConvidar(mode,parseInt(bt.dataset.t,10)));
   pn.querySelector('#arAmgAdd').onclick=()=>{const v=parseInt((pn.querySelector('#arAmgN').value||'').replace(/\D/g,''),10);if(!v){arAv('Digite o Nº do amigo.',1);return;}if(v===amgNo()){arAv('Esse é o seu Nº 😄',1);return;}amgAdd(v,'');arAv('Amigo adicionado!');arAmgPainel(mode);};
-  pn.querySelector('#arAmgLink').onclick=()=>{try{amgShare();}catch(e){}};{const q=pn.querySelector('#arAmgQR');if(q)q.onclick=()=>{try{amgQR(amgLinkUrl(),amgLinkTxt());}catch(e){}};}/* AMGQRBOTAO13NOV (Felipe: 'coloque QR code pra adicionar amigos') */}
+  pn.querySelector('#arAmgLink').onclick=()=>{try{amgShare();}catch(e){}};{const q=pn.querySelector('#arAmgQR');if(q)q.onclick=()=>{try{amgQR(amgLinkUrl(),amgLinkTxt());}catch(e){}};}{const q2=pn.querySelector('#arAmgLer');if(q2)q2.onclick=()=>{try{amgLerQR();}catch(e){}};}/* AMGQRBOTAO13NOV (Felipe: 'coloque QR code pra adicionar amigos') */}
 async function arAmgConvidar(mode,tid){grpUlt(tid);const a=amgLista().find(x=>x.tid===tid),nm=(a&&a.nome)||('Nº '+tid);
   arAv('Chamando '+nm+'…');const r0=await amgFala(tid,{k:'ping'},5000);if(!r0||r0.k!=='pong'){arAv(nm+' não está com o App aberto no mapa agora. Peça pra ele abrir o jogo e tente de novo.',1);return;}
   /* CONVITEOCUPADO12NOV: amigo ocupado (Arena, Muralha, menu…) recebe o convite mesmo assim — o balão aparece em qualquer tela */
@@ -20052,6 +20052,35 @@ const ROTA={sua:[0,0],parceiro:[0,0],meio:[0,0],m:1};
 {const _dmR=arDrawMon;arDrawMon=function(sp,x,y,sc,act,dir,seed,fix){try{if(act==='walk'&&sc>0&&sc<.45&&!/semrota/.test(location.hash)&&typeof arUm==='function'&&arUm()){
     const lg=(y>140&&x<34)?'sua':(y<124&&x<34)?'parceiro':'meio',o=ROTA[lg]||[0,0],m=ROTA.m||1,foot=y+3+o[1],sc2=sc*m;
     return _dmR.call(this,sp,x+o[0],foot-55.85*sc2,sc2,act,dir,seed,fix);}}catch(e){}return _dmR.apply(this,arguments);};}
+/* AMGLERQR26NOV (report 581 'QR code não funciona pra add pessoas' / Felipe escolheu A): o QR abria o jogo do SITE (outro salvo), não o App.
+   Agora dentro do jogo tem 📷 LER O QR CODE DO AMIGO: abre a câmera, lê o código do outro celular e adiciona o amigo na hora (no App precisa da permissão de câmera do build novo).
+   O leitor (jsQR) é baixado na hora em que abre. Sem câmera: mostra pra digitar o Nº do amigo. */
+function amgLerQR(){const EN=window.CVLANG==='en';let el=document.getElementById('amgLer');if(el)el.remove();el=document.createElement('div');el.id='amgLer';
+  el.style.cssText='position:fixed;inset:0;z-index:99996;background:rgba(8,6,24,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-family:Fredoka,system-ui,sans-serif;color:#fff;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))';
+  el.innerHTML=`<div style="font-size:22px;font-weight:800;text-align:center">${EN?'Point at your friend\'s QR code':'Aponte para o QR code do amigo'}</div>
+<div style="position:relative;width:min(80vw,340px);aspect-ratio:1;border-radius:18px;overflow:hidden;background:#000;border:4px solid #ffd54a"><video playsinline muted autoplay style="width:100%;height:100%;object-fit:cover"></video><div class="ms" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-size:16px"></div></div>
+<div class="nb" style="display:none;gap:8px;align-items:center"><input inputmode="numeric" maxlength="6" placeholder="${EN?'Friend No.':'Nº do amigo'}" style="font:700 18px Fredoka,system-ui;padding:10px;border-radius:12px;border:0;width:140px;text-align:center;background:#fff;color:#222"><button class="ok" style="font:800 17px Fredoka,system-ui;padding:10px 16px;border:0;border-radius:12px;background:#1f7a3a;color:#fff">${EN?'ADD':'ADICIONAR'}</button></div>
+<button class="x" style="font:800 18px Fredoka,system-ui,sans-serif;padding:11px 30px;border:0;border-radius:14px;background:#6a6488;color:#fff">${EN?'CLOSE':'FECHAR'}</button>`;
+  document.body.appendChild(el);['pointerdown','pointerup','touchstart','touchend','mousedown'].forEach(k=>el.addEventListener(k,e=>e.stopPropagation()));
+  const v=el.querySelector('video'),ms=el.querySelector('.ms'),nb=el.querySelector('.nb');let st=null,on=true;
+  const fim=()=>{on=false;try{st&&st.getTracks().forEach(t=>t.stop());}catch(e){}el.remove();};
+  el.querySelector('.x').onclick=fim;
+  const add=(tid,nome)=>{tid=parseInt(tid,10);if(!tid)return false;if(tid===amgNo()){ms.textContent=EN?'That is your own code 🙂':'Esse é o seu próprio código 🙂';return false;}
+    const ja=amgLista().some(x=>x.tid===tid);amgAdd(tid,nome||'');fim();try{tone([659,784,1047],.07);}catch(e){}
+    const nm=nome||('Nº '+tid);rwToast(ja?(EN?`${nm} is already your friend.`:`${nm} já é seu amigo.`):(EN?`${nm} is now your friend! Open FRIENDS to play together.`:`${nm} agora é seu amigo! Abra AMIGOS para jogar junto.`));
+    try{amgFala(tid,{k:'ola',tid:amgNo(),nome:String(flags.nome||'').slice(0,14)},5000);}catch(e){}return true;};
+  const manual=txt=>{ms.textContent=txt;nb.style.display='flex';const i=nb.querySelector('input');nb.querySelector('.ok').onclick=()=>add(i.value,'');};
+  const ler=d=>{const m=/amigo-(\d{4,6})(?:-([^#&-]*))?/.exec(d||'');if(m){let n='';try{n=decodeURIComponent(m[2]||'').slice(0,14);}catch(e){}return add(m[1],n);}if(/^\d{4,6}$/.test(String(d||'').trim()))return add(d,'');ms.textContent=EN?'This is not a Tame Rush code':'Esse código não é do Tame Rush';return false;};
+  const lib=()=>new Promise(r=>{if(window.jsQR)return r(true);const urls=['https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js','https://unpkg.com/jsqr@1.4.0/dist/jsQR.js'];let k=0;const tryN=()=>{if(k>=urls.length)return r(false);const s=document.createElement('script');s.src=urls[k++];s.onload=()=>r(!!window.jsQR);s.onerror=tryN;document.head.appendChild(s);};tryN();});
+  (async()=>{ms.textContent=EN?'Opening the camera…':'Abrindo a câmera…';
+    try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw 0;st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});}catch(e){manual(EN?'The camera is not available. Type your friend\'s number:':'A câmera não abriu. Digite o Nº do amigo:');return;}
+    if(!on){try{st.getTracks().forEach(t=>t.stop());}catch(e){}return;}v.srcObject=st;try{await v.play();}catch(e){}
+    if('BarcodeDetector' in window){try{const bd=new BarcodeDetector({formats:['qr_code']});ms.textContent='';const loop=async()=>{if(!on)return;try{const r=await bd.detect(v);if(r&&r[0]&&ler(r[0].rawValue))return;}catch(e){}setTimeout(loop,250);};loop();return;}catch(e){}}
+    const ok=await lib();if(!ok){manual(EN?'Could not load the reader. Type your friend\'s number:':'Não deu pra carregar o leitor. Digite o Nº do amigo:');return;}
+    ms.textContent='';const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});
+    const loop=()=>{if(!on)return;try{const w=v.videoWidth,h=v.videoHeight;if(w&&h){const k=Math.min(1,480/Math.max(w,h));c.width=Math.round(w*k);c.height=Math.round(h*k);x.drawImage(v,0,0,c.width,c.height);const d=x.getImageData(0,0,c.width,c.height);const r=window.jsQR(d.data,c.width,c.height,{inversionAttempts:'dontInvert'});if(r&&r.data&&ler(r.data))return;}}catch(e){}setTimeout(loop,200);};loop();})();}
+{const _ar=amgRecebe;amgRecebe=function(c,m){try{if(m&&m.k==='ola'){const tid=parseInt(m.tid,10)||0,nome=String(m.nome||'').slice(0,14);if(!tid||tid===amgNo())return;const ja=amgLista().some(x=>x.tid===tid);amgAdd(tid,nome);try{c.send({k:'pong',tid:flags.tid,nome:String(flags.nome||'').slice(0,14)});}catch(e){}
+    if(!ja)rwToast(window.CVLANG==='en'?`${nome||'A friend'} scanned your code and is now your friend!`:`${nome||'Um amigo'} leu o seu código e agora é seu amigo!`);return;}}catch(e){}return _ar.apply(this,arguments);};}
 /* DERROTAKIT26NOV (Felipe aprovou a tela de Derrota do Buchecha no Aprovar Artes 26/nov): na Muralha a tela FIQUE MAIS FORTE usa o kit (cenário, placa, faixa, 3 cartões, ícones, botões IR e CONTINUAR). Mesmos destinos de antes. Outros jogos seguem com a tela antiga. #derrotaantiga volta */
 {const _dg=window.dgPainel;window.dgPainel=function(key){if(key!=='wall'||/[?#&]derrotaantiga/.test(location.href))return _dg(key);return new Promise(res=>{const en=window.CVLANG==='en';document.querySelectorAll('#dgBox').forEach(x=>x.remove());
   const U=n=>'assets/derrota/'+n+'.webp',BW=852,BH=1846;

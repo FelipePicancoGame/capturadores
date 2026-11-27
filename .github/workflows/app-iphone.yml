@@ -47,6 +47,7 @@ jobs:
           /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems array" App/Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems:0 dict" App/Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems:0:SKAdNetworkIdentifier string cstr6suwn9.skadnetwork" App/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'A câmera é usada só para ler o QR code do seu amigo e adicionar ele no jogo.'" App/Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :GADApplicationIdentifier string ca-app-pub-9482139825936910~5086255730" App/Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :NSUserTrackingUsageDescription string 'Usamos isso para mostrar anúncios mais do seu interesse nos vídeos com prêmio.'" App/Info.plist || true
           /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems array" App/Info.plist || true

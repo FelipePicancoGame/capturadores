@@ -20046,6 +20046,12 @@ window.__CT2=()=>{try{if(/[?#&]cartao0/.test(location.href)){localStorage.setIte
 /* DANODUPLA26NOV (report 585 'como quem acabou de começar teve o dano quase igual ao meu?' / Felipe: 'a diferença tem que ter pra quem jogou mais'): no JUNTOS, quando você acertava um inimigo do parceiro na estrada do meio, o dano contava pra você E pra ele. Agora conta só pra quem bateu. #semdanodupla volta */
 {const _cc=arConta;arConta=function(){if(window.__semConta)return;return _cc.apply(this,arguments);};}
 {const _cd2=arCoopDmg;arCoopDmg=function(d){if(/semdanodupla/.test(location.hash))return _cd2(d);window.__semConta=1;try{return _cd2(d);}finally{window.__semConta=0;}};}
+/* ROTADUPLA26NOV (Felipe: 'os monstrinhos andando fora da linha' na Arena em dupla): o desenho do inimigo andando ficava com o pé ~13 pontos ABAIXO da estrada (na do meio parecia andar em cima do seu tabuleiro).
+   Agora o pé fica em cima da estrada, e cada estrada (sua, do parceiro e a do meio) ainda pode ser ajustada no montador Estradas da Dupla (ROTA). Chefe continua como estava. #semrota volta */
+const ROTA={sua:[0,0],parceiro:[0,0],meio:[0,0],m:1};
+{const _dmR=arDrawMon;arDrawMon=function(sp,x,y,sc,act,dir,seed,fix){try{if(act==='walk'&&sc>0&&sc<.45&&!/semrota/.test(location.hash)&&typeof arUm==='function'&&arUm()){
+    const lg=(y>140&&x<34)?'sua':(y<124&&x<34)?'parceiro':'meio',o=ROTA[lg]||[0,0],m=ROTA.m||1,foot=y+3+o[1],sc2=sc*m;
+    return _dmR.call(this,sp,x+o[0],foot-55.85*sc2,sc2,act,dir,seed,fix);}}catch(e){}return _dmR.apply(this,arguments);};}
 /* DERROTAKIT26NOV (Felipe aprovou a tela de Derrota do Buchecha no Aprovar Artes 26/nov): na Muralha a tela FIQUE MAIS FORTE usa o kit (cenário, placa, faixa, 3 cartões, ícones, botões IR e CONTINUAR). Mesmos destinos de antes. Outros jogos seguem com a tela antiga. #derrotaantiga volta */
 {const _dg=window.dgPainel;window.dgPainel=function(key){if(key!=='wall'||/[?#&]derrotaantiga/.test(location.href))return _dg(key);return new Promise(res=>{const en=window.CVLANG==='en';document.querySelectorAll('#dgBox').forEach(x=>x.remove());
   const U=n=>'assets/derrota/'+n+'.webp',BW=852,BH=1846;

@@ -19499,12 +19499,11 @@ function duoCompare(A,B){return new Promise(res=>{try{const en=window.CVLANG==='
   const fim=()=>{b.remove();res();};b.querySelector('button').onclick=fim;
   /* GRUPO14NOV (Felipe: 'convite pra pessoas ficarem em grupo e não precisar ficar convidando ao final de cada partida') */
   try{const O=arguments[2]||{},g=grpUlt();if(g&&O.jogo){grpSet(g.tid,g.nome||B.n);const ex=document.createElement('div');ex.style.cssText='text-align:center;margin-top:10px';
-    if(O.host){ex.innerHTML=`<button id="grpAgain" style="font:inherit;font-size:22px;color:#fff;background:#3a6ae0;border:0;border-radius:18px;padding:12px 22px;box-shadow:0 6px 0 #1a3a8a">🔁 ${en?'PLAY AGAIN WITH':'JOGAR DE NOVO COM'} ${String(B.n).slice(0,12).toUpperCase()}</button>`;}
-    else ex.innerHTML=`<div style="font-size:18px;color:#bfe0ff">👥 ${en?'You are in a group with':'Você está em grupo com'} ${String(B.n).slice(0,12)}. ${en?'When they play again, you join by yourself.':'Quando ele jogar de novo, você entra sozinho.'}</div>`;
+    {ex.innerHTML=`<button id="grpAgain" style="font:inherit;font-size:22px;color:#fff;background:#3a6ae0;border:0;border-radius:18px;padding:12px 22px;box-shadow:0 6px 0 #1a3a8a">🔁 ${en?'PLAY AGAIN WITH':'JOGAR DE NOVO COM'} ${String(B.n).slice(0,12).toUpperCase()}</button>`;}
     ex.innerHTML+=`<div style="margin-top:8px"><button id="grpSair" style="font:inherit;font-size:16px;color:#ffd0c0;background:transparent;border:2px solid #ffd0c0;border-radius:14px;padding:6px 14px">${en?'Leave group':'Sair do grupo'}</button></div>`;
     b.firstElementChild.appendChild(ex);
-    const ag=ex.querySelector('#grpAgain');if(ag)ag.onclick=()=>{fim();grpDeNovo(O.jogo,g.tid);};
-    ex.querySelector('#grpSair').onclick=()=>{grpSair();ex.innerHTML=`<div style="font-size:18px;color:#ffd0c0">${en?'You left the group.':'Você saiu do grupo.'}</div>`;};}}catch(e){console.warn('grupo',e);}
+    const ag=ex.querySelector('#grpAgain');if(ag)ag.onclick=()=>{fim();if(O.host)grpDeNovo(O.jogo,g.tid);else grpPedeDeNovo(O.jogo,g.tid);};
+    ex.querySelector('#grpSair').onclick=()=>{grpSairAvisa();ex.innerHTML=`<div style="font-size:18px;color:#ffd0c0">${en?'You left the group.':'Você saiu do grupo.'}</div>`;};}}catch(e){console.warn('grupo',e);}
   document.body.appendChild(b);}catch(e){console.warn('duoCompare',e);res();}});}
 /* SALA14NOV (Felipe: 'coloca avisos na tela de quem está esperando… um lobby dentro da sala, pendente ou pronto… e um temporizador 3, 2, 1') */
 function salaPainel(o){try{const en=window.CVLANG==='en';let b=document.getElementById('salaBox');if(!b){b=document.createElement('div');b.id='salaBox';document.body.appendChild(b);['pointerdown','pointerup','touchstart','touchend','click'].forEach(ev=>b.addEventListener(ev,e=>e.stopPropagation()));}
@@ -19530,7 +19529,59 @@ function grpAtivo(tid){try{const g=flags.grupo;return !!(g&&String(g.tid)===Stri
 function grpDeNovo(jogo,tid){const g=flags.grupo||{};salaPainel({cod:'',eu:'PRONTO',par:g.nome||'',parSt:'CHAMANDO…',tit:window.CVLANG==='en'?'BACK TO THE ROOM':'VOLTANDO PRA SALA',sair:()=>{}});/* GRPAVISO15NOV (Felipe: 'apertei jogar de novo e não apareceu pra Gabi nenhum convite'): se o parceiro não entrar, avisa em vez de sumir calado */setTimeout(()=>{try{const ok=(typeof DUOH!=='undefined'&&DUOH)||(typeof DUOG!=='undefined'&&DUOG);salaFecha();if(!ok)rwToast(window.CVLANG==='en'?`${g.nome||'Your partner'} did not answer. They need the game open (on the map) to get the invite.`:`${g.nome||'O parceiro'} não respondeu. Ele precisa estar com o jogo aberto (no mapa) pra receber o convite.`);}catch(e){}},25000);let n=0;const iv=setInterval(async()=>{n++;if(n>60){clearInterval(iv);return;}try{if(G.mode!=='world'||(typeof ui!=='undefined'&&ui.length)||DUOH||DUOG)return;clearInterval(iv);
   if(jogo==='muralha'){duoLobby();setTimeout(()=>{try{amgConvidar(tid);}catch(e){}},900);}
   else{const m=/arena-(coop|pvp)/.exec(jogo);if(!m)return;arMpLobby(m[1]);setTimeout(()=>{try{arAmgConvidar(m[1],tid);}catch(e){}},1500);}}catch(e){}},700);}
-{const _c=amgConvite;amgConvite=function(quem,cod,jogo){_c.apply(this,arguments);try{grpUlt(quem.tid,quem.nome);if(grpAtivo(quem.tid)){grpSet(quem.tid,quem.nome);const el=document.getElementById('amgInv');const sim=el&&el.querySelector('#amgSim');if(sim)setTimeout(()=>{try{sim.click();rwToast((window.CVLANG==='en'?'👥 Your group called you: joining…':'👥 Seu grupo te chamou: entrando…'));}catch(e){}},400);}}catch(e){}};}
+{const _c=amgConvite;amgConvite=function(quem,cod,jogo){_c.apply(this,arguments);try{grpUlt(quem.tid,quem.nome);if(grpAtivo(quem.tid)){grpSet(quem.tid,quem.nome);const el=document.getElementById('amgInv');const sim=el&&el.querySelector('#amgSim');if(sim){/* GRUPO26NOV: se ainda está na tela do fim da partida, fecha ela e espera voltar pro mapa (sem recarregar o jogo) */try{if(document.getElementById('dcBox'))grpFechaCmp();}catch(e){}let n=0;const vai=()=>{n++;try{if(!sim.isConnected)return;if(n<20&&(G.mode!=='world'||(typeof AR!=='undefined'&&AR))){setTimeout(vai,400);return;}sim.click();rwToast((window.CVLANG==='en'?'👥 Your group called you: joining…':'👥 Seu grupo te chamou: entrando…'));}catch(e){}};setTimeout(vai,400);}}}catch(e){}};}
+/* GRUPO26NOV (Felipe: 'o amigo não fica no grupo e buga pra joinar de novo. tem que melhorar o sistema de grupo de amizade no jogo'):
+   - os DOIS têm JOGAR DE NOVO no fim; quem não criou a sala manda um pedido e o dono chama de novo (se o dono não responder, quem pediu vira o dono);
+   - o convite tenta de novo por até ~30 s (o amigo ainda pode estar saindo da partida);
+   - não aparece mais 'não respondeu' no meio da partida da Arena (só olhava a Muralha);
+   - o grupo começa quando a partida com o amigo começa (não só na tela do fim) e aparece na lista de amigos, com 'Sair do grupo';
+   - sair do grupo avisa o amigo. */
+let GRPDN=0;
+function grpEmJogo(){try{return !!((typeof AR!=='undefined'&&AR&&AR.mp&&!AR.over)||(typeof DUOH!=='undefined'&&DUOH)||(typeof DUOG!=='undefined'&&DUOG));}catch(e){return false;}}
+function grpLivre(){try{return G.mode==='world'&&party.length&&!ui.some(u=>u.type!=='dialog'&&!u.say)&&!grpEmJogo()&&!(typeof AR!=='undefined'&&AR);}catch(e){return false;}}
+function grpJogoOk(j){return j==='muralha'||/^arena-(coop|pvp)$/.test(j||'');}
+grpDeNovo=function(jogo,tid){if(!grpJogoOk(jogo)||!tid)return;if(GRPDN&&Date.now()-GRPDN<70000)return;const t0=GRPDN=Date.now();const en=window.CVLANG==='en',g=flags.grupo||{},nm=g.nome||((amgLista().find(x=>String(x.tid)===String(tid))||{}).nome)||(en?'your friend':'seu amigo');tid=parseInt(tid,10);
+  const vivo=()=>GRPDN===t0,acaba=()=>{if(vivo())GRPDN=0;};
+  salaPainel({cod:'',eu:'PRONTO',par:nm,parSt:en?'CALLING…':'CHAMANDO…',tit:en?'BACK TO THE ROOM':'VOLTANDO PRA SALA',sair:()=>{acaba();try{const v=document.getElementById(jogo==='muralha'?'duoVoltar':'arVoltar');if(v&&!grpEmJogo())v.click();}catch(e){}}});
+  (async()=>{try{for(let i=0;i<90&&vivo();i++){if(grpLivre())break;await new Promise(r=>setTimeout(r,500));}if(!vivo())return;
+    let ok=false;for(let i=0;i<7&&vivo()&&!ok;i++){const r=await amgFala(tid,{k:'ping'},5000);ok=!!(r&&r.k==='pong');if(!ok)await new Promise(r=>setTimeout(r,3500));}
+    if(!vivo())return;if(!ok){salaFecha();acaba();rwToast(en?`${nm} did not answer. They need the game open to get the invite.`:`${nm} não respondeu. Ele precisa estar com o jogo aberto pra receber o convite.`);return;}
+    if(jogo==='muralha'){duoLobby();setTimeout(()=>{try{amgConvidar(tid);}catch(e){}},900);}
+    else{const m=/arena-(coop|pvp)/.exec(jogo);run(()=>arMpLobby(m[1]));setTimeout(()=>{try{arAmgConvidar(m[1],tid);}catch(e){}},1500);}
+    for(let i=0;i<60&&vivo();i++){await new Promise(r=>setTimeout(r,1000));if(grpEmJogo()){acaba();return;}}
+    if(vivo()){salaFecha();acaba();if(!grpEmJogo())rwToast(en?`${nm} did not join. The room is still open: you can invite again.`:`${nm} não entrou. A sala continua aberta: você pode convidar de novo.`);}}catch(e){console.warn('grpDeNovo',e);acaba();salaFecha();}})();};
+/* quem não criou a sala: pede pro dono chamar de novo */
+async function grpPedeDeNovo(jogo,tid){if(!grpJogoOk(jogo)||!tid)return;const en=window.CVLANG==='en',g=flags.grupo||{},nm=g.nome||(en?'your friend':'seu amigo');tid=parseInt(tid,10);
+  if(GRPDN&&Date.now()-GRPDN<70000)return;const t0=GRPDN=Date.now();const vivo=()=>GRPDN===t0;
+  salaPainel({cod:'',eu:'PRONTO',par:nm,parSt:en?'CALLING…':'CHAMANDO…',tit:en?'BACK TO THE ROOM':'VOLTANDO PRA SALA',sair:()=>{if(vivo())GRPDN=0;}});
+  let r=null;for(let i=0;i<3&&vivo()&&!r;i++){r=await amgFala(tid,{k:'grpbis',jogo},6000);if(!r)await new Promise(q=>setTimeout(q,2500));}
+  if(!vivo())return;
+  if(r&&r.k==='grpok'){for(let i=0;i<70&&vivo();i++){await new Promise(q=>setTimeout(q,1000));if(grpEmJogo()){GRPDN=0;return;}}if(vivo()){GRPDN=0;salaFecha();if(!grpEmJogo())rwToast(en?`${nm} did not call. Try again or invite from the friends list.`:`${nm} não chamou. Tente de novo ou convide pela lista de amigos.`);}return;}
+  if(r&&r.k==='grpno'){GRPDN=0;salaFecha();rwToast(en?`${nm} is busy right now. Try again in a moment.`:`${nm} está ocupado agora. Tente de novo daqui a pouco.`);return;}
+  /* o dono não respondeu: quem pediu cria a sala e chama */GRPDN=0;grpDeNovo(jogo,tid);}
+function grpSairAvisa(){try{const g=flags.grupo||flags.grpUlt;grpSair();if(g&&g.tid)amgFala(parseInt(g.tid,10),{k:'grpsai'},4000);}catch(e){}}
+function grpFechaCmp(){try{const b=document.getElementById('dcBox');if(!b)return;const ok=[...b.querySelectorAll('button')].find(x=>/^\s*OK\s*$/i.test(x.getAttribute('aria-label')||x.textContent||''));if(ok)ok.click();}catch(e){}}
+{const _r=amgRecebe;amgRecebe=function(c,m){try{if(m&&(m.k==='grpbis'||m.k==='grpsai')){const qt=parseInt(m.tid,10)||0,en=window.CVLANG==='en',nm=String(m.nome||'').slice(0,14);
+  if(m.k==='grpsai'){c.send({k:'ok',tid:flags.tid});if(flags.grupo&&String(flags.grupo.tid)===String(qt)){grpSair();rwToast(en?`${nm||'Your friend'} left the group.`:`${nm||'Seu amigo'} saiu do grupo.`);}return;}
+  const jogo=String(m.jogo||'');const eu={tid:flags.tid,nome:String(flags.nome||'').slice(0,14)};
+  if(!grpJogoOk(jogo)||!grpAtivo(qt)||grpEmJogo()){c.send({...eu,k:'grpno'});return;}
+  c.send({...eu,k:'grpok'});if(GRPDN&&Date.now()-GRPDN<70000)return;grpSet(qt,nm||(flags.grupo||{}).nome);grpFechaCmp();setTimeout(()=>{try{grpDeNovo(jogo,qt);}catch(e){}},400);return;}}catch(e){console.warn('grpbis',e);}
+  return _r.apply(this,arguments);};}
+/* o grupo começa junto com a partida (antes só na tela do fim) */
+{const _mr=arMpRun;arMpRun=async function(mode,r){try{const g=grpUlt();if(g&&g.tid&&(!g.nome||!r.peerN||String(r.peerN).slice(0,10).toLowerCase()===String(g.nome).slice(0,10).toLowerCase()))grpSet(g.tid,g.nome||r.peerN);}catch(e){}return _mr.apply(this,arguments);};}
+/* lista de amigos: mostra com quem você está em grupo */
+function grpMarca(pn,sel){try{const g=flags.grupo;if(!pn||!g||!grpAtivo(g.tid))return;const en=window.CVLANG==='en';let ln=pn.querySelector('.grpLn');
+  if(!ln){ln=document.createElement('div');ln.className='grpLn';ln.style.cssText='position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:7px 10px;border-radius:12px;background:#1f6a3a;color:#fff;font:700 15px Fredoka,system-ui,sans-serif;text-align:center';pn.insertBefore(ln,pn.firstChild);}
+  ln.textContent='';const t=document.createElement('span');t.textContent=(en?'👥 In a group with ':'👥 Em grupo com ')+(g.nome||('Nº '+g.tid));ln.appendChild(t);
+  const bt=document.createElement('button');bt.textContent=en?'Leave group':'Sair do grupo';bt.style.cssText='width:auto;margin:0;padding:4px 10px;font:700 13px Fredoka,system-ui,sans-serif;color:#ffe0d0;background:transparent;border:2px solid #ffe0d0;border-radius:10px;box-shadow:none;cursor:pointer';bt.onclick=ev=>{ev.stopPropagation();grpSairAvisa();ln.remove();};ln.appendChild(bt);
+  const row=pn.querySelector(`[${sel}="${g.tid}"]`);const nb=row&&row.parentNode&&row.parentNode.querySelector('b');if(nb&&!/👥/.test(nb.textContent))nb.insertBefore(document.createTextNode('👥 '),nb.firstChild);}catch(e){}}
+{const _ap=arAmgPainel;arAmgPainel=function(mode){const r=_ap.apply(this,arguments);try{grpMarca(document.getElementById('arAmg'),'data-t');}catch(e){}return r;};}
+{const _mp=amgPainel;amgPainel=function(){const r=_mp.apply(this,arguments);try{const pn=document.getElementById('amgPn');if(pn&&flags.grupo&&grpAtivo(flags.grupo.tid)){const ls=pn.querySelector('.ls');if(ls)grpMarca(ls,'data-conv');}}catch(e){}return r;};}
+{const _cl=cv13Lobby;cv13Lobby=function(mode){const r=_cl.apply(this,arguments);try{const el=document.getElementById('cv13L'),g=flags.grupo;if(!el||!g||!grpAtivo(g.tid))return r;const pn=el.querySelector('.pn');if(!pn)return r;const EN=window.CVLANG==='en',U=v=>`calc(var(--u) * ${v})`;
+  for(const t of pn.querySelectorAll('.tx'))if(t.textContent==='Nº '+g.tid){t.textContent+=' 👥';t.style.color='#7dffa8';break;}
+  const p=document.createElement('div');p.className='grpPill';p.style.cssText=`position:absolute;left:${U(640)};top:${U(472)};width:${U(400)};height:${U(76)};border-radius:${U(38)};background:#1f6a3a;border:${U(4)} solid #7dffa8;color:#fff;display:flex;align-items:center;justify-content:center;font-size:${U(34)};font-weight:800;cursor:pointer;z-index:3`;
+  p.textContent=EN?'👥 Leave group':'👥 Sair do grupo';p.onclick=e=>{e.stopPropagation();grpSairAvisa();p.remove();for(const t of pn.querySelectorAll('.tx'))if(/👥/.test(t.textContent)&&/^Nº/.test(t.textContent)){t.textContent='Nº '+g.tid;t.style.color='#b9d4f5';}};pn.appendChild(p);}catch(e){}return r;};}
+/* /GRUPO26NOV */
 /* DUPLAARTE14NOV (Felipe aprovou a arte do Buchecha: TELAS_DUPLA_14nov) — Comparação, Sala e 3-2-1 com as peças (base 1080x1920) */
 const DPA=n=>'assets/dupla/'+n+'.webp';
 function dpTela(id,z){let b=document.getElementById(id);if(b)b.remove();b=document.createElement('div');b.id=id;b.style.cssText=`position:fixed;inset:0;z-index:${z};background:rgba(6,12,30,.72);overflow:hidden;font-family:CadBaloo,Fredoka,Arial,sans-serif;font-weight:800`;
@@ -19566,9 +19617,8 @@ duoCompare=function(A,B,O){O=O||{};return new Promise(res=>{try{const en=window.
   dpBtn(c,'botao_ok',[100,1420,880,124],[160,1438,760,88],'OK',52,'#fff',fim);
   let g=null;try{g=O.jogo?grpUlt():null;}catch(e){}
   if(g){grpSet(g.tid,g.nome||B.n);
-    if(O.host)dpBtn(c,'botao_jogar_novamente',[100,1550,880,124],[160,1568,760,88],(en?'🔁 PLAY AGAIN WITH ':'🔁 JOGAR DE NOVO COM ')+String(B.n).slice(0,10).toUpperCase(),42,'#fff',()=>{fim();grpDeNovo(O.jogo,g.tid);});
-    else dpTxt(c,(en?'👥 In a group with ':'👥 Em grupo com ')+String(B.n).slice(0,10)+(en?': you join by yourself':': você entra sozinho'),[110,1560,860,100],34,'#fff','c','white-space:normal;text-align:center;line-height:1.15;text-shadow:0 2px 0 #000');
-    const sg=dpBtn(c,'botao_sair_grupo',[240,1680,600,80],[300,1698,480,44],en?'Leave group':'Sair do grupo',34,'#5a2a0a',()=>{grpSair();sg.remove();});}
+    dpBtn(c,'botao_jogar_novamente',[100,1550,880,124],[160,1568,760,88],(en?'🔁 PLAY AGAIN WITH ':'🔁 JOGAR DE NOVO COM ')+String(B.n).slice(0,10).toUpperCase(),42,'#fff',()=>{fim();if(O.host)grpDeNovo(O.jogo,g.tid);else grpPedeDeNovo(O.jogo,g.tid);});
+    const sg=dpBtn(c,'botao_sair_grupo',[240,1680,600,80],[300,1698,480,44],en?'Leave group':'Sair do grupo',34,'#5a2a0a',()=>{grpSairAvisa();sg.remove();});}
 }catch(e){console.warn('duoCompare',e);res();}});};
 salaPainel=function(o){try{const en=window.CVLANG==='en';let {b,c}=dpTela('salaBox',9993);
   dpImg(c,'sala_painel',[40,710,1000,700]);dpImg(c,'sala_topo_titulo',[40,400,1000,310]);
@@ -19620,9 +19670,8 @@ window.__DMOD=()=>{try{if(/[?#&]dupla1/.test(location.href)){localStorage.setIte
     B2(c,'botao_ok',[87,1425,908,133],[162,1454,756,72],'OK',56,'#fff',fim);
     let g=null;try{g=O.jogo?grpUlt():null;}catch(e){}
     if(g){grpSet(g.tid,g.nome||B.n);
-      if(O.host)B2(c,'botao_jogar_novamente',[87,1576,908,132],[162,1605,756,72],(en?'PLAY AGAIN WITH ':'JOGAR DE NOVO COM ')+String(B.n).slice(0,10).toUpperCase(),42,'#fff',()=>{fim();grpDeNovo(O.jogo,g.tid);});
-      else dpTxt(c,(en?'👥 In a group with ':'👥 Em grupo com ')+String(B.n).slice(0,10)+(en?': you join by yourself':': você entra sozinho'),[110,1580,860,120],36,'#fff','c','white-space:normal;text-align:center;line-height:1.15;text-shadow:0 2px 0 #000');
-      const sg=B2(c,'botao_sair_grupo',[87,1727,908,111],[162,1742,756,72],en?'LEAVE GROUP':'SAIR DO GRUPO',36,BR,()=>{grpSair();sg.remove();});}
+      /* GRUPO26NOV: os dois têm o botão; quem não criou a sala pede pro dono chamar de novo */B2(c,'botao_jogar_novamente',[87,1576,908,132],[162,1605,756,72],(en?'PLAY AGAIN WITH ':'JOGAR DE NOVO COM ')+String(B.n).slice(0,10).toUpperCase(),42,'#fff',()=>{fim();if(O.host)grpDeNovo(O.jogo,g.tid);else grpPedeDeNovo(O.jogo,g.tid);});
+      const sg=B2(c,'botao_sair_grupo',[87,1727,908,111],[162,1742,756,72],en?'LEAVE GROUP':'SAIR DO GRUPO',36,BR,()=>{grpSairAvisa();sg.remove();});}
   }catch(e){console.warn('duoCompare2',e);res();}});};
   salaPainel=function(o){if(!window.__DMOD())return _sp.apply(this,arguments);try{const en=window.CVLANG==='en';let {b,c}=dpTela('salaBox',9993);
     S2(c,'sala_painel',[65,476,953,987]);S2(c,'sala_titulo',[98,532,886,165]);
